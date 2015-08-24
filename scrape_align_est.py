@@ -31,13 +31,14 @@ mattype=sys.argv[4]
 runname=sys.argv[5]
 firstrun=sys.argv[6]
 
-remote=1
+remote=1 #Local blas
 
-#Fixed values
+#TODO config file
 E_VALUE_THRESH = 0.04
-ott_ncbi="/home/ejmctavish/projects/otapi/physcraper/ott_ncbi" #TODO config file
-Entrez.email = "ejmctavish@gmail.com"
+ott_ncbi="/home/ejmctavish/projects/otapi/physcraper/ott_ncbi"
+get_ncbi_taxonomy = "/home/ejmctavish/projects/otapi/physcraper/get_ncbi_taxonomy.sh"
 
+Entrez.email = "ejmctavish@gmail.com"
 
 
 
@@ -56,12 +57,29 @@ fi.close()
 ottids = []
 
 if firstrun:
-    sys.stdout.write("First run through")
+    sys.stdout.write("First run through\n")
     phy = Phylesystem()
     n = phy.return_study(study_id)[0]
     api_wrapper.study.get(study_id,tree=tree_id)
-    ##This is a weird way to get the ingroup node, but I need the OTT ids anyhow.
 
+    ##This is a weird way to get the ingroup node, but I need the OTT ids anyhow.
+    m = extract_tree(n, tree_id, PhyloSchema('newick', output_nexml2json = '1.2.1', content="tree", tip_label="ot:ottId"), subtree_id="ingroup")
+    otu_dict = gen_otu_dict(n)
+    ottids = []
+    outgroup=open("outgroup.txt","w")
+    outgroup.write("otuid, original label, ottid, ")
+    for oid, o in otu_dict.items():
+        try:
+            ottid = o[u'^ot:ottId']
+        except:
+            ottid=None
+        if ("{}:".format(ottid) in m) or ("{})".format(ottid) in m) or ("{},".format(ottid) in m):
+                ottids.append(ottid)        
+        else:
+                outgroup.write("{}, {}, {}\n".format(oid,o[u'^ot:originalLabel'].replace(" ","_").replace("/","_"),ottid))
+
+
+    outgroup.close()
     #Now grab the same tree with the orginal lablels
     newick = extract_tree(n, tree_id, PhyloSchema('newick', output_nexml2json = '1.2.1', content="tree", tip_label="ot:originalLabel"))
     newick = newick.replace(" ", "_") #UGH
@@ -88,18 +106,23 @@ if firstrun:
     for taxon in d.taxon_namespace:
         if taxon.label.replace("_"," ") in map_dict:
             if  map_dict[taxon.label.replace("_"," ")] == {}:
-                pass
+                taxon.label = taxon.label.replace("/","_") # it's legal nexus, but RAxML chokes. Probably other chars this is true of as well...
             else:
                 taxon.label = str(map_dict[taxon.label.replace("_"," ")]['^ot:ottId'])
-                ottids.append(taxon.label)
         else:
-            pass
+            sys.sterr.write("taxon label problem")
 
     tre.resolve_polytomies()
     tre.write(path = "{}_random_resolve.tre".format(runname), schema = "newick", unquoted_underscores=True, suppress_edge_lengths=True)
 
     d.write(path="{}_aln_ott.phy".format(runname), schema="phylip")
     d.write(path="{}_aln_ott.fas".format(runname), schema="fasta")
+
+
+    #This section grabs the MRCA node and blasts for seqs that are desc from that node
+    mrca_node = tree_of_life.mrca(ott_ids=ottids, wrap_response=True)
+    sys.stdout.write("mrca_node found, {}\n".format(mrca_node.label))
+#Below here only get runs on later iterations, but doesn't yet account for changes to the db, does full search again.
 else:
     d = DnaCharacterMatrix.get(path="{}_aln_ott.fas".format(runname),
                                schema="fasta",
@@ -110,41 +133,41 @@ else:
                     taxon_namespace=d.taxon_namespace)
     d.write(path="{}_aln_ott.phy".format(runname), schema="phylip")
 
-
     # get all of the taxa associated with tips of the tree, and make sure that
     #   they include all of the members of the data's taxon_namespace.
     # This shouldn't fail as we repeat through the loop!
-
+    outgroup = open("outgroup.txt")
+    outnames=[lin.split(',')[2] for lin in outgroup]
     for taxon in d.taxon_namespace:
         try:
             if int(taxon.label) in ott_to_ncbi.keys():
-                ottids.append(taxon.label)
+                if taxon.label not in outgroup:
+                    ottids.append(taxon.label)
             else:
                 pass
         except:
             pass
-
+    mrca_node = tree_of_life.mrca(ott_ids=ottids, wrap_response=True)
+    sys.stdout.write("mrca_node found, {}\n".format(mrca_node.label))
 
 assert(len(ottids) > 2)
 
 
-#This section grabs the MRCA node and blasts for seqs that are desc from that node
-mrca_node = tree_of_life.mrca(ott_ids=ottids, wrap_response=True)
-print("mrca_node found")
+
 
 
 if remote:
     equery = "txid{}[orgn]".format(ott_to_ncbi[mrca_node.nearest_taxon.ott_id])
     for i, record in enumerate(SeqIO.parse(seqaln, mattype)):
         record.seq._data = record.seq._data.replace("-","") # blast gets upset about too many gaps from aligned file
-        print("blasting seq {}".format(i))
+        sys.stdout.write("blasting seq {}\n".format(i))
         result_handle = NCBIWWW.qblast("blastn", "nt", record.format("fasta"),  entrez_query=equery)
         save_file = open("{}_{}.xml".format(runname,i), "w")
         save_file.write(result_handle.read())
         save_file.close()
         result_handle.close()
 
-else:
+else: #This doesn't work BC is not taxon limited...
     for i, record in enumerate(SeqIO.parse(seqaln, mattype)):
         output_handle = open("query.fasta", "w")
         SeqIO.write(record, output_handle, "fasta")
@@ -169,12 +192,12 @@ for i, record in enumerate(SeqIO.parse(seqaln, mattype)):
 ##SET MINIMUM SEQUENCE LENGTH
 
 for gi in gi_to_ncbi.keys():
-    gi_to_ncbi[gi] = int(subprocess.check_output(["bash", "get_ncbi_taxonomy.sh",  "{}".format(gi)]).split('\t')[1])
+    gi_to_ncbi[gi] = int(subprocess.check_output(["bash", get_ncbi_taxonomy,  "{}".format(gi)]).split('\t')[1])
 
 
 newseqs = "{}.fasta".format(runname)
 fi = open(newseqs,'w')
-print("writing out sequences")
+sys.stdout.write("writing out sequences\n")
 for gi in gi_to_ncbi:
         try:
             ott_id = ncbi_to_ott[gi_to_ncbi[gi]]
