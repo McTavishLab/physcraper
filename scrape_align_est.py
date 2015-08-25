@@ -31,7 +31,7 @@ tree_id=sys.argv[2]
 seqaln=sys.argv[3]
 mattype=sys.argv[4]
 runname=sys.argv[5]
-firstrun=sys.argv[6]
+
 
 remote=1 #Local blas
 
@@ -57,6 +57,13 @@ for lin in fi:
 fi.close()
 
 ottids = []
+
+
+if not os.path.isfile("last_update"): 
+    firstrun = 1
+else:
+    firstrun = 0
+
 
 if firstrun:
     sys.stdout.write("First run through\n")
@@ -103,13 +110,17 @@ if firstrun:
     #Get original label to ott id mapping to match alignement to tree 
     ps = PhyloSchema('nexson', content='otumap', version='1.2.1')
     map_dict = map_dict=ps.convert(n)
-
+    mapped_ids = set()
     for taxon in d.taxon_namespace:
         if taxon.label.replace("_"," ") in map_dict:
             if  map_dict[taxon.label.replace("_"," ")] == {}:
                 taxon.label = taxon.label.replace("/","_") # it's legal nexus, but RAxML chokes. Probably other chars this is true of as well...
             else:
-                taxon.label = str(map_dict[taxon.label.replace("_"," ")]['^ot:ottId'])
+                if map_dict[taxon.label.replace("_"," ")]['^ot:ottId'] not in mapped_ids: #Can't have two tips with same name. Need better alternative tho!
+                    mapped_ids.add(map_dict[taxon.label.replace("_"," ")]['^ot:ottId'])
+                    taxon.label = str(map_dict[taxon.label.replace("_"," ")]['^ot:ottId'])
+                else:
+                    taxon.label = taxon.label.replace("/","_") 
         else:
             sys.sterr.write("taxon label problem")
 
@@ -123,19 +134,15 @@ if firstrun:
     #This section grabs the MRCA node and blasts for seqs that are desc from that node
     mrca_node = tree_of_life.mrca(ott_ids=ottids, wrap_response=True)
     sys.stdout.write("mrca_node found, {}\n".format(mrca_node.nearest_taxon.ott_id))
-    if not os.path.isfile("last_update"): 
-        fi=open("last_update","w")
-    else:
-        fi=open("last_update","a")
-
+    fi=open("last_update","w")
     today = datetime.date.today()
     fi.write("{}\n".format(str(today).replace("-","/")))
     fi.close()
 #Below here only get runs on later iterations, but doesn't yet account for changes to the db, does full search again.
 else:
+    sys.stdout.write("updating tree\n")
     d = DnaCharacterMatrix.get(path="{}_aln_ott.fas".format(runname),
-                               schema="fasta",
-                               preserve_underscores=True)
+                               schema="fasta")
     d.taxon_namespace.is_mutable = False
     tre = Tree.get(path="{}_stream.tre".format(runname),
                     schema="newick",
