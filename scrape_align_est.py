@@ -12,14 +12,16 @@ from Bio.Blast import NCBIWWW, NCBIXML
 from Bio.Blast.Applications import NcbiblastxCommandline
 from Bio import SeqIO, Entrez
 import re
+import os
 import subprocess
 import time
+import datetime
 
 '''
 #LSU ASC tree example
 study_id = "pg_873"
 tree_id = "tree1679"
-seqaln = "mat1.fas"
+seqaln = "tree1679.fas"
 mattype="fasta"
 runname="asc_test"
 '''
@@ -60,8 +62,7 @@ if firstrun:
     sys.stdout.write("First run through\n")
     phy = Phylesystem()
     n = phy.return_study(study_id)[0]
-    api_wrapper.study.get(study_id,tree=tree_id)
-
+#    api_wrapper.study.get(study_id,tree=tree_id)
     ##This is a weird way to get the ingroup node, but I need the OTT ids anyhow.
     m = extract_tree(n, tree_id, PhyloSchema('newick', output_nexml2json = '1.2.1', content="tree", tip_label="ot:ottId"), subtree_id="ingroup")
     otu_dict = gen_otu_dict(n)
@@ -121,7 +122,15 @@ if firstrun:
 
     #This section grabs the MRCA node and blasts for seqs that are desc from that node
     mrca_node = tree_of_life.mrca(ott_ids=ottids, wrap_response=True)
-    sys.stdout.write("mrca_node found, {}\n".format(mrca_node.label))
+    sys.stdout.write("mrca_node found, {}\n".format(mrca_node.nearest_taxon.ott_id))
+    if not os.path.isfile("last_update"): 
+        fi=open("last_update","w")
+    else:
+        fi=open("last_update","a")
+
+    today = datetime.date.today()
+    fi.write("{}\n".format(str(today).replace("-","/")))
+    fi.close()
 #Below here only get runs on later iterations, but doesn't yet account for changes to the db, does full search again.
 else:
     d = DnaCharacterMatrix.get(path="{}_aln_ott.fas".format(runname),
@@ -148,32 +157,46 @@ else:
         except:
             pass
     mrca_node = tree_of_life.mrca(ott_ids=ottids, wrap_response=True)
-    sys.stdout.write("mrca_node found, {}\n".format(mrca_node.label))
+    sys.stdout.write("mrca_node found, {}\n".format(mrca_node.nearest_taxon.ott_id))
 
 assert(len(ottids) > 2)
 
 
 
-
-
-if remote:
+if firstrun:
     equery = "txid{}[orgn]".format(ott_to_ncbi[mrca_node.nearest_taxon.ott_id])
     for i, record in enumerate(SeqIO.parse(seqaln, mattype)):
         record.seq._data = record.seq._data.replace("-","") # blast gets upset about too many gaps from aligned file
         sys.stdout.write("blasting seq {}\n".format(i))
-        result_handle = NCBIWWW.qblast("blastn", "nt", record.format("fasta"),  entrez_query=equery)
-        save_file = open("{}_{}.xml".format(runname,i), "w")
-        save_file.write(result_handle.read())
-        save_file.close()
-        result_handle.close()
-
-else: #This doesn't work BC is not taxon limited...
+        if not os.path.isfile("{}_{}.xml".format(runname,i)): 
+            result_handle = NCBIWWW.qblast("blastn", "nt", record.format("fasta"),  entrez_query=equery)
+            save_file = open("{}_{}.xml".format(runname,i), "w")
+            save_file.write(result_handle.read())
+            save_file.close()
+            result_handle.close()
+else:
+    lastupdate = subprocess.check_output(['tail', '-1', 'last_update']).strip()
+    today = datetime.date.today()
+    equery = "txid{}[orgn] AND {}:{}[mdat]".format(ott_to_ncbi[mrca_node.nearest_taxon.ott_id], lastupdate, str(today).replace("-","/"))
     for i, record in enumerate(SeqIO.parse(seqaln, mattype)):
-        output_handle = open("query.fasta", "w")
-        SeqIO.write(record, output_handle, "fasta")
-        output_handle.close()
-        blastx_cline =  NcbiblastxCommandline(cmd='blastn', out="{}_{}.xml".format(runname,i), outfmt=5, query="query.fasta", db='nt', evalue=E_VALUE_THRESH)
-        stdout, stderr = blastx_cline()
+        record.seq._data = record.seq._data.replace("-","") # blast gets upset about too many gaps from aligned file
+        sys.stdout.write("blasting seq {}\n".format(i))
+        if not os.path.isfile("{}_{}.xml".format(runname,i)): 
+            result_handle = NCBIWWW.qblast("blastn", "nt", record.format("fasta"),  entrez_query=equery)
+            save_file = open("{}_{}.xml".format(runname,i), "w")
+            save_file.write(result_handle.read())
+            save_file.close()
+            result_handle.close()
+    
+
+
+#else: #This doesn't work BC is not taxon limited...
+#    for i, record in enumerate(SeqIO.parse(seqaln, mattype)):
+#        output_handle = open("query.fasta", "w")
+#        SeqIO.write(record, output_handle, "fasta")
+#        output_handle.close()
+#        blastx_cline =  NcbiblastxCommandline(cmd='blastn', out="{}_{}.xml".format(runname,i), outfmt=5, query="query.fasta", db='nt', evalue=E_VALUE_THRESH)
+#        stdout, stderr = blastx_cline()
 
 
 gi_to_ncbi = {}
