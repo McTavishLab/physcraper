@@ -16,6 +16,7 @@ import os
 import subprocess
 import time
 import datetime
+import glob
 
 '''
 #LSU ASC tree example
@@ -146,7 +147,8 @@ else:
     d.taxon_namespace.is_mutable = False
     tre = Tree.get(path="{}_stream.tre".format(runname),
                     schema="newick",
-                    taxon_namespace=d.taxon_namespace)
+                    taxon_namespace=d.taxon_namespace,
+                    preserve_underscores =True)
     d.write(path="{}_aln_ott.phy".format(runname), schema="phylip")
 
     # get all of the taxa associated with tips of the tree, and make sure that
@@ -188,9 +190,9 @@ else:
     for i, record in enumerate(SeqIO.parse(seqaln, mattype)):
         record.seq._data = record.seq._data.replace("-","") # blast gets upset about too many gaps from aligned file
         sys.stdout.write("blasting seq {}\n".format(i))
-        if not os.path.isfile("{}_{}.xml".format(runname,i)): 
+        if not os.path.isfile("{}_{}_{}.xml".format(runname,i,today)): 
             result_handle = NCBIWWW.qblast("blastn", "nt", record.format("fasta"),  entrez_query=equery)
-            save_file = open("{}_{}.xml".format(runname,i), "w")
+            save_file = open("{}_{}_today.xml".format(runname,i), "w")
             save_file.write(result_handle.read())
             save_file.close()
             result_handle.close()
@@ -205,11 +207,17 @@ else:
 #        blastx_cline =  NcbiblastxCommandline(cmd='blastn', out="{}_{}.xml".format(runname,i), outfmt=5, query="query.fasta", db='nt', evalue=E_VALUE_THRESH)
 #        stdout, stderr = blastx_cline()
 
+gi_map = {}
+if os.path.isfile("id_map.txt"):
+    fi = open("id_map.txt")
+    for lin in fi:
+        gi_map[int(lin.split(",")[0])]=lin.split(",")[1]
 
 gi_to_ncbi = {}
 new_seqs={}
 
-for i, record in enumerate(SeqIO.parse(seqaln, mattype)):
+if firstrun:
+  for i, record in enumerate(SeqIO.parse(seqaln, mattype)):
     result_handle = open("{}_{}.xml".format(runname,i))
     blast_records = NCBIXML.parse(result_handle)
     for blast_record in blast_records:
@@ -218,7 +226,16 @@ for i, record in enumerate(SeqIO.parse(seqaln, mattype)):
                 if hsp.expect < E_VALUE_THRESH:
                    new_seqs[int(alignment.title.split('|')[1])] = hsp.sbjct
                    gi_to_ncbi[int(alignment.title.split('|')[1])] = ''
-
+else:
+  for i, record in enumerate(SeqIO.parse(seqaln, mattype)):
+    result_handle = open("{}_{}_{}.xml".format(runname,i,today))
+    blast_records = NCBIXML.parse(result_handle)
+    for blast_record in blast_records:
+        for alignment in blast_record.alignments:
+            for hsp in alignment.hsps:
+                if hsp.expect < E_VALUE_THRESH and int(alignment.title.split('|')[1]) not in gi_map:
+                   new_seqs[int(alignment.title.split('|')[1])] = hsp.sbjct
+                   gi_to_ncbi[int(alignment.title.split('|')[1])] = ''
 ##SET MINIMUM SEQUENCE LENGTH
 
 if len(new_seqs)==0:
@@ -226,21 +243,17 @@ if len(new_seqs)==0:
     sys.exit()
 
 
-gi_map = {}
-if os.path.isfile("id_map.txt"):
-    fi = open("id_map.txt")
-    for lin in fi:
-        gi_map[lin.split(",")[0]]=lin.split(",")[1]
 
 mapped_taxon_ids=open("id_map.txt","a")
-sys.stdout.write("grepping for taxon ids\n")
+sys.stdout.write("finding taxon ids\n")
 for gi in gi_to_ncbi.keys():
     sys.stdout.write(".")
     if gi in gi_map:
-        tax_id = int(gi_map)
+        sys.stdout.write("*")
+        tax_id = int(gi_map[gi])
     else:
         tax_id = int(subprocess.check_output(["bash", get_ncbi_taxonomy, "{}".format(gi)]).split('\t')[1])
-        mapped_taxon_ids.write("gi, tax_id\n")
+        mapped_taxon_ids.write("{}, {}\n".format(gi, tax_id))
     gi_to_ncbi[gi] = tax_id
 sys.stdout.write("\n")
 
@@ -266,12 +279,15 @@ for gi in gi_to_ncbi:
 
 fi.close()
 
+for fl in glob.glob("papara_*"):
+    os.remove(fl)
 
 p1 = subprocess.call(["papara", "-t","{}_random_resolve.tre".format(runname), "-s", "{}_aln_ott.phy".format(runname), "-q",  newseqs, "-n", "extended"]) 
                           #run RAXML EPA on the alignments
 
+for fl in glob.glob("RAxML_*"):
+    os.remove(fl)
 #placement
-
 p2 = subprocess.call(["raxmlHPC", "-m", "GTRCAT", "-f", "v", "-s", "papara_alignment.extended", "-t","{}_random_resolve.tre".format(runname), "-n", "{}_PLACE".format(runname)])
 
 
@@ -305,4 +321,5 @@ newtre = Tree.get(path="RAxML_bestTree.{}".format(runname),
 
 
 newtre.write(path = "{}_stream.tre".format(runname), schema = "newick", unquoted_underscores=True)
-d.write(path="{}_aln_ott.fas".format(runname), schema="fasta")
+e.write(path="{}_aln_ott.fas".format(runname), schema="fasta")
+
