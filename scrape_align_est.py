@@ -59,7 +59,7 @@ fi.close()
 ottids = []
 
 
-if not os.path.isfile("last_update"): 
+if not (os.path.isfile("last_update") and os.path.isfile("{}_stream.tre".format(runname)) and os.path.isfile("{}_aln_ott.fas".format(runname))): 
     firstrun = 1
 else:
     firstrun = 0
@@ -221,9 +221,30 @@ for i, record in enumerate(SeqIO.parse(seqaln, mattype)):
 
 ##SET MINIMUM SEQUENCE LENGTH
 
-for gi in gi_to_ncbi.keys():
-    gi_to_ncbi[gi] = int(subprocess.check_output(["bash", get_ncbi_taxonomy,  "{}".format(gi)]).split('\t')[1])
+if len(new_seqs)==0:
+    sys.stdout.write("No new sequences found.\n")
+    sys.exit()
 
+
+gi_map = {}
+if os.path.isfile("id_map.txt"):
+    fi = open("id_map.txt")
+    for lin in fi:
+        gi_map[lin.split(",")[0]]=lin.split(",")[1]
+
+mapped_taxon_ids=open("id_map.txt","a")
+sys.stdout.write("grepping for taxon ids\n")
+for gi in gi_to_ncbi.keys():
+    sys.stdout.write(".")
+    if gi in gi_map:
+        tax_id = int(gi_map)
+    else:
+        tax_id = int(subprocess.check_output(["bash", get_ncbi_taxonomy, "{}".format(gi)]).split('\t')[1])
+        mapped_taxon_ids.write("gi, tax_id\n")
+    gi_to_ncbi[gi] = tax_id
+sys.stdout.write("\n")
+
+mapped_taxon_ids.close()
 
 newseqs = "{}.fasta".format(runname)
 fi = open(newseqs,'w')
@@ -258,6 +279,12 @@ placetre = Tree.get(path="RAxML_labelledTree.{}_PLACE".format(runname),
                 schema="newick",
                 preserve_underscores=True)
 placetre.resolve_polytomies()
+
+for taxon in placetre.taxon_namespace:
+    if taxon.label.startswith("QUERY"):
+        taxon.label=taxon.label.replace("QUERY___","")
+
+
 placetre.write(path = "{}_place_resolve.tre".format(runname), schema = "newick", unquoted_underscores=True)
 
 
