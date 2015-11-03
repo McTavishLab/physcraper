@@ -92,8 +92,9 @@ if firstrun:
     #Now grab the same tree with the orginal lablels
     newick = extract_tree(n, tree_id, PhyloSchema('newick', output_nexml2json = '1.2.1', content="tree", tip_label="ot:originalLabel"))
     newick = newick.replace(" ", "_") #UGH
-    d = DnaCharacterMatrix.get(path=seqaln,
-                               schema=mattype)
+    d = DnaCharacterMatrix.get(path=seqaln, schema=mattype)
+    for taxon in d.taxon_namespace:
+        taxon.label = taxon.label.replace(" ","_")
     d.taxon_namespace.is_mutable = True
     tre = Tree.get(data=newick,
                     schema="newick",
@@ -121,13 +122,13 @@ if firstrun:
                     mapped_ids.add(map_dict[taxon.label.replace("_"," ")]['^ot:ottId'])
                     taxon.label = str(map_dict[taxon.label.replace("_"," ")]['^ot:ottId'])
                 else:
-                    taxon.label = taxon.label.replace("/","_") 
+                    taxon.label = taxon.label.replace("/","_")
         else:
             sys.sterr.write("taxon label problem")
 
     tre.resolve_polytomies()
     tre.write(path = "{}_random_resolve.tre".format(runname), schema = "newick", unquoted_underscores=True, suppress_edge_lengths=True)
-
+    
     d.write(path="{}_aln_ott.phy".format(runname), schema="phylip")
     d.write(path="{}_aln_ott.fas".format(runname), schema="fasta")
 
@@ -176,23 +177,29 @@ if firstrun:
     equery = "txid{}[orgn]".format(ott_to_ncbi[mrca_node.nearest_taxon.ott_id])
     for i, record in enumerate(SeqIO.parse(seqaln, mattype)):
         record.seq._data = record.seq._data.replace("-","") # blast gets upset about too many gaps from aligned file
+        record.seq._data = record.seq._data.replace("?","")
         sys.stdout.write("blasting seq {}\n".format(i))
-        if not os.path.isfile("{}_{}.xml".format(runname,i)): 
-            result_handle = NCBIWWW.qblast("blastn", "nt", record.format("fasta"),  entrez_query=equery)
-            save_file = open("{}_{}.xml".format(runname,i), "w")
-            save_file.write(result_handle.read())
-            save_file.close()
-            result_handle.close()
+        if len(record.seq._data) > 10:
+            if not os.path.isfile("{}_{}.xml".format(runname,i)): 
+                result_handle = NCBIWWW.qblast("blastn", "nt", record.format("fasta"),  entrez_query=equery)
+                save_file = open("{}_{}.xml".format(runname,i), "w")
+                save_file.write(result_handle.read())
+                save_file.close()
+                result_handle.close()
 else:
     lastupdate = subprocess.check_output(['tail', '-1', 'last_update']).strip()
     today = datetime.date.today()
+    fi=open("last_update","a")
+    fi.write("{}\n".format(str(today).replace("-","/")))
+    fi.close()
     equery = "txid{}[orgn] AND {}:{}[mdat]".format(ott_to_ncbi[mrca_node.nearest_taxon.ott_id], lastupdate, str(today).replace("-","/"))
+    sys.stdout.write("searching with limit {}\n".format(equery))
     for i, record in enumerate(SeqIO.parse(seqaln, mattype)):
         record.seq._data = record.seq._data.replace("-","") # blast gets upset about too many gaps from aligned file
         sys.stdout.write("blasting seq {}\n".format(i))
         if not os.path.isfile("{}_{}_{}.xml".format(runname,i,today)): 
             result_handle = NCBIWWW.qblast("blastn", "nt", record.format("fasta"),  entrez_query=equery)
-            save_file = open("{}_{}_today.xml".format(runname,i), "w")
+            save_file = open("{}_{}_{}.xml".format(runname,i,today), "w")
             save_file.write(result_handle.read())
             save_file.close()
             result_handle.close()
@@ -218,14 +225,15 @@ new_seqs={}
 
 if firstrun:
   for i, record in enumerate(SeqIO.parse(seqaln, mattype)):
-    result_handle = open("{}_{}.xml".format(runname,i))
-    blast_records = NCBIXML.parse(result_handle)
-    for blast_record in blast_records:
-        for alignment in blast_record.alignments:
-            for hsp in alignment.hsps:
-                if hsp.expect < E_VALUE_THRESH:
-                   new_seqs[int(alignment.title.split('|')[1])] = hsp.sbjct
-                   gi_to_ncbi[int(alignment.title.split('|')[1])] = ''
+    if os.path.isfile("{}_{}.xml".format(runname,i)):
+        result_handle = open("{}_{}.xml".format(runname,i))
+        blast_records = NCBIXML.parse(result_handle)
+        for blast_record in blast_records:
+            for alignment in blast_record.alignments:
+                for hsp in alignment.hsps:
+                    if hsp.expect < E_VALUE_THRESH:
+                       new_seqs[int(alignment.title.split('|')[1])] = hsp.sbjct
+                       gi_to_ncbi[int(alignment.title.split('|')[1])] = ''
 else:
   for i, record in enumerate(SeqIO.parse(seqaln, mattype)):
     result_handle = open("{}_{}_{}.xml".format(runname,i,today))
@@ -275,6 +283,8 @@ for gi in gi_to_ncbi:
                 print("success {}".format(ott_id))
         if ott_id in ottids: 
                 print("ncbi taxon ID {} already in tree".format(gi_to_ncbi[gi]))
+
+
 
 
 fi.close()
