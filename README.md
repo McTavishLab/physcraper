@@ -10,6 +10,7 @@ seqaln = the sequence alignment that generated that tree
 matrix_type = alignment matrix type (only tested with fasta so far)  
 runname = a name for this run
 
+Study needs to be in Phylesystem, get the ott_study_id and ott_tree_id from the curator app.
 
 example:
 
@@ -29,4 +30,18 @@ Python modules
 - peyotl (needs to be configured to access phylesystem)  
 - Bio
 - Dendropy
+
+
+Preprocessing steps:
+
+Get alignement from ?treebase?, using orginal file:
+convert to fasta and break out to single gene: e.g. rpb2 3218-6016 (this info is in the nexus)
+using:
+    preprocess.py input.nex output_stub start stop
+
+e.g.
+    
+    preprocess.py M4058.nexorg rpb2 3218 6016
+
+This will write a fasta file with just your gene/region of interest
 
