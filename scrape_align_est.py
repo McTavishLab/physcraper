@@ -3,7 +3,7 @@ import sys
 from dendropy import Tree, DnaCharacterMatrix
 from peyotl import gen_otu_dict, iter_node
 from peyotl.manip import iter_trees
-from peyotl.phylesystem.phylesystem_umbrella import Phylesystem
+from peyotl.api.phylesystem_api import PhylesystemAPI
 from peyotl.sugar import tree_of_life, taxonomy
 from peyotl.nexson_syntax import extract_tree,  PhyloSchema
 from peyotl.api import APIWrapper
@@ -34,7 +34,8 @@ mattype=sys.argv[4]
 runname=sys.argv[5]
 
 
-remote=1 #Local blas
+blast_loc = 'remote' #Local vs remote blast
+phylesystem_loc = 'local'
 
 #TODO config file
 E_VALUE_THRESH = 0.001
@@ -69,8 +70,9 @@ else:
 
 
 if firstrun:
+    phylesystem_api_wrapper = PhylesystemAPI(get_from=phylesystem_loc)
+    phy = phylesystem_api_wrapper.phylesystem_obj
     sys.stdout.write("First run through\n")
-    phy = Phylesystem()
     n = phy.return_study(study_id)[0]
 #    api_wrapper.study.get(study_id,tree=tree_id)
     ##This is a weird way to get the ingroup node, but I need the OTT ids anyhow.
@@ -89,7 +91,6 @@ if firstrun:
         else:
                 outgroup.write("{}, {}, {}\n".format(oid,o[u'^ot:originalLabel'].replace(" ","_").replace("/","_"),ottid))
 
-
     outgroup.close()
     #Now grab the same tree with the orginal lablels
     newick = extract_tree(n, tree_id, PhyloSchema('newick', output_nexml2json = '1.2.1', content="tree", tip_label="ot:originalLabel"))
@@ -97,6 +98,7 @@ if firstrun:
     d = DnaCharacterMatrix.get(path=seqaln, schema=mattype)
     for taxon in d.taxon_namespace:
         taxon.label = taxon.label.replace(" ","_")
+
     d.taxon_namespace.is_mutable = True
     tre = Tree.get(data=newick,
                     schema="newick",
@@ -149,8 +151,8 @@ if firstrun:
     tre.resolve_polytomies()
     tre.write(path = "{}_random_resolve.tre".format(runname), schema = "newick", unquoted_underscores=True, suppress_edge_lengths=True)
     
-    d.write(path="{}_aln_ott.phy".format(runname), schema="phylip")
-    d.write(path="{}_aln_ott.fas".format(runname), schema="fasta")
+    dna_prune.write(path="{}_aln_ott.phy".format(runname), schema="phylip")
+    dna_prune.write(path="{}_aln_ott.fas".format(runname), schema="fasta")
 
 
     #This section grabs the MRCA node and blasts for seqs that are desc from that node
@@ -298,7 +300,7 @@ for gi in gi_to_ncbi:
             continue
         if ott_id not in ottids: # only adding seqs we don't have taxa for
                 ottids.append(ott_id)
-                fi.write(">{}\n".format(ncbi_to_ott[gi_to_ncbi[gi]]))
+                fi.write(">{}_q\n".format(ncbi_to_ott[gi_to_ncbi[gi]]))
                 fi.write("{}\n".format(new_seqs[gi]))
                 print("success {}".format(ott_id))
         if ott_id in ottids: 
@@ -320,10 +322,10 @@ for fl in glob.glob("RAxML_*"):
     os.remove(fl)
 #placement
 
-p2 = subprocess.call(["raxmlHPC", "-m", "GTRCAT", "-f", "v", "-s", "ppr_prune.phy", "-t","{}_random_resolve.tre".format(runname), "-n", "{}_reduce".format(runname)])
+p2 = subprocess.call(["raxmlHPC", "-m", "GTRCAT", "-f", "v", "-s", "papara_alignment.extended", "-t","{}_random_resolve.tre".format(runname), "-n", "{}_reduce".format(runname)])
 
 # this next line is on the assumption that you have ended up with some identical sequences. They get randomly pruned I think by raxml.
-p3 = subprocess.call(["raxmlHPC", "-m", "GTRCAT", "-f", "v", "-s", "ppr_prune.phy.reduced", "-t","{}_random_resolve.tre".format(runname), "-n", "{}_PLACE".format(runname)]) 
+p3 = subprocess.call(["raxmlHPC", "-m", "GTRCAT", "-f", "v", "-s", "papara_alignment.extended.reduced", "-t","{}_random_resolve.tre".format(runname), "-n", "{}_PLACE".format(runname)]) 
 
 
 placetre = Tree.get(path="RAxML_labelledTree.{}_PLACE".format(runname),
