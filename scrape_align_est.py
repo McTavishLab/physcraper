@@ -37,7 +37,7 @@ runname=sys.argv[5]
 remote=1 #Local blas
 
 #TODO config file
-E_VALUE_THRESH = 0.04
+E_VALUE_THRESH = 0.001
 ott_ncbi="/home/ejmctavish/projects/otapi/physcraper/ott_ncbi"
 get_ncbi_taxonomy = "/home/ejmctavish/projects/otapi/physcraper/get_ncbi_taxonomy.sh"
 
@@ -49,6 +49,8 @@ Entrez.email = "ejmctavish@gmail.com"
 ott_to_ncbi = {}
 ncbi_to_ott = {}
 fi =open(ott_ncbi)
+
+#pickle meeeee
 for lin in fi:
     lii= lin.split(",")
     ott_to_ncbi[int(lii[0])]=int(lii[1])
@@ -126,6 +128,24 @@ if firstrun:
         else:
             sys.sterr.write("taxon label problem")
 
+#This whole section is because de-concatenating the data leaves some taxa wholly missing (should move to preprocessing?)
+    prune = []
+    dp = {}
+    for taxon, seq in d.items():
+        if len(seq.symbols_as_string().translate(None, "-?")) == 0:
+            prune.append(taxon.label)
+        else:
+            dp[taxon.label] = seq
+  
+    dna_prune = DnaCharacterMatrix.from_dict(dp)
+    tre.prune_taxa_with_labels(prune)
+
+    fi = open("pruned_taxa",'w')
+    fi.write("taxa pruned from tree and alignemnt due to excessive missing data\n")
+    for tax in prune:
+        fi.write("\n".format(tax))
+    fi.close()
+
     tre.resolve_polytomies()
     tre.write(path = "{}_random_resolve.tre".format(runname), schema = "newick", unquoted_underscores=True, suppress_edge_lengths=True)
     
@@ -180,9 +200,9 @@ if firstrun:
         record.seq._data = record.seq._data.replace("?","")
         sys.stdout.write("blasting seq {}\n".format(i))
         if len(record.seq._data) > 10:
-            if not os.path.isfile("{}_{}.xml".format(runname,i)): 
+            if not os.path.isfile("{}_{}.xml".format(runname,record.name)): 
                 result_handle = NCBIWWW.qblast("blastn", "nt", record.format("fasta"),  entrez_query=equery)
-                save_file = open("{}_{}.xml".format(runname,i), "w")
+                save_file = open("{}_{}.xml".format(runname,record.name), "w")
                 save_file.write(result_handle.read())
                 save_file.close()
                 result_handle.close()
@@ -197,9 +217,9 @@ else:
     for i, record in enumerate(SeqIO.parse(seqaln, mattype)):
         record.seq._data = record.seq._data.replace("-","") # blast gets upset about too many gaps from aligned file
         sys.stdout.write("blasting seq {}\n".format(i))
-        if not os.path.isfile("{}_{}_{}.xml".format(runname,i,today)): 
+        if not os.path.isfile("{}_{}_{}.xml".format(runname,record.name,today)): 
             result_handle = NCBIWWW.qblast("blastn", "nt", record.format("fasta"),  entrez_query=equery)
-            save_file = open("{}_{}_{}.xml".format(runname,i,today), "w")
+            save_file = open("{}_{}_{}.xml".format(runname,record.name,today), "w")
             save_file.write(result_handle.read())
             save_file.close()
             result_handle.close()
@@ -225,8 +245,8 @@ new_seqs={}
 
 if firstrun:
   for i, record in enumerate(SeqIO.parse(seqaln, mattype)):
-    if os.path.isfile("{}_{}.xml".format(runname,i)):
-        result_handle = open("{}_{}.xml".format(runname,i))
+    if os.path.isfile("{}_{}.xml".format(runname,record.name)):
+        result_handle = open("{}_{}.xml".format(runname,record.name))
         blast_records = NCBIXML.parse(result_handle)
         for blast_record in blast_records:
             for alignment in blast_record.alignments:
@@ -236,7 +256,7 @@ if firstrun:
                        gi_to_ncbi[int(alignment.title.split('|')[1])] = ''
 else:
   for i, record in enumerate(SeqIO.parse(seqaln, mattype)):
-    result_handle = open("{}_{}_{}.xml".format(runname,i,today))
+    result_handle = open("{}_{}_{}.xml".format(runname,record.name,today))
     blast_records = NCBIXML.parse(result_handle)
     for blast_record in blast_records:
         for alignment in blast_record.alignments:
@@ -244,8 +264,8 @@ else:
                 if hsp.expect < E_VALUE_THRESH and int(alignment.title.split('|')[1]) not in gi_map:
                    new_seqs[int(alignment.title.split('|')[1])] = hsp.sbjct
                    gi_to_ncbi[int(alignment.title.split('|')[1])] = ''
-##SET MINIMUM SEQUENCE LENGTH
 
+##SET MINIMUM SEQUENCE LENGTH
 if len(new_seqs)==0:
     sys.stdout.write("No new sequences found.\n")
     sys.exit()
@@ -283,8 +303,8 @@ for gi in gi_to_ncbi:
                 print("success {}".format(ott_id))
         if ott_id in ottids: 
                 print("ncbi taxon ID {} already in tree".format(gi_to_ncbi[gi]))
-
-
+               # fi.write(">{}_{}\n".format(ncbi_to_ott[gi_to_ncbi[gi]], gi))
+               # fi.write("{}\n".format(new_seqs[gi]))
 
 
 fi.close()
@@ -292,13 +312,18 @@ fi.close()
 for fl in glob.glob("papara_*"):
     os.remove(fl)
 
+#parallelelize across more threads!!
 p1 = subprocess.call(["papara", "-t","{}_random_resolve.tre".format(runname), "-s", "{}_aln_ott.phy".format(runname), "-q",  newseqs, "-n", "extended"]) 
-                          #run RAXML EPA on the alignments
 
+#run RAXML EPA on the alignments
 for fl in glob.glob("RAxML_*"):
     os.remove(fl)
 #placement
-p2 = subprocess.call(["raxmlHPC", "-m", "GTRCAT", "-f", "v", "-s", "papara_alignment.extended", "-t","{}_random_resolve.tre".format(runname), "-n", "{}_PLACE".format(runname)])
+
+p2 = subprocess.call(["raxmlHPC", "-m", "GTRCAT", "-f", "v", "-s", "ppr_prune.phy", "-t","{}_random_resolve.tre".format(runname), "-n", "{}_reduce".format(runname)])
+
+# this next line is on the assumption that you have ended up with some identical sequences. They get randomly pruned I think by raxml.
+p3 = subprocess.call(["raxmlHPC", "-m", "GTRCAT", "-f", "v", "-s", "ppr_prune.phy.reduced", "-t","{}_random_resolve.tre".format(runname), "-n", "{}_PLACE".format(runname)]) 
 
 
 placetre = Tree.get(path="RAxML_labelledTree.{}_PLACE".format(runname),
