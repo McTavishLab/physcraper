@@ -322,10 +322,10 @@ for fl in glob.glob("RAxML_*"):
     os.remove(fl)
 #placement
 
-p2 = subprocess.call(["raxmlHPC", "-m", "GTRCAT", "-f", "v", "-s", "papara_alignment.extended", "-t","{}_random_resolve.tre".format(runname), "-n", "{}_reduce".format(runname)])
+p2 = subprocess.call(["raxmlHPC", "-m", "GTRCAT", "-f", "v", "-s", "papara_alignment.extended", "-t","{}_random_resolve.tre".format(runname), "-n", "{}_PLACE".format(runname)])
 
 # this next line is on the assumption that you have ended up with some identical sequences. They get randomly pruned I think by raxml.
-p3 = subprocess.call(["raxmlHPC", "-m", "GTRCAT", "-f", "v", "-s", "papara_alignment.extended.reduced", "-t","{}_random_resolve.tre".format(runname), "-n", "{}_PLACE".format(runname)]) 
+#p3 = subprocess.call(["raxmlHPC", "-m", "GTRCAT", "-f", "v", "-s", "papara_alignment.extended.reduced", "-t","{}_random_resolve.tre".format(runname), "-n", "{}_PLACE".format(runname)]) 
 
 
 placetre = Tree.get(path="RAxML_labelledTree.{}_PLACE".format(runname),
@@ -359,4 +359,21 @@ newtre = Tree.get(path="RAxML_bestTree.{}".format(runname),
 
 newtre.write(path = "{}_stream.tre".format(runname), schema = "newick", unquoted_underscores=True)
 e.write(path="{}_aln_ott.fas".format(runname), schema="fasta")
+
+if tnrs_wrapper is None:
+    from peyotl.sugar import tnrs
+    tnrs_wrapper = tnrs
+
+from peyotl.sugar import taxonomy
+
+for taxon in newtre.taxon_namespace:
+    if taxon.label.split("_")[0] in ottids:
+        info = taxonomy.taxon(taxon.label.split("_")[0],
+                                  include_lineage=False,
+                                  list_terminal_descendants=True,
+                                  wrap_response=True)
+        taxon.label="{}{}".format(info.name,taxon.label.split("_")[1:])
+        taxon.label = taxon.label.replace(" ","_")
+newtre.write(path = "{}_stream_names.tre".format(runname), schema = "newick", unquoted_underscores=True)
+
 
