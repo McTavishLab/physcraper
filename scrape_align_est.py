@@ -17,6 +17,7 @@ import subprocess
 import time
 import datetime
 import glob
+import configparser
 
 '''
 #LSU ASC tree example
@@ -33,17 +34,17 @@ seqaln=sys.argv[3]
 mattype=sys.argv[4]
 runname=sys.argv[5]
 
+#Read config file
 
-blast_loc = 'remote' #Local vs remote blast
-phylesystem_loc = 'local'
+config = configparser.ConfigParser()
+config.read('/home/ejmctavish/projects/otapi/physcraper/config')
 
-#TODO config file
-E_VALUE_THRESH = 0.001
-ott_ncbi="/home/ejmctavish/projects/otapi/physcraper/ott_ncbi"
-get_ncbi_taxonomy = "/home/ejmctavish/projects/otapi/physcraper/get_ncbi_taxonomy.sh"
-
-Entrez.email = "ejmctavish@gmail.com"
-
+blast_loc = config['blast']['location']
+E_VALUE_THRESH = config['blast']['e_value_thresh']
+Entrez.email = config['blast']['Entrez.email']
+phylesystem_loc = config['phylesystem']['location']
+ott_ncbi = config['ncbi.taxonomy']['ott_ncbi']
+get_ncbi_taxonomy = config['ncbi.taxonomy']['get_ncbi_taxonomy']
 
 
 
@@ -282,7 +283,7 @@ for gi in gi_to_ncbi.keys():
         sys.stdout.write("*")
         tax_id = int(gi_map[gi])
     else:
-        tax_id = int(subprocess.check_output(["bash", get_ncbi_taxonomy, "{}".format(gi)]).split('\t')[1])
+        tax_id = int(subprocess.check_output(["bash", get_ncbi_taxonomy, "{}".format(gi), "{}".format(ncbi_dmp)]).split('\t')[1])
         mapped_taxon_ids.write("{}, {}\n".format(gi, tax_id))
     gi_to_ncbi[gi] = tax_id
 sys.stdout.write("\n")

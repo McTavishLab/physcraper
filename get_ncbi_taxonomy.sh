@@ -1,10 +1,11 @@
 #!/bin/bash
 
-NAMES="/home/ejmctavish/ncbi/Names.dmp"
-NODES="/home/ejmctavish/ncbi/nodes.dmp"
-GI_TO_TAXID="/home/ejmctavish/ncbi/gi_taxid_nucl.dmp"
+#NAMES="/home/ejmctavish/ncbi/Names.dmp"
+#NODES="/home/ejmctavish/ncbi/nodes.dmp"
+
 TAXONOMY=""
 GI="${1}"
+GI_TO_TAXID="${2}"
 
 # Obtain the name corresponding to a taxid or the taxid of the parent taxa
 get_name_or_taxid()

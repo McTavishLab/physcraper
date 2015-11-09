@@ -1,0 +1,13 @@
+[blast]
+location = remote
+e_value_thresh = 0.001
+Entrez.email = ejmctavish@gmail.com
+
+[phylesystem]
+location = local
+
+[ncbi.taxonomy]
+ott_ncbi = /home/ejmctavish/projects/otapi/physcraper/ott_ncbi
+get_ncbi_taxonomy = /home/ejmctavish/projects/otapi/physcraper/get_ncbi_taxonomy.sh
+tax_id = /home/ejmctavish/ncbi/gi_taxid_nucl.dmp
+

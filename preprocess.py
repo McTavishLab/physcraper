@@ -17,8 +17,3 @@ for taxon, seq in orig.items():
 dna = DnaCharacterMatrix.from_dict(d)
 
 dna.write(path="{}.fas".format(outstub), schema="fasta")
-
-
- 
-  
-    
