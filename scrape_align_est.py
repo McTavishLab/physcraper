@@ -46,7 +46,7 @@ phylesystem_loc = config['phylesystem']['location']
 ott_ncbi = config['ncbi.taxonomy']['ott_ncbi']
 get_ncbi_taxonomy = config['ncbi.taxonomy']['get_ncbi_taxonomy']
 
-
+MISSINGNESS_THRESH = 0.5
 
 ott_to_ncbi = {}
 ncbi_to_ott = {}
@@ -318,12 +318,54 @@ for fl in glob.glob("papara_*"):
 #parallelelize across more threads!!
 p1 = subprocess.call(["papara", "-t","{}_random_resolve.tre".format(runname), "-s", "{}_aln_ott.phy".format(runname), "-q",  newseqs, "-n", "extended"]) 
 
+
+
+newaln = DnaCharacterMatrix.get(path="papara_alignment.extended",schema="phylip")
+
+#prune out identical sequences
+d = {}
+
+starts = []
+stops = []
+for taxon, seq in newaln.items():
+    if not taxon.label[-2:] == "_q":
+        seqstr = seq.symbols_as_string()
+        starts.append(min(seqstr.find('A'), seqstr.find('C'),seqstr.find('G'),seqstr.find('T')))
+        stops.append(min(seqstr.rfind('A'), seqstr.rfind('C'),seqstr.rfind('G'),seqstr.rfind('T')))
+
+
+start = sum(starts)/len(starts)
+stop = sum(stops)/len(stops)
+
+exclude = []
+d = {}
+for taxon, seq in newaln.items():
+    if len(seq.symbols_as_string().translate(None, "-?")) < (stop-start)*MISSINGNESS_THRESH:
+        d[taxon.label] = seq.values()[start:stop]
+    else:
+        exclude.append(taxon.label)
+
+  
+dna_cut = DnaCharacterMatrix.from_dict(d)
+tre.prune_taxa_with_labels(exclude)
+
+tre.write(path = "{}_cut.tre".format(runname), schema = "newick", unquoted_underscores=True, suppress_edge_lengths=True)
+
+dna_cut.write(path="{}_aln_ott_cut.phy".format(runname), schema="phylip")
+dna_cut.write(path="{}_aln_ott_cut.fas".format(runname), schema="fasta")
+
+
+#realin the parts that are left
+p1a = subprocess.call(["papara", "-t","{}_cut.tre".format(runname), "-s", "{}_aln_ott_cut.phy".format(runname), "-q",  newseqs, "-n", "cut"]) 
+
+
+
 #run RAXML EPA on the alignments
 for fl in glob.glob("RAxML_*"):
     os.remove(fl)
 #placement
 
-p2 = subprocess.call(["raxmlHPC", "-m", "GTRCAT", "-f", "v", "-s", "papara_alignment.extended", "-t","{}_random_resolve.tre".format(runname), "-n", "{}_PLACE".format(runname)])
+p2 = subprocess.call(["raxmlHPC", "-m", "GTRCAT", "-f", "v", "-s", "papara_alignment.cut", "-t","{}_cut.tre".format(runname), "-n", "{}_PLACE".format(runname)])
 
 # this next line is on the assumption that you have ended up with some identical sequences. They get randomly pruned I think by raxml.
 #p3 = subprocess.call(["raxmlHPC", "-m", "GTRCAT", "-f", "v", "-s", "papara_alignment.extended.reduced", "-t","{}_random_resolve.tre".format(runname), "-n", "{}_PLACE".format(runname)]) 
@@ -344,7 +386,7 @@ placetre.write(path = "{}_place_resolve.tre".format(runname), schema = "newick",
 
 #Full run with starting tree from placements
 
-subprocess.call(["raxmlHPC", "-m", "GTRCAT", "-s", "papara_alignment.extended", "-t","{}_place_resolve.tre".format(runname), "-p", "1", "-n", "{}".format(runname)])
+subprocess.call(["raxmlHPC", "-m", "GTRCAT", "-s", "papara_alignment.cut", "-t","{}_place_resolve.tre".format(runname), "-p", "1", "-n", "{}".format(runname)])
 
 
 e = DnaCharacterMatrix.get(path="papara_alignment.extended",
