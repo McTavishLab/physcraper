@@ -7,7 +7,6 @@ stop=int(sys.argv[4])
 
 orig = DnaCharacterMatrix.get(path=infi, schema="nexus")
 
-prune = []
 d = {}
 for taxon, seq in orig.items():
 	d[taxon.label] = seq.values()[start:stop]
