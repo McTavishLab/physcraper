@@ -237,11 +237,11 @@ else:
 #        blastx_cline =  NcbiblastxCommandline(cmd='blastn', out="{}_{}.xml".format(runname,i), outfmt=5, query="query.fasta", db='nt', evalue=E_VALUE_THRESH)
 #        stdout, stderr = blastx_cline()
 
-gi_map = {}
+gi_ncbi_map = {}
 if os.path.isfile("id_map.txt"):
     fi = open("id_map.txt")
     for lin in fi:
-        gi_map[int(lin.split(",")[0])]=lin.split(",")[1]
+        gi_ncbi_map[int(lin.split(",")[0])]=lin.split(",")[1]
 
 gi_to_ncbi = {}
 new_seqs={}
@@ -264,7 +264,7 @@ else:
     for blast_record in blast_records:
         for alignment in blast_record.alignments:
             for hsp in alignment.hsps:
-                if hsp.expect < E_VALUE_THRESH and int(alignment.title.split('|')[1]) not in gi_map:
+                if hsp.expect < E_VALUE_THRESH and int(alignment.title.split('|')[1]) not in gi_ncbi_map:
                    new_seqs[int(alignment.title.split('|')[1])] = hsp.sbjct
                    gi_to_ncbi[int(alignment.title.split('|')[1])] = ''
 
@@ -277,15 +277,15 @@ if len(new_seqs)==0:
 
 mapped_taxon_ids=open("id_map.txt","a")
 sys.stdout.write("finding taxon ids\n")
-for gi in gi_to_ncbi.keys():
+for gi in gi_list:
     sys.stdout.write(".")
-    if gi in gi_map:
+    if gi in gi_ncbi_map:
         sys.stdout.write("*")
-        tax_id = int(gi_map[gi])
+        tax_id = int(gi_ncbi_map[gi])
     else:
         tax_id = int(subprocess.check_output(["bash", get_ncbi_taxonomy, "{}".format(gi), "{}".format(ncbi_dmp)]).split('\t')[1])
         mapped_taxon_ids.write("{}, {}\n".format(gi, tax_id))
-    gi_to_ncbi[gi] = tax_id
+        gi_ncbi_map[gi] = tax_id
 sys.stdout.write("\n")
 
 mapped_taxon_ids.close()
@@ -293,19 +293,19 @@ mapped_taxon_ids.close()
 newseqs = "{}.fasta".format(runname)
 fi = open(newseqs,'w')
 sys.stdout.write("writing out sequences\n")
-for gi in gi_to_ncbi:
+for gi in gi_list:
         try:
-            ott_id = ncbi_to_ott[gi_to_ncbi[gi]]
+            ott_id = ncbi_to_ott[gi_ncbi_map[gi]]
         except:
-            print("ncbi taxon ID {} not in ott".format(gi_to_ncbi[gi]))
+            print("ncbi taxon ID {} not in ott".format(gi_ncbi_map[gi]))
             continue
         if ott_id not in ottids: # only adding seqs we don't have taxa for
                 ottids.append(ott_id)
-                fi.write(">{}_q\n".format(ncbi_to_ott[gi_to_ncbi[gi]]))
+                fi.write(">{}_q\n".format(ncbi_to_ott[gi_ncbi_map[gi]]))
                 fi.write("{}\n".format(new_seqs[gi]))
                 print("success {}".format(ott_id))
         if ott_id in ottids: 
-                print("ncbi taxon ID {} already in tree".format(gi_to_ncbi[gi]))
+                print("ncbi taxon ID {} already in tree".format(gi_ncbi_map[gi]))
                # fi.write(">{}_{}\n".format(ncbi_to_ott[gi_to_ncbi[gi]], gi))
                # fi.write("{}\n".format(new_seqs[gi]))
 
