@@ -4,6 +4,9 @@ import configparser
 import subprocess
 import sys
 
+
+
+runname="ascomycota"
 config = configparser.ConfigParser()
 config.read('/home/ejmctavish/projects/otapi/physcraper/config')
 
@@ -63,16 +66,23 @@ for taxon, seq in orig_seq.items():
     
 
 dna_orig = DnaCharacterMatrix.from_dict(d)
+dna_taxa = [i for i in dna_orig.taxon_namespace]
+
+tre_orig = Tree.get(path = "{}_random_resolve.tre".format(runname), schema = "newick",taxon_namespace=dna_orig.taxon_namespace)
+
+treed_taxa = [i.taxon for i in tre_orig.leaf_nodes()]
+
+tre_orig.prune_taxa(set(treed_taxa) - set(dna_taxa))
+
+for taxon in set(dna_taxa) - set(treed_taxa):
+	del d[taxon.label]
 
 #####NEXT STEPS!!!
 
 #make a function that doe sthis dumb shit in orig as well
-# prune this tree down to labelled tips and ... I guess compare alignement?
 
-tre.prune_taxa_with_labels(exclude)
+tre_orig.write(path = "{}_orig_cut.tre".format(runname), schema = "newick", unquoted_underscores=True, suppress_edge_lengths=True)
 
-tre.write(path = "{}_cut.tre".format(runname), schema = "newick", unquoted_underscores=True, suppress_edge_lengths=True)
-
-dna_cut.write(path="{}_aln_ott_cut.phy".format(runname), schema="phylip")
-dna_cut.write(path="{}_aln_ott_cut.fas".format(runname), schema="fasta")
+dna_orig.write(path="{}_orig_cut.phy".format(runname), schema="phylip")
+dna_orig.write(path="{}_orig_cut.fas".format(runname), schema="fasta")
 
