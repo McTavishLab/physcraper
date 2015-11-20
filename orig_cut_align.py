@@ -58,7 +58,8 @@ for taxon, seq in orig_seq.items():
     stops.append(len(seq.values()))
 
 
-stop = sum(stops)/len(stops)
+stops.sort()
+stop = stops[int(len(stops)/2)]
 
 d = {}
 for taxon, seq in orig_seq.items():
@@ -66,10 +67,11 @@ for taxon, seq in orig_seq.items():
     
 
 dna_orig = DnaCharacterMatrix.from_dict(d)
+
 dna_taxa = [i for i in dna_orig.taxon_namespace]
 
-tre_orig = Tree.get(path = "{}_random_resolve.tre".format(runname), schema = "newick",taxon_namespace=dna_orig.taxon_namespace)
-
+tre_orig = Tree.get(path = "{}_random_resolve.tre".format("ascomycota"), schema = "newick",taxon_namespace=dna_orig.taxon_namespace)
+""
 treed_taxa = [i.taxon for i in tre_orig.leaf_nodes()]
 
 tre_orig.prune_taxa(set(treed_taxa) - set(dna_taxa))
@@ -80,9 +82,14 @@ for taxon in set(dna_taxa) - set(treed_taxa):
 #####NEXT STEPS!!!
 
 #make a function that doe sthis dumb shit in orig as well
+dna_orig = DnaCharacterMatrix.from_dict(d)
 
 tre_orig.write(path = "{}_orig_cut.tre".format(runname), schema = "newick", unquoted_underscores=True, suppress_edge_lengths=True)
 
 dna_orig.write(path="{}_orig_cut.phy".format(runname), schema="phylip")
 dna_orig.write(path="{}_orig_cut.fas".format(runname), schema="fasta")
+
+
+
+p1 = subprocess.call(["papara", "-t","{}_orig_cut.tre".format(runname), "-s", "{}_orig_cut.phy".format(runname), "-n", "o_asc"]) 
 
