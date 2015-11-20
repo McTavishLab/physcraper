@@ -45,6 +45,7 @@ Entrez.email = config['blast']['Entrez.email']
 phylesystem_loc = config['phylesystem']['location']
 ott_ncbi = config['ncbi.taxonomy']['ott_ncbi']
 get_ncbi_taxonomy = config['ncbi.taxonomy']['get_ncbi_taxonomy']
+ncbi_dmp = config['ncbi.taxonomy']['ncbi_dmp']
 
 MISSINGNESS_THRESH = 0.5
 
@@ -243,7 +244,6 @@ if os.path.isfile("id_map.txt"):
     for lin in fi:
         gi_ncbi_map[int(lin.split(",")[0])]=lin.split(",")[1]
 
-gi_to_ncbi = {}
 new_seqs={}
 
 if firstrun:
@@ -256,7 +256,7 @@ if firstrun:
                 for hsp in alignment.hsps:
                     if hsp.expect < E_VALUE_THRESH:
                        new_seqs[int(alignment.title.split('|')[1])] = hsp.sbjct
-                       gi_to_ncbi[int(alignment.title.split('|')[1])] = ''
+
 else:
   for i, record in enumerate(SeqIO.parse(seqaln, mattype)):
     result_handle = open("{}_{}_{}.xml".format(runname,record.name,today))
@@ -266,7 +266,6 @@ else:
             for hsp in alignment.hsps:
                 if hsp.expect < E_VALUE_THRESH and int(alignment.title.split('|')[1]) not in gi_ncbi_map:
                    new_seqs[int(alignment.title.split('|')[1])] = hsp.sbjct
-                   gi_to_ncbi[int(alignment.title.split('|')[1])] = ''
 
 ##SET MINIMUM SEQUENCE LENGTH
 if len(new_seqs)==0:
@@ -277,7 +276,7 @@ if len(new_seqs)==0:
 
 mapped_taxon_ids=open("id_map.txt","a")
 sys.stdout.write("finding taxon ids\n")
-for gi in gi_list:
+for gi in new_seqs.keys():
     sys.stdout.write(".")
     if gi in gi_ncbi_map:
         sys.stdout.write("*")
@@ -290,10 +289,10 @@ sys.stdout.write("\n")
 
 mapped_taxon_ids.close()
 
-newseqs = "{}.fasta".format(runname)
-fi = open(newseqs,'w')
+newseqs_file = "{}.fasta".format(runname)
+fi = open(newseqs_file,'w')
 sys.stdout.write("writing out sequences\n")
-for gi in gi_list:
+for gi in new_seqs.keys():
         try:
             ott_id = ncbi_to_ott[gi_ncbi_map[gi]]
         except:
@@ -306,8 +305,7 @@ for gi in gi_list:
                 print("success {}".format(ott_id))
         if ott_id in ottids: 
                 print("ncbi taxon ID {} already in tree".format(gi_ncbi_map[gi]))
-               # fi.write(">{}_{}\n".format(ncbi_to_ott[gi_to_ncbi[gi]], gi))
-               # fi.write("{}\n".format(new_seqs[gi]))
+
 
 
 fi.close()
