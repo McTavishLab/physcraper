@@ -90,6 +90,11 @@ dna_orig.write(path="{}_orig_cut.phy".format(runname), schema="phylip")
 dna_orig.write(path="{}_orig_cut.fas".format(runname), schema="fasta")
 
 
+#Doesn't work - align differently?
+#muscle?
+
+
 
 p1 = subprocess.call(["papara", "-t","{}_orig_cut.tre".format(runname), "-s", "{}_orig_cut.phy".format(runname), "-n", "o_asc"]) 
+
 
