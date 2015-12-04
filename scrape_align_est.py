@@ -2,10 +2,10 @@
 import sys
 from dendropy import Tree, DnaCharacterMatrix
 from peyotl import gen_otu_dict, iter_node
-from peyotl.manip import iter_trees
+from peyotl.manip import iter_trees, iter_otus
 from peyotl.api.phylesystem_api import PhylesystemAPI
 from peyotl.sugar import tree_of_life, taxonomy
-from peyotl.nexson_syntax import extract_tree,  PhyloSchema
+from peyotl.nexson_syntax import extract_tree_nexson, get_subtree_otus, PhyloSchema
 from peyotl.api import APIWrapper
 api_wrapper = APIWrapper()
 from Bio.Blast import NCBIWWW, NCBIXML
@@ -18,6 +18,7 @@ import time
 import datetime
 import glob
 import configparser
+import json
 
 '''
 #LSU ASC tree example
@@ -34,77 +35,93 @@ seqaln=sys.argv[3]
 mattype=sys.argv[4]
 runname=sys.argv[5]
 
-#Read config file
-
-config = configparser.ConfigParser()
-config.read('/home/ejmctavish/projects/otapi/physcraper/config')
-
-blast_loc = config['blast']['location']
-E_VALUE_THRESH = config['blast']['e_value_thresh']
-Entrez.email = config['blast']['Entrez.email']
-phylesystem_loc = config['phylesystem']['location']
-ott_ncbi = config['ncbi.taxonomy']['ott_ncbi']
-get_ncbi_taxonomy = config['ncbi.taxonomy']['get_ncbi_taxonomy']
-ncbi_dmp = config['ncbi.taxonomy']['ncbi_dmp']
-
-MISSINGNESS_THRESH = 0.5
-
-ott_to_ncbi = {}
-ncbi_to_ott = {}
-fi =open(ott_ncbi)
-
-#pickle meeeee
-for lin in fi:
-    lii= lin.split(",")
-    ott_to_ncbi[int(lii[0])]=int(lii[1])
-    ncbi_to_ott[int(lii[1])]=int(lii[0])
+def otu_to_ottid(otu): #returns none if tip does not have an ottid
+    label = otu.get('^ot:ottId')
+    if label is None:
+            o = otu.get('^ot:originalLabel', '<unknown>')
+            label = "'*tip not mapped to OTT. Original label - {o}'"
+            label = label.format(o=o)
 
 
-fi.close()
+class physcraper_setup(self):
+    """Puts the pieces together..."""
+    _found_mrca = 0
+    _config_read = 0
+    def __init__(self, study_id, tree_id, seqaln, mattype, runname, configfi='/home/ejmctavish/projects/otapi/physcraper/config', run=1):
+        """initialized object, most attributes generated through self._checkArgs using config file."""
+        self.configfi = configfi
+        self.ottids = []
+    def _read_config(self):
+        _config_read=1
+        config = configparser.ConfigParser()
+        config.read(self.configfi)
+        blast_loc = config['blast']['location']
+        E_VALUE_THRESH = config['blast']['e_value_thresh']
+        Entrez.email = config['blast']['Entrez.email']
+        phylesystem_loc = config['phylesystem']['location']
+        ott_ncbi = config['ncbi.taxonomy']['ott_ncbi']
+        get_ncbi_taxonomy = config['ncbi.taxonomy']['get_ncbi_taxonomy']
+        ncbi_dmp = config['ncbi.taxonomy']['ncbi_dmp']
+        MISSINGNESS_THRESH = 0.5
+        if not (os.path.isfile("last_update") and os.path.isfile("{}_stream.tre".format(runname)) and os.path.isfile("{}_aln_ott.fas".format(runname))): 
+            self.firstrun = 1
+        else: #TODO move this shiz to make's problem
+            self.firstrun = 0
+    def _make_id_dicts(self):
+        if not _config_read:
+            self._read_config()
+        ott_to_ncbi = {}
+        ncbi_to_ott = {}
+        fi =open(ott_ncbi)
+        for lin in fi:
+            lii= lin.split(",")
+            ott_to_ncbi[int(lii[0])]=int(lii[1])
+            ncbi_to_ott[int(lii[1])]=int(lii[0])
+        fi.close()
+    def _get_study(self):
+        nexson = phy.get_study(study_id, schema=schema)
+        #  m = extract_tree(n, tree_id, PhyloSchema('newick', output_nexml2json = '1.2.1', content="tree", tip_label="ot:ottId"), subtree_id="ingroup")
+    def _get_mrca(self):
+        nexson = phy.get_study(study_id, schema=schema)
+        get_subtree_otus(nexson, tree_id=self.tree_id)
+    def _phylsystem_setup(self):
+        phylesystem_api_wrapper = PhylesystemAPI(get_from=phylesystem_loc)
+        phy = phylesystem_api_wrapper.phylesystem_obj
+        sys.stdout.write("First run through\n")
+        n = phy.return_study(study_id)[0]
 
-ottids = []
-
-
-if not (os.path.isfile("last_update") and os.path.isfile("{}_stream.tre".format(runname)) and os.path.isfile("{}_aln_ott.fas".format(runname))): 
-    firstrun = 1
-else:
-    firstrun = 0
-
-
-if firstrun:
-    phylesystem_api_wrapper = PhylesystemAPI(get_from=phylesystem_loc)
-    phy = phylesystem_api_wrapper.phylesystem_obj
-    sys.stdout.write("First run through\n")
-    n = phy.return_study(study_id)[0]
 #    api_wrapper.study.get(study_id,tree=tree_id)
     ##This is a weird way to get the ingroup node, but I need the OTT ids anyhow.
-    m = extract_tree(n, tree_id, PhyloSchema('newick', output_nexml2json = '1.2.1', content="tree", tip_label="ot:ottId"), subtree_id="ingroup")
-    otu_dict = gen_otu_dict(n)
-    ottids = []
-    outgroup=open("outgroup.txt","w")
-    outgroup.write("otuid, original label, ottid, ")
-    for oid, o in otu_dict.items():
-        try:
-            ottid = o[u'^ot:ottId']
-        except:
-            ottid=None
-        if ("{}:".format(ottid) in m) or ("{})".format(ottid) in m) or ("{},".format(ottid) in m):
-                ottids.append(ottid)        
-        else:
-                outgroup.write("{}, {}, {}\n".format(oid,o[u'^ot:originalLabel'].replace(" ","_").replace("/","_"),ottid))
+    def _get tree(self):
+         m = extract_tree(n, tree_id, PhyloSchema('newick', output_nexml2json = '1.2.1', content="tree", tip_label="ot:ottId"), subtree_id="ingroup")
+        m = extract_tree_nexson(n, tree_id)
 
-    outgroup.close()
-    #Now grab the same tree with the orginal lablels
-    newick = extract_tree(n, tree_id, PhyloSchema('newick', output_nexml2json = '1.2.1', content="tree", tip_label="ot:originalLabel"))
-    newick = newick.replace(" ", "_") #UGH
-    d = DnaCharacterMatrix.get(path=seqaln, schema=mattype)
-    for taxon in d.taxon_namespace:
-        taxon.label = taxon.label.replace(" ","_")
+        otu_dict = gen_otu_dict(n)
+        ottids = []
+        outgroup=open("outgroup.txt","w")
+        outgroup.write("otuid, original label, ottid, ")
+        for oid, o in otu_dict.items():
+            try:
+                ottid = o[u'^ot:ottId']
+            except:
+                ottid=None
+            if ("{}:".format(ottid) in m) or ("{})".format(ottid) in m) or ("{},".format(ottid) in m):
+                    ottids.append(ottid)        
+            else:
+                    outgroup.write("{}, {}, {}\n".format(oid,o[u'^ot:originalLabel'].replace(" ","_").replace("/","_"),ottid))
 
-    d.taxon_namespace.is_mutable = True
-    tre = Tree.get(data=newick,
-                    schema="newick",
-                    taxon_namespace=d.taxon_namespace)
+        outgroup.close()
+        #Now grab the same tree with the orginal lablels
+        newick = extract_tree(n, tree_id, PhyloSchema('newick', output_nexml2json = '1.2.1', content="tree", tip_label="ot:originalLabel"))
+        newick = newick.replace(" ", "_") #UGH
+        d = DnaCharacterMatrix.get(path=seqaln, schema=mattype)
+        for taxon in d.taxon_namespace:
+            taxon.label = taxon.label.replace(" ","_")
+
+        d.taxon_namespace.is_mutable = True
+        tre = Tree.get(data=newick,
+                        schema="newick",
+                        taxon_namespace=d.taxon_namespace)
 
     # get all of the taxa associated with tips of the tree, and make sure that
     #   they include all of the members of the data's taxon_namespace...
