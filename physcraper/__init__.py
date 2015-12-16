@@ -29,12 +29,12 @@ seqaln=sys.argv[3]
 mattype=sys.argv[4]
 runname=sys.argv[5]
 '''
-def otu_to_ottid(otu): #returns none if tip does not have an ottid
-    label = otu.get('^ot:ottId')
-    if label is None:
-            o = otu.get('^ot:originalLabel', '<unknown>')
-            label = "'*tip not mapped to OTT. Original label - {o}'"
-            label = label.format(o=o)
+#def otu_to_ottid(otu): #returns none if tip does not have an ottid
+#    label = otu.get('^ot:ottId')
+#    if label is None:
+#            o = otu.get('^ot:originalLabel', '<unknown>')
+#            label = "'*tip not mapped to OTT. Original label - {o}'"
+#            label = label.format(o=o)
 
 
 
@@ -65,6 +65,7 @@ class physcraper_setup:
         self.seqaln = seqaln
         self.mattype = mattype
         self.runname = runname
+        self._read_config()
     def _read_config(self):
         _config_read=1
         self.config = configparser.ConfigParser()
@@ -88,14 +89,15 @@ class physcraper_setup:
     def _get_study(self):
         if not self._phylesystem:
             self._phylesystem_setup()
-        self.nexson = self.phy.return_study(study_id)[0]
+        self.nexson = self.phy.return_study(self.study_id)[0]
         self._study_get = 1
     def _get_mrca(self):
         if not self._study_get:
             self._get_study()
-        ott_ids = get_subtree_otus(self.nexson, tree_id=self.tree_id) #TODO are these ottids or OTUs?
-        self.mrca_node = tree_of_life.mrca(ott_ids=ottids, wrap_response=True)
-        sys.stdout.write("mrca_node found, {}\n".format(mrca_node.nearest_taxon.ott_id))
+        ott_ids = get_subtree_otus(self.nexson, tree_id=self.tree_id, subtree_id="ingroup",return_format="ottid") #TODO are these ottids or OTUs?
+        ott_ids.remove(None)
+        mrca_node = tree_of_life.mrca(ott_ids=list(ott_ids), wrap_response=True)
+        self.mrca_taxon = mrca_node.nearest_taxon.ott_id
         self._found_mrca = 1
     def _phylesystem_setup(self):
         phylesystem_loc = self.config['phylesystem']['location']
