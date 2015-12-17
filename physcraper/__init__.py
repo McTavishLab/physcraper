@@ -5,7 +5,7 @@ from peyotl import gen_otu_dict, iter_node
 from peyotl.manip import iter_trees, iter_otus
 from peyotl.api.phylesystem_api import PhylesystemAPI
 from peyotl.sugar import tree_of_life, taxonomy
-from peyotl.nexson_syntax import extract_tree_nexson, get_subtree_otus, PhyloSchema
+from peyotl.nexson_syntax import extract_tree, extract_tree_nexson, get_subtree_otus, extract_otu_nexson, PhyloSchema
 from peyotl.api import APIWrapper
 api_wrapper = APIWrapper()
 from Bio.Blast import NCBIWWW, NCBIXML
@@ -19,6 +19,8 @@ import datetime
 import glob
 import configparser
 import json
+import pickle
+#import dill
 
 
 
@@ -29,15 +31,6 @@ seqaln=sys.argv[3]
 mattype=sys.argv[4]
 runname=sys.argv[5]
 '''
-#def otu_to_ottid(otu): #returns none if tip does not have an ottid
-#    label = otu.get('^ot:ottId')
-#    if label is None:
-#            o = otu.get('^ot:originalLabel', '<unknown>')
-#            label = "'*tip not mapped to OTT. Original label - {o}'"
-#            label = label.format(o=o)
-
-
-
 
 
 #blast_loc = config['blast']['location']
@@ -47,6 +40,7 @@ runname=sys.argv[5]
 #get_ncbi_taxonomy = config['ncbi.taxonomy']['get_ncbi_taxonomy']
 #ncbi_dmp = config['ncbi.taxonomy']['ncbi_dmp']
 #MISSINGNESS_THRESH = 0.5
+
 
 
 
@@ -65,6 +59,7 @@ class physcraper_setup:
         self.seqaln = seqaln
         self.mattype = mattype
         self.runname = runname
+        self.lastupdate = '1900/01/01'
         self._read_config()
     def _read_config(self):
         _config_read=1
@@ -77,12 +72,12 @@ class physcraper_setup:
     def _make_id_dicts(self):
         if not self._config_read:
             self._read_config()
-        ott_to_ncbi = {}
+        self.ott_to_ncbi = {}
         ncbi_to_ott = {}
-        fi =open(ott_ncbi)
+        fi =open(self.config['ncbi.taxonomy']['ott_ncbi'])
         for lin in fi:
             lii= lin.split(",")
-            ott_to_ncbi[int(lii[0])]=int(lii[1])
+            self.ott_to_ncbi[int(lii[0])]=int(lii[1])
             ncbi_to_ott[int(lii[1])]=int(lii[0])
         fi.close()
         self._id_dicts = 1
@@ -90,14 +85,17 @@ class physcraper_setup:
         if not self._phylesystem:
             self._phylesystem_setup()
         self.nexson = self.phy.return_study(self.study_id)[0]
+      #  self.newick = extract_tree(self.nexson, tree_id, PhyloSchema('newick', output_nexml2json = '1.2.1', content="tree", tip_label="ot:originalLabel"))
         self._study_get = 1
     def _get_mrca(self):
         if not self._study_get:
             self._get_study()
-        ott_ids = get_subtree_otus(self.nexson, tree_id=self.tree_id, subtree_id="ingroup",return_format="ottid") #TODO are these ottids or OTUs?
+        self._make_id_dicts()
+        ott_ids = get_subtree_otus(self.nexson, tree_id=self.tree_id, subtree_id="ingroup",return_format="ottid")
         ott_ids.remove(None)
         mrca_node = tree_of_life.mrca(ott_ids=list(ott_ids), wrap_response=True)
-        self.mrca_taxon = mrca_node.nearest_taxon.ott_id
+        self.mrca_ott = mrca_node.nearest_taxon.ott_id
+        self.mrca_ncbi = self.ott_to_ncbi[self.mrca_ott]
         self._found_mrca = 1
     def _phylesystem_setup(self):
         phylesystem_loc = self.config['phylesystem']['location']
@@ -105,29 +103,164 @@ class physcraper_setup:
         self.phy = phylesystem_api_wrapper.phylesystem_obj
         self._phylesystem = 1
     def _reconcile_names(self):
-        d = DnaCharacterMatrix.get(path=self.seqaln, schema=self.mattype)
-        d.taxon_namespace.is_mutable = True
-        "so here I need to be getting the original names off of the "
-
-
-
-
-
-'''
-        tre = Tree.get(data=newick,
-                        schema="newick",
-                        taxon_namespace=d.taxon_namespace)
-
-    # get all of the taxa associated with tips of the tree, and make sure that
-    #   they include all of the members of the data's taxon_namespace...
-        treed_taxa = [i.taxon for i in tre.leaf_nodes()]
-        if len(treed_taxa) != len(d.taxon_namespace):
-            missing = [i.label for i in d.taxon_namespace if i not in treed_taxa]
+        otus = get_subtree_otus(self.nexson, tree_id=self.tree_id)
+        self.treed_taxa = {}
+        for otu_id in otus:
+            nex=extract_otu_nexson(self.nexson, otu_id)
+            orig = nex[otu_id].get( u'^ot:originalLabel').replace(" ","_")
+            self.treed_taxa[orig] = nex[otu_id].get( u'^ot:ottId')
+        self.aln = DnaCharacterMatrix.get(path=self.seqaln, schema=self.mattype)
+        missing = [i.label for i in self.aln.taxon_namespace if i.label not in self.treed_taxa.keys()]
+        if missing:
             emf = 'Some of the taxa in the alignment are not in the tree. Missing "{}"\n'
             em = emf.format('", "'.join(missing))
             raise ValueError(em)
+    def _prune(self):
+        prune = []
+        dp = {}
+        for taxon, seq in self.aln.items():
+            if len(seq.symbols_as_string().translate(None, "-?")) == 0:
+                prune.append(taxon.label)
+            else:
+                dp[taxon.label] = seq
+        self.newick = extract_tree(self.nexson, self.tree_id, PhyloSchema('newick', output_nexml2json = '1.2.1', content="tree", tip_label="ot:originalLabel"))
+        self.tre = Tree.get(data=self.newick,
+                    schema="newick",
+                    taxon_namespace=self.aln.taxon_namespace)
+        self.aln = DnaCharacterMatrix.from_dict(dp)
+        self.tre.prune_taxa_with_labels(prune)
+        if prune:
+            fi = open("pruned_taxa",'w')
+            fi.write("taxa pruned from tree and alignment due to excessive missing data\n")
+            for tax in prune:
+                fi.write("\n".format(tax))
+            fi.close()
+    def _write_files(self):
+        #First write rich annotation json file with everything needed for later?
+        self.tre.resolve_polytomies()
+        self.tre.write(path = "{}_random_resolve.tre".format(self.runname), schema = "newick", unquoted_underscores=True, suppress_edge_lengths=True)
+        self.aln.write(path="{}_aln_ott.phy".format(self.runname), schema="phylip")
+        self.aln.write(path="{}_aln_ott.fas".format(self.runname), schema="fasta")
+        self.prun_aln = "{}_aln_ott.fas".format(self.runname)
+        self.prun_mattype = "fasta"
+        pickle.dump(self, open('{}_setup.p'.format(self.runname), 'wb'))
+    def __getstate__(self):
+        result = self.__dict__.copy()
+        del result['config']
+        del result['phy']
+        del result['aln']
+        return result
 
 
+class physcraper_scrape:
+    def __init__(self, pickle_dump): #SO ideally this is getting loaded, inclueding the alignment, from a physcrpaer setup pickle file....
+        self.Load(pickle_dump)
+        self.today = str(datetime.date.today()).replace("-","/")
+        self.aln = DnaCharacterMatrix.get(path=self.prun_aln, schema=self.prun_mattype)
+    def Load(self,pickfi):
+        f = open(pickfi,'rb')
+        tmp_dict = pickle.load(f)
+        f.close()          
+        self.__dict__.update(tmp_dict.__dict__)
+    def run_blast(self): #TODO Should this be happening elsewhere?
+        equery = "txid{}[orgn] AND {}:{}[mdat]".format(self.mrca_ncbi, self.lastupdate, self.today)
+        for i, record in enumerate(SeqIO.parse(self.prun_aln, self.prun_mattype)):
+            record.seq._data = record.seq._data.replace("-","") # blast gets upset about too many gaps from aligned file
+            sys.stdout.write("blasting seq {}\n".format(i))
+            if not os.path.isfile("{}_{}_{}.xml".format(self.runname,record.name,datetime.date.today())): 
+                result_handle = NCBIWWW.qblast("blastn", "nt", record.format("fasta"),  entrez_query=equery)
+                save_file = open("{}_{}_{}.xml".format(self.runname,record.name,datetime.date.today()), "w")
+                save_file.write(result_handle.read())
+                save_file.close()
+                result_handle.close()
+    def scrape(self):
+        self.run_blast()
+#        self.lastupdate = self.today 
+        pickle.dump(self, open('{}_scrape.p'.format(self.runname), 'wb'))  #TODO just overwrite otehr pickle?
+
+
+class physcraper_add:
+    def __init__(self, pickle_dump): #SO ideally this is getting loaded, inclueding the alignment, from a physcrpaer setup pickle file....
+        self.Load(pickle_dump)
+        self.new_seqs = {}
+        self.gi_set = set()
+    def Load(self,pickfi):
+        f = open(pickfi,'rb')
+        tmp_dict = pickle.load(f)
+        f.close()          
+        self.__dict__.update(tmp_dict.__dict__)
+    def read_blast(self):
+        for i, record in enumerate(SeqIO.parse(self.prun_aln, self.prun_mattype)):
+            if os.path.isfile("{}_{}.xml".format(runname,record.name)):
+                result_handle = open("{}_{}.xml".format(runname,record.name))
+                blast_records = NCBIXML.parse(result_handle)
+                for blast_record in blast_records:
+                    for alignment in blast_record.alignments:
+                        for hsp in alignment.hsps:
+                            if hsp.expect < E_VALUE_THRESH:
+                               new_seqs[int(alignment.title.split('|')[1])] = hsp.sbjct
+    ##SET MINIMUM SEQUENCE LENGTH
+        if len(new_seqs)==0:
+            sys.stdout.write("No new sequences found.\n")
+    ## mapp new sequences with gi numbers back to....
+
+    ###write out to file to be aligned...
+
+    ## Create some 
+
+
+
+    
+
+'''
+
+class physcraper_estimate:
+    def __init__(self, pickle_dump): #SO ideally this is getting loaded, inclueding the alignment, from a physcrpaer setup pickle file....
+        self.Load(pickle_dump)
+    def Load(self,pickfi):
+        f = open(pickfi,'rb')
+        tmp_dict = pickle.load(f)
+        f.close()          
+        self.__dict__.update(tmp_dict.__dict__)
+    def prune_identical(self):
+        d = {}
+        starts = []
+        stops = []
+        for taxon, seq in newaln.items():
+            if not taxon.label[-2:] == "_q":
+                seqstr = seq.symbols_as_string()
+                starts.append(min(seqstr.find('A'), seqstr.find('C'),seqstr.find('G'),seqstr.find('T')))
+                stops.append(min(seqstr.rfind('A'), seqstr.rfind('C'),seqstr.rfind('G'),seqstr.rfind('T')))
+
+
+        start = sum(starts)/len(starts)
+        stop = sum(stops)/len(stops)
+
+        exclude = []
+        d = {}
+        for taxon, seq in newaln.items():
+            if len(seq.symbols_as_string().translate(None, "-?")) < (stop-start)*MISSINGNESS_THRESH:
+                d[taxon.label] = seq.values()[start:stop]
+            else:
+                exclude.append(taxon.label)
+
+          
+        dna_cut = DnaCharacterMatrix.from_dict(d)
+        tre.prune_taxa_with_labels(exclude)
+
+        tre.write(path = "{}_cut.tre".format(runname), schema = "newick", unquoted_underscores=True, suppress_edge_lengths=True)
+
+        dna_cut.write(path="{}_aln_ott_cut.phy".format(runname), schema="phylip")
+        dna_cut.write(path="{}_aln_ott_cut.fas".format(runname), schema="fasta")
+
+
+
+
+
+
+
+
+##So this is the part where I need a more json like data structure, to be passed onto next stages?
 
     #Get original label to ott id mapping to match alignement to tree 
     ps = PhyloSchema('nexson', content='otumap', version='1.2.1')
@@ -147,28 +280,9 @@ class physcraper_setup:
             sys.sterr.write("taxon label problem")
 
 #This whole section is because de-concatenating the data leaves some taxa wholly missing (should move to preprocessing?)
-    prune = []
-    dp = {}
-    for taxon, seq in d.items():
-        if len(seq.symbols_as_string().translate(None, "-?")) == 0:
-            prune.append(taxon.label)
-        else:
-            dp[taxon.label] = seq
-  
-    dna_prune = DnaCharacterMatrix.from_dict(dp)
-    tre.prune_taxa_with_labels(prune)
-
-    fi = open("pruned_taxa",'w')
-    fi.write("taxa pruned from tree and alignemnt due to excessive missing data\n")
-    for tax in prune:
-        fi.write("\n".format(tax))
-    fi.close()
-
-    tre.resolve_polytomies()
-    tre.write(path = "{}_random_resolve.tre".format(runname), schema = "newick", unquoted_underscores=True, suppress_edge_lengths=True)
     
-    dna_prune.write(path="{}_aln_ott.phy".format(runname), schema="phylip")
-    dna_prune.write(path="{}_aln_ott.fas".format(runname), schema="fasta")
+    
+   
 
 
     #This section grabs the MRCA node and blasts for seqs that are desc from that node
@@ -225,22 +339,7 @@ if firstrun:
                 save_file.close()
                 result_handle.close()
 else:
-    lastupdate = subprocess.check_output(['tail', '-1', 'last_update']).strip()
-    today = datetime.date.today()
-    fi=open("last_update","a")
-    fi.write("{}\n".format(str(today).replace("-","/")))
-    fi.close()
-    equery = "txid{}[orgn] AND {}:{}[mdat]".format(ott_to_ncbi[mrca_node.nearest_taxon.ott_id], lastupdate, str(today).replace("-","/"))
-    sys.stdout.write("searching with limit {}\n".format(equery))
-    for i, record in enumerate(SeqIO.parse(seqaln, mattype)):
-        record.seq._data = record.seq._data.replace("-","") # blast gets upset about too many gaps from aligned file
-        sys.stdout.write("blasting seq {}\n".format(i))
-        if not os.path.isfile("{}_{}_{}.xml".format(runname,record.name,today)): 
-            result_handle = NCBIWWW.qblast("blastn", "nt", record.format("fasta"),  entrez_query=equery)
-            save_file = open("{}_{}_{}.xml".format(runname,record.name,today), "w")
-            save_file.write(result_handle.read())
-            save_file.close()
-            result_handle.close()
+   
     
 
 
@@ -281,10 +380,7 @@ else:
                 if hsp.expect < E_VALUE_THRESH and int(alignment.title.split('|')[1]) not in gi_ncbi_map:
                    new_seqs[int(alignment.title.split('|')[1])] = hsp.sbjct
 
-##SET MINIMUM SEQUENCE LENGTH
-if len(new_seqs)==0:
-    sys.stdout.write("No new sequences found.\n")
-    sys.exit()
+
 
 
 
@@ -333,38 +429,6 @@ p1 = subprocess.call(["papara", "-t","{}_random_resolve.tre".format(runname), "-
 
 
 newaln = DnaCharacterMatrix.get(path="papara_alignment.extended",schema="phylip")
-
-#prune out identical sequences
-d = {}
-
-starts = []
-stops = []
-for taxon, seq in newaln.items():
-    if not taxon.label[-2:] == "_q":
-        seqstr = seq.symbols_as_string()
-        starts.append(min(seqstr.find('A'), seqstr.find('C'),seqstr.find('G'),seqstr.find('T')))
-        stops.append(min(seqstr.rfind('A'), seqstr.rfind('C'),seqstr.rfind('G'),seqstr.rfind('T')))
-
-
-start = sum(starts)/len(starts)
-stop = sum(stops)/len(stops)
-
-exclude = []
-d = {}
-for taxon, seq in newaln.items():
-    if len(seq.symbols_as_string().translate(None, "-?")) < (stop-start)*MISSINGNESS_THRESH:
-        d[taxon.label] = seq.values()[start:stop]
-    else:
-        exclude.append(taxon.label)
-
-  
-dna_cut = DnaCharacterMatrix.from_dict(d)
-tre.prune_taxa_with_labels(exclude)
-
-tre.write(path = "{}_cut.tre".format(runname), schema = "newick", unquoted_underscores=True, suppress_edge_lengths=True)
-
-dna_cut.write(path="{}_aln_ott_cut.phy".format(runname), schema="phylip")
-dna_cut.write(path="{}_aln_ott_cut.fas".format(runname), schema="fasta")
 
 
 #realin the parts that are left
