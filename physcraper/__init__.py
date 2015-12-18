@@ -69,6 +69,7 @@ class physcraper_setup:
             self.firstrun = 1
         else: #TODO move this shiz to make's problem
             self.firstrun = 0
+        self.E_VALUE_THRESH = self.config['blast']['e_value_thresh']
     def _make_id_dicts(self):
         if not self._config_read:
             self._read_config()
@@ -148,12 +149,12 @@ class physcraper_setup:
         result = self.__dict__.copy()
         del result['config']
         del result['phy']
-        del result['aln']
+      #  del result['aln']
         return result
 
 
-class physcraper_scrape:
-    def __init__(self, pickle_dump): #SO ideally this is getting loaded, inclueding the alignment, from a physcrpaer setup pickle file....
+class physcraper_scrape():
+    def __init__(self, pickle_dump): #SO ideally this is getting loaded, inclueding the alignment, from a physcrpaer setup pickle file.... But would a different approach be better?
         self.Load(pickle_dump)
         self.today = str(datetime.date.today()).replace("-","/")
         self.aln = DnaCharacterMatrix.get(path=self.prun_aln, schema=self.prun_mattype)
@@ -162,46 +163,56 @@ class physcraper_scrape:
         tmp_dict = pickle.load(f)
         f.close()          
         self.__dict__.update(tmp_dict.__dict__)
-    def run_blast(self): #TODO Should this be happening elsewhere?
-        equery = "txid{}[orgn] AND {}:{}[mdat]".format(self.mrca_ncbi, self.lastupdate, self.today)
-        for i, record in enumerate(SeqIO.parse(self.prun_aln, self.prun_mattype)):
-            record.seq._data = record.seq._data.replace("-","") # blast gets upset about too many gaps from aligned file
-            sys.stdout.write("blasting seq {}\n".format(i))
-            if not os.path.isfile("{}_{}_{}.xml".format(self.runname,record.name,datetime.date.today())): 
-                result_handle = NCBIWWW.qblast("blastn", "nt", record.format("fasta"),  entrez_query=equery)
-                save_file = open("{}_{}_{}.xml".format(self.runname,record.name,datetime.date.today()), "w")
-                save_file.write(result_handle.read())
-                save_file.close()
-                result_handle.close()
+    
     def scrape(self):
-        self.run_blast()
 #        self.lastupdate = self.today 
         pickle.dump(self, open('{}_scrape.p'.format(self.runname), 'wb'))  #TODO just overwrite otehr pickle?
 
 
-class physcraper_add:
-    def __init__(self, pickle_dump): #SO ideally this is getting loaded, inclueding the alignment, from a physcrpaer setup pickle file....
-        self.Load(pickle_dump)
-        self.new_seqs = {}
-        self.gi_set = set()
-    def Load(self,pickfi):
-        f = open(pickfi,'rb')
-        tmp_dict = pickle.load(f)
-        f.close()          
-        self.__dict__.update(tmp_dict.__dict__)
-    def read_blast(self):
-        for i, record in enumerate(SeqIO.parse(self.prun_aln, self.prun_mattype)):
-            if os.path.isfile("{}_{}.xml".format(runname,record.name)):
-                result_handle = open("{}_{}.xml".format(runname,record.name))
+def run_blast(aln, runname, hitlist_size=10): #TODO Should this be happening elsewhere?
+        equery = "txid{}[orgn] AND {}:{}[mdat]".format(self.mrca_ncbi, self.lastupdate, self.today)
+        #for i, record in enumerate(SeqIO.parse(self.prun_aln, self.prun_mattype)): #TODO, why not using the dendropy alignement?!! Switch to that.
+        for taxon, seq in aln.items():
+            query = seq.symbols_as_string().replace("-","") # blast gets upset about too many gaps from aligned file
+            sys.stdout.write("blasting seq {}\n".format(taxon.label))
+            if not os.path.isfile("{}_{}_{}.xml".format(runname,taxon.label,datetime.date.today())): 
+                result_handle = NCBIWWW.qblast("blastn", "nt", query,  entrez_query=equery, hitlist_size=5)
+                save_file = open("{}_{}_{}.xml".format(runname,taxon.label,datetime.date.today()), "w")
+                save_file.write(result_handle.read())
+                save_file.close()
+                result_handle.close()
+
+
+
+def read_blast(aln):
+        new_seqs={}
+        for taxon, seq in self.aln.items():
+            if os.path.isfile("{}_{}.xml".format(runname,taxon.label)):
+                result_handle = open("{}_{}.xml".format(runname,taxon.label))
                 blast_records = NCBIXML.parse(result_handle)
                 for blast_record in blast_records:
                     for alignment in blast_record.alignments:
                         for hsp in alignment.hsps:
-                            if hsp.expect < E_VALUE_THRESH:
+                            if hsp.expect < self.E_VALUE_THRESH:
                                new_seqs[int(alignment.title.split('|')[1])] = hsp.sbjct
+
+#def check_for_dups(???):
+
+
+#class physcraper_add:
+#    def __init__(self, pickle_dump): #SO ideally this is getting loaded, inclueding the alignment, from a physcrpaer setup pickle file....
+#        self.Load(pickle_dump)
+#        self.new_seqs = {}
+#        self.gi_set = set()
+#    def Load(self,pickfi):
+#        f = open(pickfi,'rb')
+#        tmp_dict = pickle.load(f)
+#        f.close()          
+#        self.__dict__.update(tmp_dict.__dict__)
+
     ##SET MINIMUM SEQUENCE LENGTH
-        if len(new_seqs)==0:
-            sys.stdout.write("No new sequences found.\n")
+#        if len(new_seqs)==0:
+#            sys.stdout.write("No new sequences found.\n")
     ## mapp new sequences with gi numbers back to....
 
     ###write out to file to be aligned...

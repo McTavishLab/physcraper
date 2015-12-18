@@ -23,5 +23,8 @@ test._write_files()
 test2 = physcraper_scrape('{}_setup.p'.format(test.runname))
 test2.mrca_ncbi
 test2.run_blast()
-
+test2.scrape()
 #TODO need actual mini data set for test, need to fix dendropy pickle,
+
+
+#test3 = physcraper_add('{}_scrape.p'.format(test.runname))
