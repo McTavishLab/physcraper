@@ -2,6 +2,7 @@
 location = remote
 e_value_thresh = 0.001
 Entrez.email = ejmctavish@gmail.com
+hitlist_size = 10
 
 [phylesystem]
 location = local

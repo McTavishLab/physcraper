@@ -70,6 +70,7 @@ class physcraper_setup:
         else: #TODO move this shiz to make's problem
             self.firstrun = 0
         self.E_VALUE_THRESH = self.config['blast']['e_value_thresh']
+        self.hitlist_size = self.config['blast']['e_value_thresh']
     def _make_id_dicts(self):
         if not self._config_read:
             self._read_config()
@@ -158,76 +159,45 @@ class physcraper_scrape():
         self.Load(pickle_dump)
         self.today = str(datetime.date.today()).replace("-","/")
         self.aln = DnaCharacterMatrix.get(path=self.prun_aln, schema=self.prun_mattype)
+        self.new_seqs={}
     def Load(self,pickfi):
         f = open(pickfi,'rb')
         tmp_dict = pickle.load(f)
         f.close()          
         self.__dict__.update(tmp_dict.__dict__)
-    
-    def scrape(self):
+#    def scrape(self):
 #        self.lastupdate = self.today 
-        pickle.dump(self, open('{}_scrape.p'.format(self.runname), 'wb'))  #TODO just overwrite otehr pickle?
-
-
-def run_blast(aln, runname, hitlist_size=10): #TODO Should this be happening elsewhere?
+#        pickle.dump(self, open('{}_scrape.p'.format(self.runname), 'wb'))  #TODO just overwrite otehr pickle?
+    def run_blast(self): #TODO Should this be happening elsewhere?
+        self.blast_subdir = "blast_run_{}".format(self.today)
+        os.mkdir(self.blast_subdir)
         equery = "txid{}[orgn] AND {}:{}[mdat]".format(self.mrca_ncbi, self.lastupdate, self.today)
         #for i, record in enumerate(SeqIO.parse(self.prun_aln, self.prun_mattype)): #TODO, why not using the dendropy alignement?!! Switch to that.
-        for taxon, seq in aln.items():
+        for taxon, seq in self.aln.items():
             query = seq.symbols_as_string().replace("-","") # blast gets upset about too many gaps from aligned file
             sys.stdout.write("blasting seq {}\n".format(taxon.label))
-            if not os.path.isfile("{}_{}_{}.xml".format(runname,taxon.label,datetime.date.today())): 
-                result_handle = NCBIWWW.qblast("blastn", "nt", query,  entrez_query=equery, hitlist_size=5)
-                save_file = open("{}_{}_{}.xml".format(runname,taxon.label,datetime.date.today()), "w")
+            if not os.path.isfile("{}_{}_{}.xml".format(self.runname,taxon.label,datetime.date.today())): 
+                result_handle = NCBIWWW.qblast("blastn", "nt", query,  entrez_query=equery, hitlist_size=self.hitlist_size)
+                save_file = open("{}/{}_{}_{}.xml".format(self.blast_subdir,self.runname,taxon.label,datetime.date.today()), "w")
                 save_file.write(result_handle.read())
                 save_file.close()
                 result_handle.close()
-
-
-
-def read_blast(aln):
-        new_seqs={}
+        self.lastupdate = self.today
+    def read_blast(self):
         for taxon, seq in self.aln.items():
-            if os.path.isfile("{}_{}.xml".format(runname,taxon.label)):
-                result_handle = open("{}_{}.xml".format(runname,taxon.label))
+            if os.path.isfile("{}/{}_{}.xml".format(self.blast_subdir, self.runname,taxon.label)):
+                result_handle = open("{}/{}_{}.xml".format(self.blast_subdir, self.runname,taxon.label))
                 blast_records = NCBIXML.parse(result_handle)
                 for blast_record in blast_records:
                     for alignment in blast_record.alignments:
                         for hsp in alignment.hsps:
                             if hsp.expect < self.E_VALUE_THRESH:
-                               new_seqs[int(alignment.title.split('|')[1])] = hsp.sbjct
+                               self.new_seqs[int(alignment.title.split('|')[1])] = hsp.sbjct
 
-#def check_for_dups(???):
-
-
-#class physcraper_add:
-#    def __init__(self, pickle_dump): #SO ideally this is getting loaded, inclueding the alignment, from a physcrpaer setup pickle file....
-#        self.Load(pickle_dump)
-#        self.new_seqs = {}
-#        self.gi_set = set()
-#    def Load(self,pickfi):
-#        f = open(pickfi,'rb')
-#        tmp_dict = pickle.load(f)
-#        f.close()          
-#        self.__dict__.update(tmp_dict.__dict__)
-
-    ##SET MINIMUM SEQUENCE LENGTH
-#        if len(new_seqs)==0:
-#            sys.stdout.write("No new sequences found.\n")
-    ## mapp new sequences with gi numbers back to....
-
-    ###write out to file to be aligned...
-
-    ## Create some 
-
-
-
-    
 
 '''
-
 class physcraper_estimate:
-    def __init__(self, pickle_dump): #SO ideally this is getting loaded, inclueding the alignment, from a physcrpaer setup pickle file....
-        self.Load(pickle_dump)
+    def __init__(self, scrape): #SO ideally this is getting loaded, inclueding the alignment, from a physcrpaer scrape claa
     def Load(self,pickfi):
         f = open(pickfi,'rb')
         tmp_dict = pickle.load(f)
@@ -265,9 +235,40 @@ class physcraper_estimate:
         dna_cut.write(path="{}_aln_ott_cut.fas".format(runname), schema="fasta")
 
 
+#def check_for_dups(???):
+
+
+#class physcraper_add:
+#    def __init__(self, pickle_dump): #SO ideally this is getting loaded, inclueding the alignment, from a physcrpaer setup pickle file....
+#        self.Load(pickle_dump)
+#        self.new_seqs = {}
+#        self.gi_set = set()
+#    def Load(self,pickfi):
+#        f = open(pickfi,'rb')
+#        tmp_dict = pickle.load(f)
+#        f.close()          
+#        self.__dict__.update(tmp_dict.__dict__)
+
+    ##SET MINIMUM SEQUENCE LENGTH
+#        if len(new_seqs)==0:
+#            sys.stdout.write("No new sequences found.\n")
+    ## mapp new sequences with gi numbers back to....
+
+    ###write out to file to be aligned...
+
+    ## Create some 
 
 
 
+    
+
+'''
+
+
+
+
+
+'''
 
 
 
