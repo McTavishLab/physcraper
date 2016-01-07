@@ -20,21 +20,15 @@ import glob
 import configparser
 import json
 
-'''
-#LSU ASC tree example
-study_id = "pg_873"
-tree_id = "tree1679"
-seqaln = "tree1679.fas"
-mattype="fasta"
-runname="asc_test"
-'''
 
+
+'''
 study_id=sys.argv[1]
 tree_id=sys.argv[2]
 seqaln=sys.argv[3]
 mattype=sys.argv[4]
 runname=sys.argv[5]
-
+'''
 def otu_to_ottid(otu): #returns none if tip does not have an ottid
     label = otu.get('^ot:ottId')
     if label is None:
@@ -43,32 +37,44 @@ def otu_to_ottid(otu): #returns none if tip does not have an ottid
             label = label.format(o=o)
 
 
-class physcraper_setup(self):
-    """Puts the pieces together..."""
+
+
+
+#blast_loc = config['blast']['location']
+#E_VALUE_THRESH = config['blast']['e_value_thresh']
+#Entrez.email = config['blast']['Entrez.email']
+#ott_ncbi = config['ncbi.taxonomy']['ott_ncbi']
+#get_ncbi_taxonomy = config['ncbi.taxonomy']['get_ncbi_taxonomy']
+#ncbi_dmp = config['ncbi.taxonomy']['ncbi_dmp']
+#MISSINGNESS_THRESH = 0.5
+
+
+
+class physcraper_setup:
+    """This needs to vet the inputs, standardize names, and prep for first run through of blasting. Does not blast itself!"""
     _found_mrca = 0
     _config_read = 0
+    _id_dicts = 0
+    _study_get = 0
+    _phylesystem = 0
     def __init__(self, study_id, tree_id, seqaln, mattype, runname, configfi='/home/ejmctavish/projects/otapi/physcraper/config', run=1):
         """initialized object, most attributes generated through self._checkArgs using config file."""
         self.configfi = configfi
-        self.ottids = []
+        self.study_id = study_id
+        self.tree_id = tree_id
+        self.seqaln = seqaln
+        self.mattype = mattype
+        self.runname = runname
     def _read_config(self):
         _config_read=1
-        config = configparser.ConfigParser()
-        config.read(self.configfi)
-        blast_loc = config['blast']['location']
-        E_VALUE_THRESH = config['blast']['e_value_thresh']
-        Entrez.email = config['blast']['Entrez.email']
-        phylesystem_loc = config['phylesystem']['location']
-        ott_ncbi = config['ncbi.taxonomy']['ott_ncbi']
-        get_ncbi_taxonomy = config['ncbi.taxonomy']['get_ncbi_taxonomy']
-        ncbi_dmp = config['ncbi.taxonomy']['ncbi_dmp']
-        MISSINGNESS_THRESH = 0.5
+        self.config = configparser.ConfigParser()
+        self.config.read(self.configfi)
         if not (os.path.isfile("last_update") and os.path.isfile("{}_stream.tre".format(runname)) and os.path.isfile("{}_aln_ott.fas".format(runname))): 
             self.firstrun = 1
         else: #TODO move this shiz to make's problem
             self.firstrun = 0
     def _make_id_dicts(self):
-        if not _config_read:
+        if not self._config_read:
             self._read_config()
         ott_to_ncbi = {}
         ncbi_to_ott = {}
@@ -78,59 +84,48 @@ class physcraper_setup(self):
             ott_to_ncbi[int(lii[0])]=int(lii[1])
             ncbi_to_ott[int(lii[1])]=int(lii[0])
         fi.close()
+        self._id_dicts = 1
     def _get_study(self):
-        nexson = phy.get_study(study_id, schema=schema)
-        #  m = extract_tree(n, tree_id, PhyloSchema('newick', output_nexml2json = '1.2.1', content="tree", tip_label="ot:ottId"), subtree_id="ingroup")
+        if not self._phylesystem:
+            self._phylesystem_setup()
+        self.nexson = self.phy.return_study(study_id)[0]
+        self._study_get = 1
     def _get_mrca(self):
-        nexson = phy.get_study(study_id, schema=schema)
-        get_subtree_otus(nexson, tree_id=self.tree_id)
-    def _phylsystem_setup(self):
+        if not _study_get:
+            _get_study()
+        ott_ids = get_subtree_otus(self.nexson, tree_id=self.tree_id) #TODO are these ottids or OTUs?
+        self.mrca_node = tree_of_life.mrca(ott_ids=ottids, wrap_response=True)
+        sys.stdout.write("mrca_node found, {}\n".format(mrca_node.nearest_taxon.ott_id))
+        self._found_mrca = 1
+    def _phylesystem_setup(self):
+        phylesystem_loc = self.config['phylesystem']['location']
         phylesystem_api_wrapper = PhylesystemAPI(get_from=phylesystem_loc)
-        phy = phylesystem_api_wrapper.phylesystem_obj
-        sys.stdout.write("First run through\n")
-        n = phy.return_study(study_id)[0]
-
-#    api_wrapper.study.get(study_id,tree=tree_id)
-    ##This is a weird way to get the ingroup node, but I need the OTT ids anyhow.
-    def _get tree(self):
-         m = extract_tree(n, tree_id, PhyloSchema('newick', output_nexml2json = '1.2.1', content="tree", tip_label="ot:ottId"), subtree_id="ingroup")
-        m = extract_tree_nexson(n, tree_id)
-
-        otu_dict = gen_otu_dict(n)
-        ottids = []
-        outgroup=open("outgroup.txt","w")
-        outgroup.write("otuid, original label, ottid, ")
-        for oid, o in otu_dict.items():
-            try:
-                ottid = o[u'^ot:ottId']
-            except:
-                ottid=None
-            if ("{}:".format(ottid) in m) or ("{})".format(ottid) in m) or ("{},".format(ottid) in m):
-                    ottids.append(ottid)        
-            else:
-                    outgroup.write("{}, {}, {}\n".format(oid,o[u'^ot:originalLabel'].replace(" ","_").replace("/","_"),ottid))
-
-        outgroup.close()
-        #Now grab the same tree with the orginal lablels
-        newick = extract_tree(n, tree_id, PhyloSchema('newick', output_nexml2json = '1.2.1', content="tree", tip_label="ot:originalLabel"))
-        newick = newick.replace(" ", "_") #UGH
-        d = DnaCharacterMatrix.get(path=seqaln, schema=mattype)
-        for taxon in d.taxon_namespace:
-            taxon.label = taxon.label.replace(" ","_")
-
+        self.phy = phylesystem_api_wrapper.phylesystem_obj
+        self._phylesystem = 1
+    def _reconcile_names(self):
+        d = DnaCharacterMatrix.get(path=self.seqaln, schema=self.mattype)
         d.taxon_namespace.is_mutable = True
+        "so here I need to be getting the original names off of the "
+
+
+
+
+
+'''
         tre = Tree.get(data=newick,
                         schema="newick",
                         taxon_namespace=d.taxon_namespace)
 
     # get all of the taxa associated with tips of the tree, and make sure that
     #   they include all of the members of the data's taxon_namespace...
-    treed_taxa = [i.taxon for i in tre.leaf_nodes()]
-    if len(treed_taxa) != len(d.taxon_namespace):
-        missing = [i.label for i in d.taxon_namespace if i not in treed_taxa]
-        emf = 'Some of the taxa in the alignment are not in the tree. Missing "{}"\n'
-        em = emf.format('", "'.join(missing))
-        raise ValueError(em)
+        treed_taxa = [i.taxon for i in tre.leaf_nodes()]
+        if len(treed_taxa) != len(d.taxon_namespace):
+            missing = [i.label for i in d.taxon_namespace if i not in treed_taxa]
+            emf = 'Some of the taxa in the alignment are not in the tree. Missing "{}"\n'
+            em = emf.format('", "'.join(missing))
+            raise ValueError(em)
+
+
 
     #Get original label to ott id mapping to match alignement to tree 
     ps = PhyloSchema('nexson', content='otumap', version='1.2.1')
@@ -434,4 +429,4 @@ for taxon in newtre.taxon_namespace:
         taxon.label = taxon.label.replace(" ","_")
 newtre.write(path = "{}_stream_names.tre".format(runname), schema = "newick", unquoted_underscores=True)
 
-
+'''
