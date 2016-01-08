@@ -18,11 +18,12 @@ assert(test.mrca_ott == 921280) #changes in the tree could actually change this.
 test._reconcile_names()
 test._prune()
 test._write_files()
-#pickle.dump(test, open('{}.p'.format(test.runname), 'wb'))
+pickle.dump(test, open('{}.p'.format(test.runname), 'wb'))
 
 test2 = physcraper_scrape('{}_setup.p'.format(test.runname))
+test2.today = "16-01-08"
 test2.mrca_ncbi
-test2.run_blast()
+#test2.run_blast()
 test2.scrape()
 #TODO need actual mini data set for test, need to fix dendropy pickle,
 
