@@ -11,3 +11,6 @@ location = local
 ott_ncbi = /home/ejmctavish/projects/otapi/physcraper/ott_ncbi
 get_ncbi_taxonomy = /home/ejmctavish/projects/otapi/physcraper/get_ncbi_taxonomy.sh
 ncbi_dmp = /home/ejmctavish/ncbi/gi_taxid_nucl.dmp
+
+[physcraper]
+seq_len_perc = 0.8

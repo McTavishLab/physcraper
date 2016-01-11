@@ -41,22 +41,23 @@ runname=sys.argv[5]
 #ncbi_dmp = config['ncbi.taxonomy']['ncbi_dmp']
 #MISSINGNESS_THRESH = 0.5
 
-def seq_dict_build(seq, label, seq_dict):
-        new_seq = seq.symbols_as_string().replace("-","")
+
+def seq_dict_build(seq, label, seq_dict): #Sequence needs to be passed in as string.
+        new_seq = seq.replace("-","")
         for tax in seq_dict.keys():
-            inc_seq = seq_dict[tax].symbols_as_string().replace("-","")
+            inc_seq = seq_dict[tax].replace("-","")
             if len(inc_seq) > len(new_seq):
                 if inc_seq.find(new_seq) != -1:
                     sys.stdout.write("seq {} is subsequence of {}, not added\n".format(label, tax))
                     return
             else:
                 if new_seq.find(inc_seq) != -1:
-                    del d[tax]
-                    d[label] = seq
+                    del seq_dict[tax]
+                    seq_dict[label] = seq
                     sys.stdout.write("seq {} is supersequence of {}, {} added and {} removed\n".format(label, tax, label, tax))
                     return
-        print (".")
-        d[label] = seq
+        sys.stdout.write(".")
+        seq_dict[label] = seq
         return
 
 
@@ -81,16 +82,21 @@ class physcraper_setup:
         self._read_config()
         self._get_study()
         self._reconcile_names()
+        self.workdir = runname
+        if not os.path.exists(self.workdir):
+            os.makedirs(self.workdir)
     def _read_config(self):
         _config_read=1
         self.config = configparser.ConfigParser()
         self.config.read(self.configfi)
-        if not (os.path.isfile("last_update") and os.path.isfile("{}_stream.tre".format(runname)) and os.path.isfile("{}_aln_ott.fas".format(runname))): 
-            self.firstrun = 1
-        else: #TODO move this shiz to make's problem
-            self.firstrun = 0
+#        if not (os.path.isfile("{}/last_update".format(self.workdir)) and os.path.isfile("{}/{}_stream.tre".format(self.workdir,self.runname)) and os.path.isfile("{}/{}_aln_ott.fas".format(self.workdir, self.runname))): 
+#            self.firstrun = 1
+#        else: #TODO move this shiz to make's problem
+#            self.firstrun = 0
         self.E_VALUE_THRESH = self.config['blast']['e_value_thresh']
-        self.hitlist_size = self.config['blast']['e_value_thresh']
+        self.hitlist_size = int(self.config['blast']['hitlist_size'])
+        self.seq_len_perc = float(self.config['physcraper']['seq_len_perc'])
+        self.get_ncbi_taxonomy = self.config['ncbi.taxonomy']['get_ncbi_taxonomy']
     def _make_id_dicts(self):
         if not self._config_read:
             self._read_config()
@@ -103,10 +109,10 @@ class physcraper_setup:
             self.ncbi_to_ott[int(lii[1])]=int(lii[0])
         fi.close()
         self.gi_ncbi_dict = {}
-        if os.path.isfile("id_map.txt"): #todo config?!
-            fi = open("id_map.txt")
+        if os.path.isfile("{}/id_map.txt".format(self.workdir)): #todo config?!
+            fi = open("{}/id_map.txt".format(self.workdir))
             for lin in fi:
-                gi_ncbi_dict[int(lin.split(",")[0])]=lin.split(",")[1]
+                self.gi_ncbi_dict[int(lin.split(",")[0])]=lin.split(",")[1]
         self._id_dicts = 1
     def _get_study(self):
         if not self._phylesystem:
@@ -129,12 +135,13 @@ class physcraper_setup:
         phylesystem_api_wrapper = PhylesystemAPI(get_from=phylesystem_loc)
         self.phy = phylesystem_api_wrapper.phylesystem_obj
         self._phylesystem = 1
-    def _reconcile_names(self): #TODO here is where should build up the dicts with the info from open tree, and then mint new PS OTU_ids.
+    def _reconcile_names(self): #TODO here is where should build up the dicts with the info from open tree, and then mint new PS OTU_ids. SHould they be output with OTU ids?!
         otus = get_subtree_otus(self.nexson, tree_id=self.tree_id)
         self.treed_taxa = {}
         self.otu_dict = {}
         for otu_id in otus:
             self.otu_dict[otu_id] = extract_otu_nexson(self.nexson, otu_id)[otu_id]
+            self.otu_dict[otu_id]['physcraper:status'] = "original"
             orig = self.otu_dict[otu_id].get( u'^ot:originalLabel').replace(" ","_")
             self.treed_taxa[orig] = self.otu_dict[otu_id].get( u'^ot:ottId')
         self.aln = DnaCharacterMatrix.get(path=self.seqaln, schema=self.mattype)
@@ -160,7 +167,7 @@ class physcraper_setup:
         self.aln = DnaCharacterMatrix.from_dict(dp)
         self.tre.prune_taxa_with_labels(prune)
         if prune:
-            fi = open("pruned_taxa",'w')
+            fi = open("{}/pruned_taxa".format(self.workdir),'w')
             fi.write("taxa pruned from tree and alignment due to excessive missing data\n")
             for tax in prune:
                 fi.write("\n".format(tax))
@@ -168,12 +175,12 @@ class physcraper_setup:
     def _write_files(self):
         #First write rich annotation json file with everything needed for later?
         self.tre.resolve_polytomies()
-        self.tre.write(path = "{}_random_resolve.tre".format(self.runname), schema = "newick", unquoted_underscores=True, suppress_edge_lengths=True)
-        self.aln.write(path="{}_aln_ott.phy".format(self.runname), schema="phylip")
-        self.aln.write(path="{}_aln_ott.fas".format(self.runname), schema="fasta")
-        self.prun_aln = "{}_aln_ott.fas".format(self.runname)
+        self.tre.write(path = "{}/{}_random_resolve.tre".format(self.workdir, self.runname), schema = "newick", unquoted_underscores=True, suppress_edge_lengths=True)
+        self.aln.write(path="{}/{}_aln_ott.phy".format(self.workdir, self.runname), schema="phylip")
+        self.aln.write(path="{}/{}_aln_ott.fas".format(self.workdir, self.runname), schema="fasta")
+        self.prun_aln = "{}/{}_aln_ott.fas".format(self.workdir, self.runname)
         self.prun_mattype = "fasta"
-        pickle.dump(self, open('{}_setup.p'.format(self.runname), 'wb'))
+        pickle.dump(self, open('{}/{}_setup.p'.format(self.workdir,self.runname), 'wb'))
     def __getstate__(self):
         result = self.__dict__.copy()
         del result['config']
@@ -188,13 +195,14 @@ class physcraper_scrape():
         self.aln = DnaCharacterMatrix.get(path=self.prun_aln, schema=self.prun_mattype)
         self.new_seqs={}
         self.otu_by_gi = {}
+        self.ident_removed = 0
     def Load(self,pickfi):
         f = open(pickfi,'rb')
         tmp_dict = pickle.load(f)
         f.close()
         self.__dict__.update(tmp_dict.__dict__)
     def run_blast(self): #TODO Should this be happening elsewhere?
-        self.blast_subdir = "blast_run_{}".format(self.today)
+        self.blast_subdir = "{}/blast_run_{}".format(self.workdir,self.today)
         if not os.path.exists(self.blast_subdir):
              os.makedirs(self.blast_subdir)
         equery = "txid{}[orgn] AND {}:{}[mdat]".format(self.mrca_ncbi, self.lastupdate, self.today.replace("-","/"))
@@ -209,11 +217,15 @@ class physcraper_scrape():
                 save_file.write(result_handle.read())
                 save_file.close()
                 result_handle.close()
-        self.lastupdate = self.today #TODO - how to propagate this forward?????? Pickle whole calss for re-use, or write to file?!
+        self.lastupdate = self.today #TODO - how to propagate this forward?????? Pickle whole class for re-use, or write to file?!
+        self._blast_complete = 1 #TODO DAMNNNN is this the best way?!
     def gen_xml_name(self, taxon):
-        return "{}/{}_{}_{}.xml".format(self.blast_subdir,self.runname,taxon.label,self.today)
+        return "{}/{}_{}.xml".format(self.blast_subdir,self.runname,taxon.label,self.today)#TODO pull the repeated runname
     def read_blast(self):
+        self.blast_subdir = "blast_run_{}".format(self.today) #TODO this should be generated elsewhere?!
         self.gi_dict = {}
+        if not self._blast_complete == 1:
+            self.run_blast
         for taxon, seq in self.aln.items():
             xml_fi = "{}".format(self.gen_xml_name(taxon))
             if os.path.isfile(xml_fi):
@@ -225,24 +237,29 @@ class physcraper_scrape():
                             if hsp.expect < self.E_VALUE_THRESH:
                                self.new_seqs[int(alignment.title.split('|')[1])] = hsp.sbjct
                                self.gi_dict[int(alignment.title.split('|')[1])] = alignment.__dict__
-
+    def seq_in_orig(self, new_seq, label):
+        for taxon, seq in self.aln.items():
+            seq = seq.symbols_as_string().replace("-","").replace("?","")
+            new_seq = new_seq.replace("-","").replace("?","")
+            if seq.find(new_seq) != -1:
+                sys.stdout.write("seq gi{} is subsequence of original seq {}, not added\n".format(label, taxon))
+                return 1
+        return 0
     def remove_identical_seqs(self):
         '''goes through the new seqs pulled down, and removes ones that are shorter than LENGTH_THRESH
         percent of the orig seq lengths, and chooses the longer of two that are other wise identical, 
-        and puts them in a dict with new name as gi_ott_id'''
-        LENGTH_THRESH = 0.8 #TODO add to config
+        and puts them in a dict with new name as gi_ott_id. Does not test if they are identical to ones in the original alignment....'''
         d = {}
-        avg_seqlen = sum(self.orig_seqlen)/len(orig_seqlen)
-        seq_len_cutoff = avg_seqlen*LENGTH_THRESH
-        for taxon, seq in self.new_seqs():
-            if len(seq.values()) > seq_len_cutoff:
-                seq_dict_build(seq, taxon.label, d)
-        self.new_seqs = d
-        for gi in self.new_seqs():
-            self._add_otu(gi)
-        #for tip in self.new_seqs:
-            #MINT OTU IDs.
-            #Pull in ncbi, ott, orig_name info. SHould this happen earlier?! mayeb hold more recored info in a second dict, 
+        avg_seqlen = sum(self.orig_seqlen)/len(self.orig_seqlen)
+        seq_len_cutoff = avg_seqlen*self.seq_len_perc
+        for gi, seq in self.new_seqs.items():
+            if len(seq.replace("-","").replace("N","")) > seq_len_cutoff:
+                #first check if already in the original alignment
+                if not self.seq_in_orig(seq, gi):
+                    otu_id = self._add_otu(gi)
+                    seq_dict_build(seq, otu_id, d)
+        self.new_seqs_otu_id = d # renamed new seq to their otu_ids from GI's, but all info is in self.otu_dict
+        self._ident_removed = 1 #TODO: now there can be ones that are identical to the original included sequences...
     def _add_otu(self, gi):
         otu_id = "otu_ps_{}".format(self.PS_otu)
         self.PS_otu += 1
@@ -251,12 +268,14 @@ class physcraper_scrape():
         self.otu_dict[otu_id]['ncbi:accession'] = self.gi_dict[gi]['accession']
         self.otu_dict[otu_id]['ncbi:title'] = self.gi_dict[gi]['title']
         self.otu_dict[otu_id]['ncbi:taxon'] = self.map_gi_ncbi(gi)
+        self.otu_dict[otu_id]['physcraper:status'] = "query"
+        return otu_id
     def map_gi_ncbi(self, gi):
-        mapped_taxon_ids=open("id_map.txt","a")
+        mapped_taxon_ids=open("{}/id_map.txt".format(self.workdir),"a")
         if gi in self.gi_ncbi_dict:
             tax_id = int(self.gi_ncbi_dict[gi])
         else:
-            tax_id = int(subprocess.check_output(["bash", get_ncbi_taxonomy, "{}".format(gi), "{}".format(ncbi_dmp)]).split('\t')[1])
+            tax_id = int(subprocess.check_output(["bash", self.get_ncbi_taxonomy, "{}".format(gi), "{}".format(self.ncbi_dmp)]).split('\t')[1])
             mapped_taxon_ids.write("{}, {}\n".format(gi, tax_id))
             self.gi_ncbi_dict[gi] = tax_id
             assert(tax_id) #if this doesn't work then the gi to taxon mapping needs to be updated - shouldhappen anyhow perhaps?!
@@ -272,19 +291,14 @@ class physcraper_scrape():
             return None
             sys.stderror.write("ncbi taxon id {} has no ottID".format())
     def write_query_seqs(self):
-        newseqs_file = "{}_{}.fasta".format(runname, self.today)
+        newseqs_file = "{}/{}_{}.fasta".format(self.workdir,self.runname, self.today)
         fi = open(newseqs_file,'w')
         sys.stdout.write("writing out sequences\n")
-        for gi in new_seqs.keys():
-            if ott_id not in self.ottids: # only adding seqs we don't have taxa for
-                    ottids.append(ott_id)
-                    fi.write(">{}_q\n".format(ncbi_to_ott[gi_ncbi_map[gi]]))
-                    fi.write("{}\n".format(new_seqs[gi]))
-                    print("success {}".format(ott_id))
-            if ott_id in ottids: 
-                    print("ncbi taxon ID {} already in tree".format(gi_ncbi_map[gi]))
-
-
+        if not self._ident_removed:
+            self.remove_identical_seqs()
+        for otu_id in self.new_seqs_otu_id.keys():
+                    fi.write(">{}_q\n".format(otu_id))
+                    fi.write("{}\n".format(self.new_seqs_otu_id[otu_id]))
 
 
 '''
