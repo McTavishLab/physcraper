@@ -33,15 +33,6 @@ runname=sys.argv[5]
 '''
 
 
-#blast_loc = config['blast']['location']
-#E_VALUE_THRESH = config['blast']['e_value_thresh']
-#Entrez.email = config['blast']['Entrez.email']
-#ott_ncbi = config['ncbi.taxonomy']['ott_ncbi']
-#get_ncbi_taxonomy = config['ncbi.taxonomy']['get_ncbi_taxonomy']
-#ncbi_dmp = config['ncbi.taxonomy']['ncbi_dmp']
-#MISSINGNESS_THRESH = 0.5
-
-
 def seq_dict_build(seq, label, seq_dict): #Sequence needs to be passed in as string.
         new_seq = seq.replace("-","")
         for tax in seq_dict.keys():

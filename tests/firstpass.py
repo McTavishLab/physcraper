@@ -22,7 +22,7 @@ test._write_files()
 pickle.dump(test, open('{}/{}_setup.p'.format(runname,runname), 'wb'))
 
 test2 = physcraper_scrape('{}/{}_setup.p'.format(runname,runname))
-#test2.today = "2016-01-08"
+test2.today = "2016-01-11"
 
 #test2.mrca_ncbi
 test2.run_blast()
