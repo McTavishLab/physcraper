@@ -20,6 +20,7 @@ import glob
 import configparser
 import json
 import pickle
+import unicodedata
 #import dill
 
 
@@ -80,14 +81,11 @@ class physcraper_setup:
         _config_read=1
         self.config = configparser.ConfigParser()
         self.config.read(self.configfi)
-#        if not (os.path.isfile("{}/last_update".format(self.workdir)) and os.path.isfile("{}/{}_stream.tre".format(self.workdir,self.runname)) and os.path.isfile("{}/{}_aln_ott.fas".format(self.workdir, self.runname))): 
-#            self.firstrun = 1
-#        else: #TODO move this shiz to make's problem
-#            self.firstrun = 0
         self.E_VALUE_THRESH = self.config['blast']['e_value_thresh']
         self.hitlist_size = int(self.config['blast']['hitlist_size'])
         self.seq_len_perc = float(self.config['physcraper']['seq_len_perc'])
         self.get_ncbi_taxonomy = self.config['ncbi.taxonomy']['get_ncbi_taxonomy']
+        self.ncbi_dmp = self.config['ncbi.taxonomy']['ncbi_dmp']
     def _make_id_dicts(self):
         if not self._config_read:
             self._read_config()
@@ -130,10 +128,12 @@ class physcraper_setup:
         otus = get_subtree_otus(self.nexson, tree_id=self.tree_id)
         self.treed_taxa = {}
         self.otu_dict = {}
+        self.orig_lab_to_otu = {}
         for otu_id in otus:
             self.otu_dict[otu_id] = extract_otu_nexson(self.nexson, otu_id)[otu_id]
             self.otu_dict[otu_id]['physcraper:status'] = "original"
             orig = self.otu_dict[otu_id].get( u'^ot:originalLabel').replace(" ","_")
+            self.orig_lab_to_otu[orig] = otu_id
             self.treed_taxa[orig] = self.otu_dict[otu_id].get( u'^ot:ottId')
         self.aln = DnaCharacterMatrix.get(path=self.seqaln, schema=self.mattype)
         missing = [i.label for i in self.aln.taxon_namespace if i.label not in self.treed_taxa.keys()]
@@ -141,6 +141,9 @@ class physcraper_setup:
             emf = 'Some of the taxa in the alignment are not in the tree. Missing "{}"\n'
             em = emf.format('", "'.join(missing))
             raise ValueError(em)
+#        for taxon in self.aln:
+#            otu_id = self.orig_lab_to_otu[taxon.label]
+#            taxon.label = otu_id
     def _prune(self):
         prune = []
         dp = {}
@@ -152,10 +155,13 @@ class physcraper_setup:
                 dp[taxon.label] = seq
                 self.orig_seqlen.append(len(seq.symbols_as_string().translate(None, "-?")))
         self.newick = extract_tree(self.nexson, self.tree_id, PhyloSchema('newick', output_nexml2json = '1.2.1', content="tree", tip_label="ot:originalLabel"))
+        self.newick = self.newick.replace(" ","_") #UGHHHH FIX ME (but actually works fine for now...)
+        self.orig_aln = self.aln
+        self.aln = DnaCharacterMatrix.from_dict(dp)
         self.tre = Tree.get(data=self.newick,
                     schema="newick",
+                    preserve_underscores=True,
                     taxon_namespace=self.aln.taxon_namespace)
-        self.aln = DnaCharacterMatrix.from_dict(dp)
         self.tre.prune_taxa_with_labels(prune)
         if prune:
             fi = open("{}/pruned_taxa".format(self.workdir),'w')
@@ -163,6 +169,9 @@ class physcraper_setup:
             for tax in prune:
                 fi.write("\n".format(tax))
             fi.close()
+        for taxon in self.aln.taxon_namespace:
+            otu_id = self.orig_lab_to_otu[taxon.label]
+            taxon.label = otu_id.encode('ascii')
     def _write_files(self):
         #First write rich annotation json file with everything needed for later?
         self.tre.resolve_polytomies()
@@ -187,13 +196,13 @@ class physcraper_scrape():
         self.new_seqs={}
         self.otu_by_gi = {}
         self.ident_removed = 0
+        self.blast_subdir = "{}/blast_run_{}".format(self.workdir,self.today)
     def Load(self,pickfi):
         f = open(pickfi,'rb')
         tmp_dict = pickle.load(f)
         f.close()
         self.__dict__.update(tmp_dict.__dict__)
     def run_blast(self): #TODO Should this be happening elsewhere?
-        self.blast_subdir = "{}/blast_run_{}".format(self.workdir,self.today)
         if not os.path.exists(self.blast_subdir):
              os.makedirs(self.blast_subdir)
         equery = "txid{}[orgn] AND {}:{}[mdat]".format(self.mrca_ncbi, self.lastupdate, self.today.replace("-","/"))
@@ -213,7 +222,6 @@ class physcraper_scrape():
     def gen_xml_name(self, taxon):
         return "{}/{}_{}.xml".format(self.blast_subdir,self.runname,taxon.label,self.today)#TODO pull the repeated runname
     def read_blast(self):
-        self.blast_subdir = "blast_run_{}".format(self.today) #TODO this should be generated elsewhere?!
         self.gi_dict = {}
         if not self._blast_complete == 1:
             self.run_blast
@@ -252,7 +260,7 @@ class physcraper_scrape():
         self.new_seqs_otu_id = d # renamed new seq to their otu_ids from GI's, but all info is in self.otu_dict
         self._ident_removed = 1 #TODO: now there can be ones that are identical to the original included sequences...
     def _add_otu(self, gi):
-        otu_id = "otu_ps_{}".format(self.PS_otu)
+        otu_id = "otuPS{}".format(self.PS_otu)
         self.PS_otu += 1
         self.otu_dict[otu_id] = {}
         self.otu_dict[otu_id]['ncbi:gi'] = gi
@@ -282,14 +290,84 @@ class physcraper_scrape():
             return None
             sys.stderror.write("ncbi taxon id {} has no ottID".format())
     def write_query_seqs(self):
-        newseqs_file = "{}/{}_{}.fasta".format(self.workdir,self.runname, self.today)
-        fi = open(newseqs_file,'w')
+        self.newseqs_file = "{}/{}_{}.fasta".format(self.workdir,self.runname, self.today)
+        fi = open(self.newseqs_file,'w')
         sys.stdout.write("writing out sequences\n")
         if not self._ident_removed:
             self.remove_identical_seqs()
         for otu_id in self.new_seqs_otu_id.keys():
                     fi.write(">{}_q\n".format(otu_id))
                     fi.write("{}\n".format(self.new_seqs_otu_id[otu_id]))
+        self._query_written = 1
+    def align_query_seqs(self):
+        os.chdir(workdir)
+        p1 = subprocess.call(["papara", "-t","{}_random_resolve.tre".format(self.runname), "-s", "{}/{}_aln_ott.phy".format(self.runname), "-q",  self.newseqs_file, "-n", "extended"])
+        os.chdir('..')
+    def place_query_seqs(self):
+        os.chdir(workdir)
+        p2 = subprocess.call(["raxmlHPC", "-m", "GTRCAT", "-f", "v", "-s", "papara_alignment.extended", "-t","{}_random_resolve.tre".format(self.runname), "-n", "{}_PLACE".format(runname)])
+        os.chdir('..')
+    def generate_streamed_alignment(self):
+        align_query_seqs()
+        place_query_seqs()
+        self.stream_aln = DnaCharacterMatrix.get(path="papara_alignment.extended",schema="phylip")
+        placetre = Tree.get(path="RAxML_labelledTree.{}_PLACE".format(runname),
+                schema="newick",
+                preserve_underscores=True)
+        placetre.resolve_polytomies()
+        for taxon in placetre.taxon_namespace:
+            if taxon.label.startswith("QUERY"):
+                taxon.label=taxon.label.replace("QUERY___","")
+        placetre.write(path = "{}_place_resolve.tre".format(runname), schema = "newick", unquoted_underscores=True)
+
+'''
+'''
+
+
+'''
+
+
+placetre.write(path = "{}_place_resolve.tre".format(runname), schema = "newick", unquoted_underscores=True)
+
+
+#Full run with starting tree from placements
+
+subprocess.call(["raxmlHPC", "-m", "GTRCAT", "-s", "papara_alignment.cut", "-t","{}_place_resolve.tre".format(runname), "-p", "1", "-n", "{}".format(runname)])
+
+
+e = DnaCharacterMatrix.get(path="papara_alignment.extended",
+                           schema="phylip")
+
+e.taxon_namespace.is_mutable = False # Names should be the same at this point.
+
+newtre = Tree.get(path="RAxML_bestTree.{}".format(runname),
+                schema="newick",
+                taxon_namespace=e.taxon_namespace,
+                preserve_underscores =True)
+
+
+newtre.write(path = "{}_stream.tre".format(runname), schema = "newick", unquoted_underscores=True)
+e.write(path="{}_aln_ott.fas".format(runname), schema="fasta")
+
+if tnrs_wrapper is None:
+    from peyotl.sugar import tnrs
+    tnrs_wrapper = tnrs
+
+from peyotl.sugar import taxonomy
+
+for taxon in newtre.taxon_namespace:
+    if taxon.label.split("_")[0] in ottids:
+        info = taxonomy.taxon(taxon.label.split("_")[0],
+                                  include_lineage=False,
+                                  list_terminal_descendants=True,
+                                  wrap_response=True)
+        taxon.label="{}{}".format(info.name,taxon.label.split("_")[1:])
+        taxon.label = taxon.label.replace(" ","_")
+newtre.write(path = "{}_stream_names.tre".format(runname), schema = "newick", unquoted_underscores=True)
+
+'''
+
+
 
 
 '''
