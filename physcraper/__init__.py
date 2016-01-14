@@ -172,36 +172,43 @@ class physcraper_setup:
         for taxon in self.aln.taxon_namespace:
             otu_id = self.orig_lab_to_otu[taxon.label]
             taxon.label = otu_id.encode('ascii')
-    def _write_files(self):
-        #First write rich annotation json file with everything needed for later?
-        self.tre.resolve_polytomies()
-        self.tre.write(path = "{}/{}_random_resolve.tre".format(self.workdir, self.runname), schema = "newick", unquoted_underscores=True, suppress_edge_lengths=True)
-        self.aln.write(path="{}/{}_aln_ott.phy".format(self.workdir, self.runname), schema="phylip")
-        self.aln.write(path="{}/{}_aln_ott.fas".format(self.workdir, self.runname), schema="fasta")
-        self.prun_aln = "{}/{}_aln_ott.fas".format(self.workdir, self.runname)
-        self.prun_mattype = "fasta"
-        pickle.dump(self, open('{}/{}_setup.p'.format(self.workdir,self.runname), 'wb'))
     def __getstate__(self):
         result = self.__dict__.copy()
         del result['config']
         del result['phy']
         return result
+    def setup_physcraper(self):
+        self._read_config()
+        self._get_mrca()
+        self._reconcile_names()
+        self._prune()
 
 
 class physcraper_scrape():
     def __init__(self, pickle_dump): #SO ideally this is getting loaded, inclueding the alignment, from a physcrpaer setup pickle file.... But would a different approach be better?
         self.Load(pickle_dump)
         self.today = str(datetime.date.today())
-        self.aln = DnaCharacterMatrix.get(path=self.prun_aln, schema=self.prun_mattype)
         self.new_seqs={}
         self.otu_by_gi = {}
         self.ident_removed = 0
         self.blast_subdir = "{}/blast_run_{}".format(self.workdir,self.today)
+        self._write_files()
     def Load(self,pickfi):
         f = open(pickfi,'rb')
         tmp_dict = pickle.load(f)
         f.close()
         self.__dict__.update(tmp_dict.__dict__)
+    def _write_files(self):
+        #First write rich annotation json file with everything needed for later?
+        self.tre.resolve_polytomies()
+        self.tre.write(path = "{}/{}_random_resolve.tre".format(self.workdir, self.runname), schema = "newick", unquoted_underscores=True, suppress_edge_lengths=True)
+        self.aln.write(path="{}/{}_aln_ott.phy".format(self.workdir, self.runname), schema="phylip")
+        self.aln.write(path="{}/{}_aln_ott.fas".format(self.workdir, self.runname), schema="fasta")
+#        self.prun_aln = "{}/{}_aln_ott.fas".format(self.workdir, self.runname)
+#        self.prun_mattype = "fasta"
+        self.tre.write(path = "{}/{}_random_resolve{}.tre".format(self.workdir, self.runname, self.today), schema = "newick", unquoted_underscores=True, suppress_edge_lengths=True)
+        self.aln.write(path="{}/{}_aln_ott{}.fas".format(self.workdir, self.runname, self.today), schema="fasta")
+        pickle.dump(self, open('{}/{}_scrape{}.p'.format(self.workdir,self.runname, self.today), 'wb'))
     def run_blast(self): #TODO Should this be happening elsewhere?
         if not os.path.exists(self.blast_subdir):
              os.makedirs(self.blast_subdir)
@@ -218,13 +225,12 @@ class physcraper_scrape():
                 save_file.close()
                 result_handle.close()
         self.lastupdate = self.today #TODO - how to propagate this forward?????? Pickle whole class for re-use, or write to file?!
-        self._blast_complete = 1 #TODO DAMNNNN is this the best way?!
+  #      self._blast_complete = 1 #TODO DAMNNNN is this the best way?!
     def gen_xml_name(self, taxon):
         return "{}/{}_{}.xml".format(self.blast_subdir,self.runname,taxon.label,self.today)#TODO pull the repeated runname
     def read_blast(self):
         self.gi_dict = {}
-        if not self._blast_complete == 1:
-            self.run_blast
+        self.run_blast()
         for taxon, seq in self.aln.items():
             xml_fi = "{}".format(self.gen_xml_name(taxon))
             if os.path.isfile(xml_fi):
@@ -299,46 +305,41 @@ class physcraper_scrape():
                     fi.write(">{}_q\n".format(otu_id))
                     fi.write("{}\n".format(self.new_seqs_otu_id[otu_id]))
         self._query_written = 1
-    def align_query_seqs(self):
-        os.chdir(workdir)
-        p1 = subprocess.call(["papara", "-t","{}_random_resolve.tre".format(self.runname), "-s", "{}/{}_aln_ott.phy".format(self.runname), "-q",  self.newseqs_file, "-n", "extended"])
+    def align_query_seqs(self, papara_runname="extended"):
+        os.chdir(self.workdir)#Clean up dir moving
+        p1 = subprocess.call(["papara", "-t","{}_random_resolve.tre".format(self.runname), "-s", "{}_aln_ott.phy".format(self.runname), "-q", "{}_{}.fasta".format(self.runname, self.today), "-n", papara_runname]) #FIx directpry ugliness
         os.chdir('..')
     def place_query_seqs(self):
-        os.chdir(workdir)
-        p2 = subprocess.call(["raxmlHPC", "-m", "GTRCAT", "-f", "v", "-s", "papara_alignment.extended", "-t","{}_random_resolve.tre".format(self.runname), "-n", "{}_PLACE".format(runname)])
-        os.chdir('..')
-    def generate_streamed_alignment(self):
-        align_query_seqs()
-        place_query_seqs()
-        self.stream_aln = DnaCharacterMatrix.get(path="papara_alignment.extended",schema="phylip")
-        placetre = Tree.get(path="RAxML_labelledTree.{}_PLACE".format(runname),
+        os.chdir(self.workdir)
+        p2 = subprocess.call(["raxmlHPC", "-m", "GTRCAT", "-f", "v", "-s", "papara_alignment.extended", "-t","{}_random_resolve.tre".format(self.runname), "-n", "{}_PLACE".format(self.runname)])
+        placetre = Tree.get(path="RAxML_labelledTree.{}_PLACE".format(self.runname),
                 schema="newick",
                 preserve_underscores=True)
         placetre.resolve_polytomies()
         for taxon in placetre.taxon_namespace:
             if taxon.label.startswith("QUERY"):
                 taxon.label=taxon.label.replace("QUERY___","")
-        placetre.write(path = "{}_place_resolve.tre".format(runname), schema = "newick", unquoted_underscores=True)
+        placetre.write(path = "{}_place_resolve.tre".format(self.runname), schema = "newick", unquoted_underscores=True)
+        os.chdir('..')
+    def est_full_tree(self):
+        os.chdir(self.workdir)
+        subprocess.call(["raxmlHPC", "-m", "GTRCAT", "-s", "papara_alignment.extended", "-t","{}_place_resolve.tre".format(self.runname), "-p", "1", "-n", "{}".format(self.today)])
+        os.chdir('..')
+    def generate_streamed_alignment(self):
+        self.read_blast()
+        self.remove_identical_seqs()
+        self.write_query_seqs()
+        self.align_query_seqs()
+        self.place_query_seqs()
+        self.aln = DnaCharacterMatrix.get(path="papara_alignment.extended",schema="phylip")
+        self.tre = Tree.get(path="RAxML_bestTree.{}".format(self.runname),
+                schema="newick",
+                preserve_underscores=True)
+        self._write_files()
+        
+
 
 '''
-'''
-
-
-'''
-
-
-placetre.write(path = "{}_place_resolve.tre".format(runname), schema = "newick", unquoted_underscores=True)
-
-
-#Full run with starting tree from placements
-
-subprocess.call(["raxmlHPC", "-m", "GTRCAT", "-s", "papara_alignment.cut", "-t","{}_place_resolve.tre".format(runname), "-p", "1", "-n", "{}".format(runname)])
-
-
-e = DnaCharacterMatrix.get(path="papara_alignment.extended",
-                           schema="phylip")
-
-e.taxon_namespace.is_mutable = False # Names should be the same at this point.
 
 newtre = Tree.get(path="RAxML_bestTree.{}".format(runname),
                 schema="newick",
