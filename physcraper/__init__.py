@@ -1,5 +1,19 @@
 #!/usr/bin/env python
+'''Physcraper module'''
 import sys
+import re
+import os
+import subprocess
+import time
+import datetime
+import glob
+import json
+import pickle
+import unicodedata
+import configparser
+from Bio.Blast import NCBIWWW, NCBIXML
+from Bio.Blast.Applications import NcbiblastxCommandline
+from Bio import SeqIO, Entrez
 from dendropy import Tree, DnaCharacterMatrix
 from peyotl import gen_otu_dict, iter_node
 from peyotl.manip import iter_trees, iter_otus
@@ -8,33 +22,14 @@ from peyotl.sugar import tree_of_life, taxonomy
 from peyotl.nexson_syntax import extract_tree, extract_tree_nexson, get_subtree_otus, extract_otu_nexson, PhyloSchema
 from peyotl.api import APIWrapper
 api_wrapper = APIWrapper()
-from Bio.Blast import NCBIWWW, NCBIXML
-from Bio.Blast.Applications import NcbiblastxCommandline
-from Bio import SeqIO, Entrez
-import re
-import os
-import subprocess
-import time
-import datetime
-import glob
-import configparser
-import json
-import pickle
-import unicodedata
-#import dill
 
 
 
-'''
-study_id=sys.argv[1]
-tree_id=sys.argv[2]
-seqaln=sys.argv[3]
-mattype=sys.argv[4]
-runname=sys.argv[5]
-'''
 
-
-def seq_dict_build(seq, label, seq_dict): #Sequence needs to be passed in as string.
+def seq_dict_build(seq, label, seq_dict, deleted_tips): #Sequence needs to be passed in as string.
+    '''takes a sequence, a lebel and a dictionary and adds the sequence to the dict only
+    if it is not a subsequence of a sequence already in the dict. 
+    If the new sequence is a super suquence of one in the dict, it removes that sequence and replaces it'''
     new_seq = seq.replace("-", "")
     for tax in seq_dict.keys():
         inc_seq = seq_dict[tax].replace("-", "")
@@ -61,7 +56,8 @@ class physcraper_setup:
     _id_dicts = 0
     _study_get = 0
     _phylesystem = 0
-    def __init__(self, study_id, tree_id, seqaln, mattype, runname, configfi='/home/ejmctavish/projects/otapi/physcraper/config', run=1):
+    def __init__(self, study_id, tree_id,
+                seqaln, mattype, runname, configfi='/home/ejmctavish/projects/otapi/physcraper/config', run=1):
         """initialized object, most attributes generated through self._checkArgs using config file."""
         self.configfi = configfi
         self.study_id = study_id
@@ -90,6 +86,7 @@ class physcraper_setup:
         self.get_ncbi_taxonomy = self.config['ncbi.taxonomy']['get_ncbi_taxonomy']
         self.ncbi_dmp = self.config['ncbi.taxonomy']['ncbi_dmp']
     def _make_id_dicts(self):
+        '''Generates a series of name disambiguation dicts'''
         if not self._config_read:
             self._read_config()
         self.ott_to_ncbi = {}
@@ -107,16 +104,21 @@ class physcraper_setup:
                 self.gi_ncbi_dict[int(lin.split(",")[0])] = lin.split(",")[1]
         self._id_dicts = 1
     def _get_study(self):
+        '''gets the nexson from phylesystem'''
         if not self._phylesystem:
             self._phylesystem_setup()
         self.nexson = self.phy.return_study(self.study_id)[0]
-      #  self.newick = extract_tree(self.nexson, tree_id, PhyloSchema('newick', output_nexml2json = '1.2.1', content="tree", tip_label="ot:originalLabel"))
         self._study_get = 1
     def _get_mrca(self):
+        '''finds teh mrca of the taxa in the ingroup of the original tree.
+        The blast serach later is limited to descendents of this mrca according to the ncbi taxonomy'''
         if not self._study_get:
             self._get_study()
         self._make_id_dicts()
-        self.orig_ott_ids = get_subtree_otus(self.nexson, tree_id=self.tree_id, subtree_id="ingroup", return_format="ottid")
+        self.orig_ott_ids = get_subtree_otus(self.nexson,
+                                            tree_id=self.tree_id,
+                                            subtree_id="ingroup",
+                                            return_format="ottid")
         try:
             self.orig_ott_ids.remove(None)
         except:
@@ -126,11 +128,14 @@ class physcraper_setup:
         self.mrca_ncbi = self.ott_to_ncbi[self.mrca_ott]
         self._found_mrca = 1
     def _phylesystem_setup(self):
+        '''Setups up the phylsesystem object'''
         phylesystem_loc = self.config['phylesystem']['location']
         phylesystem_api_wrapper = PhylesystemAPI(get_from=phylesystem_loc)
         self.phy = phylesystem_api_wrapper.phylesystem_obj
         self._phylesystem = 1
     def _reconcile_names(self): #TODO here is where should build up the dicts with the info from open tree, and then mint new PS OTU_ids. SHould they be output with OTU ids?!
+        '''This checks that the tree "original labels" from phylsystem align with those found in the taxonomy.
+        Spaces vs underscores kept being an issue, so all spaces are coerced to underscores throughout!'''
         otus = get_subtree_otus(self.nexson, tree_id=self.tree_id)
         self.treed_taxa = {}
         self.otu_dict = {}
@@ -149,10 +154,9 @@ class physcraper_setup:
             emf = 'Some of the taxa in the alignment are not in the tree. Missing "{}"\n'
             em = emf.format('", "'.join(missing))
             raise ValueError(em)
-#        for taxon in self.aln:
-#            otu_id = self.orig_lab_to_otu[taxon.label]
-#            taxon.label = otu_id
     def _prune(self):
+        '''Sometimes in the de-concatenating of the original alignment taxa with no sequence are generated.
+        This gets rid of those from both the tre and the alignement'''
         prune = []
         dp = {}
         self.orig_seqlen = []
@@ -162,14 +166,18 @@ class physcraper_setup:
             else:
                 dp[taxon.label] = seq
                 self.orig_seqlen.append(len(seq.symbols_as_string().translate(None, "-?")))
-        self.newick = extract_tree(self.nexson, self.tree_id, PhyloSchema('newick', output_nexml2json='1.2.1', content="tree", tip_label="ot:originalLabel"))
-        self.newick = self.newick.replace(" ", "_") #UGHHHH FIX ME (but actually works fine for now...)
+        self.newick = extract_tree(self.nexson, self.tree_id,
+                                    PhyloSchema('newick',
+                                        output_nexml2json='1.2.1',
+                                        content="tree",
+                                        tip_label="ot:originalLabel"))
+        self.newick = self.newick.replace(" ", "_") #UGH Very heavy handed
         self.orig_aln = self.aln
         self.aln = DnaCharacterMatrix.from_dict(dp)
         self.tre = Tree.get(data=self.newick,
-                    schema="newick",
-                    preserve_underscores=True,
-                    taxon_namespace=self.aln.taxon_namespace)
+                            schema="newick",
+                            preserve_underscores=True,
+                            taxon_namespace=self.aln.taxon_namespace)
         self.tre.prune_taxa_with_labels(prune)
         if prune:
             fi = open("{}/pruned_taxa".format(self.workdir), 'w')
@@ -181,11 +189,13 @@ class physcraper_setup:
             otu_id = self.orig_lab_to_otu[taxon.label]
             taxon.label = otu_id.encode('ascii')
     def __getstate__(self):
+        '''hacky way to fix pickling'''
         result = self.__dict__.copy()
         del result['config']
         del result['phy']
         return result
     def setup_physcraper(self):
+        '''run the key steps'''
         self._read_config()
         self._get_mrca()
         self._reconcile_names()
@@ -193,6 +203,7 @@ class physcraper_setup:
 
 
 class physcraper_scrape():
+    '''This is the class that does the perpetual updating'''
     def __init__(self, pickle_dump): #SO ideally this is getting loaded, inclueding the alignment, from a physcrpaer setup pickle file.... But would a different approach be better?
         self.Load(pickle_dump)
         self.today = str(datetime.date.today())
@@ -202,25 +213,35 @@ class physcraper_scrape():
         self.blast_subdir = "{}/blast_run_{}".format(self.workdir, self.today)
         self._write_files()
     def Load(self, pickfi): # this is dangerous beacuse unp picklinga nd loading from a pickle file result in slightly different objest (i.e. date updating)
+        '''Instantiate an new scrape object from a pickled one.
+        This is not the same as unpickling one! This will update the current date to today.'''
         f = open(pickfi, 'rb')
         tmp_dict = pickle.load(f)
         f.close()
         self.__dict__.update(tmp_dict.__dict__)
     def set_date(self, date):
+        '''Used to force 'today' to date'''
         self.today = date
         self.blast_subdir = "{}/blast_run_{}".format(self.workdir, self.today)
     def _write_files(self):
+        '''putputs both the streaming files and a ditechecked'''
         #First write rich annotation json file with everything needed for later?
         self.tre.resolve_polytomies()
-        self.tre.write(path="{}/{}_random_resolve.tre".format(self.workdir, self.runname), schema="newick", unquoted_underscores=True, suppress_edge_lengths=True)
-        self.aln.write(path="{}/{}_aln_ott.phy".format(self.workdir, self.runname), schema="phylip")
-        self.aln.write(path="{}/{}_aln_ott.fas".format(self.workdir, self.runname), schema="fasta")
+        self.tre.write(path="{}/{}_random_resolve.tre".format(self.workdir, self.runname), 
+                        schema="newick", unquoted_underscores=True, suppress_edge_lengths=True)
+        self.aln.write(path="{}/{}_aln_ott.phy".format(self.workdir, self.runname), 
+                        schema="phylip")
+        self.aln.write(path="{}/{}_aln_ott.fas".format(self.workdir, self.runname), 
+                        schema="fasta")
 #        self.prun_aln = "{}/{}_aln_ott.fas".format(self.workdir, self.runname)
 #        self.prun_mattype = "fasta"
-        self.tre.write(path="{}/{}_random_resolve{}.tre".format(self.workdir, self.runname, self.today), schema="newick", unquoted_underscores=True, suppress_edge_lengths=True)
-        self.aln.write(path="{}/{}_aln_ott{}.fas".format(self.workdir, self.runname, self.today), schema="fasta")
+        self.tre.write(path="{}/{}_random_resolve{}.tre".format(self.workdir, self.runname, self.today),
+                        schema="newick", unquoted_underscores=True, suppress_edge_lengths=True)
+        self.aln.write(path="{}/{}_aln_ott{}.fas".format(self.workdir, self.runname, self.today),
+                        schema="fasta")
         pickle.dump(self, open('{}/{}_scrape{}.p'.format(self.workdir, self.runname, self.today), 'wb'))
     def run_blast(self): #TODO Should this be happening elsewhere?
+        '''generates the blast queries and sames them to xml'''
         if not os.path.exists(self.blast_subdir):
             os.makedirs(self.blast_subdir)
         equery = "txid{}[orgn] AND {}:{}[mdat]".format(self.mrca_ncbi, self.lastupdate, self.today.replace("-", "/"))
@@ -230,7 +251,9 @@ class physcraper_scrape():
             sys.stdout.write("blasting seq {}\n".format(taxon.label))
             xml_fi = "{}".format(self.gen_xml_name(taxon))
             if not os.path.isfile(xml_fi):
-                result_handle = NCBIWWW.qblast("blastn", "nt", query, entrez_query=equery, hitlist_size=self.hitlist_size)
+                result_handle = NCBIWWW.qblast("blastn", "nt",  query,
+                                                entrez_query=equery, 
+                                                hitlist_size=self.hitlist_size)
                 save_file = open(xml_fi, "w")
                 save_file.write(result_handle.read())
                 save_file.close()
@@ -238,6 +261,7 @@ class physcraper_scrape():
         self.lastupdate = self.today #TODO - how to propagate this forward?????? Pickle whole class for re-use, or write to file?!
   #      self._blast_complete = 1 #TODO DAMNNNN is this the best way?!
     def gen_xml_name(self, taxon):
+        '''naems blast files'''
         return "{}/{}_{}.xml".format(self.blast_subdir, self.runname, taxon.label, self.today)#TODO pull the repeated runname
     def read_blast(self):
         self.gi_dict = {}
@@ -257,14 +281,15 @@ class physcraper_scrape():
         for taxon, seq in self.aln.items():
             seq = seq.symbols_as_string().replace("-", "").replace("?", "")
             new_seq = new_seq.replace("-", "").replace("?", "")
-            if seq.find(new_seq) != -1:
-                sys.stdout.write("seq gi{} is subsequence of original seq {}, not added\n".format(label, taxon))
-                return 1
+            if self.otu_dict[taxon.label]['physcraper:status'] == "original":
+                if seq.find(new_seq) != -1:
+                    sys.stdout.write("seq gi{} is subsequence of original seq {}, not added\n".format(label, taxon)) #hmmmmm 
+                    return 1
         return 0
     def remove_identical_seqs(self):
         '''goes through the new seqs pulled down, and removes ones that are shorter than LENGTH_THRESH
         percent of the orig seq lengths, and chooses the longer of two that are other wise identical,
-        and puts them in a dict with new name as gi_ott_id. Does not test if they are identical to ones in the original alignment....'''
+        and puts them in a dict with new name as gi_ott_id. Does not test if they are identical to ones in the original alignment....'''#TODO needs to implement pruning tips if their seq is replaced...
         d = {}
         avg_seqlen = sum(self.orig_seqlen)/len(self.orig_seqlen)
         seq_len_cutoff = avg_seqlen*self.seq_len_perc
@@ -275,6 +300,7 @@ class physcraper_scrape():
                     otu_id = self._add_otu(gi)
                     seq_dict_build(seq, otu_id, d)
         self.new_seqs_otu_id = d # renamed new seq to their otu_ids from GI's, but all info is in self.otu_dict
+#        prune = [leaf for leaf in self.tre.leaf_node_iter() if leaf.label not in d.keys()] #TODO better repeart checking....
         self._ident_removed = 1 #TODO: now there can be ones that are identical to the original included sequences...
     def _add_otu(self, gi):
         otu_id = "otuPS{}".format(self.PS_otu)
@@ -291,7 +317,9 @@ class physcraper_scrape():
         if gi in self.gi_ncbi_dict:
             tax_id = int(self.gi_ncbi_dict[gi])
         else:
-            tax_id = int(subprocess.check_output(["bash", self.get_ncbi_taxonomy, "{}".format(gi), "{}".format(self.ncbi_dmp)]).split('\t')[1])
+            tax_id = int(subprocess.check_output(["bash", self.get_ncbi_taxonomy,
+                                                "{}".format(gi),
+                                                "{}".format(self.ncbi_dmp)]).split('\t')[1])
             mapped_taxon_ids.write("{}, {}\n".format(gi, tax_id))
             self.gi_ncbi_dict[gi] = tax_id
             assert tax_id  #if this doesn't work then the gi to taxon mapping needs to be updated - shouldhappen anyhow perhaps?!
@@ -313,19 +341,26 @@ class physcraper_scrape():
         if not self._ident_removed:
             self.remove_identical_seqs()
         for otu_id in self.new_seqs_otu_id.keys():
-            fi.write(">{}_q\n".format(otu_id))
+            fi.write(">{}\n".format(otu_id))
             fi.write("{}\n".format(self.new_seqs_otu_id[otu_id]))
         self._query_written = 1
     def align_query_seqs(self, papara_runname="extended"):
         os.chdir(self.workdir)#Clean up dir moving
-        p1 = subprocess.call(["papara", "-t", "{}_random_resolve.tre".format(self.runname), "-s", "{}_aln_ott.phy".format(self.runname), "-q", "{}_{}.fasta".format(self.runname, self.today), "-n", papara_runname]) #FIx directpry ugliness
+        p1 = subprocess.call(["papara", "-t", "{}_random_resolve.tre".format(self.runname),
+                             "-s", "{}_aln_ott.phy".format(self.runname), 
+                             "-q", "{}_{}.fasta".format(self.runname, self.today), 
+                             "-n", papara_runname]) #FIx directpry ugliness
         os.chdir('..')
     def place_query_seqs(self):
         os.chdir(self.workdir)
-        p2 = subprocess.call(["raxmlHPC", "-m", "GTRCAT", "-f", "v", "-s", "papara_alignment.extended", "-t", "{}_random_resolve.tre".format(self.runname), "-n", "{}_PLACE".format(self.runname)])
+        p2 = subprocess.call(["raxmlHPC", "-m", "GTRCAT",
+                            "-f", "v",
+                            "-s", "papara_alignment.extended",
+                            "-t", "{}_random_resolve.tre".format(self.runname),
+                            "-n", "{}_PLACE".format(self.runname)])
         placetre = Tree.get(path="RAxML_labelledTree.{}_PLACE".format(self.runname),
-                schema="newick",
-                preserve_underscores=True)
+                            schema="newick",
+                            preserve_underscores=True)
         placetre.resolve_polytomies()
         for taxon in placetre.taxon_namespace:
             if taxon.label.startswith("QUERY"):
@@ -334,7 +369,11 @@ class physcraper_scrape():
         os.chdir('..')
     def est_full_tree(self):
         os.chdir(self.workdir)
-        subprocess.call(["raxmlHPC", "-m", "GTRCAT", "-s", "papara_alignment.extended", "-t", "{}_place_resolve.tre".format(self.runname), "-p", "1", "-n", "{}".format(self.today)])
+        subprocess.call(["raxmlHPC", "-m", "GTRCAT",
+                        "-s", "papara_alignment.extended",
+                        "-t", "{}_place_resolve.tre".format(self.runname),
+                        "-p", "1",
+                        "-n", "{}".format(self.today)])
         os.chdir('..')
     def generate_streamed_alignment(self):
         self.read_blast()
@@ -346,7 +385,7 @@ class physcraper_scrape():
         self.aln = DnaCharacterMatrix.get(path="{}/papara_alignment.extended".format(self.workdir), schema="phylip")
         self.aln.taxon_namespace.is_mutable = False #This should enforce name matching throughout...
         self.tre = Tree.get(path="{}/RAxML_bestTree.{}".format(self.workdir, self.today),
-                schema="newick",
-                preserve_underscores=True,
-                taxon_namespace=self.aln.taxon_namespace)
+                            schema="newick",
+                            preserve_underscores=True,
+                            taxon_namespace=self.aln.taxon_namespace)
         self._write_files()
