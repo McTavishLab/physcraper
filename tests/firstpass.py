@@ -19,10 +19,11 @@ assert(test.mrca_ott == 921280) #changes in the tree could actually change this.
 pickle.dump(test, open('{}/{}_setup.p'.format(runname,runname), 'wb'))
 
 test2 = physcraper_scrape('{}/{}_setup.p'.format(runname,runname))
+test2.set_date("2016-01-13")
 #test2 = pickle.load(open('{}/{}_scrape.p'.format(runname,runname),'rb'))
-test2.today = "2016-01-13"
+#test2.today = "2016-01-13"
 test2.generate_streamed_alignment()
-test2.today = "2016-01-14"
+test2.set_date("2016-01-15")
 test2.generate_streamed_alignment()
 #test2.mrca_ncbi
 #test2.run_blast()
