@@ -73,7 +73,10 @@ class physcraper_setup:
         self.PS_otu = 1
         self._read_config()
         self._get_study()
-        self._reconcile_names()
+        try:
+            self._reconcile_names()
+        except:
+            print("name reconcillation error")
         self.workdir = runname
         if not os.path.exists(self.workdir):
             os.makedirs(self.workdir)
@@ -114,7 +117,10 @@ class physcraper_setup:
             self._get_study()
         self._make_id_dicts()
         self.orig_ott_ids = get_subtree_otus(self.nexson, tree_id=self.tree_id, subtree_id="ingroup",return_format="ottid")
-        self.orig_ott_ids.remove(None)
+        try:
+            self.orig_ott_ids.remove(None)
+        except:
+            pass
         mrca_node = tree_of_life.mrca(ott_ids=list(self.orig_ott_ids), wrap_response=True)
         self.mrca_ott = mrca_node.nearest_taxon.ott_id
         self.mrca_ncbi = self.ott_to_ncbi[self.mrca_ott]
@@ -136,7 +142,9 @@ class physcraper_setup:
             self.orig_lab_to_otu[orig] = otu_id
             self.treed_taxa[orig] = self.otu_dict[otu_id].get( u'^ot:ottId')
         self.aln = DnaCharacterMatrix.get(path=self.seqaln, schema=self.mattype)
-        missing = [i.label for i in self.aln.taxon_namespace if i.label not in self.treed_taxa.keys()]
+        for tax in self.aln.taxon_namespace:
+            tax.label = tax.label.replace(" ","_")#Forcing all spaces to underscore
+        missing = [i.label for i in self.aln.taxon_namespace if i.label not in self.treed_taxa.keys()] #some intense name forcing...
         if missing:
             emf = 'Some of the taxa in the alignment are not in the tree. Missing "{}"\n'
             em = emf.format('", "'.join(missing))
@@ -193,11 +201,14 @@ class physcraper_scrape():
         self.ident_removed = 0
         self.blast_subdir = "{}/blast_run_{}".format(self.workdir,self.today)
         self._write_files()
-    def Load(self,pickfi):
+    def Load(self,pickfi): # this is dangerous beacuse unp picklinga nd loading from a pickle file result in slightly different objest (i.e. date updating)
         f = open(pickfi,'rb')
         tmp_dict = pickle.load(f)
         f.close()
         self.__dict__.update(tmp_dict.__dict__)
+    def set_date(self,date):
+        self.today = date
+        self.blast_subdir = "{}/blast_run_{}".format(self.workdir,self.today)
     def _write_files(self):
         #First write rich annotation json file with everything needed for later?
         self.tre.resolve_polytomies()
@@ -215,7 +226,7 @@ class physcraper_scrape():
         equery = "txid{}[orgn] AND {}:{}[mdat]".format(self.mrca_ncbi, self.lastupdate, self.today.replace("-","/"))
         #for i, record in enumerate(SeqIO.parse(self.prun_aln, self.prun_mattype)): #TODO, why not using the dendropy alignement?!! Switch to that.
         for taxon, seq in self.aln.items():
-            query = seq.symbols_as_string().replace("-","") # blast gets upset about too many gaps from aligned file
+            query = seq.symbols_as_string().replace("-","").replace("?","") # blast gets upset about too many gaps from aligned file
             sys.stdout.write("blasting seq {}\n".format(taxon.label))
             xml_fi = "{}".format(self.gen_xml_name(taxon))
             if not os.path.isfile(xml_fi): 
@@ -331,10 +342,14 @@ class physcraper_scrape():
         self.write_query_seqs()
         self.align_query_seqs()
         self.place_query_seqs()
-        self.aln = DnaCharacterMatrix.get(path="papara_alignment.extended",schema="phylip")
-        self.tre = Tree.get(path="RAxML_bestTree.{}".format(self.runname),
+        self.est_full_tree()
+        self.aln = DnaCharacterMatrix.get(path="{}/papara_alignment.extended".format(self.workdir),schema="phylip")
+        self.aln.taxon_namespace.is_mutable = False
+        self.tre = Tree.get(path="{}/RAxML_bestTree.{}".format(self.workdir, self.today),
                 schema="newick",
-                preserve_underscores=True)
+                preserve_underscores=True,
+                taxon_namespace=self.aln.taxon_namespace)
+        #NEED TO RECHECK NAMES HERE!!!!
         self._write_files()
         
 
