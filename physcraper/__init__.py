@@ -22,7 +22,7 @@ from peyotl.sugar import tree_of_life, taxonomy
 from peyotl.nexson_syntax import extract_tree, extract_tree_nexson, get_subtree_otus, extract_otu_nexson, PhyloSchema
 from peyotl.api import APIWrapper
 
-class StudyInfo:
+class StudyInfo(object):
     """Wraps up tree, alignment, and study info"""
     def __init__(self,
                  study_id,
@@ -61,7 +61,7 @@ def seq_dict_build(seq, label, seq_dict, deleted_tips): #Sequence needs to be pa
 
 
 
-class PhyscraperSetup:
+class PhyscraperSetup(object):
     """This needs to vet the inputs, standardize names, and prep for
     first run through of blasting. Does not blast itself!"""
     _found_mrca = 0
@@ -221,25 +221,25 @@ class PhyscraperSetup:
         self._reconcile_names()
         self._prune()
 
-#Need to cut the duck punching and fix the argument passing.
-class PhyscraperScrape():
+
+class PhyscraperScrape(object):
     #set up needed variables as nones here?!
     """This is the class that does the perpetual updating"""
-    def __init__(self, PhyscraperSetup): #TODO Check on load vs init config
-        self.Load(pickle_dump)
+    def __init__(self, setup_obj):
+        self.parent = setup_obj
+        #But then these things are new
         self.new_seqs = {}
         self.otu_by_gi = {}
+        self.gi_dict = {}
         self.ident_removed = 0
         self.today = None
         self.blast_subdir = None
-    def Load(self, pickfi):
-        #Dangerous beacuse un pickling and loading from a pickle file result in slightly different objest (i.e. date updating)
-        '''Instantiate an new scrape object from a pickled one.
-        This is not the same as unpickling one! This will update the current date to today.'''
-        f = open(pickfi, 'rb')
-        tmp_dict = pickle.load(f)
-        f.close()
-        self.__dict__.update(tmp_dict.__dict__)
+    def __getattr__(self, attr):
+        """can get attributes from the parent PhyscraperSetup object"""
+        try:
+            return self.parent.__dict__[attr]
+        except KeyError:
+            raise AttributeError
     def _write_files(self):
         '''Outputs both the streaming files and a ditechecked'''
         #First write rich annotation json file with everything needed for later?
@@ -258,12 +258,13 @@ class PhyscraperScrape():
         pickle.dump(self, open('{}/{}_scrape{}.p'.format(self.workdir, self.runname, self.today), 'wb'))
     def run_blast(self): #TODO Should this be happening elsewhere?
         '''generates the blast queries and sames them to xml'''
-        if os.path.exists("{}/blast_run_unfinished".format(self.workdir)):
-            dat = open("{}/blast_run_in_progress".format(self.workdir)).readline #finsh what was started!
+        tmpfi = "{}/blast_run_in_progress".format(self.workdir)
+        if os.path.exists(tmpfi):
+            dat = open(tmpfi).readline() #finsh what was started!
             self.today = dat.strip()
         else:
             self.today = str(datetime.date.today())
-            fi = open("{}/blast_run_in_progress".format(self.workdir), 'w')
+            fi = open(tmpfi, 'w')
             fi.write(self.today)
             fi.close()
         self.blast_subdir = "{}/blast_run_{}".format(self.workdir, self.today)
@@ -283,14 +284,13 @@ class PhyscraperScrape():
                 save_file.write(result_handle.read())
                 save_file.close()
                 result_handle.close()
-        os.rename("{}/blast_run_in_progress".format(self.workdir),
+        os.rename(tmpfi,
                   "{}/last_completed_update".format(self.workdir))
         self.lastupdate = self.today
     def gen_xml_name(self, taxon):
         '''nams blast files'''
         return "{}/{}_{}.xml".format(self.blast_subdir, self.runname, taxon.label)#TODO pull the repeated runname
     def read_blast(self):
-        self.gi_dict = {}
         self.run_blast()
         for taxon, seq in self.aln.items():
             xml_fi = "{}".format(self.gen_xml_name(taxon))
