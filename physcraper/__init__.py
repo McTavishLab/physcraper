@@ -8,9 +8,11 @@ import time
 import datetime
 import glob
 import json
+import copy
 import pickle
 import unicodedata
 import configparser
+from copy import deepcopy
 from Bio.Blast import NCBIWWW, NCBIXML
 from Bio.Blast.Applications import NcbiblastxCommandline
 from Bio import SeqIO, Entrez
@@ -35,30 +37,6 @@ class StudyInfo(object):
         self.mattype = mattype
 
 
-# TODO this should go back in the class and should prune the tree
-def seq_dict_build(seq, label, seq_dict, deleted_tips): #Sequence needs to be passed in as string.
-    """takes a sequence, a lebel and a dictionary and adds the
-    sequence to the dict only if it is not a subsequence of a
-    sequence already in the dict.
-    If the new sequence is a super suquence of one in the dict, it
-    removes that sequence and replaces it"""
-    new_seq = seq.replace("-", "")
-    for tax in seq_dict.keys():
-        inc_seq = seq_dict[tax].replace("-", "")
-        if len(inc_seq) > len(new_seq):
-            if inc_seq.find(new_seq) != -1:
-                sys.stdout.write("seq {} is subsequence of {}, not added\n".format(label, tax))
-                return
-        else:
-            if new_seq.find(inc_seq) != -1:
-                del seq_dict[tax]
-                seq_dict[label] = seq
-                sys.stdout.write("seq {} is supersequence of {}, {} added and {} removed\n".format(label, tax, label, tax))
-                return
-    sys.stdout.write(".")
-    seq_dict[label] = seq
-    return
-
 
 
 class PhyscraperSetup(object):
@@ -82,6 +60,11 @@ class PhyscraperSetup(object):
         self.ps_otu = 1
         self._read_config()
         self._get_study()
+        self.ott_to_ncbi = {}
+        self.ncbi_to_ott = {}
+        self.phy = None
+        self.gi_ncbi_dict = {}
+        self.mrca_ott = None
         self.aln = None
         self.orig_aln = None
         self.tre = None
@@ -92,11 +75,6 @@ class PhyscraperSetup(object):
         self.workdir = runname
         if not os.path.exists(self.workdir):
             os.makedirs(self.workdir)
-        if os.path.exists("{}/last_completed_update".format(self.workdir)):
-            last = open("{}/last_completed_update".format(self.workdir)).readline()
-            self.lastupdate = last.strip()
-        else:
-            self.lastupdate = '1900/01/01' #TODO is this the right place for this?
     def _read_config(self):
         self.config = configparser.ConfigParser()
         self.config.read(self.configfi)
@@ -107,15 +85,12 @@ class PhyscraperSetup(object):
         self.ncbi_dmp = self.config['ncbi.taxonomy']['ncbi_dmp']
     def _make_id_dicts(self):
         """Generates a series of name disambiguation dicts"""
-        self.ott_to_ncbi = {}
-        self.ncbi_to_ott = {}
         fi = open(self.config['ncbi.taxonomy']['ott_ncbi']) #TODO need to keep updated
         for lin in fi:
             lii = lin.split(",")
             self.ott_to_ncbi[int(lii[0])] = int(lii[1])
             self.ncbi_to_ott[int(lii[1])] = int(lii[0])
         fi.close()
-        self.gi_ncbi_dict = {}
         if os.path.isfile("{}/id_map.txt".format(self.workdir)): #todo config?!
             fi = open("{}/id_map.txt".format(self.workdir))
             for lin in fi:
@@ -203,7 +178,7 @@ class PhyscraperSetup(object):
             fi = open("{}/pruned_taxa".format(self.workdir), 'w')
             fi.write("taxa pruned from tree and alignment due to excessive missing data\n")
             for tax in prune:
-                fi.write("\n".format(tax))
+                fi.write("{}\n".format(tax))
             fi.close()
         for taxon in self.aln.taxon_namespace:
             otu_id = self.orig_lab_to_otu[taxon.label]
@@ -225,21 +200,43 @@ class PhyscraperSetup(object):
 class PhyscraperScrape(object):
     #set up needed variables as nones here?!
     """This is the class that does the perpetual updating"""
-    def __init__(self, setup_obj):
-        self.parent = setup_obj
-        #But then these things are new
+    def __init__(self, setup_obj = None): 
+        if setup_obj:#this should need to happen ony the first time the scrape object is run.
+            self.workdir = deepcopy(setup_obj.workdir)
+            self.runname = deepcopy(setup_obj.runname)
+            self.aln = deepcopy(setup_obj.aln)
+            self.tre = deepcopy(setup_obj.tre)
+            self.otu_dict = deepcopy(setup_obj.otu_dict)
+            self.ott_to_ncbi = deepcopy(setup_obj.ott_to_ncbi)
+            self.ncbi_to_ott = deepcopy(setup_obj.ncbi_to_ott)
+            self.gi_ncbi_dict = deepcopy(setup_obj.gi_ncbi_dict)
+            self.mrca_ncbi = deepcopy(setup_obj.mrca_ncbi)
+            self.e_value_thresh = deepcopy(setup_obj.e_value_thresh)
+            self.hitlist_size = deepcopy(setup_obj.hitlist_size)
+            self.seq_len_perc = deepcopy(setup_obj.seq_len_perc)
+            self.get_ncbi_taxonomy = deepcopy(setup_obj.get_ncbi_taxonomy)
+            self.ncbi_dmp = deepcopy(setup_obj.ncbi_dmp)
         self.new_seqs = {}
         self.otu_by_gi = {}
         self.gi_dict = {}
         self.ident_removed = 0
-        self.today = None
         self.blast_subdir = None
-    def __getattr__(self, attr):
-        """can get attributes from the parent PhyscraperSetup object"""
-        try:
-            return self.parent.__dict__[attr]
-        except KeyError:
-            raise AttributeError
+        self._to_be_pruned = []
+        self.tmpfi = "{}/physcraper_run_in_progress".format(self.workdir)
+        if os.path.exists(self.tmpfi):
+            dat = open(self.tmpfi).readline() #finsh what was started!
+            self.today = dat.strip()
+        else:
+            self.today = str(datetime.date.today())
+            fi = open(self.tmpfi, 'w')
+            fi.write(self.today)
+            fi.close()
+        self.blast_subdir = "{}/blast_run_{}".format(self.workdir, self.today)
+        if os.path.exists("{}/last_completed_update".format(self.workdir)):
+            last = open("{}/last_completed_update".format(self.workdir)).readline()
+            self.lastupdate = last.strip()
+        else:
+            self.lastupdate = '1900/01/01' #TODO is this the right place for this?
     def _write_files(self):
         '''Outputs both the streaming files and a ditechecked'''
         #First write rich annotation json file with everything needed for later?
@@ -258,16 +255,6 @@ class PhyscraperScrape(object):
         pickle.dump(self, open('{}/{}_scrape{}.p'.format(self.workdir, self.runname, self.today), 'wb'))
     def run_blast(self): #TODO Should this be happening elsewhere?
         '''generates the blast queries and sames them to xml'''
-        tmpfi = "{}/blast_run_in_progress".format(self.workdir)
-        if os.path.exists(tmpfi):
-            dat = open(tmpfi).readline() #finsh what was started!
-            self.today = dat.strip()
-        else:
-            self.today = str(datetime.date.today())
-            fi = open(tmpfi, 'w')
-            fi.write(self.today)
-            fi.close()
-        self.blast_subdir = "{}/blast_run_{}".format(self.workdir, self.today)
         if not os.path.exists(self.blast_subdir):
             os.makedirs(self.blast_subdir)
         equery = "txid{}[orgn] AND {}:{}[mdat]".format(self.mrca_ncbi, self.lastupdate, self.today.replace("-", "/"))
@@ -284,8 +271,6 @@ class PhyscraperScrape(object):
                 save_file.write(result_handle.read())
                 save_file.close()
                 result_handle.close()
-        os.rename(tmpfi,
-                  "{}/last_completed_update".format(self.workdir))
         self.lastupdate = self.today
     def gen_xml_name(self, taxon):
         '''nams blast files'''
@@ -312,6 +297,31 @@ class PhyscraperScrape(object):
                     sys.stdout.write("seq gi{} is subsequence of original seq {}, not added\n".format(label, taxon))
                     return 1
         return 0
+    # TODO this should go back in the class and should prune the tree
+    def seq_dict_build(self, seq, label, seq_dict): #Sequence needs to be passed in as string.
+        """takes a sequence, a label (the otu_id) and a dictionary and adds the
+        sequence to the dict only if it is not a subsequence of a
+        sequence already in the dict.
+        If the new sequence is a super suquence of one in the dict, it
+        removes that sequence and replaces it"""
+        new_seq = seq.replace("-", "")
+        for tax in seq_dict.keys():
+            inc_seq = seq_dict[tax].replace("-", "")
+            if len(inc_seq) > len(new_seq):
+                if inc_seq.find(new_seq) != -1:
+                    sys.stdout.write("seq {} is subsequence of {}, not added\n".format(label, tax))
+                    return
+            else:
+                if new_seq.find(inc_seq) != -1:
+                    del seq_dict[tax]
+                    self.tre.prune_taxa_with_labels(tax)
+                    seq_dict[label] = seq
+                    del self.otu_dict[tax]
+                    sys.stdout.write("seq {} is supersequence of {}, {} added and {} removed\n".format(label, tax, label, tax))
+                    return
+        sys.stdout.write(".")
+        seq_dict[label] = seq
+        return
     def remove_identical_seqs(self):
         """goes through the new seqs pulled down, and removes ones that are
         shorter than LENGTH_THRESH percent of the orig seq lengths, and chooses
@@ -327,11 +337,11 @@ class PhyscraperScrape(object):
                 #first check if already in the original alignment
                 if not self.seq_in_orig(seq, gi):
                     otu_id = self._add_otu(gi)
-                    seq_dict_build(seq, otu_id, d)
+                    self.seq_dict_build(seq, otu_id, d)
         self.new_seqs_otu_id = d # renamed new seq to their otu_ids from GI's, but all info is in self.otu_dict
-#        prune = [leaf for leaf in self.tre.leaf_node_iter() if leaf.label not in d.keys()] #TODO better repeart checking....
         self._ident_removed = 1 #TODO: now there can be ones that are identical to the original included sequences...
     def _add_otu(self, gi):
+        """generates an otu_id for new sequences and adds them into the otu_dict"""
         otu_id = "otuPS{}".format(self.ps_otu)
         self.ps_otu += 1
         self.otu_dict[otu_id] = {}
@@ -358,7 +368,7 @@ class PhyscraperScrape(object):
         if self._id_dicts != 1:
             self._make_id_dicts()
         ott_id = self.ncbi_to_ott.get(self.map_gi_ncbi(gi)) #TODO check me
-        sys.stderror.write("ncbi taxon id {} has no ottID".format())
+        sys.stderr.write("ncbi taxon id {} has no ottID".format())
     def write_query_seqs(self):
         self.newseqs_file = "{}/{}_{}.fasta".format(self.workdir, self.runname, self.today)
         fi = open(self.newseqs_file, 'w')
@@ -370,6 +380,7 @@ class PhyscraperScrape(object):
             fi.write("{}\n".format(self.new_seqs_otu_id[otu_id]))
         self._query_written = 1
     def align_query_seqs(self, papara_runname="extended"):
+        sys.stdout.write("aligning query sequences \n")
         os.chdir(self.workdir)#Clean up dir moving
         p1 = subprocess.call(["papara", "-t", "{}_random_resolve.tre".format(self.runname),
                               "-s", "{}_aln_ott.phy".format(self.runname),
@@ -377,6 +388,7 @@ class PhyscraperScrape(object):
                               "-n", papara_runname]) #FIx directory ugliness
         os.chdir('..')
     def place_query_seqs(self):
+        sys.stdout.write("placing query sequences \n")
         os.chdir(self.workdir)
         p2 = subprocess.call(["raxmlHPC", "-m", "GTRCAT",
                               "-f", "v",
@@ -415,3 +427,5 @@ class PhyscraperScrape(object):
                             preserve_underscores=True,
                             taxon_namespace=self.aln.taxon_namespace)
         self._write_files()
+        os.rename(self.tmpfi,
+                  "{}/last_completed_update".format(self.workdir))
