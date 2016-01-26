@@ -197,7 +197,7 @@ class PhyscraperSetup(object):
         self._prune()
 
 
-class PhyscraperScrape(object):
+class PhyscraperScrape(object): #TODO do I want to be able to instantiate this in a different way?!
     #set up needed variables as nones here?!
     """This is the class that does the perpetual updating"""
     def __init__(self, setup_obj = None): 
