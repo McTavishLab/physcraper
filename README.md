@@ -1,5 +1,6 @@
 # physcraper
 Gene tree updating
+![](https://github.com/snacktavish/physcraper/blob/master/docs/physcraper.svg?raw=true)
 
 python scrape_align_est.py ott_study_id ott_tree_id seqaln matrix_type runname
 
