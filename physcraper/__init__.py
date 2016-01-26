@@ -100,7 +100,8 @@ class PhyscraperSetup(object):
         """gets the nexson from phylesystem"""
         if not self._phylesystem:
             self._phylesystem_setup()
-        self.nexson = self.phy.return_study(self.study_id)[0]
+        self.nexson = self.phy.get_study(self.study_id)['data']
+        #print(self.nexson)
         self._study_get = 1
     def _get_mrca(self):
         """finds the mrca of the taxa in the ingroup of the original
@@ -122,8 +123,7 @@ class PhyscraperSetup(object):
     def _phylesystem_setup(self):
         """Setups up the phylsesystem object"""
         phylesystem_loc = self.config['phylesystem']['location']
-        phylesystem_api_wrapper = PhylesystemAPI(get_from=phylesystem_loc)
-        self.phy = phylesystem_api_wrapper.phylesystem_obj
+        self.phy = PhylesystemAPI(get_from=phylesystem_loc)
         self._phylesystem = 1
     def _reconcile_names(self):
         """This checks that the tree "original labels" from phylsystem
