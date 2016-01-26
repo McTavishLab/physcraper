@@ -5,11 +5,11 @@ Entrez.email = ejmctavish@gmail.com
 hitlist_size = 10
 
 [phylesystem]
-location = local
+location = local #local or api
 
 [ncbi.taxonomy]
-ott_ncbi = /home/ejmctavish/projects/otapi/physcraper/ott_ncbi
-get_ncbi_taxonomy = /home/ejmctavish/projects/otapi/physcraper/get_ncbi_taxonomy.sh
+ott_ncbi = /home/ejmctavish/projects/otapi/physcraper/taxonomy/ott_ncbi
+get_ncbi_taxonomy = /home/ejmctavish/projects/otapi/physcraper/taxonomy/get_ncbi_taxonomy.sh
 ncbi_dmp = /home/ejmctavish/ncbi/gi_taxid_nucl.dmp
 
 [physcraper]
