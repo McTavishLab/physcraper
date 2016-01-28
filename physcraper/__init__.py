@@ -244,7 +244,7 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
             os.makedirs(self.workdir)
         self.newseqs_file = "{}/{}_{}.fasta".format(self.workdir, self.runname, self.today)
  #TODO is this the right place for this?
-    def _write_files(self):
+    def _write_files(self, label = None):
         """Outputs both the streaming files and a ditechecked"""
         #First write rich annotation json file with everything needed for later?
         self.tre.resolve_polytomies()
@@ -260,11 +260,28 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
         self.aln.write(path="{}/{}_aln_ott{}.fas".format(self.workdir, self.runname, self.today),
                        schema="fasta")
         pickle.dump(self, open('{}/{}_scrape{}.p'.format(self.workdir, self.runname, self.today), 'wb'))
+        pickle.dump(otu_dict, open('{}/{}_otu_dict{}.p'.format(self.workdir, self.runname, self.today), 'wb'))
+        if label:
+            assert label in ["^ot:originalLabel", "^ot:ottId", "^ncbi:taxon"]
+            tmp_tre = deepcopy(self.tre)
+            tmp_aln = deepcopy(self.aln)
+            for taxon in tmp_tre.taxon_namespace:
+                new_label = self.otu_dict[taxon.label].get(label)
+                if new_label:
+                    taxon.label = new_label
+        for taxon in tmp_aln.taxon_namespace:
+                new_label = self.otu_dict[taxon.label].get(label)
+                if new_label:
+                    taxon.label = new_label
+        tmp_tre.write(path="{}/{}_labelled{}.tre".format(self.workdir, self.runname, self.today),
+                       schema="newick", unquoted_underscores=True, suppress_edge_lengths=False)
+        tmp_aln.write(path="{}/{}_labelled{}.fas".format(self.workdir, self.runname, self.today),
+                       schema="fasta")
     def run_blast(self): #TODO Should this be happening elsewhere?
         '''generates the blast queries and sames them to xml'''
         if not os.path.exists(self.blast_subdir):
             os.makedirs(self.blast_subdir)
-        equery = "txid{}[orgn] AND {}:{}[mdat]".format(self.mrca_ncbi, self.lastupdate, self.today.replace("-", "/"))
+        equery = "txid{}[orgn] AND {}:{}[mdat]".format(self.mrca_ncbi, self.lastupdate.replace("-", "/"), self.today.replace("-", "/"))
         for taxon, seq in self.aln.items():
             query = seq.symbols_as_string().replace("-", "").replace("?", "")
             sys.stdout.write("blasting seq {}\n".format(taxon.label))
@@ -293,7 +310,7 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
                 for blast_record in blast_records:
                     for alignment in blast_record.alignments:
                         for hsp in alignment.hsps:
-                            if hsp.expect < self.e_value_thresh:
+                            if float(hsp.expect) < float(self.e_value_thresh):
                                 self.new_seqs[int(alignment.title.split('|')[1])] = hsp.sbjct
                                 self.gi_dict[int(alignment.title.split('|')[1])] = alignment.__dict__
     # TODO this should go back in the class and should prune the tree
@@ -341,17 +358,18 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
                 otu_id = self._add_otu(gi)
                 self.seq_dict_build(seq, otu_id, tmp_dict)
         self.new_seqs_otu_id = tmp_dict # renamed new seq to their otu_ids from GI's, but all info is in self.otu_dict
+        sys.stdout.write("{} new sequences added from genbank\n")
     def _add_otu(self, gi):
         """generates an otu_id for new sequences and adds them into the otu_dict"""
         otu_id = "otuPS{}".format(self.ps_otu)
         self.ps_otu += 1
         self.otu_dict[otu_id] = {}
-        self.otu_dict[otu_id]['ncbi:gi'] = gi
-        self.otu_dict[otu_id]['ncbi:accession'] = self.gi_dict[gi]['accession']
-        self.otu_dict[otu_id]['ncbi:title'] = self.gi_dict[gi]['title']
-        self.otu_dict[otu_id]['ncbi:taxon'] = self.map_gi_ncbi(gi)
-        self.otu_dict[otu_id]['ot:ottId'] = self.ncbi_to_ott.get(self.map_gi_ncbi(gi))
-        self.otu_dict[otu_id]['physcraper:status'] = "query"
+        self.otu_dict[otu_id]['^ncbi:gi'] = gi
+        self.otu_dict[otu_id]['^ncbi:accession'] = self.gi_dict[gi]['accession']
+        self.otu_dict[otu_id]['^ncbi:title'] = self.gi_dict[gi]['title']
+        self.otu_dict[otu_id]['^ncbi:taxon'] = self.map_gi_ncbi(gi)
+        self.otu_dict[otu_id]['^ot:ottId'] = self.ncbi_to_ott.get(self.map_gi_ncbi(gi))
+        self.otu_dict[otu_id]['^physcraper:status'] = "query"
         return otu_id
     def map_gi_ncbi(self, gi):
         """get the ncbi taxon id's for a gi input"""
