@@ -56,6 +56,7 @@ class PhyscraperSetup(object):
         self.mattype = study_info.mattype
         self.runname = runname
         self.configfi = configfi
+        assert os.path.isfile(configfi)
         self._read_config()
         self._get_study()
         self.ott_to_ncbi = {}
