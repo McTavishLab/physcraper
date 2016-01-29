@@ -136,7 +136,7 @@ class PhyscraperSetup(object):
         self.orig_lab_to_otu = {}
         for otu_id in otus:
             self.otu_dict[otu_id] = extract_otu_nexson(self.nexson, otu_id)[otu_id]
-            self.otu_dict[otu_id]['physcraper:status'] = "original"
+            self.otu_dict[otu_id]['^physcraper:status'] = "original"
             orig = self.otu_dict[otu_id].get(u'^ot:originalLabel').replace(" ", "_")
             self.orig_lab_to_otu[orig] = otu_id
             self.treed_taxa[orig] = self.otu_dict[otu_id].get(u'^ot:ottId')
@@ -250,18 +250,19 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
         #First write rich annotation json file with everything needed for later?
         self.tre.resolve_polytomies()
         self.tre.write(path="{}/{}_random_resolve.tre".format(self.workdir, self.runname),
-                       schema="newick", unquoted_underscores=True,
-                       suppress_edge_lengths=True)
+                       schema="newick",
+                       unquoted_underscores=True)
         self.aln.write(path="{}/{}_aln_ott.phy".format(self.workdir, self.runname),
                        schema="phylip")
         self.aln.write(path="{}/{}_aln_ott.fas".format(self.workdir, self.runname),
                        schema="fasta")
         self.tre.write(path="{}/{}_random_resolve{}.tre".format(self.workdir, self.runname, self.today),
-                       schema="newick", unquoted_underscores=True, suppress_edge_lengths=True)
+                       schema="newick",
+                       unquoted_underscores=True)
         self.aln.write(path="{}/{}_aln_ott{}.fas".format(self.workdir, self.runname, self.today),
                        schema="fasta")
         pickle.dump(self, open('{}/{}_scrape{}.p'.format(self.workdir, self.runname, self.today), 'wb'))
-        pickle.dump(otu_dict, open('{}/{}_otu_dict{}.p'.format(self.workdir, self.runname, self.today), 'wb'))
+        pickle.dump(self.otu_dict, open('{}/{}_otu_dict{}.p'.format(self.workdir, self.runname, self.today), 'wb'))
         if label:
             assert label in ["^ot:originalLabel", "^ot:ottId", "^ncbi:taxon"]
             tmp_tre = deepcopy(self.tre)
@@ -270,14 +271,14 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
                 new_label = self.otu_dict[taxon.label].get(label)
                 if new_label:
                     taxon.label = new_label
-        for taxon in tmp_aln.taxon_namespace:
-                new_label = self.otu_dict[taxon.label].get(label)
-                if new_label:
-                    taxon.label = new_label
-        tmp_tre.write(path="{}/{}_labelled{}.tre".format(self.workdir, self.runname, self.today),
-                       schema="newick", unquoted_underscores=True, suppress_edge_lengths=False)
-        tmp_aln.write(path="{}/{}_labelled{}.fas".format(self.workdir, self.runname, self.today),
-                       schema="fasta")
+            for taxon in tmp_aln.taxon_namespace:
+                    new_label = self.otu_dict[taxon.label].get(label)
+                    if new_label:
+                        taxon.label = new_label
+            tmp_tre.write(path="{}/{}_labelled{}.tre".format(self.workdir, self.runname, self.today),
+                           schema="newick", unquoted_underscores=True, suppress_edge_lengths=False)
+            tmp_aln.write(path="{}/{}_labelled{}.fas".format(self.workdir, self.runname, self.today),
+                           schema="fasta")
     def run_blast(self): #TODO Should this be happening elsewhere?
         '''generates the blast queries and sames them to xml'''
         if not os.path.exists(self.blast_subdir):
@@ -324,13 +325,14 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
         new_seq = seq.replace("-", "")
         for tax in seq_dict.keys():
             inc_seq = seq_dict[tax].replace("-", "")
-            if len(inc_seq) > len(new_seq):
+            if len(inc_seq) >= len(new_seq):
                 if inc_seq.find(new_seq) != -1:
                     sys.stdout.write("seq {} is subsequence of {}, not added\n".format(label, tax))
                     return
             else:
                 if new_seq.find(inc_seq) != -1:#
-                    if self.otu_dict[tax]['physcraper:status'] == "original":
+                    if self.otu_dict[tax].get('^physcraper:status') == "original":
+
                         sys.stdout.write("seq {} is supersequence of original seq {}, both kept in alignment\n".format(label, tax))
                         seq_dict[label] = seq
                         return
@@ -350,7 +352,8 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
         the longer of two that are other wise identical, and puts them in a dict
         with new name as gi_ott_id.
         Does not test if they are identical to ones in the original alignment...."""
-        tmp_dict = deepcopy(self.aln)
+        tmp_dict = dict((taxon.label, self.aln[taxon].symbols_as_string()) for taxon in self.aln)
+        old_seqs = tmp_dict.keys()
         #Adding seqs that are different, but needs to be maintained as diff than aln that the tree has been run on
         avg_seqlen = sum(self.orig_seqlen)/len(self.orig_seqlen)
         seq_len_cutoff = avg_seqlen*self.seq_len_perc
@@ -358,6 +361,11 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
             if len(seq.replace("-", "").replace("N", "")) > seq_len_cutoff:
                 otu_id = self._add_otu(gi)
                 self.seq_dict_build(seq, otu_id, tmp_dict)
+        for tax in old_seqs:
+            try:
+                del tmp_dict[tax]
+            except KeyError:
+                pass
         self.new_seqs_otu_id = tmp_dict # renamed new seq to their otu_ids from GI's, but all info is in self.otu_dict
         sys.stdout.write("{} new sequences added from genbank\n")
     def _add_otu(self, gi):
@@ -398,17 +406,18 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
         """runs papara on the tree, the alinment and the new query sequences"""
         sys.stdout.write("aligning query sequences \n")
         os.chdir(self.workdir)#Clean up dir moving
-        subprocess.call(["papara", "-t", "{}_random_resolve.tre".format(self.runname),
-                         "-s", "{}_aln_ott.phy".format(self.runname),
-                         "-q", "{}_{}.fasta".format(self.runname, self.today),
-                         "-n", papara_runname]) #FIx directory ugliness
-        os.chdir('..')
+        pp = subprocess.call(["papara", 
+                              "-t", "{}_random_resolve.tre".format(self.runname),
+                              "-s", "{}_aln_ott.phy".format(self.runname),
+                              "-q", "{}_{}.fasta".format(self.runname, self.today),
+                              "-n", papara_runname]) #FIx directory ugliness
+        os.chdir('..') 
     def place_query_seqs(self):
         """runs raxml on the tree, and teh combined alignment including the new quesry seqs
         Just for placement, to use as starting tree."""
         sys.stdout.write("placing query sequences \n")
         os.chdir(self.workdir)
-        subprocess.call(["raxmlHPC", "-m", "GTRCAT",
+        p1 = subprocess.call(["raxmlHPC", "-m", "GTRCAT",
                          "-f", "v",
                          "-s", "papara_alignment.extended",
                          "-t", "{}_random_resolve.tre".format(self.runname),
@@ -425,7 +434,7 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
     def est_full_tree(self):
         """Full raxml run from the placement tree as starting tree"""
         os.chdir(self.workdir)
-        subprocess.call(["raxmlHPC", "-m", "GTRCAT",
+        p2 = subprocess.call(["raxmlHPC", "-m", "GTRCAT",
                          "-s", "papara_alignment.extended",
                          "-t", "{}_place_resolve.tre".format(self.runname),
                          "-p", "1",
