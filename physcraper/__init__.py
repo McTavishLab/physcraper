@@ -91,6 +91,7 @@ class PhyscraperSetup(object):
             lii = lin.split(",")
             self.ott_to_ncbi[int(lii[0])] = int(lii[1])
             self.ncbi_to_ott[int(lii[1])] = int(lii[0])
+            self.ott_to_name[int(lii[0])] = lii[2].strip()
         fi.close()
         if os.path.isfile("{}/id_map.txt".format(self.workdir)): #todo config?!
             fi = open("{}/id_map.txt".format(self.workdir))
@@ -197,6 +198,8 @@ class PhyscraperSetup(object):
         self._reconcile_names()
         self._prune()
 
+# I think it should write out to files so that the PHyscarpe scrape object can just read the aln etc from those, maybe the shaould be where the OTU dict comes from too...
+#Hmmm.
 
 class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in a different way?!
     #set up needed variables as nones here?!
@@ -206,12 +209,13 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
         if setup_obj:#this should need to happen ony the first time the scrape object is run.
             self.workdir = deepcopy(setup_obj.workdir)
             self.runname = deepcopy(setup_obj.runname)
-            self.aln = deepcopy(setup_obj.aln)
-            self.tre = deepcopy(setup_obj.tre)
+            self.aln = deepcopy(setup_obj.aln) #NO! I think these should readt straightf orm the local file.... OR not?
+            self.tre = deepcopy(setup_obj.tre) #
             self.otu_dict = deepcopy(setup_obj.otu_dict)
             self.ott_to_ncbi = deepcopy(setup_obj.ott_to_ncbi)
             self.ncbi_to_ott = deepcopy(setup_obj.ncbi_to_ott)
             self.gi_ncbi_dict = deepcopy(setup_obj.gi_ncbi_dict)
+            self.ott_to_name = deepcopy(setup_obj.ott_to_name)
             self.mrca_ncbi = deepcopy(setup_obj.mrca_ncbi)
             self.e_value_thresh = deepcopy(setup_obj.e_value_thresh)
             self.hitlist_size = deepcopy(setup_obj.hitlist_size)
@@ -245,7 +249,7 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
             os.makedirs(self.workdir)
         self.newseqs_file = "{}/{}_{}.fasta".format(self.workdir, self.runname, self.today)
  #TODO is this the right place for this?
-    def _write_files(self, label = None):
+    def _write_files(self):
         """Outputs both the streaming files and a ditechecked"""
         #First write rich annotation json file with everything needed for later?
         self.tre.resolve_polytomies()
@@ -263,22 +267,22 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
                        schema="fasta")
         pickle.dump(self, open('{}/{}_scrape{}.p'.format(self.workdir, self.runname, self.today), 'wb'))
         pickle.dump(self.otu_dict, open('{}/{}_otu_dict{}.p'.format(self.workdir, self.runname, self.today), 'wb'))
-        if label:
-            assert label in ["^ot:originalLabel", "^ot:ottId", "^ncbi:taxon"]
-            tmp_tre = deepcopy(self.tre)
-            tmp_aln = deepcopy(self.aln)
-            for taxon in tmp_tre.taxon_namespace:
-                new_label = self.otu_dict[taxon.label].get(label)
-                if new_label:
-                    taxon.label = new_label
-            for taxon in tmp_aln.taxon_namespace:
-                    new_label = self.otu_dict[taxon.label].get(label)
-                    if new_label:
-                        taxon.label = new_label
-            tmp_tre.write(path="{}/{}_labelled{}.tre".format(self.workdir, self.runname, self.today),
-                           schema="newick", unquoted_underscores=True, suppress_edge_lengths=False)
-            tmp_aln.write(path="{}/{}_labelled{}.fas".format(self.workdir, self.runname, self.today),
-                           schema="fasta")
+    def write_labelled(self, label='^ot:ottTaxonName'):
+        assert label in ['^ot:ottTaxonName', "^ot:originalLabel", "^ot:ottId", "^ncbi:taxon"]
+        tmp_tre = deepcopy(self.tre)
+        tmp_aln = deepcopy(self.aln)
+        for taxon in tmp_tre.taxon_namespace:
+            new_label = self.otu_dict[taxon.label].get(label)
+            if new_label:
+                taxon.label = new_label
+        for taxon in tmp_aln.taxon_namespace:
+            new_label = self.otu_dict[taxon.label].get(label)
+            if new_label:
+                taxon.label = new_label
+        tmp_tre.write(path="{}/{}_labelled{}.tre".format(self.workdir, self.runname, self.today),
+                      schema="newick", unquoted_underscores=True, suppress_edge_lengths=False)
+        tmp_aln.write(path="{}/{}_labelled{}.fas".format(self.workdir, self.runname, self.today),
+                      schema="fasta")
     def run_blast(self): #TODO Should this be happening elsewhere?
         '''generates the blast queries and sames them to xml'''
         if not os.path.exists(self.blast_subdir):
@@ -302,7 +306,7 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
         '''nams blast files'''
         return "{}/{}_{}.xml".format(self.blast_subdir, self.runname, taxon.label)#TODO pull the repeated runname
     def read_blast(self):
-        '''reads in and prcesses the bast xml files'''
+        '''reads in and prcesses the blast xml files'''
         self.run_blast()
         for taxon in self.aln:
             xml_fi = "{}".format(self.gen_xml_name(taxon))
@@ -379,6 +383,7 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
         self.otu_dict[otu_id]['^ncbi:taxon'] = self.map_gi_ncbi(gi)
         self.otu_dict[otu_id]['^ot:ottId'] = self.ncbi_to_ott.get(self.map_gi_ncbi(gi))
         self.otu_dict[otu_id]['^physcraper:status'] = "query"
+        self.otu_dict[otu_id]['^ot:ottTaxonName'] = self.ott_to_name.get(self.otu_dict[otu_id]['^ot:ottId'])
         return otu_id
     def map_gi_ncbi(self, gi):
         """get the ncbi taxon id's for a gi input"""
@@ -406,22 +411,22 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
         """runs papara on the tree, the alinment and the new query sequences"""
         sys.stdout.write("aligning query sequences \n")
         os.chdir(self.workdir)#Clean up dir moving
-        pp = subprocess.call(["papara", 
+        pp = subprocess.call(["papara",
                               "-t", "{}_random_resolve.tre".format(self.runname),
                               "-s", "{}_aln_ott.phy".format(self.runname),
                               "-q", "{}_{}.fasta".format(self.runname, self.today),
                               "-n", papara_runname]) #FIx directory ugliness
-        os.chdir('..') 
+        os.chdir('..')
     def place_query_seqs(self):
         """runs raxml on the tree, and teh combined alignment including the new quesry seqs
         Just for placement, to use as starting tree."""
         sys.stdout.write("placing query sequences \n")
         os.chdir(self.workdir)
         p1 = subprocess.call(["raxmlHPC", "-m", "GTRCAT",
-                         "-f", "v",
-                         "-s", "papara_alignment.extended",
-                         "-t", "{}_random_resolve.tre".format(self.runname),
-                         "-n", "{}_PLACE".format(self.runname)])
+                              "-f", "v",
+                              "-s", "papara_alignment.extended",
+                              "-t", "{}_random_resolve.tre".format(self.runname),
+                              "-n", "{}_PLACE".format(self.runname)])
         placetre = Tree.get(path="RAxML_labelledTree.{}_PLACE".format(self.runname),
                             schema="newick",
                             preserve_underscores=True)
@@ -435,10 +440,10 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
         """Full raxml run from the placement tree as starting tree"""
         os.chdir(self.workdir)
         p2 = subprocess.call(["raxmlHPC", "-m", "GTRCAT",
-                         "-s", "papara_alignment.extended",
-                         "-t", "{}_place_resolve.tre".format(self.runname),
-                         "-p", "1",
-                         "-n", "{}".format(self.today)])
+                              "-s", "papara_alignment.extended",
+                              "-t", "{}_place_resolve.tre".format(self.runname),
+                              "-p", "1",
+                              "-n", "{}".format(self.today)])
         os.chdir('..')
     def generate_streamed_alignment(self):
         """runs teh key steps and then replaces the tree and alignemnt with the expanded ones"""
