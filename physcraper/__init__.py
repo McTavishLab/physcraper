@@ -60,6 +60,7 @@ class PhyscraperSetup(object):
         self._read_config()
         self._get_study()
         self.ott_to_ncbi = {}
+        self.ott_to_name = {}
         self.ncbi_to_ott = {}
         self.phy = None
         self.gi_ncbi_dict = {}
@@ -209,8 +210,15 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
         if setup_obj:#this should need to happen ony the first time the scrape object is run.
             self.workdir = deepcopy(setup_obj.workdir)
             self.runname = deepcopy(setup_obj.runname)
-            self.aln = deepcopy(setup_obj.aln) #NO! I think these should readt straightf orm the local file.... OR not?
-            self.tre = deepcopy(setup_obj.tre) #
+            if os.path.exists("{}/{}_aln_ott.phy".format(self.workdir, self.runname)):
+                self.aln = DnaCharacterMatrix.get(path="{}/{}_aln_ott.phy".format(self.workdir, self.runname), schema="phylip")
+                self.tre = Tree.get(path="{}/{}_random_resolve.tre".format(self.workdir, self.runname),
+                                    schema="newick",
+                                    preserve_underscores=True,
+                                    taxon_namespace=self.aln.taxon_namespace)
+            else:
+                self.aln = deepcopy(setup_obj.aln) 
+                self.tre = deepcopy(setup_obj.tre) #
             self.otu_dict = deepcopy(setup_obj.otu_dict)
             self.ott_to_ncbi = deepcopy(setup_obj.ott_to_ncbi)
             self.ncbi_to_ott = deepcopy(setup_obj.ncbi_to_ott)
@@ -271,13 +279,14 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
         assert label in ['^ot:ottTaxonName', "^ot:originalLabel", "^ot:ottId", "^ncbi:taxon"]
         tmp_tre = deepcopy(self.tre)
         tmp_aln = deepcopy(self.aln)
+        assert tmp_tre.taxon_namespace == tmp_aln.taxon_namespace
+        new_names = set()
         for taxon in tmp_tre.taxon_namespace:
             new_label = self.otu_dict[taxon.label].get(label)
             if new_label:
-                taxon.label = new_label
-        for taxon in tmp_aln.taxon_namespace:
-            new_label = self.otu_dict[taxon.label].get(label)
-            if new_label:
+                if new_label in new_names:
+                    new_label = " ".join([new_label, taxon.label])
+                new_names.add(new_label)
                 taxon.label = new_label
         tmp_tre.write(path="{}/{}_labelled{}.tre".format(self.workdir, self.runname, self.today),
                       schema="newick", unquoted_underscores=True, suppress_edge_lengths=False)
@@ -287,7 +296,8 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
         '''generates the blast queries and sames them to xml'''
         if not os.path.exists(self.blast_subdir):
             os.makedirs(self.blast_subdir)
-        equery = "txid{}[orgn] AND {}:{}[mdat]".format(self.mrca_ncbi, self.lastupdate.replace("-", "/"), self.today.replace("-", "/"))
+#        equery = "txid{}[orgn] AND {}:{}[mdat]".format(self.mrca_ncbi, self.lastupdate.replace("-", "/"), self.today.replace("-", "/"))
+        equery = "txid{}[orgn]".format(self.mrca_ncbi)
         for taxon, seq in self.aln.items():
             query = seq.symbols_as_string().replace("-", "").replace("?", "")
             sys.stdout.write("blasting seq {}\n".format(taxon.label))
@@ -297,6 +307,7 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
                                                query,
                                                entrez_query=equery,
                                                hitlist_size=self.hitlist_size)
+                sys.stdout.write("output file is {}\n".format(xml_fi))
                 save_file = open(xml_fi, "w")
                 save_file.write(result_handle.read())
                 save_file.close()
