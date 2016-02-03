@@ -210,9 +210,9 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
         if setup_obj:#this should need to happen ony the first time the scrape object is run.
             self.workdir = deepcopy(setup_obj.workdir)
             self.runname = deepcopy(setup_obj.runname)
-            if os.path.exists("{}/{}_aln_ott.phy".format(self.workdir, self.runname)):
-                self.aln = DnaCharacterMatrix.get(path="{}/{}_aln_ott.phy".format(self.workdir, self.runname), schema="phylip")
-                self.tre = Tree.get(path="{}/{}_random_resolve.tre".format(self.workdir, self.runname),
+            if os.path.exists("{}/aln_ott.phy".format(self.workdir)):
+                self.aln = DnaCharacterMatrix.get(path="{}/aln_ott.phy".format(self.workdir), schema="phylip")
+                self.tre = Tree.get(path="{}/random_resolve.tre".format(self.workdir),
                                     schema="newick",
                                     preserve_underscores=True,
                                     taxon_namespace=self.aln.taxon_namespace)
@@ -255,31 +255,31 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
             self.lastupdate = '1900/01/01'
         if not os.path.exists(self.workdir):
             os.makedirs(self.workdir)
-        self.newseqs_file = "{}/{}_{}.fasta".format(self.workdir, self.runname, self.today)
+        self.newseqs_file = "{}/{}.fasta".format(self.workdir, self.today)
  #TODO is this the right place for this?
     def _write_files(self):
         """Outputs both the streaming files and a ditechecked"""
         #First write rich annotation json file with everything needed for later?
         self.tre.resolve_polytomies()
-        self.tre.write(path="{}/{}_random_resolve.tre".format(self.workdir, self.runname),
+        self.tre.write(path="{}/random_resolve.tre".format(self.workdir),
                        schema="newick",
                        unquoted_underscores=True)
-        self.aln.write(path="{}/{}_aln_ott.phy".format(self.workdir, self.runname),
+        self.aln.write(path="{}/aln_ott.phy".format(self.workdir),
                        schema="phylip")
-        self.aln.write(path="{}/{}_aln_ott.fas".format(self.workdir, self.runname),
+        self.aln.write(path="{}/aln_ott.fas".format(self.workdir),
                        schema="fasta")
-        self.tre.write(path="{}/{}_random_resolve{}.tre".format(self.workdir, self.runname, self.today),
+        self.tre.write(path="{}/random_resolve{}.tre".format(self.workdir, self.today),
                        schema="newick",
                        unquoted_underscores=True)
-        self.aln.write(path="{}/{}_aln_ott{}.fas".format(self.workdir, self.runname, self.today),
+        self.aln.write(path="{}/aln_ott{}.fas".format(self.workdir, self.today),
                        schema="fasta")
-        pickle.dump(self, open('{}/{}_scrape{}.p'.format(self.workdir, self.runname, self.today), 'wb'))
-        pickle.dump(self.otu_dict, open('{}/{}_otu_dict{}.p'.format(self.workdir, self.runname, self.today), 'wb'))
+        pickle.dump(self, open('{}/scrape.p'.format(self.workdir), 'wb'))
+        pickle.dump(self.otu_dict, open('{}/otu_dict{}.p'.format(self.workdir, self.today), 'wb'))
     def write_labelled(self, label='^ot:ottTaxonName'):
         assert label in ['^ot:ottTaxonName', "^ot:originalLabel", "^ot:ottId", "^ncbi:taxon"]
         tmp_tre = deepcopy(self.tre)
         tmp_aln = deepcopy(self.aln)
-        assert tmp_tre.taxon_namespace == tmp_aln.taxon_namespace
+        tmp_tre.taxon_namespace = tmp_aln.taxon_namespace
         new_names = set()
         for taxon in tmp_tre.taxon_namespace:
             new_label = self.otu_dict[taxon.label].get(label)
@@ -288,9 +288,21 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
                     new_label = " ".join([new_label, taxon.label])
                 new_names.add(new_label)
                 taxon.label = new_label
-        tmp_tre.write(path="{}/{}_labelled{}.tre".format(self.workdir, self.runname, self.today),
+            elif self.otu_dict[taxon.label].get("^ot:originalLabel"):
+                new_label = self.otu_dict[taxon.label].get("^ot:originalLabel")
+                if new_label in new_names:
+                    new_label = " ".join([new_label, taxon.label])
+                new_names.add(new_label)
+                taxon.label = new_label
+            elif self.otu_dict[taxon.label].get("^ncbi:taxon"):
+                new_label = " ".join(["ncbi", str(self.otu_dict[taxon.label].get("^ncbi:taxon"))])
+                if new_label in new_names:
+                    new_label = " ".join([new_label, taxon.label])
+                new_names.add(new_label)
+                taxon.label = new_label
+        tmp_tre.write(path="{}/labelled{}.tre".format(self.workdir, self.today),
                       schema="newick", unquoted_underscores=True, suppress_edge_lengths=False)
-        tmp_aln.write(path="{}/{}_labelled{}.fas".format(self.workdir, self.runname, self.today),
+        tmp_aln.write(path="{}/labelled{}.fas".format(self.workdir, self.today),
                       schema="fasta")
     def run_blast(self): #TODO Should this be happening elsewhere?
         '''generates the blast queries and sames them to xml'''
@@ -315,7 +327,7 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
         self.lastupdate = self.today
     def gen_xml_name(self, taxon):
         '''nams blast files'''
-        return "{}/{}_{}.xml".format(self.blast_subdir, self.runname, taxon.label)#TODO pull the repeated runname
+        return "{}/{}.xml".format(self.blast_subdir, taxon.label)#TODO pull the repeated runname
     def read_blast(self):
         '''reads in and prcesses the blast xml files'''
         self.run_blast()
@@ -423,9 +435,9 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
         sys.stdout.write("aligning query sequences \n")
         os.chdir(self.workdir)#Clean up dir moving
         pp = subprocess.call(["papara",
-                              "-t", "{}_random_resolve.tre".format(self.runname),
-                              "-s", "{}_aln_ott.phy".format(self.runname),
-                              "-q", "{}_{}.fasta".format(self.runname, self.today),
+                              "-t", "random_resolve.tre",
+                              "-s", "aln_ott.phy",
+                              "-q", "{}.fasta".format(self.today),
                               "-n", papara_runname]) #FIx directory ugliness
         os.chdir('..')
     def place_query_seqs(self):
@@ -436,23 +448,23 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
         p1 = subprocess.call(["raxmlHPC", "-m", "GTRCAT",
                               "-f", "v",
                               "-s", "papara_alignment.extended",
-                              "-t", "{}_random_resolve.tre".format(self.runname),
-                              "-n", "{}_PLACE".format(self.runname)])
-        placetre = Tree.get(path="RAxML_labelledTree.{}_PLACE".format(self.runname),
+                              "-t", "random_resolve.tre",
+                              "-n", "PLACE"])
+        placetre = Tree.get(path="RAxML_labelledTree.PLACE",
                             schema="newick",
                             preserve_underscores=True)
         placetre.resolve_polytomies()
         for taxon in placetre.taxon_namespace:
             if taxon.label.startswith("QUERY"):
                 taxon.label = taxon.label.replace("QUERY___", "")
-        placetre.write(path="{}_place_resolve.tre".format(self.runname), schema="newick", unquoted_underscores=True)
+        placetre.write(path="place_resolve.tre", schema="newick", unquoted_underscores=True)
         os.chdir('..')
     def est_full_tree(self):
         """Full raxml run from the placement tree as starting tree"""
         os.chdir(self.workdir)
         p2 = subprocess.call(["raxmlHPC", "-m", "GTRCAT",
                               "-s", "papara_alignment.extended",
-                              "-t", "{}_place_resolve.tre".format(self.runname),
+                              "-t", "place_resolve.tre",
                               "-p", "1",
                               "-n", "{}".format(self.today)])
         os.chdir('..')
