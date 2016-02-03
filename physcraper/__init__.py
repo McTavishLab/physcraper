@@ -139,6 +139,7 @@ class PhyscraperSetup(object):
         for otu_id in otus:
             self.otu_dict[otu_id] = extract_otu_nexson(self.nexson, otu_id)[otu_id]
             self.otu_dict[otu_id]['^physcraper:status'] = "original"
+            self.otu_dict[otu_id]['^physcraper:last_blasted'] = "1900/01/01"
             orig = self.otu_dict[otu_id].get(u'^ot:originalLabel').replace(" ", "_")
             self.orig_lab_to_otu[orig] = otu_id
             self.treed_taxa[orig] = self.otu_dict[otu_id].get(u'^ot:ottId')
@@ -217,7 +218,7 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
                                     preserve_underscores=True,
                                     taxon_namespace=self.aln.taxon_namespace)
             else:
-                self.aln = deepcopy(setup_obj.aln) 
+                self.aln = deepcopy(setup_obj.aln)
                 self.tre = deepcopy(setup_obj.tre) #
             self.otu_dict = deepcopy(setup_obj.otu_dict)
             self.ott_to_ncbi = deepcopy(setup_obj.ott_to_ncbi)
@@ -236,7 +237,6 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
         self.new_seqs_otu_id = {}
         self.otu_by_gi = {}
         self.gi_dict = {}
-        self.blast_subdir = None
         self._to_be_pruned = []
         self.tmpfi = "{}/physcraper_run_in_progress".format(self.workdir)
         if os.path.exists(self.tmpfi):
@@ -247,7 +247,7 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
             fi = open(self.tmpfi, 'w')
             fi.write(self.today)
             fi.close()
-        self.blast_subdir = "{}/blast_run_{}".format(self.workdir, self.today)
+        self.blast_subdir = "{}/current_blast_run".format(self.workdir)
         if os.path.exists("{}/last_completed_update".format(self.workdir)):
             last = open("{}/last_completed_update".format(self.workdir)).readline()
             self.lastupdate = last.strip()
@@ -276,6 +276,7 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
         pickle.dump(self, open('{}/scrape.p'.format(self.workdir), 'wb'))
         pickle.dump(self.otu_dict, open('{}/otu_dict{}.p'.format(self.workdir, self.today), 'wb'))
     def write_labelled(self, label='^ot:ottTaxonName'):
+        """output tree and alignement with human readble labels"""
         assert label in ['^ot:ottTaxonName', "^ot:originalLabel", "^ot:ottId", "^ncbi:taxon"]
         tmp_tre = deepcopy(self.tre)
         tmp_aln = deepcopy(self.aln)
@@ -308,12 +309,17 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
         '''generates the blast queries and sames them to xml'''
         if not os.path.exists(self.blast_subdir):
             os.makedirs(self.blast_subdir)
-#        equery = "txid{}[orgn] AND {}:{}[mdat]".format(self.mrca_ncbi, self.lastupdate.replace("-", "/"), self.today.replace("-", "/"))
-        equery = "txid{}[orgn]".format(self.mrca_ncbi)
+#        equery = "txid{}[orgn]".format(self.mrca_ncbi)
         for taxon, seq in self.aln.items():
+            otu_id = taxon.label
+            last_blast = self.otu_dict[otu_id]['^physcraper:last_blasted']
+            today = str(datetime.date.today()).replace("-", "/")
+            equery = "txid{}[orgn] AND {}:{}[mdat]".format(self.mrca_ncbi,
+                                                           last_blast,
+                                                           today)
             query = seq.symbols_as_string().replace("-", "").replace("?", "")
             sys.stdout.write("blasting seq {}\n".format(taxon.label))
-            xml_fi = "{}".format(self.gen_xml_name(taxon))
+            xml_fi = "{}/{}.xml".format(self.blast_subdir, taxon.label)
             if not os.path.isfile(xml_fi):
                 result_handle = NCBIWWW.qblast("blastn", "nt",
                                                query,
@@ -323,16 +329,17 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
                 save_file = open(xml_fi, "w")
                 save_file.write(result_handle.read())
                 save_file.close()
+                self.otu_dict[otu_id]['^physcraper:last_blasted'] = today
                 result_handle.close()
-        self.lastupdate = self.today
-    def gen_xml_name(self, taxon):
-        '''nams blast files'''
-        return "{}/{}.xml".format(self.blast_subdir, taxon.label)#TODO pull the repeated runname
-    def read_blast(self):
+#        self.lastupdate = self.today
+        return #TODO pull the repeated runname
+    def read_blast(self, blast_dir=None):
         '''reads in and prcesses the blast xml files'''
+        if not blast_dir:
+            blast_dir = self.blast_subdir
         self.run_blast()
         for taxon in self.aln:
-            xml_fi = "{}".format(self.gen_xml_name(taxon))
+            xml_fi = "{}/{}.xml".format(blast_dir, taxon.label)
             if os.path.isfile(xml_fi):
                 result_handle = open(xml_fi)
                 blast_records = NCBIXML.parse(result_handle)
@@ -342,6 +349,7 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
                             if float(hsp.expect) < float(self.e_value_thresh):
                                 self.new_seqs[int(alignment.title.split('|')[1])] = hsp.sbjct
                                 self.gi_dict[int(alignment.title.split('|')[1])] = alignment.__dict__
+        os.rename(self.blast_subdir, "{}/previous_blast_run".format(self.workdir))
     # TODO this should go back in the class and should prune the tree
     def seq_dict_build(self, seq, label, seq_dict): #Sequence needs to be passed in as string.
         """takes a sequence, a label (the otu_id) and a dictionary and adds the
@@ -359,7 +367,6 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
             else:
                 if new_seq.find(inc_seq) != -1:#
                     if self.otu_dict[tax].get('^physcraper:status') == "original":
-
                         sys.stdout.write("seq {} is supersequence of original seq {}, both kept in alignment\n".format(label, tax))
                         seq_dict[label] = seq
                         return
@@ -407,6 +414,7 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
         self.otu_dict[otu_id]['^ot:ottId'] = self.ncbi_to_ott.get(self.map_gi_ncbi(gi))
         self.otu_dict[otu_id]['^physcraper:status'] = "query"
         self.otu_dict[otu_id]['^ot:ottTaxonName'] = self.ott_to_name.get(self.otu_dict[otu_id]['^ot:ottId'])
+        self.otu_dict[otu_id]['^physcraper:last_blasted'] = "1900/01/01"
         return otu_id
     def map_gi_ncbi(self, gi):
         """get the ncbi taxon id's for a gi input"""
