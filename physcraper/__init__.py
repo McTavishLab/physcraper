@@ -280,7 +280,7 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
         assert label in ['^ot:ottTaxonName', "^ot:originalLabel", "^ot:ottId", "^ncbi:taxon"]
         tmp_tre = deepcopy(self.tre)
         tmp_aln = deepcopy(self.aln)
-        tmp_tre.taxon_namespace = tmp_aln.taxon_namespace
+        tmp_aln.taxon_namespace = tmp_tre.taxon_namespace
         new_names = set()
         for taxon in tmp_tre.taxon_namespace:
             new_label = self.otu_dict[taxon.label].get(label)
@@ -325,7 +325,6 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
                                                query,
                                                entrez_query=equery,
                                                hitlist_size=self.hitlist_size)
-                sys.stdout.write("output file is {}\n".format(xml_fi))
                 save_file = open(xml_fi, "w")
                 save_file.write(result_handle.read())
                 save_file.close()
