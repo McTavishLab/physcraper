@@ -1,38 +1,39 @@
 #!/usr/bin/env python
 from physcraper import StudyInfo, PhyscraperSetup, PhyscraperScrape
 import pickle
-
-
+import sys
+import os
 #LSU ASC tree example
 
 study_id = "pg_238"
 tree_id = "tree110"
-seqaln = "rpb2.fas"
+seqaln = "shard/ascomycota_alt/rpb2.fas"
 mattype="fasta"
-runname="rpb2_test"
+runname="rpb2"
 
-
+sys.stdout.write("setting up StudyINfo\n")
+sys.stdout.flush()
 info = StudyInfo(study_id, tree_id, seqaln, mattype)
+sys.stdout.write("setting up scrape instance\n")
+sys.stdout.flush()
 
-test = PhyscraperSetup(info, runname)
-test.setup_physcraper()
+setup_pickfi = '{}/{}_setup.p'.format(runname,runname)
+scrape_pickfi = '{}/{}_scrape.p'.format(runname,runname)
 
-pickle.dump(test, open('{}/{}_setup.p'.format(runname,runname), 'wb'))
+if os.path.isfile(scrape_pickfi):
+    scrape = pickle.load(open(scrape_pickfi,'rb'))
+elif os.path.isfile(setup_pickfi):
+    setup = pickle.load(open(setup_pickfi,'rb'))
+    scrape = PhyscraperScrape(setup)
+else:
+    setup = PhyscraperSetup(info, runname, configfi="config")
+    setup.setup_physcraper()
+    pickle.dump(setup, open(setup_pickfi, 'wb'))
+    scrape = PhyscraperScrape(setup)
 
-test2 = PhyscraperScrape(test)
-#test2.set_date("2016-01-13")
-#test2 = pickle.load(open('{}/{}_scrape.p'.format(runname,runname),'rb'))
-#test2.today = "2016-01-13"
-test2.generate_streamed_alignment()
-#test2.set_date("2016-01-15")
-#test2.generate_streamed_alignment()
-#test2.mrca_ncbi
-#test2.run_blast()
-#test2._blast_complete = 1
-#test2.read_blast()
-#test2.remove_identical_seqs()
-#test2.write_query_seqs()
-#test2.scrape()
+sys.stdout.write("Instance set up\n")
+sys.stdout.flush()
 
-#TODO need actual mini data set for test, need to fix dendropy pickle,
-pickle.dump(test2, open('{}/{}_scrape.p'.format(runname,runname), 'wb'))
+scrape.generate_streamed_alignment()
+scrape.write_labelled()
+
