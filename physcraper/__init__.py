@@ -278,9 +278,13 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
     def write_labelled(self, label='^ot:ottTaxonName'):
         """output tree and alignement with human readble labels"""
         assert label in ['^ot:ottTaxonName', "^ot:originalLabel", "^ot:ottId", "^ncbi:taxon"]
-        tmp_tre = deepcopy(self.tre)
-        tmp_aln = deepcopy(self.aln)
-        tmp_aln.taxon_namespace = tmp_tre.taxon_namespace
+
+        tmp_tre = Tree.get(path="{}/random_resolve{}.tre".format(self.workdir, self.today),
+                            schema="newick",
+                            preserve_underscores=True)
+        tmp_aln = DnaCharacterMatrix.get(path="{}/aln_ott.fas".format(self.workdir), 
+                                         schema="fasta",
+                                         taxon_namespace=tmp_tre.taxon_namespace)
         new_names = set()
         for taxon in tmp_tre.taxon_namespace:
             new_label = self.otu_dict[taxon.label].get(label)
@@ -302,7 +306,9 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
                 new_names.add(new_label)
                 taxon.label = new_label
         tmp_tre.write(path="{}/labelled{}.tre".format(self.workdir, self.today),
-                      schema="newick", unquoted_underscores=True, suppress_edge_lengths=False)
+                      schema="newick", 
+                      unquoted_underscores=True,
+                      suppress_edge_lengths=False)
         tmp_aln.write(path="{}/labelled{}.fas".format(self.workdir, self.today),
                       schema="fasta")
     def run_blast(self): #TODO Should this be happening elsewhere?
