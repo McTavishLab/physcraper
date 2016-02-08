@@ -354,7 +354,6 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
                             if float(hsp.expect) < float(self.e_value_thresh):
                                 self.new_seqs[int(alignment.title.split('|')[1])] = hsp.sbjct
                                 self.gi_dict[int(alignment.title.split('|')[1])] = alignment.__dict__
-        os.rename(self.blast_subdir, "{}/previous_blast_run".format(self.workdir))
     # TODO this should go back in the class and should prune the tree
     def seq_dict_build(self, seq, label, seq_dict): #Sequence needs to be passed in as string.
         """takes a sequence, a label (the otu_id) and a dictionary and adds the
@@ -497,5 +496,10 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
                             preserve_underscores=True,
                             taxon_namespace=self.aln.taxon_namespace)
         self._write_files()
+        os.rename(self.blast_subdir, "{}/previous_run".format(self.workdir))
         os.rename(self.tmpfi,
                   "{}/last_completed_update".format(self.workdir))
+        for filename in glob.glob('{}/RAxML*'.format(self.workdir)):
+            os.rename(filename, "{}/previous_run{}".format(self.workdir, filename.split("/")[1]))
+        for filename in glob.glob('{}/papara*'.format(self.workdir)):
+            os.rename(filename, "{}/previous_run{}".format(self.workdir, filename.split("/")[1]))
