@@ -187,6 +187,12 @@ class PhyscraperSetup(object):
         for taxon in self.aln.taxon_namespace:
             otu_id = self.orig_lab_to_otu[taxon.label]
             taxon.label = otu_id.encode('ascii')
+    def write_files(self):
+        self.tre.write(path="{}/original_pruned.tre".format(self.workdir),
+                       schema="newick",
+                       unquoted_underscores=True)
+        self.aln.write(path="{}/original_pruned.fas".format(self.workdir),
+                       schema="fasta")
     def __getstate__(self):
         """hacky way to fix pickling"""
         result = self.__dict__.copy()
@@ -199,7 +205,7 @@ class PhyscraperSetup(object):
         self._get_mrca()
         self._reconcile_names()
         self._prune()
-
+        self.write_files()
 # I think it should write out to files so that the PHyscarpe scrape object can just read the aln etc from those, maybe the shaould be where the OTU dict comes from too...
 #Hmmm.
 
@@ -320,22 +326,26 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
             otu_id = taxon.label
             last_blast = self.otu_dict[otu_id]['^physcraper:last_blasted']
             today = str(datetime.date.today()).replace("-", "/")
-            equery = "txid{}[orgn] AND {}:{}[mdat]".format(self.mrca_ncbi,
-                                                           last_blast,
-                                                           today)
-            query = seq.symbols_as_string().replace("-", "").replace("?", "")
-            sys.stdout.write("blasting seq {}\n".format(taxon.label))
-            xml_fi = "{}/{}.xml".format(self.blast_subdir, taxon.label)
-            if not os.path.isfile(xml_fi):
-                result_handle = NCBIWWW.qblast("blastn", "nt",
-                                               query,
-                                               entrez_query=equery,
-                                               hitlist_size=self.hitlist_size)
-                save_file = open(xml_fi, "w")
-                save_file.write(result_handle.read())
-                save_file.close()
-                self.otu_dict[otu_id]['^physcraper:last_blasted'] = today
-                result_handle.close()
+            #sys.stdout.write("last blast {}\n".format(last_blast))
+            #sys.stdout.write("today {}\n".format(today))
+            if abs((datetime.datetime.strptime(today, "%Y/%m/%d") - datetime.datetime.strptime(last_blast, "%Y/%m/%d")).days) > 14: #TODO make configurable
+                #sys.stdout.write("date is {}\n".format(abs((datetime.datetime.strptime(today, "%Y/%m/%d") - datetime.datetime.strptime(last_blast, "%Y/%m/%d")).days)))
+                equery = "txid{}[orgn] AND {}:{}[mdat]".format(self.mrca_ncbi,
+                                                               last_blast,
+                                                               today)
+                query = seq.symbols_as_string().replace("-", "").replace("?", "")
+                sys.stdout.write("blasting seq {}\n".format(taxon.label))
+                xml_fi = "{}/{}.xml".format(self.blast_subdir, taxon.label)
+                if not os.path.isfile(xml_fi):
+                    result_handle = NCBIWWW.qblast("blastn", "nt",
+                                                   query,
+                                                   entrez_query=equery,
+                                                   hitlist_size=self.hitlist_size)
+                    save_file = open(xml_fi, "w")
+                    save_file.write(result_handle.read())
+                    save_file.close()
+                    self.otu_dict[otu_id]['^physcraper:last_blasted'] = today
+                    result_handle.close()
 #        self.lastupdate = self.today
         return #TODO pull the repeated runname
     def read_blast(self, blast_dir=None):
@@ -352,8 +362,9 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
                     for alignment in blast_record.alignments:
                         for hsp in alignment.hsps:
                             if float(hsp.expect) < float(self.e_value_thresh):
-                                self.new_seqs[int(alignment.title.split('|')[1])] = hsp.sbjct
-                                self.gi_dict[int(alignment.title.split('|')[1])] = alignment.__dict__
+                                if int(alignment.title.split('|')[1]) not in self.gi_dict: #skip ones we already have
+                                    self.new_seqs[int(alignment.title.split('|')[1])] = hsp.sbjct
+                                    self.gi_dict[int(alignment.title.split('|')[1])] = alignment.__dict__
     # TODO this should go back in the class and should prune the tree
     def seq_dict_build(self, seq, label, seq_dict): #Sequence needs to be passed in as string.
         """takes a sequence, a label (the otu_id) and a dictionary and adds the
@@ -483,23 +494,26 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
     def generate_streamed_alignment(self):
         """runs teh key steps and then replaces the tree and alignemnt with the expanded ones"""
         self.read_blast()
-        self.remove_identical_seqs()
-        self._write_files() #should happen before aligning in case of pruning
-        self.write_query_seqs()
-        self.align_query_seqs()
-        self.place_query_seqs()
-        self.est_full_tree()
-        self.aln = DnaCharacterMatrix.get(path="{}/papara_alignment.extended".format(self.workdir), schema="phylip")
-        self.aln.taxon_namespace.is_mutable = False #This should enforce name matching throughout...
-        self.tre = Tree.get(path="{}/RAxML_bestTree.{}".format(self.workdir, self.today),
-                            schema="newick",
-                            preserve_underscores=True,
-                            taxon_namespace=self.aln.taxon_namespace)
-        self._write_files()
-        os.rename(self.blast_subdir, "{}/previous_run".format(self.workdir))
-        os.rename(self.tmpfi,
-                  "{}/last_completed_update".format(self.workdir))
-        for filename in glob.glob('{}/RAxML*'.format(self.workdir)):
-            os.rename(filename, "{}/previous_run{}".format(self.workdir, filename.split("/")[1]))
-        for filename in glob.glob('{}/papara*'.format(self.workdir)):
-            os.rename(filename, "{}/previous_run{}".format(self.workdir, filename.split("/")[1]))
+        if len(self.new_seqs > 0):    
+            self.remove_identical_seqs()
+            self._write_files() #should happen before aligning in case of pruning
+            self.write_query_seqs()
+            self.align_query_seqs()
+            self.place_query_seqs()
+            self.est_full_tree()
+            self.aln = DnaCharacterMatrix.get(path="{}/papara_alignment.extended".format(self.workdir), schema="phylip")
+            self.aln.taxon_namespace.is_mutable = False #This should enforce name matching throughout...
+            self.tre = Tree.get(path="{}/RAxML_bestTree.{}".format(self.workdir, self.today),
+                                schema="newick",
+                                preserve_underscores=True,
+                                taxon_namespace=self.aln.taxon_namespace)
+            self._write_files()
+            os.rename(self.blast_subdir, "{}/previous_run".format(self.workdir))
+            os.rename(self.tmpfi,
+                      "{}/last_completed_update".format(self.workdir))
+            for filename in glob.glob('{}/RAxML*'.format(self.workdir)):
+                os.rename(filename, "{}/previous_run{}".format(self.workdir, filename.split("/")[1]))
+            for filename in glob.glob('{}/papara*'.format(self.workdir)):
+                os.rename(filename, "{}/previous_run{}".format(self.workdir, filename.split("/")[1]))
+        else:
+            sys.stdout.write("No new sequences found.")
