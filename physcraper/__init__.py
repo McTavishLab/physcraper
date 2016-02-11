@@ -494,7 +494,7 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
     def generate_streamed_alignment(self):
         """runs teh key steps and then replaces the tree and alignemnt with the expanded ones"""
         self.read_blast()
-        if len(self.new_seqs > 0):    
+        if len(self.new_seqs) > 0:    
             self.remove_identical_seqs()
             self._write_files() #should happen before aligning in case of pruning
             self.write_query_seqs()
