@@ -223,6 +223,7 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
                                     schema="newick",
                                     preserve_underscores=True,
                                     taxon_namespace=self.aln.taxon_namespace)
+                print "PULLING FROM FILE"
             else:
                 self.aln = deepcopy(setup_obj.aln)
                 self.tre = deepcopy(setup_obj.tre) #
@@ -444,8 +445,8 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
         else:
             try:
                 tax_id = int(subprocess.check_output(["bash", self.get_ncbi_taxonomy,
-                                                  "{}".format(gi),
-                                                  "{}".format(self.ncbi_dmp)]).split('\t')[1])
+                                                      "{}".format(gi),
+                                                      "{}".format(self.ncbi_dmp)]).split('\t')[1])
             except ValueError:
                 sys.stderr.write("ncbi_dmp file needs to be updated. Do so and rerun.")
             mapped_taxon_ids.write("{}, {}\n".format(gi, tax_id))
@@ -472,7 +473,7 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
                               "-n", papara_runname]) #FIx directory ugliness
         os.chdir('..')
     def place_query_seqs(self):
-        """runs raxml on the tree, and teh combined alignment including the new quesry seqs
+        """runs raxml on the tree, and the combined alignment including the new quesry seqs
         Just for placement, to use as starting tree."""
         sys.stdout.write("placing query sequences \n")
         os.chdir(self.workdir)
@@ -516,12 +517,13 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
                                 preserve_underscores=True,
                                 taxon_namespace=self.aln.taxon_namespace)
             self._write_files()
+            os.rename("{}/previous_run".format(self.workdir), "{}/previous_run{}".format(self.workdir, self.today))
             os.rename(self.blast_subdir, "{}/previous_run".format(self.workdir))
             os.rename(self.tmpfi,
                       "{}/last_completed_update".format(self.workdir))
             for filename in glob.glob('{}/RAxML*'.format(self.workdir)):
-                os.rename(filename, "{}/previous_run{}".format(self.workdir, filename.split("/")[1]))
+                os.rename(filename, "{}/previous_run/{}".format(self.workdir, filename.split("/")[1]))
             for filename in glob.glob('{}/papara*'.format(self.workdir)):
-                os.rename(filename, "{}/previous_run{}".format(self.workdir, filename.split("/")[1]))
+                os.rename(filename, "{}/previous_run/{}".format(self.workdir, filename.split("/")[1]))
         else:
             sys.stdout.write("No new sequences found.")
