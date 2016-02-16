@@ -267,9 +267,14 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
         """Outputs both the streaming files and a ditechecked"""
         #First write rich annotation json file with everything needed for later?
         self.tre.resolve_polytomies()
-        self.tre.write(path="{}/random_resolve.tre".format(self.workdir),
-                       schema="newick",
-                       unquoted_underscores=True)
+        self.tre.deroot()
+        tmptre = self.tre.as_string(schema="newick",
+                                    unquoted_underscores=True,
+                                    suppress_rooting=True)
+        tmptre = tmptre.replace(":0.0;",";")#Papara is diffffffficult about root
+        fi = open("{}/random_resolve.tre".format(self.workdir), "w")
+        fi.write(tmptre)
+        fi.close()
         self.aln.write(path="{}/aln_ott.phy".format(self.workdir),
                        schema="phylip")
         self.aln.write(path="{}/aln_ott.fas".format(self.workdir),
@@ -437,9 +442,12 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
         if gi in self.gi_ncbi_dict:
             tax_id = int(self.gi_ncbi_dict[gi])
         else:
-            tax_id = int(subprocess.check_output(["bash", self.get_ncbi_taxonomy,
+            try:
+                tax_id = int(subprocess.check_output(["bash", self.get_ncbi_taxonomy,
                                                   "{}".format(gi),
                                                   "{}".format(self.ncbi_dmp)]).split('\t')[1])
+            except ValueError:
+                sys.stderr.write("ncbi_dmp file needs to be updated. Do so and rerun.")
             mapped_taxon_ids.write("{}, {}\n".format(gi, tax_id))
             self.gi_ncbi_dict[gi] = tax_id
             assert tax_id  #if this doesn't work then the gi to taxon mapping needs to be updated - shouldhappen anyhow perhaps?!
