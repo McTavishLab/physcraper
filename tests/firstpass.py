@@ -1,43 +1,40 @@
 from physcraper import StudyInfo, PhyscraperSetup, PhyscraperScrape
 import pickle
+import sys
+import os
 
-
-#LSU ASC tree example
 
 study_id = "pg_873"
 tree_id = "tree1679"
-seqaln = "tests/data/tree1679.fas"
+seqaln = "tests/data/minitest.fas"
 mattype="fasta"
-runname="refact"
+runname="fresh3"
 
 info = StudyInfo(study_id, tree_id, seqaln, mattype)
 
-test = PhyscraperSetup(info, runname)
-test.setup_physcraper()
-assert(test.mrca_ott == 921280) #changes in the tree could actually change this...
+sys.stdout.write("setting up StudyINfo\n")
+sys.stdout.flush()
+info = StudyInfo(study_id, tree_id, seqaln, mattype)
+sys.stdout.write("setting up scrape instance\n")
+sys.stdout.flush()
 
+setup_pickfi = '{}/setup.p'.format(runname,runname)
+scrape_pickfi = '{}/scrape.p'.format(runname,runname)
 
-pickle.dump(test, open('{}/{}_setup.p'.format(runname,runname), 'wb'))
+if os.path.isfile(scrape_pickfi):
+    scrape = pickle.load(open(scrape_pickfi,'rb'))
+elif os.path.isfile(setup_pickfi):
+    setup = pickle.load(open(setup_pickfi,'rb'))
+    scrape = PhyscraperScrape(setup)
+else:
+    setup = PhyscraperSetup(info, runname, configfi="config")
+    setup.setup_physcraper()
+    pickle.dump(setup, open(setup_pickfi, 'wb'))
+    scrape = PhyscraperScrape(setup)
 
-test2 = PhyscraperScrape(test)
-#test2.set_date("2016-01-13")
-#test2 = pickle.load(open('{}/{}_scrape.p'.format(runname,runname),'rb'))
-#test2.today = "2016-01-13"
-test2.generate_streamed_alignment()
-#test2.set_date("2016-01-15")
-#test2.generate_streamed_alignment()
-#test2.mrca_ncbi
-#test2.run_blast()
-#test2._blast_complete = 1
-#test2.read_blast()
-#test2.remove_identical_seqs()
-#test2.write_query_seqs()
-#test2.scrape()
+scrape.reset_markers()
+sys.stdout.write("Instance set up\n")
+sys.stdout.flush()
+scrape.generate_streamed_alignment()
+scrape.write_labelled()
 
-#TODO need actual mini data set for test, need to fix dendropy pickle,
-pickle.dump(test2, open('{}/{}_scrape.p'.format(runname,runname), 'wb'))
-
-
-
-
-#test3 = physcraper_add('{}_scrape.p'.format(test.runname))
