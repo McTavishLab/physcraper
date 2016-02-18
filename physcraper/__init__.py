@@ -178,6 +178,8 @@ class PhyscraperSetup(object):
                             preserve_underscores=True,
                             taxon_namespace=self.aln.taxon_namespace)
         self.tre.prune_taxa_with_labels(prune)
+        for tax in prune:
+            del self.otu_dict[tax]
         if prune:
             fi = open("{}/pruned_taxa".format(self.workdir), 'w')
             fi.write("taxa pruned from tree and alignment due to excessive missing data\n")
@@ -213,20 +215,21 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
     #set up needed variables as nones here?!
     #TODO better enforce ordering
     """This is the class that does the perpetual updating"""
+    
     def __init__(self, setup_obj=None):
         if setup_obj:#this should need to happen ony the first time the scrape object is run.
             self.workdir = deepcopy(setup_obj.workdir)
             self.runname = deepcopy(setup_obj.runname)
-            if os.path.exists("{}/aln_ott.phy".format(self.workdir)):
-                self.aln = DnaCharacterMatrix.get(path="{}/aln_ott.phy".format(self.workdir), schema="phylip")
-                self.tre = Tree.get(path="{}/random_resolve.tre".format(self.workdir),
-                                    schema="newick",
-                                    preserve_underscores=True,
-                                    taxon_namespace=self.aln.taxon_namespace)
-                print "PULLING FROM FILE"
-            else:
-                self.aln = deepcopy(setup_obj.aln)
-                self.tre = deepcopy(setup_obj.tre) #
+#            if os.path.exists("{}/aln_ott.phy".format(self.workdir)):
+#                self.aln = DnaCharacterMatrix.get(path="{}/aln_ott.phy".format(self.workdir), schema="phylip")
+#                self.tre = Tree.get(path="{}/random_resolve.tre".format(self.workdir),
+#                                    schema="newick",
+#                                    preserve_underscores=True,
+#                                    taxon_namespace=self.aln.taxon_namespace)
+#                print "PULLING FROM FILE"
+#            else:
+            self.aln = deepcopy(setup_obj.aln)
+            self.tre = deepcopy(setup_obj.tre) #
             self.otu_dict = deepcopy(setup_obj.otu_dict)
             self.ott_to_ncbi = deepcopy(setup_obj.ott_to_ncbi)
             self.ncbi_to_ott = deepcopy(setup_obj.ncbi_to_ott)
@@ -240,6 +243,7 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
             self.ncbi_dmp = deepcopy(setup_obj.ncbi_dmp)
             self.orig_seqlen = deepcopy(setup_obj.orig_seqlen)
             self.ps_otu = 1
+            self.log = "{}/logfile".format(self.workdir)
         self.new_seqs = {}
         self.new_seqs_otu_id = {}
         self.otu_by_gi = {}
@@ -264,6 +268,15 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
             os.makedirs(self.workdir)
         self.newseqs_file = "{}/{}.fasta".format(self.workdir, self.today)
  #TODO is this the right place for this?
+    def reset_markers(self):
+        self._blasted = 0
+        self._blast_read = 0
+        self._identical_removed = 0
+        self._query_seqs_written = 0
+        self._query_seqs_aligned = 0
+        self._query_seqs_placed = 0
+        self._reconciled = 0
+        self._full_tree_est = 0
     def _write_files(self):
         """Outputs both the streaming files and a ditechecked"""
         #First write rich annotation json file with everything needed for later?
@@ -285,8 +298,6 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
                        unquoted_underscores=True)
         self.aln.write(path="{}/aln_ott{}.fas".format(self.workdir, self.today),
                        schema="fasta")
-        pickle.dump(self, open('{}/scrape.p'.format(self.workdir), 'wb'))
-        pickle.dump(self.otu_dict, open('{}/otu_dict{}.p'.format(self.workdir, self.today), 'wb'))
     def write_labelled(self, label='^ot:ottTaxonName'):
         """output tree and alignement with human readble labels"""
         assert label in ['^ot:ottTaxonName', "^ot:originalLabel", "^ot:ottId", "^ncbi:taxon"]
@@ -368,7 +379,7 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
                     for alignment in blast_record.alignments:
                         for hsp in alignment.hsps:
                             if float(hsp.expect) < float(self.e_value_thresh):
-                                if int(alignment.title.split('|')[1]) not in self.gi_dict: #skip ones we already have
+                                if int(alignment.title.split('|')[1]) not in self.gi_dict: #skip ones we already have (does it matter if these were delted? No...)
                                     self.new_seqs[int(alignment.title.split('|')[1])] = hsp.sbjct
                                     self.gi_dict[int(alignment.title.split('|')[1])] = alignment.__dict__
     # TODO this should go back in the class and should prune the tree
@@ -395,7 +406,7 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
                         del seq_dict[tax]
                         self.tre.prune_taxa_with_labels(tax)
                         seq_dict[label] = seq
-                        del self.otu_dict[tax]
+                        del self.otu_dict[tax]  #hmmmmmmmm?! CHECK ME!!
                         sys.stdout.write("seq {} is supersequence of {}, {} added and {} removed\n".format(label, tax, label, tax))
                         return
         sys.stdout.write(".")
@@ -422,7 +433,7 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
             except KeyError:
                 pass
         self.new_seqs_otu_id = tmp_dict # renamed new seq to their otu_ids from GI's, but all info is in self.otu_dict
-        sys.stdout.write("{} new sequences added from genbank\n")
+        sys.stdout.write("{} new sequences added from genbank\n".format(len(self.new_seqs)))
     def _add_otu(self, gi):
         """generates an otu_id for new sequences and adds them into the otu_dict"""
         otu_id = "otuPS{}".format(self.ps_otu)
@@ -456,14 +467,19 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
         return tax_id
     def write_query_seqs(self):
         """writes out the query sequence file"""
+        if not self._blast_read:
+            self.read_blast()
         fi = open(self.newseqs_file, 'w')
         sys.stdout.write("writing out sequences\n")
         for otu_id in self.new_seqs_otu_id.keys():
             if otu_id not in self.aln: #new seqs only
                 fi.write(">{}\n".format(otu_id))
                 fi.write("{}\n".format(self.new_seqs_otu_id[otu_id]))
+        self._query_seqs_written = 1
     def align_query_seqs(self, papara_runname="extended"):
         """runs papara on the tree, the alinment and the new query sequences"""
+        if not self._query_seqs_written:
+            self.write_query_seqs()
         sys.stdout.write("aligning query sequences \n")
         os.chdir(self.workdir)#Clean up dir moving
         pp = subprocess.call(["papara",
@@ -472,6 +488,41 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
                               "-q", "{}.fasta".format(self.today),
                               "-n", papara_runname]) #FIx directory ugliness
         os.chdir('..')
+        self.aln = DnaCharacterMatrix.get(path="{}/papara_alignment.extended".format(self.workdir), schema="phylip")
+        self.aln.taxon_namespace.is_mutable = False #This should enforce name matching throughout...
+        self._query_seqs_aligned = 1
+    def reconcile(self):
+        """all missing data seqs are sneaking in, but from where?!"""
+        if not self._query_seqs_aligned:
+            self.align_query_seqs()
+        aln_ids = set()
+        for tax in self.aln:
+            aln_ids.add(tax.label)
+        assert aln_ids.issubset(self.otu_dict.keys())
+        for key in  self.otu_dict.keys():
+            if key not in aln_ids:
+                sys.stderr.write("{} is in otu dict but not alignment\n".format(key))
+        prune = []
+        tmp_dict = {}
+        avg_seqlen = sum(self.orig_seqlen)/len(self.orig_seqlen)
+        seq_len_cutoff = avg_seqlen*self.seq_len_perc
+        for taxon, seq in self.aln.items():
+            if len(seq.symbols_as_string().translate(None, "-?")) < seq_len_cutoff:
+                prune.append(taxon.label)
+            else:
+                tmp_dict[taxon.label] = seq
+                self.orig_seqlen.append(len(seq.symbols_as_string().translate(None, "-?")))
+        self.aln = DnaCharacterMatrix.from_dict(tmp_dict)
+        self.tre.prune_taxa_with_labels(prune)
+        for tax in prune:
+            del self.otu_dict[tax]
+        if prune:
+            fi = open("{}/pruned_taxa".format(self.workdir), 'a')
+            fi.write("taxa pruned from tree and alignment due to excessive missing data\n")
+            for tax in prune:
+                fi.write("{}\n".format(tax))
+            fi.close()
+        self._reconciled = 1
     def place_query_seqs(self):
         """runs raxml on the tree, and the combined alignment including the new quesry seqs
         Just for placement, to use as starting tree."""
@@ -491,6 +542,7 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
                 taxon.label = taxon.label.replace("QUERY___", "")
         placetre.write(path="place_resolve.tre", schema="newick", unquoted_underscores=True)
         os.chdir('..')
+        self._query_seqs_placed = 1
     def est_full_tree(self):
         """Full raxml run from the placement tree as starting tree"""
         os.chdir(self.workdir)
@@ -500,6 +552,7 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
                               "-p", "1",
                               "-n", "{}".format(self.today)])
         os.chdir('..')
+        self._full_tree_est = 1
     def generate_streamed_alignment(self):
         """runs teh key steps and then replaces the tree and alignemnt with the expanded ones"""
         self.read_blast()
@@ -508,16 +561,16 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
             self._write_files() #should happen before aligning in case of pruning
             self.write_query_seqs()
             self.align_query_seqs()
+            self.reconcile()
             self.place_query_seqs()
             self.est_full_tree()
-            self.aln = DnaCharacterMatrix.get(path="{}/papara_alignment.extended".format(self.workdir), schema="phylip")
-            self.aln.taxon_namespace.is_mutable = False #This should enforce name matching throughout...
             self.tre = Tree.get(path="{}/RAxML_bestTree.{}".format(self.workdir, self.today),
                                 schema="newick",
                                 preserve_underscores=True,
                                 taxon_namespace=self.aln.taxon_namespace)
             self._write_files()
-            os.rename("{}/previous_run".format(self.workdir), "{}/previous_run{}".format(self.workdir, self.today))
+            if os.path.exists("{}/previous_run".format(self.workdir)):
+                os.rename("{}/previous_run".format(self.workdir), "{}/previous_run{}".format(self.workdir, self.today))
             os.rename(self.blast_subdir, "{}/previous_run".format(self.workdir))
             os.rename(self.tmpfi,
                       "{}/last_completed_update".format(self.workdir))
@@ -527,3 +580,6 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
                 os.rename(filename, "{}/previous_run/{}".format(self.workdir, filename.split("/")[1]))
         else:
             sys.stdout.write("No new sequences found.")
+        self.reset_markers()
+        pickle.dump(self, open('{}/scrape.p'.format(self.workdir), 'wb'))
+        pickle.dump(self.otu_dict, open('{}/otu_dict{}.p'.format(self.workdir, self.today), 'wb'))
