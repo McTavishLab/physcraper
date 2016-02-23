@@ -146,7 +146,7 @@ class PhyscraperSetup(object):
         self.aln = DnaCharacterMatrix.get(path=self.seqaln, schema=self.mattype)
         for tax in self.aln.taxon_namespace:
             tax.label = tax.label.replace(" ", "_")#Forcing all spaces to underscore
-        missing = [i.label for i in self.aln.taxon_namespace if i.label not in self.treed_taxa.keys()] #some intense name forcing...
+        missing = [i.label for i in self.aln.taxon_namespace if i.label not in self.treed_taxa.keys()]
         if missing:
             errmf = 'Some of the taxa in the alignment are not in the tree. Missing "{}"\n'
             errm = errmf.format('", "'.join(missing))
@@ -179,7 +179,7 @@ class PhyscraperSetup(object):
                             taxon_namespace=self.aln.taxon_namespace)
         self.tre.prune_taxa_with_labels(prune)
         for tax in prune:
-            del self.otu_dict[tax]
+            del self.otu_dict[self.orig_lab_to_otu[tax]]
         if prune:
             fi = open("{}/pruned_taxa".format(self.workdir), 'w')
             fi.write("taxa pruned from tree and alignment due to excessive missing data\n")
@@ -189,6 +189,7 @@ class PhyscraperSetup(object):
         for taxon in self.aln.taxon_namespace:
             otu_id = self.orig_lab_to_otu[taxon.label]
             taxon.label = otu_id.encode('ascii')
+
     def write_files(self):
         self.tre.write(path="{}/original_pruned.tre".format(self.workdir),
                        schema="newick",
@@ -363,13 +364,15 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
                     save_file.close()
                     self.otu_dict[otu_id]['^physcraper:last_blasted'] = today
                     result_handle.close()
+        self._blasted = 1
 #        self.lastupdate = self.today
         return #TODO pull the repeated runname
     def read_blast(self, blast_dir=None):
         '''reads in and prcesses the blast xml files'''
         if not blast_dir:
             blast_dir = self.blast_subdir
-        self.run_blast()
+        if not self._blasted:
+            self.run_blast()
         for taxon in self.aln:
             xml_fi = "{}/{}.xml".format(blast_dir, taxon.label)
             if os.path.isfile(xml_fi):
@@ -382,6 +385,7 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
                                 if int(alignment.title.split('|')[1]) not in self.gi_dict: #skip ones we already have (does it matter if these were delted? No...)
                                     self.new_seqs[int(alignment.title.split('|')[1])] = hsp.sbjct
                                     self.gi_dict[int(alignment.title.split('|')[1])] = alignment.__dict__
+        self._blast_read = 1
     # TODO this should go back in the class and should prune the tree
     def seq_dict_build(self, seq, label, seq_dict): #Sequence needs to be passed in as string.
         """takes a sequence, a label (the otu_id) and a dictionary and adds the
@@ -390,11 +394,13 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
         If the new sequence is a super suquence of one in the dict, it
         removes that sequence and replaces it"""
         new_seq = seq.replace("-", "")
-        for tax in seq_dict.keys():
+        tax_list = deepcopy(seq_dict.keys())
+        for tax in tax_list:
             inc_seq = seq_dict[tax].replace("-", "")
             if len(inc_seq) >= len(new_seq):
                 if inc_seq.find(new_seq) != -1:
                     sys.stdout.write("seq {} is subsequence of {}, not added\n".format(label, tax))
+                    del self.otu_dict[label]
                     return
             else:
                 if new_seq.find(inc_seq) != -1:#
@@ -407,6 +413,7 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
                         self.tre.prune_taxa_with_labels(tax)
                         seq_dict[label] = seq
                         del self.otu_dict[tax]  #hmmmmmmmm?! CHECK ME!!
+#                        print "TAXON {} should no longer be in OTU dict!"
                         sys.stdout.write("seq {} is supersequence of {}, {} added and {} removed\n".format(label, tax, label, tax))
                         return
         sys.stdout.write(".")
@@ -488,7 +495,7 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
                               "-q", "{}.fasta".format(self.today),
                               "-n", papara_runname]) #FIx directory ugliness
         os.chdir('..')
-        self.aln = DnaCharacterMatrix.get(path="{}/papara_alignment.extended".format(self.workdir), schema="phylip")
+        self.aln = DnaCharacterMatrix.get(path="{}/papara_alignment.{}".format(self.workdir, papara_runname), schema="phylip")
         self.aln.taxon_namespace.is_mutable = False #This should enforce name matching throughout...
         self._query_seqs_aligned = 1
     def reconcile(self):
@@ -572,7 +579,8 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
             if os.path.exists("{}/previous_run".format(self.workdir)):
                 os.rename("{}/previous_run".format(self.workdir), "{}/previous_run{}".format(self.workdir, self.today))
             os.rename(self.blast_subdir, "{}/previous_run".format(self.workdir))
-            os.rename(self.tmpfi,
+            if os.path.exists("{}/last_completed_update".format(self.workdir)):
+                os.rename(self.tmpfi,
                       "{}/last_completed_update".format(self.workdir))
             for filename in glob.glob('{}/RAxML*'.format(self.workdir)):
                 os.rename(filename, "{}/previous_run/{}".format(self.workdir, filename.split("/")[1]))
