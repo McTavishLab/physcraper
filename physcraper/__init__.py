@@ -440,7 +440,7 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
             except KeyError:
                 pass
         self.new_seqs_otu_id = tmp_dict # renamed new seq to their otu_ids from GI's, but all info is in self.otu_dict
-        sys.stdout.write("{} new sequences added from genbank\n".format(len(self.new_seqs)))
+        sys.stdout.write("{} new sequences added from genbank\n".format(len(self.new_seqs_otu_id)))
     def _add_otu(self, gi):
         """generates an otu_id for new sequences and adds them into the otu_dict"""
         otu_id = "otuPS{}".format(self.ps_otu)
@@ -562,6 +562,7 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
         self._full_tree_est = 1
     def generate_streamed_alignment(self):
         """runs teh key steps and then replaces the tree and alignemnt with the expanded ones"""
+        self.reset_markers()
         self.read_blast()
         if len(self.new_seqs) > 0:    
             self.remove_identical_seqs()
