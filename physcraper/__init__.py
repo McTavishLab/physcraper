@@ -23,23 +23,37 @@ from peyotl.sugar import tree_of_life, taxonomy
 from peyotl.nexson_syntax import extract_tree, extract_tree_nexson, get_subtree_otus, extract_otu_nexson, PhyloSchema
 from peyotl.api import APIWrapper
 
+
+class config_obj(object):
+    def __init__(self, configfi):
+        assert os.path.isfile(configfi)
+        config = configparser.ConfigParser()
+        config.read(configfi)
+        self.e_value_thresh = config['blast']['e_value_thresh']
+        self.hitlist_size = int(config['blast']['hitlist_size'])
+        self.seq_len_perc = float(config['physcraper']['seq_len_perc'])
+        self.get_ncbi_taxonomy = config['ncbi.taxonomy']['get_ncbi_taxonomy']
+        self.ncbi_dmp = config['ncbi.taxonomy']['ncbi_dmp']
+
+
+
 class StudyInfo(object):
-    """Wraps up tree, alignment, and study info - forces names to otu_ids"""
+    """gathers together tree, alignment, and study info - forces names to otu_ids"""
     def __init__(self,
                  seqaln,
                  mattype,
+                 configfi,
                  study_id = None,
                  tree_id = None, #Needs to be Newick and have OTU_ids as input.
                  treefile = None,#Blurg, these are for if not strating from an OpenTree tree, nots ure is best approach...
                  otu_json = None):
-        self.seqaln = seqaln
-        self.mattype = mattype
+        config = config_obj(configfi)
+        #TODO CHECK ARGS
+        self.aln = DnaCharacterMatrix.get(path=seqaln, schema=mattype)
         if study_id:
-            self.study_id = study_id
-            self.tree_id = tree_id
-            self.aln = DnaCharacterMatrix.get(path=self.seqaln, schema=self.mattype)
+            assert tree_id
             for tax in self.aln.taxon_namespace:
-                tax.label = tax.label.replace(" ", "_")#Forcing all spaces to underscore
+                tax.label = tax.label.replace(" ", "_") #Forcing all spaces to underscore UGH
             newick = extract_tree(nexson,
                               self.tree_id,
                               PhyloSchema('newick',
@@ -51,7 +65,8 @@ class StudyInfo(object):
                             schema="newick",
                             preserve_underscores=True,
                             taxon_namespace=self.aln.taxon_namespace)
-            otus = get_subtree_otus(self.nexson, tree_id=self.tree_id)
+            nexson = get_nexson(study_id, config_obj)
+            otus = get_subtree_otus(nexson, tree_id=tree_id)
             self.otu_dict = {}
             self.orig_lab_to_otu = {}
             for otu_id in otus:
@@ -59,32 +74,32 @@ class StudyInfo(object):
                 self.otu_dict[otu_id]['^physcraper:status'] = "original"
                 self.otu_dict[otu_id]['^physcraper:last_blasted'] = "1900/01/01"
                 orig = self.otu_dict[otu_id].get(u'^ot:originalLabel').replace(" ", "_")
-                self.orig_lab_to_otu[orig] = otu_id
-                self.treed_taxa[orig] = self.otu_dict[otu_id].get(u'^ot:ottId')
-            
+                orig_lab_to_otu[orig] = otu_id
+            for tax in self.aln.taxon_namespace:
+                try:
+                    tax.label =  orig_lab_to_otu[orig]
+                except:
+                    print "{} doesn't have an otu id. WTF?".format(tax.label)#Forcing all spaces to underscore UGH
         if otu_json:
-            self.treefile = treefile
+            assert treefile
+            tre = Tree.get(path=treefile,
+                            schema="newick",
+                            preserve_underscores=True,
+                            taxon_namespace=self.aln.taxon_namespace)
             with open(otu_json) as data_file:    
                 self.otu_dict = json.load(data_file)
-            self.phylesystem_input = 0
+        for tax in self.aln.taxon_namespace:
+            assert tax.label in self.otu_dict
+            
         return align_tree_tax(newick, otu_dict, alignment) #newick should be bare, but alignement should be DNACharacterMatrix
 
 
-class 
 
-def get_nexson(study_id, tree_id):
-    def _get_study(self):
-        """gets the nexson from phylesystem"""
-        if not self._phylesystem:
-            self._phylesystem_setup()
-        self.nexson = self.phy.get_study(self.study_id)['data']
-        #print(self.nexson)
-        self._study_get = 1
-    def _phylesystem_setup(self):
-        """Setups up the phylsesystem object"""
-        phylesystem_loc = self.config['phylesystem']['location']
-        self.phy = PhylesystemAPI(get_from=phylesystem_loc)
-        self._phylesystem = 1
+def get_nexson(study_id, config_obj):
+    """Grabs nexson from phylesystem"""
+    phylesystem_loc = config_obj['phylesystem']['location']
+    phy = PhylesystemAPI(get_from=phylesystem_loc)
+    snexson = self.phy.get_study(self.study_id)['data']
     return  nexson
 
 
@@ -192,6 +207,7 @@ class align_tree_tax(object):
             taxon.label = otu_id.encode('ascii')
 
 
+
 class PhyscraperSetup(object):
     """This needs to vet the inputs, standardize names, and prep for
     first run through of blasting. Does not blast itself!"""
@@ -211,9 +227,6 @@ class PhyscraperSetup(object):
         self.treefile = study_info.treefile
         self.otu_dict = study_info.otu_dict
         self.runname = runname
-        self.configfi = configfi
-        assert os.path.isfile(configfi)
-        self._read_config()
         self._get_study()
         self.ott_to_ncbi = {}
         self.ott_to_name = {}
@@ -236,14 +249,6 @@ class PhyscraperSetup(object):
         self.workdir = runname
         if not os.path.exists(self.workdir):
             os.makedirs(self.workdir)
-    def _read_config(self):
-        self.config = configparser.ConfigParser()
-        self.config.read(self.configfi)
-        self.e_value_thresh = self.config['blast']['e_value_thresh']
-        self.hitlist_size = int(self.config['blast']['hitlist_size'])
-        self.seq_len_perc = float(self.config['physcraper']['seq_len_perc'])
-        self.get_ncbi_taxonomy = self.config['ncbi.taxonomy']['get_ncbi_taxonomy']
-        self.ncbi_dmp = self.config['ncbi.taxonomy']['ncbi_dmp']
     def write_files(self):
         self.tre.write(path="{}/original_pruned.tre".format(self.workdir),
                        schema="newick",
