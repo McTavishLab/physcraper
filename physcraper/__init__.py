@@ -34,6 +34,8 @@ class config_obj(object):
         self.seq_len_perc = float(config['physcraper']['seq_len_perc'])
         self.get_ncbi_taxonomy = config['ncbi.taxonomy']['get_ncbi_taxonomy']
         self.ncbi_dmp = config['ncbi.taxonomy']['ncbi_dmp']
+        self.phylesystem_loc = config['phylesystem']['location']
+
 
 
 
@@ -47,13 +49,16 @@ class StudyInfo(object):
                  tree_id = None, #Needs to be Newick and have OTU_ids as input.
                  treefile = None,#Blurg, these are for if not strating from an OpenTree tree, nots ure is best approach...
                  otu_json = None):
-        config = config_obj(configfi)
+        config_dict = config_obj(configfi)
         #TODO CHECK ARGS
         self.aln = DnaCharacterMatrix.get(path=seqaln, schema=mattype)
         if study_id:
+            self.study_id= study_id
+            self.tree_id = tree_id
             assert tree_id
             for tax in self.aln.taxon_namespace:
                 tax.label = tax.label.replace(" ", "_") #Forcing all spaces to underscore UGH
+            nexson = get_nexson(study_id, config_dict)
             newick = extract_tree(nexson,
                               self.tree_id,
                               PhyloSchema('newick',
@@ -65,16 +70,18 @@ class StudyInfo(object):
                             schema="newick",
                             preserve_underscores=True,
                             taxon_namespace=self.aln.taxon_namespace)
-            nexson = get_nexson(study_id, config_obj)
+            
             otus = get_subtree_otus(nexson, tree_id=tree_id)
             self.otu_dict = {}
             self.orig_lab_to_otu = {}
+            treed_taxa = {}
             for otu_id in otus:
                 self.otu_dict[otu_id] = extract_otu_nexson(nexson, otu_id)[otu_id]
                 self.otu_dict[otu_id]['^physcraper:status'] = "original"
                 self.otu_dict[otu_id]['^physcraper:last_blasted'] = "1900/01/01"
                 orig = self.otu_dict[otu_id].get(u'^ot:originalLabel').replace(" ", "_")
-                orig_lab_to_otu[orig] = otu_id
+                self.orig_lab_to_otu[orig] = otu_id
+                treed_taxa[orig] = self.otu_dict[otu_id].get(u'^ot:ottId')
             for tax in self.aln.taxon_namespace:
                 try:
                     tax.label =  orig_lab_to_otu[orig]
@@ -90,18 +97,66 @@ class StudyInfo(object):
                 self.otu_dict = json.load(data_file)
         for tax in self.aln.taxon_namespace:
             assert tax.label in self.otu_dict
-            
         return align_tree_tax(newick, otu_dict, alignment) #newick should be bare, but alignement should be DNACharacterMatrix
 
 
 
+class align_tree_tax(object):
+    """wrap up the key parts together"""
+    def __init__(newick, otu_dict, alignment, workdir):
+        self.workdir = workdir
+        self.aln = alignment
+        self.tre = Tree.get(data=newick,
+                            schema="newick",
+                            preserve_underscores=True,
+                            taxon_namespace=self.aln.taxon_namespace)
+        self.otu_dict = otu_dict
+        self.reconcile()
+    def _reconcile_names(self): 
+        """This checks that the tree "original labels" from phylsystem
+        align with those found in the taxonomy. Spaces vs underscores
+        kept being an issue, so all spaces are coerced to underscores throughout!"""
+        treed_taxa = {}
+        missing = [i.label for i in self.aln.taxon_namespace if i.label not in self.treed_taxa.keys()]
+        if missing:
+            errmf = 'Some of the taxa in the alignment are not in the tree. Missing "{}"\n'
+            errm = errmf.format('", "'.join(missing))
+            raise ValueError(errm)
+    
+
+def prune_short(align_tree_tax, workdir, min_seqlen = 0):
+        """Sometimes in the de-concatenating of the original alignment
+        taxa with no sequence are generated.
+        This gets rid of those from both the tre and the alignement"""
+        prune = []
+        tmp_dict = {}
+        for taxon, seq in aln_tree_tax.aln.items():
+            if len(seq.symbols_as_string().translate(None, "-?")) <= min_seqlen:
+                prune.append(taxon.label)
+            else:
+                tmp_dict[taxon.label] = seq
+                self.orig_seqlen.append(len(seq.symbols_as_string().translate(None, "-?")))
+        self.aln = DnaCharacterMatrix.from_dict(tmp_dict)
+        self.tre.prune_taxa_with_labels(prune)
+        for tax in prune:
+            del self.otu_dict[self.orig_lab_to_otu[tax]]
+        if prune:
+            fi = open("{}/pruned_taxa".format(self.workdir), 'w')
+            fi.write("taxa pruned from tree and alignment due to excessive missing data\n")
+            for tax in prune:
+                fi.write("{}\n".format(tax))
+            fi.close()
+        for taxon in self.aln.taxon_namespace:
+            otu_id = self.orig_lab_to_otu[taxon.label]
+            taxon.label = otu_id.encode('ascii')
+
+
 def get_nexson(study_id, config_obj):
     """Grabs nexson from phylesystem"""
-    phylesystem_loc = config_obj['phylesystem']['location']
+    phylesystem_loc = config_obj.phylesystem_loc
     phy = PhylesystemAPI(get_from=phylesystem_loc)
-    snexson = self.phy.get_study(self.study_id)['data']
+    nexson = phy.get_study(study_id)['data']
     return  nexson
-
 
 
 
@@ -127,11 +182,11 @@ def get_ott_ids_from_otu_dict(otu_dict):
             ott_ids.append(otu['^ot:ottId'])
         except KeyError:
             pass
-
+'''
 
 class id_dicts(object):
     """Wraps up the annoying conversions"""#TODO - could - should be shared acorsss runs?!
-     def __init__(self, ott_ncbi, workdir):
+    def __init__(self, ott_ncbi, workdir):
         """Generates a series of name disambiguation dicts"""
         self.ott_to_ncbi = {}
         self.ncbi_to_ott = {}
@@ -155,56 +210,6 @@ class id_dicts(object):
 
 self.orig_seqlen = []
 
-
-
-
-class align_tree_tax(object):
-    """wrap up the key parts together"""
-    def __init__(newick, otu_dict, alignment, workdir):
-        self.workdir = workdir
-        self.aln = alignment
-        self.tre = Tree.get(data=newick,
-                            schema="newick",
-                            preserve_underscores=True,
-                            taxon_namespace=self.aln.taxon_namespace)
-        self.otu_dict = otu_dict
-        self.prune()
-        self.reconcile()
-    def _reconcile_names(self):
-        """This checks that the tree "original labels" from phylsystem
-        align with those found in the taxonomy. Spaces vs underscores
-        kept being an issue, so all spaces are coerced to underscores throughout!"""
-        treed_taxa = {}
-        missing = [i.label for i in self.aln.taxon_namespace if i.label not in self.treed_taxa.keys()]
-        if missing:
-            errmf = 'Some of the taxa in the alignment are not in the tree. Missing "{}"\n'
-            errm = errmf.format('", "'.join(missing))
-            raise ValueError(errm)
-    def prune(self):
-        """Sometimes in the de-concatenating of the original alignment
-        taxa with no sequence are generated.
-        This gets rid of those from both the tre and the alignement"""
-        prune = []
-        tmp_dict = {}
-        for taxon, seq in self.aln.items():
-            if len(seq.symbols_as_string().translate(None, "-?")) == 0:
-                prune.append(taxon.label)
-            else:
-                tmp_dict[taxon.label] = seq
-                self.orig_seqlen.append(len(seq.symbols_as_string().translate(None, "-?")))
-        self.aln = DnaCharacterMatrix.from_dict(tmp_dict)
-        self.tre.prune_taxa_with_labels(prune)
-        for tax in prune:
-            del self.otu_dict[self.orig_lab_to_otu[tax]]
-        if prune:
-            fi = open("{}/pruned_taxa".format(self.workdir), 'w')
-            fi.write("taxa pruned from tree and alignment due to excessive missing data\n")
-            for tax in prune:
-                fi.write("{}\n".format(tax))
-            fi.close()
-        for taxon in self.aln.taxon_namespace:
-            otu_id = self.orig_lab_to_otu[taxon.label]
-            taxon.label = otu_id.encode('ascii')
 
 
 
@@ -388,7 +393,7 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
         tmp_aln.write(path="{}/labelled{}.fas".format(self.workdir, self.today),
                       schema="fasta")
     def run_blast(self): #TODO Should this be happening elsewhere?
-        '''generates the blast queries and sames them to xml'''
+        """generates the blast queries and sames them to xml"""
         if not os.path.exists(self.blast_subdir):
             os.makedirs(self.blast_subdir)
         with open(self.logfile, "a") as log:
@@ -420,7 +425,7 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
         self._blasted = 1
         return
     def read_blast(self, blast_dir=None):
-        '''reads in and prcesses the blast xml files'''
+        """reads in and prcesses the blast xml files"""
         if not blast_dir:
             blast_dir = self.blast_subdir
         if not self._blasted:
@@ -644,4 +649,4 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
             sys.stdout.write("No new sequences found.")
         self.reset_markers()
         pickle.dump(self, open('{}/scrape.p'.format(self.workdir), 'wb'))
-        pickle.dump(self.otu_dict, open('{}/otu_dict{}.p'.format(self.workdir, self.today), 'wb'))
+        pickle.dump(self.otu_dict, open('{}/otu_dict{}.p'.format(self.workdir, self.today), 'wb'))'''
