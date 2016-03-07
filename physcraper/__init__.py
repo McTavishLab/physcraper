@@ -128,7 +128,72 @@ class align_tree_tax(object):
             errmf = 'Some of the taxa in the alignment are not in the tree. Missing "{}"\n'
             errm = errmf.format('", "'.join(missing))
             raise ValueError(errm)
-    
+    def write_papara_tree(self, filename="random_resolve.tre"):
+        #CAN I even evaulte things in the function definitions?
+        self.tre.resolve_polytomies()
+        self.tre.deroot()
+        tmptre = self.tre.as_string(schema="newick",
+                                    unquoted_underscores=True,
+                                    suppress_rooting=True)
+        tmptre = tmptre.replace(":0.0;",";")#Papara is diffffffficult about root
+        fi = open("{}/{}".format(self.workdir,filename), "w")
+        fi.write(tmptre)
+        fi.close()
+    def write_files(self, treepath="physcraper.tre", treeschema="newick", alnpath="physcraper.fas", alnschema="fasta"):
+        """Outputs both the streaming files and a ditechecked"""
+        #First write rich annotation json file with everything needed for later?
+        self.tre.write(path="{}/{}".format(self.workdir,treepath),
+                       schema=treeschema,
+                       unquoted_underscores=True)
+        self.aln.write(path="{}/{}".format(self.workdir, alnpath),
+                       schema=alnschema)
+    def write_otus(self, schema="json", filename="TDOD"):    
+#        #json.dump(self.otu_dict)
+        assert 0
+    def write_labelled(self, label='^ot:ottTaxonName', treepath="labelled.tre", alnpath="labelled.fas"):
+        """output tree and alignement with human readble labels
+        Jumps through abunch of hoops to make labels unique.
+        NOT MEMORY EFFICIENT AT ALL"""
+        assert label in ['^ot:ottTaxonName', "^ot:originalLabel", "^ot:ottId", "^ncbi:taxon"]
+        tmp_newick = self.tre.as_string(schema="newick")
+        tmp_tre = Tree.get(data=tmp_newick,
+                            schema="newick",
+                            preserve_underscores=True)
+        tmp_fasta = self.aln.as_string(schema="fasta")
+        tmp_aln = DnaCharacterMatrix.get(data=tmp_fasta, 
+                                         schema="fasta",
+                                         taxon_namespace=tmp_tre.taxon_namespace)
+        new_names = set()
+        for taxon in tmp_tre.taxon_namespace:
+            new_label = self.otu_dict[taxon.label].get(label)
+            if new_label:
+                if new_label in new_names:
+                    new_label = " ".join([new_label, taxon.label])
+                new_names.add(new_label)
+                taxon.label = new_label
+            elif self.otu_dict[taxon.label].get("^ot:originalLabel"):
+                new_label = self.otu_dict[taxon.label].get("^ot:originalLabel")
+                if new_label in new_names:
+                    new_label = " ".join([new_label, taxon.label])
+                new_names.add(new_label)
+                taxon.label = new_label
+            elif self.otu_dict[taxon.label].get("^ncbi:taxon"):
+                new_label = " ".join(["ncbi", str(self.otu_dict[taxon.label].get("^ncbi:taxon"))])
+                if new_label in new_names:
+                    new_label = " ".join([new_label, taxon.label])
+                new_names.add(new_label)
+                taxon.label = new_label
+        tmp_tre.write(path="{}/{}".format(self.workdir,treepath),
+                      schema="newick", 
+                      unquoted_underscores=True,
+                      suppress_edge_lengths=False)
+        tmp_aln.write(path="{}/{}".format(self.workdir,alnpath),
+                      schema="fasta")
+
+
+
+#TODO... write as proper nexml?!
+
 
 def prune_short(data_obj, min_seqlen = 0):
         """Sometimes in the de-concatenating of the original alignment
@@ -157,13 +222,13 @@ def prune_short(data_obj, min_seqlen = 0):
                 fi.write("{}\n".format(tax))
             fi.close()
 
+
 def get_nexson(study_id, config_obj):
     """Grabs nexson from phylesystem"""
     phylesystem_loc = config_obj.phylesystem_loc
     phy = PhylesystemAPI(get_from=phylesystem_loc)
     nexson = phy.get_study(study_id)['data']
     return  nexson
-
 
 
 def get_ott_ids_from_phylesystem(nexson, tree_id, subtree_id="ingroup"):
