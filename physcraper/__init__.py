@@ -70,7 +70,6 @@ class StudyInfo(object):
                             schema="newick",
                             preserve_underscores=True,
                             taxon_namespace=self.aln.taxon_namespace)
-            
             otus = get_subtree_otus(nexson, tree_id=tree_id)
             self.otu_dict = {}
             self.orig_lab_to_otu = {}
@@ -84,72 +83,79 @@ class StudyInfo(object):
                 treed_taxa[orig] = self.otu_dict[otu_id].get(u'^ot:ottId')
             for tax in self.aln.taxon_namespace:
                 try:
-                    tax.label =  orig_lab_to_otu[orig]
+                    tax.label =  self.orig_lab_to_otu[tax.label].encode('ascii')
                 except:
                     print "{} doesn't have an otu id. WTF?".format(tax.label)#Forcing all spaces to underscore UGH
-        if otu_json:
-            assert treefile
-            tre = Tree.get(path=treefile,
-                            schema="newick",
-                            preserve_underscores=True,
-                            taxon_namespace=self.aln.taxon_namespace)
-            with open(otu_json) as data_file:    
-                self.otu_dict = json.load(data_file)
-        for tax in self.aln.taxon_namespace:
-            assert tax.label in self.otu_dict
-        return align_tree_tax(newick, otu_dict, alignment) #newick should be bare, but alignement should be DNACharacterMatrix
+            self.otu_newick = tre.as_string(schema="newick")
+#        if otu_json: # not ready yet
+#            assert 0
+#            assert treefile
+#            tre = Tree.get(path=treefile,
+#                            schema="newick",
+#                            preserve_underscores=True,
+#                            taxon_namespace=self.aln.taxon_namespace)
+#            with open(otu_json) as data_file:    
+#                self.otu_dict = json.load(data_file)
+#        for tax in self.aln.taxon_namespace:
+#            assert tax.label in self.otu_dict'''
+    def run(self):
+        return align_tree_tax(self.otu_newick, self.otu_dict, self.aln, workdir="tmp") #newick should be bare, but alignement should be DNACharacterMatrix
 
 
 
 class align_tree_tax(object):
     """wrap up the key parts together"""
-    def __init__(newick, otu_dict, alignment, workdir):
-        self.workdir = workdir
+    def __init__(self, newick, otu_dict, alignment, workdir):
         self.aln = alignment
         self.tre = Tree.get(data=newick,
                             schema="newick",
                             preserve_underscores=True,
                             taxon_namespace=self.aln.taxon_namespace)
         self.otu_dict = otu_dict
-        self.reconcile()
+        self._reconcile_names()
+        self.workdir = workdir
+        if not os.path.exists(self.workdir):
+            os.makedirs(self.workdir)
     def _reconcile_names(self): 
         """This checks that the tree "original labels" from phylsystem
         align with those found in the taxonomy. Spaces vs underscores
         kept being an issue, so all spaces are coerced to underscores throughout!"""
-        treed_taxa = {}
-        missing = [i.label for i in self.aln.taxon_namespace if i.label not in self.treed_taxa.keys()]
+        treed_taxa = set()
+        for leaf in self.tre.leaf_nodes():
+            treed_taxa.add(leaf.taxon.label)
+        missing = [i.label for i in self.aln.taxon_namespace if i.label not in treed_taxa]
         if missing:
             errmf = 'Some of the taxa in the alignment are not in the tree. Missing "{}"\n'
             errm = errmf.format('", "'.join(missing))
             raise ValueError(errm)
     
 
-def prune_short(align_tree_tax, workdir, min_seqlen = 0):
+def prune_short(data_obj, min_seqlen = 0):
         """Sometimes in the de-concatenating of the original alignment
         taxa with no sequence are generated.
-        This gets rid of those from both the tre and the alignement"""
+        This gets rid of those from both the tre and the alignement. MUTATOR"""
         prune = []
+        prune_orig = []
         tmp_dict = {}
-        for taxon, seq in aln_tree_tax.aln.items():
+        for taxon, seq in data_obj.aln.items():
             if len(seq.symbols_as_string().translate(None, "-?")) <= min_seqlen:
                 prune.append(taxon.label)
+                if data_obj.otu_dict[taxon.label].get(u'^ot:originalLabel'):
+                    prune_orig.append(data_obj.otu_dict[taxon.label].get(u'^ot:originalLabel'))
+                else:
+                    prune_orig.append(taxon.label)
             else:
                 tmp_dict[taxon.label] = seq
-                self.orig_seqlen.append(len(seq.symbols_as_string().translate(None, "-?")))
-        self.aln = DnaCharacterMatrix.from_dict(tmp_dict)
-        self.tre.prune_taxa_with_labels(prune)
+        data_obj.aln = DnaCharacterMatrix.from_dict(tmp_dict)
+        data_obj.tre.prune_taxa_with_labels(prune)
         for tax in prune:
-            del self.otu_dict[self.orig_lab_to_otu[tax]]
+            del data_obj.otu_dict[tax]
         if prune:
-            fi = open("{}/pruned_taxa".format(self.workdir), 'w')
+            fi = open("{}/pruned_taxa".format(data_obj.workdir), 'w')
             fi.write("taxa pruned from tree and alignment due to excessive missing data\n")
             for tax in prune:
                 fi.write("{}\n".format(tax))
             fi.close()
-        for taxon in self.aln.taxon_namespace:
-            otu_id = self.orig_lab_to_otu[taxon.label]
-            taxon.label = otu_id.encode('ascii')
-
 
 def get_nexson(study_id, config_obj):
     """Grabs nexson from phylesystem"""
