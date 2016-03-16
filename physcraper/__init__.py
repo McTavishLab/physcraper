@@ -40,73 +40,84 @@ class config_obj(object):
 
 
 
-class StudyInfo(object):
+def generate_ATT_from_phylesystem(seqaln,
+                                  mattype,
+                                  workdir,
+                                  study_id,
+                                  tree_id ,
+                                  phylesystem_loc = 'remote'):
     """gathers together tree, alignment, and study info - forces names to otu_ids.
-    AlignTreeTax object"""
-    def __init__(self,
-                 seqaln,
-                 mattype,
-                 configfi,
-                 study_id = None,
-                 tree_id = None, #Needs to be Newick and have OTU_ids as input.
-                 treefile = None,#Blurg, these are for if not strating from an OpenTree tree, nots ure is best approach...
-                 otu_json = None):
-        config_dict = config_obj(configfi)
-        #TODO CHECK ARGS
-        self.aln = DnaCharacterMatrix.get(path=seqaln, schema=mattype)
-        if study_id:
-            self.study_id= study_id
-            self.tree_id = tree_id
-            assert tree_id
-            for tax in self.aln.taxon_namespace:
-                tax.label = tax.label.replace(" ", "_") #Forcing all spaces to underscore UGH
-            nexson = get_nexson(study_id, config_dict)
-            ott_ids = get_ott_ids_from_phylesystem(nexson, tree_id, subtree_id="ingroup")
-            self.ott_mrca = get_mrca_ott(ott_ids)
-            newick = extract_tree(nexson,
-                              self.tree_id,
-                              PhyloSchema('newick',
-                                          output_nexml2json='1.2.1',
-                                          content="tree",
-                                          tip_label="ot:originalLabel"))
-            newick = newick.replace(" ", "_") #UGH Very heavy handed, need to make sure happens on alignement side as well.
-            tre = Tree.get(data=newick,
-                            schema="newick",
-                            preserve_underscores=True,
-                            taxon_namespace=self.aln.taxon_namespace)
-            otus = get_subtree_otus(nexson, tree_id=tree_id)
-            self.otu_dict = {}
-            self.orig_lab_to_otu = {}
-            treed_taxa = {}
-            for otu_id in otus:
-                self.otu_dict[otu_id] = extract_otu_nexson(nexson, otu_id)[otu_id]
-                self.otu_dict[otu_id]['^physcraper:status'] = "original"
-                self.otu_dict[otu_id]['^physcraper:last_blasted'] = "1900/01/01"
-                orig = self.otu_dict[otu_id].get(u'^ot:originalLabel').replace(" ", "_")
-                self.orig_lab_to_otu[orig] = otu_id
-                treed_taxa[orig] = self.otu_dict[otu_id].get(u'^ot:ottId')
-            for tax in self.aln.taxon_namespace:
-                try:
-                    tax.label =  self.orig_lab_to_otu[tax.label].encode('ascii')
-                except:
-                    print "{} doesn't have an otu id. WTF?".format(tax.label)#Forcing all spaces to underscore UGH
-            self.otu_newick = tre.as_string(schema="newick")
-#        if otu_json: # not ready yet
-#            assert 0
-#            assert treefile
-#            tre = Tree.get(path=treefile,
-#                            schema="newick",
-#                            preserve_underscores=True,
-#                            taxon_namespace=self.aln.taxon_namespace)
-#            with open(otu_json) as data_file:    
-#                self.otu_dict = json.load(data_file)
-#        for tax in self.aln.taxon_namespace:
-#            assert tax.label in self.otu_dict'''
-
-    def generate_ATT(self):
-        return AlignTreeTax(self.otu_newick, self.otu_dict, self.aln, ingroup_mrca = self.ott_mrca, workdir="tmp") #newick should be bare, but alignement should be DNACharacterMatrix
+    Outputs AlignTreeTax object.
+    an alignemnt, a 
+    Input can be either a study ID and tree ID from OpenTree"""
+    #TODO CHECK ARGS
+    aln = DnaCharacterMatrix.get(path=seqaln, schema=mattype)
+    for tax in aln.taxon_namespace:
+        tax.label = tax.label.replace(" ", "_") #Forcing all spaces to underscore UGH
+    nexson = get_nexson(study_id, phylesystem_loc)
+    ott_ids = get_ott_ids_from_phylesystem(nexson, tree_id, subtree_id="ingroup")
+    ott_mrca = get_mrca_ott(ott_ids)
+    newick = extract_tree(nexson,
+                          tree_id,
+                          PhyloSchema('newick',
+                                      output_nexml2json='1.2.1',
+                                      content="tree",
+                                      tip_label="ot:originalLabel"))
+    newick = newick.replace(" ", "_") #UGH Very heavy handed, need to make sure happens on alignement side as well.
+    tre = Tree.get(data=newick,
+                    schema="newick",
+                    preserve_underscores=True,
+                    taxon_namespace=aln.taxon_namespace)
+    otus = get_subtree_otus(nexson, tree_id=tree_id)
+    otu_dict = {}
+    orig_lab_to_otu = {}
+    treed_taxa = {}
+    for otu_id in otus:
+        otu_dict[otu_id] = extract_otu_nexson(nexson, otu_id)[otu_id]
+        otu_dict[otu_id]['^physcraper:status'] = "original"
+        otu_dict[otu_id]['^physcraper:last_blasted'] = "1900/01/01"
+        orig = otu_dict[otu_id].get(u'^ot:originalLabel').replace(" ", "_")
+        orig_lab_to_otu[orig] = otu_id
+        treed_taxa[orig] = otu_dict[otu_id].get(u'^ot:ottId')
+    for tax in aln.taxon_namespace:
+        try:
+            tax.label =  orig_lab_to_otu[tax.label].encode('ascii')
+        except:
+            print "{} doesn't have an otu id. WTF?".format(tax.label)#Forcing all spaces to underscore UGH
+    otu_newick = tre.as_string(schema="newick")
+    return AlignTreeTax(otu_newick, otu_dict, aln, ingroup_mrca=ott_mrca, workdir=workdir) #newick should be bare, but alignement should be DNACharacterMatrix
 
 
+def generate_ATT_from_files(seqaln,
+                            mattype,
+                            workdir,
+                            treefile,
+                            otu_json,
+                            ingroup_mrca = None):
+    """Build an ATT object without phylesystem.
+    If no ingroup mrca ott_id is provided, will use all taxa in tree to calc mrca."""
+    aln = DnaCharacterMatrix.get(path=seqaln, schema=mattype)
+    for tax in aln.taxon_namespace:
+        tax.label = tax.label.replace(" ", "_") #Forcing all spaces to underscore UGH
+    tre = Tree.get(path=treefile,
+                   schema="newick",
+                   preserve_underscores=True,
+                   taxon_namespace=aln.taxon_namespace)
+    with open(otu_json) as data_file:    
+        otu_dict = json.load(data_file)
+    for tax in aln:
+        assert tax.label in otu_dict
+    tre = Tree.get(path=treefile,
+                   schema="newick",
+                   preserve_underscores=True,
+                   taxon_namespace=aln.taxon_namespace)
+    otu_newick = tre.as_string(schema="newick")
+    if ingroup_mrca :
+        ott_mrca = int(ingroup_mrca)
+    else:
+        ott_ids = [otu_dict[otu].get['^ot:ottId'] for otu in otu_dict]
+        ott_mrca = get_mrca_ott(ott_ids)
+    return AlignTreeTax(otu_newick, otu_dict, aln, ingroup_mrca = ott_mrca, workdir=workdir)
 
 
 class AlignTreeTax(object):
@@ -120,11 +131,13 @@ class AlignTreeTax(object):
         self.otu_dict = otu_dict
         self.ps_otu = 1 #iterator for new otu IDs
         self._reconcile_names()
-        self.workdir = workdir #TODO - is this wher etoe workdir shold live?
+        self.workdir = workdir #TODO - is this where the workdir should live?
         if not os.path.exists(self.workdir):
             os.makedirs(self.workdir)
         assert int(ingroup_mrca)
         self.ott_mrca = ingroup_mrca
+        self.orig_seqlen = 1000 #FIXME
+        self.gi_dict = {}
     def _reconcile_names(self): 
         """This checks that the tree "original labels" from phylsystem
         align with those found in the taxonomy. Spaces vs underscores
@@ -144,8 +157,8 @@ class AlignTreeTax(object):
         self.ps_otu += 1
         self.otu_dict[otu_id] = {}
         self.otu_dict[otu_id]['^ncbi:gi'] = gi
-        self.otu_dict[otu_id]['^ncbi:accession'] = ids_obj.gi_dict[gi]['accession']
-        self.otu_dict[otu_id]['^ncbi:title'] = sids_obj.gi_dict[gi]['title']
+        self.otu_dict[otu_id]['^ncbi:accession'] = self.gi_dict[gi]['accession']
+        self.otu_dict[otu_id]['^ncbi:title'] = self.gi_dict[gi]['title']
         self.otu_dict[otu_id]['^ncbi:taxon'] = ids_obj.map_gi_ncbi(gi)
         self.otu_dict[otu_id]['^ot:ottId'] = ids_obj.ncbi_to_ott.get(self.map_gi_ncbi(gi))
         self.otu_dict[otu_id]['^physcraper:status'] = "query"
@@ -171,9 +184,9 @@ class AlignTreeTax(object):
                        unquoted_underscores=True)
         self.aln.write(path="{}/{}".format(self.workdir, alnpath),
                        schema=alnschema)
-    def write_otus(self, schema="json", filename="TDOD"):    
-#        #json.dump(self.otu_dict)
-        assert 0
+    def write_otus(self, filename):    
+        with open("{}/{}".format(self.workdir, filename), 'w') as outfile:
+            json.dump(self.otu_dict, outfile)
     def write_labelled(self, label='^ot:ottTaxonName', treepath="labelled.tre", alnpath="labelled.fas"):
         """output tree and alignement with human readble labels
         Jumps through abunch of hoops to make labels unique.
@@ -213,9 +226,6 @@ class AlignTreeTax(object):
                       suppress_edge_lengths=False)
         tmp_aln.write(path="{}/{}".format(self.workdir,alnpath),
                       schema="fasta")
-#    def read_files(self):#UMMMMMMMM
-#    """input a tree and alignment, but tip labes need to be those already in the taxon namespace... OR NOT"""
-#    #They need to be in the OTU dict, but the OTU
 #    def tidy_otu_dict():
 #        #hmmm needs to strip out unused otus
 
@@ -251,9 +261,8 @@ def prune_short(data_obj, min_seqlen = 0):
             fi.close()
 
 
-def get_nexson(study_id, config_obj):
+def get_nexson(study_id, phylesystem_loc):
     """Grabs nexson from phylesystem"""
-    phylesystem_loc = config_obj.phylesystem_loc
     phy = PhylesystemAPI(get_from=phylesystem_loc)
     nexson = phy.get_study(study_id)['data']
     return  nexson
@@ -325,7 +334,6 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
         self.new_seqs = {}
         self.new_seqs_otu_id = {}
         self.otu_by_gi = {}
-        self.gi_dict = {}
         self._to_be_pruned = []
         self.mrca_ncbi = ids_obj.ott_to_ncbi[data_obj.ott_mrca]
 #        self.tmpfi = "{}/physcraper_run_in_progress".format(self.workdir)
@@ -391,9 +399,9 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
                     for alignment in blast_record.alignments:
                         for hsp in alignment.hsps:
                             if float(hsp.expect) < float(self.config.e_value_thresh):
-                                if int(alignment.title.split('|')[1]) not in self.ids.gi_dict: #skip ones we already have (does it matter if these were delted? No...)
+                                if int(alignment.title.split('|')[1]) not in self.data.gi_dict: #skip ones we already have (does it matter if these were delted? No...)
                                     self.new_seqs[int(alignment.title.split('|')[1])] = hsp.sbjct
-                                    self.ids.gi_dict[int(alignment.title.split('|')[1])] = alignment.__dict__
+                                    self.data.gi_dict[int(alignment.title.split('|')[1])] = alignment.__dict__
         self._blast_read = 1
     # TODO this should go back in the class and should prune the tree
     def seq_dict_build(self, seq, label, seq_dict): #Sequence needs to be passed in as string.
@@ -437,11 +445,11 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
         tmp_dict = dict((taxon.label, self.data.aln[taxon].symbols_as_string()) for taxon in self.aln)
         old_seqs = tmp_dict.keys()
         #Adding seqs that are different, but needs to be maintained as diff than aln that the tree has been run on
-        avg_seqlen = sum(self.orig_seqlen)/len(self.orig_seqlen) #HMMMMMMMM
-        seq_len_cutoff = avg_seqlen*self.seq_len_perc
+        avg_seqlen = sum(self.data.orig_seqlen)/len(self.data.orig_seqlen) #HMMMMMMMM
+        seq_len_cutoff = avg_seqlen*self.config.seq_len_perc
         for gi, seq in self.new_seqs.items():
             if len(seq.replace("-", "").replace("N", "")) > seq_len_cutoff:
-                otu_id = self._add_otu(gi)
+                otu_id = self.data._add_otu(gi)
                 self.seq_dict_build(seq, otu_id, tmp_dict)
         for tax in old_seqs:
             try:
