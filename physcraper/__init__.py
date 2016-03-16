@@ -317,16 +317,8 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
     #TODO better enforce ordering
     """This is the class that does the perpetual updating"""
     def __init__(self, data_obj, ids_obj, config_obj):
-#        if setup_obj:#this should need to happen ony the first time the scrape object is run.
-#            self.runname = 
-#            
-#            self.e_value_thresh = deepcopy(setup_obj.e_value_thresh)
-#            self.hitlist_size = deepcopy(setup_obj.hitlist_size)
-#            self.seq_len_perc = deepcopy(setup_obj.seq_len_perc)
-#            self.get_ncbi_taxonomy = deepcopy(setup_obj.get_ncbi_taxonomy)
-#            self.ncbi_dmp = deepcopy(setup_obj.ncbi_dmp)
-#            self.orig_seqlen = deepcopy(setup_obj.orig_seqlen)
-        self.log = "{}/logfile".format(self.workdir)
+        self.workdir = data_obj.workdir
+        self.logfile = "{}/logfile".format(self.workdir)
         self.data = data_obj
         self.ids = ids_obj
         self.config = config_obj
@@ -335,7 +327,7 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
         self.otu_by_gi = {}
         self.gi_dict = {}
         self._to_be_pruned = []
-        self.mrca_ncbi = ids_obj.ott_to_ncbi[dataobj.ott_mrca]
+        self.mrca_ncbi = ids_obj.ott_to_ncbi[data_obj.ott_mrca]
 #        self.tmpfi = "{}/physcraper_run_in_progress".format(self.workdir)
         self.blast_subdir = "{}/current_blast_run".format(self.workdir)
         if not os.path.exists(self.workdir):
@@ -352,27 +344,6 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
         self._query_seqs_placed = 0
         self._reconciled = 0
         self._full_tree_est = 0
-#    def _write_files(self):
-#        """Outputs both the streaming files and a ditechecked"""
-#        #First write rich annotation json file with everything needed for later?
-#        self.tre.resolve_polytomies()
-#        self.tre.deroot()
-#        tmptre = self.tre.as_string(schema="newick",
-#                                    unquoted_underscores=True,
-#                                    suppress_rooting=True)
-#        tmptre = tmptre.replace(":0.0;",";")#Papara is diffffffficult about root
-#        fi = open("{}/random_resolve.tre".format(self.workdir), "w")
-#        fi.write(tmptre)
-#        fi.close()
-#        self.aln.write(path="{}/aln_ott.phy".format(self.workdir),
-#                       schema="phylip")
-#        self.aln.write(path="{}/aln_ott.fas".format(self.workdir),
-#                       schema="fasta")
-#        self.tre.write(path="{}/random_resolve{}.tre".format(self.workdir, self.today),
-#                       schema="newick",
-#                       unquoted_underscores=True)
-#        self.aln.write(path="{}/aln_ott{}.fas".format(self.workdir, self.today),
-#                      schema="fasta")
     def run_blast(self): #TODO Should this be happening elsewhere?
         """generates the blast queries and sames them to xml"""
         if not os.path.exists(self.blast_subdir):
@@ -395,11 +366,11 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
                         result_handle = NCBIWWW.qblast("blastn", "nt",
                                                    query,
                                                    entrez_query=equery,
-                                                   hitlist_size=self.hitlist_size)
+                                                   hitlist_size=self.config.hitlist_size)
                         save_file = open(xml_fi, "w")
                         save_file.write(result_handle.read())
                         save_file.close()
-                        self.otu_dict[otu_id]['^physcraper:last_blasted'] = today
+                        self.data.otu_dict[otu_id]['^physcraper:last_blasted'] = today
                         result_handle.close()
                     except ValueError:
                         sys.stderr.write("NCBIWWW error. Carrying on, but skipped {}".format(otu_id))
@@ -411,7 +382,7 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
             blast_dir = self.blast_subdir
         if not self._blasted:
             self.run_blast()
-        for taxon in self.aln:
+        for taxon in self.data.aln:
             xml_fi = "{}/{}.xml".format(blast_dir, taxon.label)
             if os.path.isfile(xml_fi):
                 result_handle = open(xml_fi)
@@ -419,10 +390,10 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
                 for blast_record in blast_records:
                     for alignment in blast_record.alignments:
                         for hsp in alignment.hsps:
-                            if float(hsp.expect) < float(self.e_value_thresh):
-                                if int(alignment.title.split('|')[1]) not in self.gi_dict: #skip ones we already have (does it matter if these were delted? No...)
+                            if float(hsp.expect) < float(self.config.e_value_thresh):
+                                if int(alignment.title.split('|')[1]) not in self.ids.gi_dict: #skip ones we already have (does it matter if these were delted? No...)
                                     self.new_seqs[int(alignment.title.split('|')[1])] = hsp.sbjct
-                                    self.gi_dict[int(alignment.title.split('|')[1])] = alignment.__dict__
+                                    self.ids.gi_dict[int(alignment.title.split('|')[1])] = alignment.__dict__
         self._blast_read = 1
     # TODO this should go back in the class and should prune the tree
     def seq_dict_build(self, seq, label, seq_dict): #Sequence needs to be passed in as string.
@@ -438,19 +409,19 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
             if len(inc_seq) >= len(new_seq):
                 if inc_seq.find(new_seq) != -1:
                     sys.stdout.write("seq {} is subsequence of {}, not added\n".format(label, tax))
-                    del self.otu_dict[label]
+                    del self.data.otu_dict[label]
                     return
             else:
                 if new_seq.find(inc_seq) != -1:#
-                    if self.otu_dict[tax].get('^physcraper:status') == "original":
+                    if self.data.otu_dict[tax].get('^physcraper:status') == "original":
                         sys.stdout.write("seq {} is supersequence of original seq {}, both kept in alignment\n".format(label, tax))
                         seq_dict[label] = seq
                         return
                     else:
                         del seq_dict[tax]
-                        self.tre.prune_taxa_with_labels(tax)
+                        self.data.tre.prune_taxa_with_labels(tax)
                         seq_dict[label] = seq
-                        del self.otu_dict[tax]  #hmmmmmmmm?! CHECK ME!!
+                        del self.data.otu_dict[tax]  #hmmmmmmmm?! CHECK ME!!
 #                        print "TAXON {} should no longer be in OTU dict!"
                         sys.stdout.write("seq {} is supersequence of {}, {} added and {} removed\n".format(label, tax, label, tax))
                         return
@@ -463,10 +434,10 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
         the longer of two that are other wise identical, and puts them in a dict
         with new name as gi_ott_id.
         Does not test if they are identical to ones in the original alignment...."""
-        tmp_dict = dict((taxon.label, self.aln[taxon].symbols_as_string()) for taxon in self.aln)
+        tmp_dict = dict((taxon.label, self.data.aln[taxon].symbols_as_string()) for taxon in self.aln)
         old_seqs = tmp_dict.keys()
         #Adding seqs that are different, but needs to be maintained as diff than aln that the tree has been run on
-        avg_seqlen = sum(self.orig_seqlen)/len(self.orig_seqlen)
+        avg_seqlen = sum(self.orig_seqlen)/len(self.orig_seqlen) #HMMMMMMMM
         seq_len_cutoff = avg_seqlen*self.seq_len_perc
         for gi, seq in self.new_seqs.items():
             if len(seq.replace("-", "").replace("N", "")) > seq_len_cutoff:
@@ -683,4 +654,37 @@ class PhyscraperSetup(object):
 # I think it should write out to files so that the PHyscarpe scrape object can just read the aln etc from those, maybe the shaould be where the OTU dict comes from too...
 #Hmmm.
 
+
+#    def _write_files(self):
+#        """Outputs both the streaming files and a ditechecked"""
+#        #First write rich annotation json file with everything needed for later?
+#        self.tre.resolve_polytomies()
+#        self.tre.deroot()
+#        tmptre = self.tre.as_string(schema="newick",
+#                                    unquoted_underscores=True,
+#                                    suppress_rooting=True)
+#        tmptre = tmptre.replace(":0.0;",";")#Papara is diffffffficult about root
+#        fi = open("{}/random_resolve.tre".format(self.workdir), "w")
+#        fi.write(tmptre)
+#        fi.close()
+#        self.aln.write(path="{}/aln_ott.phy".format(self.workdir),
+#                       schema="phylip")
+#        self.aln.write(path="{}/aln_ott.fas".format(self.workdir),
+#                       schema="fasta")
+#        self.tre.write(path="{}/random_resolve{}.tre".format(self.workdir, self.today),
+#                       schema="newick",
+#                       unquoted_underscores=True)
+#        self.aln.write(path="{}/aln_ott{}.fas".format(self.workdir, self.today),
+#                      schema="fasta")
+
+#        if setup_obj:#this should need to happen ony the first time the scrape object is run.
+#            self.runname = 
+#            
+#            self.e_value_thresh = deepcopy(setup_obj.e_value_thresh)
+#            self.hitlist_size = deepcopy(setup_obj.hitlist_size)
+#            self.seq_len_perc = deepcopy(setup_obj.seq_len_perc)
+#            self.get_ncbi_taxonomy = deepcopy(setup_obj.get_ncbi_taxonomy)
+#            self.ncbi_dmp = deepcopy(setup_obj.ncbi_dmp)
+#            self.orig_seqlen = deepcopy(setup_obj.orig_seqlen)
+        self.workdir = data_obj.workdir #TODO potnetial from clash between ids dict data obj
 '''
