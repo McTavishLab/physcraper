@@ -37,4 +37,3 @@ sys.stdout.write("Instance set up\n")
 sys.stdout.flush()
 scrape.generate_streamed_alignment()
 scrape.write_labelled()
-
