@@ -136,7 +136,7 @@ class AlignTreeTax(object):
             os.makedirs(self.workdir)
         assert int(ingroup_mrca)
         self.ott_mrca = ingroup_mrca
-        self.orig_seqlen = 1000 #FIXME
+        self.orig_seqlen = [1000, 1000, 1000] #FIXME
         self.gi_dict = {}
     def _reconcile_names(self): 
         """This checks that the tree "original labels" from phylsystem
@@ -160,12 +160,12 @@ class AlignTreeTax(object):
         self.otu_dict[otu_id]['^ncbi:accession'] = self.gi_dict[gi]['accession']
         self.otu_dict[otu_id]['^ncbi:title'] = self.gi_dict[gi]['title']
         self.otu_dict[otu_id]['^ncbi:taxon'] = ids_obj.map_gi_ncbi(gi)
-        self.otu_dict[otu_id]['^ot:ottId'] = ids_obj.ncbi_to_ott.get(self.map_gi_ncbi(gi))
+        self.otu_dict[otu_id]['^ot:ottId'] = ids_obj.ncbi_to_ott.get(ids_obj.map_gi_ncbi(gi))
         self.otu_dict[otu_id]['^physcraper:status'] = "query"
-        self.otu_dict[otu_id]['^ot:ottTaxonName'] = self.ott_to_name.get(self.otu_dict[otu_id]['^ot:ottId'])
+        self.otu_dict[otu_id]['^ot:ottTaxonName'] = ids_obj.ott_to_name.get(self.otu_dict[otu_id]['^ot:ottId'])
         self.otu_dict[otu_id]['^physcraper:last_blasted'] = "1900/01/01"
         return otu_id
-    def write_papara_tree(self, filename="random_resolve.tre"):
+    def write_papara_files(self, treefilename="random_resolve.tre", alnfilename="aln_ott.phy"):
         #CAN I even evaulte things in the function definitions?
         self.tre.resolve_polytomies()
         self.tre.deroot()
@@ -173,9 +173,10 @@ class AlignTreeTax(object):
                                     unquoted_underscores=True,
                                     suppress_rooting=True)
         tmptre = tmptre.replace(":0.0;",";")#Papara is diffffffficult about root
-        fi = open("{}/{}".format(self.workdir,filename), "w")
+        fi = open("{}/{}".format(self.workdir,treefilename), "w")
         fi.write(tmptre)
         fi.close()
+        self.aln.write(path="{}/{}".format(self.workdir, alnfilename), schema="phylip")
     def write_files(self, treepath="physcraper.tre", treeschema="newick", alnpath="physcraper.fas", alnschema="fasta"):
         """Outputs both the streaming files and a ditechecked"""
         #First write rich annotation json file with everything needed for later?
@@ -281,7 +282,11 @@ def get_mrca_ott(ott_ids):
         mrca according to the ncbi taxonomy"""        
         if None in ott_ids:
             ott_ids.remove(None)
-        mrca_node = tree_of_life.mrca(ott_ids=list(ott_ids), wrap_response=True)
+        try:
+            mrca_node = tree_of_life.mrca(ott_ids=list(ott_ids), wrap_response=True)
+        except  RuntimeError:
+            sys.stderr.write("POST to get MRCA of ingroup failed - check internet connectivity, and or provide ingroup mrca OTT_ID, or check treemachine MRCA call\n")
+            sys.exit()
         return mrca_node.nearest_taxon.ott_id
 
 
@@ -297,13 +302,15 @@ def get_ott_ids_from_otu_dict(otu_dict):
 
 class IdDicts(object):
     """Wraps up the annoying conversions"""#TODO - could - should be shared acrosss runs?! .... nooo.
-    def __init__(self, ott_ncbi, workdir):
+    def __init__(self, config_obj, workdir):
         """Generates a series of name disambiguation dicts"""
+        self.workdir = workdir
+        self.config = config_obj
         self.ott_to_ncbi = {}
         self.ncbi_to_ott = {}
         self.ott_to_name = {}
         self.gi_ncbi_dict = {}
-        fi = open(ott_ncbi) #TODO need to keep updated
+        fi = open(config_obj.ott_ncbi) #TODO need to keep updated
         for lin in fi:
             lii = lin.split(",")
             self.ott_to_ncbi[int(lii[0])] = int(lii[1])
@@ -317,6 +324,23 @@ class IdDicts(object):
     def add_gi(self, gi, tax_id):
         #add assert that it isn' already there? 
         self.gi_ncbi_dict[gi] = tax_id
+    def map_gi_ncbi(self, gi):
+        """get the ncbi taxon id's for a gi input"""
+        mapped_taxon_ids = open("{}/id_map.txt".format(self.workdir), "a")
+        if gi in self.gi_ncbi_dict:
+            tax_id = int(self.gi_ncbi_dict[gi])
+        else:
+            try:
+                tax_id = int(subprocess.check_output(["bash", self.config.get_ncbi_taxonomy,
+                                                      "{}".format(gi),
+                                                      "{}".format(self.config.ncbi_dmp)]).split('\t')[1])
+            except ValueError:
+                sys.stderr.write("ncbi_dmp file needs to be updated. Do so and rerun.")
+            mapped_taxon_ids.write("{}, {}\n".format(gi, tax_id))
+            self.gi_ncbi_dict[gi] = tax_id
+            assert tax_id  #if this doesn't work then the gi to taxon mapping needs to be updated - shouldhappen anyhow perhaps?!
+        mapped_taxon_ids.close()
+        return tax_id
 
 
 #self.orig_seqlen = []
@@ -340,8 +364,8 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
         self.blast_subdir = "{}/current_blast_run".format(self.workdir)
         if not os.path.exists(self.workdir):
             os.makedirs(self.workdir)
-
         self.newseqs_file = "{}/{}.fasta".format(self.workdir, str(datetime.date.today()))
+        self.reset_markers()
  #TODO is this the right place for this?
     def reset_markers(self):
         self._blasted = 0
@@ -442,14 +466,14 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
         the longer of two that are other wise identical, and puts them in a dict
         with new name as gi_ott_id.
         Does not test if they are identical to ones in the original alignment...."""
-        tmp_dict = dict((taxon.label, self.data.aln[taxon].symbols_as_string()) for taxon in self.aln)
+        tmp_dict = dict((taxon.label, self.data.aln[taxon].symbols_as_string()) for taxon in self.data.aln)
         old_seqs = tmp_dict.keys()
         #Adding seqs that are different, but needs to be maintained as diff than aln that the tree has been run on
         avg_seqlen = sum(self.data.orig_seqlen)/len(self.data.orig_seqlen) #HMMMMMMMM
         seq_len_cutoff = avg_seqlen*self.config.seq_len_perc
         for gi, seq in self.new_seqs.items():
             if len(seq.replace("-", "").replace("N", "")) > seq_len_cutoff:
-                otu_id = self.data._add_otu(gi)
+                otu_id = self.data._add_otu(gi, self.ids)
                 self.seq_dict_build(seq, otu_id, tmp_dict)
         for tax in old_seqs:
             try:
@@ -459,23 +483,6 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
         self.new_seqs_otu_id = tmp_dict # renamed new seq to their otu_ids from GI's, but all info is in self.otu_dict
         with open(self.logfile, "a") as log:
             log.write("{} new sequences added from genbank\n".format(len(self.new_seqs_otu_id)))
-    def map_gi_ncbi(self, gi):
-        """get the ncbi taxon id's for a gi input"""
-        mapped_taxon_ids = open("{}/id_map.txt".format(self.workdir), "a")
-        if gi in self.gi_ncbi_dict:
-            tax_id = int(self.gi_ncbi_dict[gi])
-        else:
-            try:
-                tax_id = int(subprocess.check_output(["bash", self.get_ncbi_taxonomy,
-                                                      "{}".format(gi),
-                                                      "{}".format(self.ncbi_dmp)]).split('\t')[1])
-            except ValueError:
-                sys.stderr.write("ncbi_dmp file needs to be updated. Do so and rerun.")
-            mapped_taxon_ids.write("{}, {}\n".format(gi, tax_id))
-            self.gi_ncbi_dict[gi] = tax_id
-            assert tax_id  #if this doesn't work then the gi to taxon mapping needs to be updated - shouldhappen anyhow perhaps?!
-        mapped_taxon_ids.close()
-        return tax_id
     def write_query_seqs(self):
         """writes out the query sequence file"""
         if not self._blast_read:
@@ -483,7 +490,7 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
         fi = open(self.newseqs_file, 'w')
         sys.stdout.write("writing out sequences\n")
         for otu_id in self.new_seqs_otu_id.keys():
-            if otu_id not in self.aln: #new seqs only
+            if otu_id not in self.data.aln: #new seqs only
                 fi.write(">{}\n".format(otu_id))
                 fi.write("{}\n".format(self.new_seqs_otu_id[otu_id]))
         self._query_seqs_written = 1
@@ -492,41 +499,42 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
         if not self._query_seqs_written:
             self.write_query_seqs()
         sys.stdout.write("aligning query sequences \n")
+        self.data.write_papara_files()
         os.chdir(self.workdir)#Clean up dir moving
         pp = subprocess.call(["papara",
                               "-t", "random_resolve.tre",
                               "-s", "aln_ott.phy",
-                              "-q", "{}.fasta".format(self.today),
+                              "-q", "{}.fasta".format(str(datetime.date.today())),
                               "-n", papara_runname]) #FIx directory ugliness
         os.chdir('..')
-        self.aln = DnaCharacterMatrix.get(path="{}/papara_alignment.{}".format(self.workdir, papara_runname), schema="phylip")
-        self.aln.taxon_namespace.is_mutable = False #This should enforce name matching throughout...
+        self.data.aln = DnaCharacterMatrix.get(path="{}/papara_alignment.{}".format(self.workdir, papara_runname), schema="phylip")
+        self.data.aln.taxon_namespace.is_mutable = False #This should enforce name matching throughout...
         self._query_seqs_aligned = 1
     def reconcile(self):
         """all missing data seqs are sneaking in, but from where?!"""
         if not self._query_seqs_aligned:
             self.align_query_seqs()
         aln_ids = set()
-        for tax in self.aln:
+        for tax in self.data.aln:
             aln_ids.add(tax.label)
-        assert aln_ids.issubset(self.otu_dict.keys())
-        for key in  self.otu_dict.keys():
+        assert aln_ids.issubset(self.data.otu_dict.keys())
+        for key in  self.data.otu_dict.keys():
             if key not in aln_ids:
                 sys.stderr.write("{} is in otu dict but not alignment\n".format(key))
         prune = []
         tmp_dict = {}
-        avg_seqlen = sum(self.orig_seqlen)/len(self.orig_seqlen)
-        seq_len_cutoff = avg_seqlen*self.seq_len_perc
-        for taxon, seq in self.aln.items():
+        avg_seqlen = sum(self.data.orig_seqlen)/len(self.data.orig_seqlen)
+        seq_len_cutoff = avg_seqlen*self.config.seq_len_perc
+        for taxon, seq in self.data.aln.items():
             if len(seq.symbols_as_string().translate(None, "-?")) < seq_len_cutoff:
                 prune.append(taxon.label)
             else:
                 tmp_dict[taxon.label] = seq
-                self.orig_seqlen.append(len(seq.symbols_as_string().translate(None, "-?")))
-        self.aln = DnaCharacterMatrix.from_dict(tmp_dict)
-        self.tre.prune_taxa_with_labels(prune)
+                self.data.orig_seqlen.append(len(seq.symbols_as_string().translate(None, "-?")))
+        self.data.aln = DnaCharacterMatrix.from_dict(tmp_dict)
+        self.data.tre.prune_taxa_with_labels(prune)
         for tax in prune:
-            del self.otu_dict[tax]
+            del self.data.otu_dict[tax]
         if prune:
             fi = open("{}/pruned_taxa".format(self.workdir), 'a')
             fi.write("taxa pruned from tree and alignment due to excessive missing data\n")
@@ -561,28 +569,28 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
                               "-s", "papara_alignment.extended",
                               "-t", "place_resolve.tre",
                               "-p", "1",
-                              "-n", "{}".format(self.today)])
+                              "-n", "{}".format(str(datetime.date.today()))])
         os.chdir('..')
         self._full_tree_est = 1
     def generate_streamed_alignment(self):
-        """runs teh key steps and then replaces the tree and alignemnt with the expanded ones"""
+        """runs the key steps and then replaces the tree and alignemnt with the expanded ones"""
         self.reset_markers()
         self.read_blast()
         if len(self.new_seqs) > 0:    
             self.remove_identical_seqs()
-            self._write_files() #should happen before aligning in case of pruning
+            self.data.write_files() #should happen before aligning in case of pruning
             self.write_query_seqs()
             self.align_query_seqs()
             self.reconcile()
             self.place_query_seqs()
             self.est_full_tree()
-            self.tre = Tree.get(path="{}/RAxML_bestTree.{}".format(self.workdir, self.today),
+            self.tre = Tree.get(path="{}/RAxML_bestTree.{}".format(self.workdir, str(datetime.date.today())),
                                 schema="newick",
                                 preserve_underscores=True,
-                                taxon_namespace=self.aln.taxon_namespace)
-            self._write_files()
+                                taxon_namespace=self.data.aln.taxon_namespace)
+            self.data.write_files()
             if os.path.exists("{}/previous_run".format(self.workdir)):
-                os.rename("{}/previous_run".format(self.workdir), "{}/previous_run{}".format(self.workdir, self.today))
+                os.rename("{}/previous_run".format(self.workdir), "{}/previous_run{}".format(self.workdir, str(datetime.date.today())))
             os.rename(self.blast_subdir, "{}/previous_run".format(self.workdir))
             if os.path.exists("{}/last_completed_update".format(self.workdir)):
                 os.rename(self.tmpfi,
@@ -595,7 +603,7 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
             sys.stdout.write("No new sequences found.")
         self.reset_markers()
         pickle.dump(self, open('{}/scrape.p'.format(self.workdir), 'wb'))
-        pickle.dump(self.otu_dict, open('{}/otu_dict{}.p'.format(self.workdir, self.today), 'wb'))
+        pickle.dump(self.data.otu_dict, open('{}/otu_dict{}.p'.format(self.workdir, str(datetime.date.today())), 'wb'))
 
 '''
 class PhyscraperSetup(object):
