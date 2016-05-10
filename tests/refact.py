@@ -28,11 +28,13 @@ data_obj.write_files()
 data_obj.write_labelled()
 
 
-ids = IdDicts(conf.ott_ncbi, "tmp")
+ids = IdDicts(conf, "tmp")
 
 scraper =  PhyscraperScrape(data_obj, ids, conf)
 scraper.run_blast()
 scraper.read_blast()
+scraper.remove_identical_seqs()
+scraper.generate_streamed_alignment()
 
 
 #otu_json = "tests/minitest_otu.json"
@@ -44,10 +46,17 @@ scraper.read_blast()
 #                     treefile = treefile)
 
 #data_obj2 = info_obj.generate_ATT()
-
-info_obj2 = generate_ATT_from_files("tmp/physcraper.fas",
+'''
+print("ROUND TWO")
+data_obj2 = generate_ATT_from_files("tmp/physcraper.fas",
                                    mattype,
                                    "tmp",
                                    "tmp/physcraper.tre",
                                     "tmp/otus.json",
                                    ingroup_mrca=data_obj.ott_mrca)
+
+
+scraper2 =  PhyscraperScrape(data_obj2, ids, conf)
+scraper2.run_blast()
+scraper2.read_blast()
+'''
