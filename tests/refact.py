@@ -1,4 +1,4 @@
-from physcraper import generate_ATT_from_phylesystem, generate_ATT_from_files, prune_short, config_obj, IdDicts,  PhyscraperScrape
+from physcraper import generate_ATT_from_phylesystem, generate_ATT_from_files, prune_short, ConfigObj, IdDicts,  PhyscraperScrape
 import pickle
 import sys
 import os
@@ -13,7 +13,7 @@ runname="fresh3"
 
 configfi = "tests/local.config"
 
-conf = config_obj(configfi)
+conf = ConfigObj(configfi)
 
 data_obj = generate_ATT_from_phylesystem(seqaln,
                      mattype,

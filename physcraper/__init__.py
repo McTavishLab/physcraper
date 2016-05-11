@@ -24,7 +24,8 @@ from peyotl.nexson_syntax import extract_tree, extract_tree_nexson, get_subtree_
 from peyotl.api import APIWrapper
 
 
-class config_obj(object):
+class ConfigObj(object):
+    """Pulls out the configuration information from the config file and makes it easier to pass around and pickle."""
     def __init__(self, configfi):
         assert os.path.isfile(configfi)
         config = configparser.ConfigParser()
@@ -55,7 +56,10 @@ def generate_ATT_from_phylesystem(seqaln,
     for tax in aln.taxon_namespace:
         tax.label = tax.label.replace(" ", "_") #Forcing all spaces to underscore UGH
     nexson = get_nexson(study_id, phylesystem_loc)
-    ott_ids = get_ott_ids_from_phylesystem(nexson, tree_id, subtree_id="ingroup")
+    ott_ids = get_subtree_otus(nexson,
+                               tree_id=tree_id,
+                               subtree_id="ingroup",
+                               return_format="ottid")
     ott_mrca = get_mrca_ott(ott_ids)
     newick = extract_tree(nexson,
                           tree_id,
@@ -82,8 +86,8 @@ def generate_ATT_from_phylesystem(seqaln,
     for tax in aln.taxon_namespace:
         try:
             tax.label = orig_lab_to_otu[tax.label].encode('ascii')
-        except:
-            print "{} doesn't have an otu id. WTF?".format(tax.label)#Forcing all spaces to underscore UGH
+        except KeyError:
+            print "{} doesn't have an otu id. What happened?".format(tax.label)#Forcing all spaces to underscore UGH
     otu_newick = tre.as_string(schema="newick")
     return AlignTreeTax(otu_newick, otu_dict, aln, ingroup_mrca=ott_mrca, workdir=workdir) #newick should be bare, but alignement should be DNACharacterMatrix
 
@@ -150,7 +154,7 @@ class AlignTreeTax(object):
             errmf = 'Some of the taxa in the alignment are not in the tree. Missing "{}"\n'
             errm = errmf.format('", "'.join(missing))
             raise ValueError(errm)
-    def _add_otu(self, gi, ids_obj):
+    def add_otu(self, gi, ids_obj):
         """generates an otu_id for new sequences and adds them into the otu_dict.
         Needs to be passed an IdDict to do the mapping"""
         otu_id = "otuPS{}".format(self.ps_otu)
@@ -166,6 +170,8 @@ class AlignTreeTax(object):
         self.otu_dict[otu_id]['^physcraper:last_blasted'] = "1900/01/01"#TODO check propagation...
         return otu_id
     def write_papara_files(self, treefilename="random_resolve.tre", alnfilename="aln_ott.phy"):
+        """Papara is finicky about trees and needs phylip, this writes out needed files for papara
+        (except query sequences)"""
         #CAN I even evaulte things in the function definitions?
         self.tre.resolve_polytomies()
         self.tre.deroot()
@@ -186,6 +192,7 @@ class AlignTreeTax(object):
         self.aln.write(path="{}/{}".format(self.workdir, alnpath),
                        schema=alnschema)
     def write_otus(self, filename):
+        """Writes out OTU dict as json"""
         with open("{}/{}".format(self.workdir, filename), 'w') as outfile:
             json.dump(self.otu_dict, outfile)
     def write_labelled(self, label='^ot:ottTaxonName', treepath="labelled.tre", alnpath="labelled.fas"):
@@ -269,13 +276,6 @@ def get_nexson(study_id, phylesystem_loc):
     return  nexson
 
 
-def get_ott_ids_from_phylesystem(nexson, tree_id, subtree_id="ingroup"):
-    orig_ott_ids = get_subtree_otus(nexson,
-                                    tree_id=tree_id,
-                                    subtree_id="ingroup",
-                                    return_format="ottid")
-    return orig_ott_ids
-
 def get_mrca_ott(ott_ids):
     """finds the mrca of the taxa in the ingroup of the original
     tree. The blast search later is limited to descendents of this
@@ -290,8 +290,8 @@ def get_mrca_ott(ott_ids):
     return mrca_node.nearest_taxon.ott_id
 
 
-
-def get_ott_ids_from_otu_dict(otu_dict):
+def get_ott_ids_from_otu_dict(otu_dict): #TODO put into data obj?
+    """Get the ott ids from an otu dict object"""
     ott_ids = []
     for otu in otu_dict:
         try:
@@ -473,7 +473,7 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
         seq_len_cutoff = avg_seqlen*self.config.seq_len_perc
         for gi, seq in self.new_seqs.items():
             if len(seq.replace("-", "").replace("N", "")) > seq_len_cutoff:
-                otu_id = self.data._add_otu(gi, self.ids)
+                otu_id = self.data.add_otu(gi, self.ids)
                 self.seq_dict_build(seq, otu_id, tmp_dict)
         for tax in old_seqs:
             try:
@@ -584,10 +584,10 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
             self.reconcile()
             self.place_query_seqs()
             self.est_full_tree()
-            self.tre = Tree.get(path="{}/RAxML_bestTree.{}".format(self.workdir, str(datetime.date.today())),
-                                schema="newick",
-                                preserve_underscores=True,
-                                taxon_namespace=self.data.aln.taxon_namespace)
+            self.data.tre = Tree.get(path="{}/RAxML_bestTree.{}".format(self.workdir, str(datetime.date.today())),
+                                     schema="newick",
+                                     preserve_underscores=True,
+                                     taxon_namespace=self.data.aln.taxon_namespace)
             self.data.write_files()
             if os.path.exists("{}/previous_run".format(self.workdir)):
                 os.rename("{}/previous_run".format(self.workdir), "{}/previous_run{}".format(self.workdir, str(datetime.date.today())))
