@@ -36,6 +36,11 @@ scraper.read_blast()
 scraper.remove_identical_seqs()
 scraper.generate_streamed_alignment()
 
+scraper.run_blast()
+scraper.read_blast()
+scraper.remove_identical_seqs()
+scraper.generate_streamed_alignment()
+
 
 #otu_json = "tests/minitest_otu.json"
 #treefile = "tests/minitest.tre"

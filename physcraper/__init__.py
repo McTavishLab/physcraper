@@ -35,7 +35,7 @@ class config_obj(object):
         self.get_ncbi_taxonomy = config['ncbi.taxonomy']['get_ncbi_taxonomy']
         self.ncbi_dmp = config['ncbi.taxonomy']['ncbi_dmp']
         self.phylesystem_loc = config['phylesystem']['location']
-        self.ott_ncbi  = config['ncbi.taxonomy']['ott_ncbi']
+        self.ott_ncbi = config['ncbi.taxonomy']['ott_ncbi']
 
 
 
@@ -44,11 +44,11 @@ def generate_ATT_from_phylesystem(seqaln,
                                   mattype,
                                   workdir,
                                   study_id,
-                                  tree_id ,
-                                  phylesystem_loc = 'remote'):
+                                  tree_id,
+                                  phylesystem_loc='remote'):
     """gathers together tree, alignment, and study info - forces names to otu_ids.
     Outputs AlignTreeTax object.
-    an alignemnt, a 
+    an alignemnt, a
     Input can be either a study ID and tree ID from OpenTree"""
     #TODO CHECK ARGS
     aln = DnaCharacterMatrix.get(path=seqaln, schema=mattype)
@@ -65,9 +65,9 @@ def generate_ATT_from_phylesystem(seqaln,
                                       tip_label="ot:originalLabel"))
     newick = newick.replace(" ", "_") #UGH Very heavy handed, need to make sure happens on alignement side as well.
     tre = Tree.get(data=newick,
-                    schema="newick",
-                    preserve_underscores=True,
-                    taxon_namespace=aln.taxon_namespace)
+                   schema="newick",
+                   preserve_underscores=True,
+                   taxon_namespace=aln.taxon_namespace)
     otus = get_subtree_otus(nexson, tree_id=tree_id)
     otu_dict = {}
     orig_lab_to_otu = {}
@@ -81,7 +81,7 @@ def generate_ATT_from_phylesystem(seqaln,
         treed_taxa[orig] = otu_dict[otu_id].get(u'^ot:ottId')
     for tax in aln.taxon_namespace:
         try:
-            tax.label =  orig_lab_to_otu[tax.label].encode('ascii')
+            tax.label = orig_lab_to_otu[tax.label].encode('ascii')
         except:
             print "{} doesn't have an otu id. WTF?".format(tax.label)#Forcing all spaces to underscore UGH
     otu_newick = tre.as_string(schema="newick")
@@ -93,7 +93,7 @@ def generate_ATT_from_files(seqaln,
                             workdir,
                             treefile,
                             otu_json,
-                            ingroup_mrca = None):
+                            ingroup_mrca=None):
     """Build an ATT object without phylesystem.
     If no ingroup mrca ott_id is provided, will use all taxa in tree to calc mrca."""
     aln = DnaCharacterMatrix.get(path=seqaln, schema=mattype)
@@ -103,7 +103,7 @@ def generate_ATT_from_files(seqaln,
                    schema="newick",
                    preserve_underscores=True,
                    taxon_namespace=aln.taxon_namespace)
-    with open(otu_json) as data_file:    
+    with open(otu_json) as data_file:
         otu_dict = json.load(data_file)
     for tax in aln:
         assert tax.label in otu_dict
@@ -112,12 +112,12 @@ def generate_ATT_from_files(seqaln,
                    preserve_underscores=True,
                    taxon_namespace=aln.taxon_namespace)
     otu_newick = tre.as_string(schema="newick")
-    if ingroup_mrca :
+    if ingroup_mrca:
         ott_mrca = int(ingroup_mrca)
     else:
         ott_ids = [otu_dict[otu].get['^ot:ottId'] for otu in otu_dict]
         ott_mrca = get_mrca_ott(ott_ids)
-    return AlignTreeTax(otu_newick, otu_dict, aln, ingroup_mrca = ott_mrca, workdir=workdir)
+    return AlignTreeTax(otu_newick, otu_dict, aln, ingroup_mrca=ott_mrca, workdir=workdir)
 
 
 class AlignTreeTax(object):
@@ -138,7 +138,7 @@ class AlignTreeTax(object):
         self.ott_mrca = ingroup_mrca
         self.orig_seqlen = [1000, 1000, 1000] #FIXME
         self.gi_dict = {}
-    def _reconcile_names(self): 
+    def _reconcile_names(self):
         """This checks that the tree "original labels" from phylsystem
         align with those found in the taxonomy. Spaces vs underscores
         kept being an issue, so all spaces are coerced to underscores throughout!"""
@@ -163,7 +163,7 @@ class AlignTreeTax(object):
         self.otu_dict[otu_id]['^ot:ottId'] = ids_obj.ncbi_to_ott.get(ids_obj.map_gi_ncbi(gi))
         self.otu_dict[otu_id]['^physcraper:status'] = "query"
         self.otu_dict[otu_id]['^ot:ottTaxonName'] = ids_obj.ott_to_name.get(self.otu_dict[otu_id]['^ot:ottId'])
-        self.otu_dict[otu_id]['^physcraper:last_blasted'] = "1900/01/01"
+        self.otu_dict[otu_id]['^physcraper:last_blasted'] = "1900/01/01"#TODO check propagation...
         return otu_id
     def write_papara_files(self, treefilename="random_resolve.tre", alnfilename="aln_ott.phy"):
         #CAN I even evaulte things in the function definitions?
@@ -172,20 +172,20 @@ class AlignTreeTax(object):
         tmptre = self.tre.as_string(schema="newick",
                                     unquoted_underscores=True,
                                     suppress_rooting=True)
-        tmptre = tmptre.replace(":0.0;",";")#Papara is diffffffficult about root
-        fi = open("{}/{}".format(self.workdir,treefilename), "w")
+        tmptre = tmptre.replace(":0.0;", ";")#Papara is diffffffficult about root
+        fi = open("{}/{}".format(self.workdir, treefilename), "w")
         fi.write(tmptre)
         fi.close()
         self.aln.write(path="{}/{}".format(self.workdir, alnfilename), schema="phylip")
     def write_files(self, treepath="physcraper.tre", treeschema="newick", alnpath="physcraper.fas", alnschema="fasta"):
         """Outputs both the streaming files and a ditechecked"""
         #First write rich annotation json file with everything needed for later?
-        self.tre.write(path="{}/{}".format(self.workdir,treepath),
+        self.tre.write(path="{}/{}".format(self.workdir, treepath),
                        schema=treeschema,
                        unquoted_underscores=True)
         self.aln.write(path="{}/{}".format(self.workdir, alnpath),
                        schema=alnschema)
-    def write_otus(self, filename):    
+    def write_otus(self, filename):
         with open("{}/{}".format(self.workdir, filename), 'w') as outfile:
             json.dump(self.otu_dict, outfile)
     def write_labelled(self, label='^ot:ottTaxonName', treepath="labelled.tre", alnpath="labelled.fas"):
@@ -195,10 +195,10 @@ class AlignTreeTax(object):
         assert label in ['^ot:ottTaxonName', "^ot:originalLabel", "^ot:ottId", "^ncbi:taxon"]
         tmp_newick = self.tre.as_string(schema="newick")
         tmp_tre = Tree.get(data=tmp_newick,
-                            schema="newick",
-                            preserve_underscores=True)
+                           schema="newick",
+                           preserve_underscores=True)
         tmp_fasta = self.aln.as_string(schema="fasta")
-        tmp_aln = DnaCharacterMatrix.get(data=tmp_fasta, 
+        tmp_aln = DnaCharacterMatrix.get(data=tmp_fasta,
                                          schema="fasta",
                                          taxon_namespace=tmp_tre.taxon_namespace)
         new_names = set()
@@ -221,11 +221,11 @@ class AlignTreeTax(object):
                     new_label = " ".join([new_label, taxon.label])
                 new_names.add(new_label)
                 taxon.label = new_label
-        tmp_tre.write(path="{}/{}".format(self.workdir,treepath),
-                      schema="newick", 
+        tmp_tre.write(path="{}/{}".format(self.workdir, treepath),
+                      schema="newick",
                       unquoted_underscores=True,
                       suppress_edge_lengths=False)
-        tmp_aln.write(path="{}/{}".format(self.workdir,alnpath),
+        tmp_aln.write(path="{}/{}".format(self.workdir, alnpath),
                       schema="fasta")
 #    def tidy_otu_dict():
 #        #hmmm needs to strip out unused otus
@@ -234,32 +234,32 @@ class AlignTreeTax(object):
 #TODO... write as proper nexml?!
 
 
-def prune_short(data_obj, min_seqlen = 0):
-        """Sometimes in the de-concatenating of the original alignment
-        taxa with no sequence are generated.
-        This gets rid of those from both the tre and the alignement. MUTATOR"""
-        prune = []
-        prune_orig = []
-        tmp_dict = {}
-        for taxon, seq in data_obj.aln.items():
-            if len(seq.symbols_as_string().translate(None, "-?")) <= min_seqlen:
-                prune.append(taxon.label)
-                if data_obj.otu_dict[taxon.label].get(u'^ot:originalLabel'):
-                    prune_orig.append(data_obj.otu_dict[taxon.label].get(u'^ot:originalLabel'))
-                else:
-                    prune_orig.append(taxon.label)
+def prune_short(data_obj, min_seqlen=0):
+    """Sometimes in the de-concatenating of the original alignment
+    taxa with no sequence are generated.
+    This gets rid of those from both the tre and the alignement. MUTATOR"""
+    prune = []
+    prune_orig = []
+    tmp_dict = {}
+    for taxon, seq in data_obj.aln.items():
+        if len(seq.symbols_as_string().translate(None, "-?")) <= min_seqlen:
+            prune.append(taxon.label)
+            if data_obj.otu_dict[taxon.label].get(u'^ot:originalLabel'):
+                prune_orig.append(data_obj.otu_dict[taxon.label].get(u'^ot:originalLabel'))
             else:
-                tmp_dict[taxon.label] = seq
-        data_obj.aln = DnaCharacterMatrix.from_dict(tmp_dict)
-        data_obj.tre.prune_taxa_with_labels(prune)
+                prune_orig.append(taxon.label)
+        else:
+            tmp_dict[taxon.label] = seq
+    data_obj.aln = DnaCharacterMatrix.from_dict(tmp_dict)
+    data_obj.tre.prune_taxa_with_labels(prune)
+    for tax in prune:
+        del data_obj.otu_dict[tax]
+    if prune:
+        fi = open("{}/pruned_taxa".format(data_obj.workdir), 'w')
+        fi.write("taxa pruned from tree and alignment due to excessive missing data\n")
         for tax in prune:
-            del data_obj.otu_dict[tax]
-        if prune:
-            fi = open("{}/pruned_taxa".format(data_obj.workdir), 'w')
-            fi.write("taxa pruned from tree and alignment due to excessive missing data\n")
-            for tax in prune:
-                fi.write("{}\n".format(tax))
-            fi.close()
+            fi.write("{}\n".format(tax))
+        fi.close()
 
 
 def get_nexson(study_id, phylesystem_loc):
@@ -277,17 +277,17 @@ def get_ott_ids_from_phylesystem(nexson, tree_id, subtree_id="ingroup"):
     return orig_ott_ids
 
 def get_mrca_ott(ott_ids):
-        """finds the mrca of the taxa in the ingroup of the original
-        tree. The blast search later is limited to descendents of this
-        mrca according to the ncbi taxonomy"""        
-        if None in ott_ids:
-            ott_ids.remove(None)
-        try:
-            mrca_node = tree_of_life.mrca(ott_ids=list(ott_ids), wrap_response=True)
-        except  RuntimeError:
-            sys.stderr.write("POST to get MRCA of ingroup failed - check internet connectivity, and or provide ingroup mrca OTT_ID, or check treemachine MRCA call\n")
-            sys.exit()
-        return mrca_node.nearest_taxon.ott_id
+    """finds the mrca of the taxa in the ingroup of the original
+    tree. The blast search later is limited to descendents of this
+    mrca according to the ncbi taxonomy"""
+    if None in ott_ids:
+        ott_ids.remove(None)
+    try:
+        mrca_node = tree_of_life.mrca(ott_ids=list(ott_ids), wrap_response=True)
+    except  RuntimeError:
+        sys.stderr.write("POST to get MRCA of ingroup failed - check internet connectivity, and or provide ingroup mrca OTT_ID, or check treemachine MRCA call\n")
+        sys.exit()
+    return mrca_node.nearest_taxon.ott_id
 
 
 
@@ -322,7 +322,7 @@ class IdDicts(object):
             for lin in fi:
                 self.gi_ncbi_dict[int(lin.split(",")[0])] = lin.split(",")[1]
     def add_gi(self, gi, tax_id):
-        #add assert that it isn' already there? 
+        #add assert that it isn' already there?
         self.gi_ncbi_dict[gi] = tax_id
     def map_gi_ncbi(self, gi):
         """get the ncbi taxon id's for a gi input"""
@@ -377,7 +377,7 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
         self._reconciled = 0
         self._full_tree_est = 0
     def run_blast(self): #TODO Should this be happening elsewhere?
-        """generates the blast queries and sames them to xml"""
+        """generates the blast queries and saves them to xml"""
         if not os.path.exists(self.blast_subdir):
             os.makedirs(self.blast_subdir)
         with open(self.logfile, "a") as log:
@@ -396,15 +396,15 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
                 if not os.path.isfile(xml_fi):
                     try:
                         result_handle = NCBIWWW.qblast("blastn", "nt",
-                                                   query,
-                                                   entrez_query=equery,
-                                                   hitlist_size=self.config.hitlist_size)
+                                                       query,
+                                                       entrez_query=equery,
+                                                       hitlist_size=self.config.hitlist_size)
                         save_file = open(xml_fi, "w")
                         save_file.write(result_handle.read())
                         save_file.close()
                         self.data.otu_dict[otu_id]['^physcraper:last_blasted'] = today
                         result_handle.close()
-                    except ValueError:
+                    except (ValueError, URLError):
                         sys.stderr.write("NCBIWWW error. Carrying on, but skipped {}".format(otu_id))
         self._blasted = 1
         return
@@ -576,7 +576,7 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
         """runs the key steps and then replaces the tree and alignemnt with the expanded ones"""
         self.reset_markers()
         self.read_blast()
-        if len(self.new_seqs) > 0:    
+        if len(self.new_seqs) > 0:
             self.remove_identical_seqs()
             self.data.write_files() #should happen before aligning in case of pruning
             self.write_query_seqs()
@@ -593,8 +593,7 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
                 os.rename("{}/previous_run".format(self.workdir), "{}/previous_run{}".format(self.workdir, str(datetime.date.today())))
             os.rename(self.blast_subdir, "{}/previous_run".format(self.workdir))
             if os.path.exists("{}/last_completed_update".format(self.workdir)):
-                os.rename(self.tmpfi,
-                      "{}/last_completed_update".format(self.workdir))
+                os.rename(self.tmpfi, "{}/last_completed_update".format(self.workdir))
             for filename in glob.glob('{}/RAxML*'.format(self.workdir)):
                 os.rename(filename, "{}/previous_run/{}".format(self.workdir, filename.split("/")[1]))
             for filename in glob.glob('{}/papara*'.format(self.workdir)):
