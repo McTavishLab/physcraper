@@ -8,7 +8,7 @@ study_id = "pg_873"
 tree_id = "tree1679"
 seqaln = "tests/data/minitest.fas"
 mattype="fasta"
-runname="fresh3"
+
 
 
 configfi = "tests/local.config"
@@ -20,7 +20,7 @@ data_obj = generate_ATT_from_phylesystem(seqaln,
                      "tmp",
                      study_id = study_id,
                      tree_id = tree_id,
-                     phylesystem_loc = 'local')
+                     phylesystem_loc = conf.phylesystem_loc)
 
 
 prune_short(data_obj)

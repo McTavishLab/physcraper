@@ -46,7 +46,7 @@ def generate_ATT_from_phylesystem(seqaln,
                                   workdir,
                                   study_id,
                                   tree_id,
-                                  phylesystem_loc='remote'):
+                                  phylesystem_loc='api'):
     """gathers together tree, alignment, and study info - forces names to otu_ids.
     Outputs AlignTreeTax object.
     an alignemnt, a
@@ -498,6 +498,8 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
         """runs papara on the tree, the alinment and the new query sequences"""
         if not self._query_seqs_written:
             self.write_query_seqs()
+        for filename in glob.glob('{}/papara*'.format(self.workdir)):
+                os.rename(filename, "{}/previous_run/{}".format(self.workdir, filename.split("/")[1]))
         sys.stdout.write("aligning query sequences \n")
         self.data.write_papara_files()
         os.chdir(self.workdir)#Clean up dir moving
