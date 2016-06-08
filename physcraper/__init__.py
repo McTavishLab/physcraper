@@ -22,6 +22,7 @@ from peyotl.api.phylesystem_api import PhylesystemAPI
 from peyotl.sugar import tree_of_life, taxonomy
 from peyotl.nexson_syntax import extract_tree, extract_tree_nexson, get_subtree_otus, extract_otu_nexson, PhyloSchema
 from peyotl.api import APIWrapper
+from urllib2 import URLError
 
 
 class ConfigObj(object):
@@ -592,7 +593,12 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
                                      taxon_namespace=self.data.aln.taxon_namespace)
             self.data.write_files()
             if os.path.exists("{}/previous_run".format(self.workdir)):
-                os.rename("{}/previous_run".format(self.workdir), "{}/previous_run{}".format(self.workdir, str(datetime.date.today())))
+                prev_dir =  "{}/previous_run{}".format(self.workdir, str(datetime.date.today()))
+                i = 0
+                while os.path.exists(prev_dir):
+                    i+=1
+                    prev_dir = prev_dir + "_" + str(i)
+                os.rename("{}/previous_run".format(self.workdir), prev_dir)
             os.rename(self.blast_subdir, "{}/previous_run".format(self.workdir))
             if os.path.exists("{}/last_completed_update".format(self.workdir)):
                 os.rename(self.tmpfi, "{}/last_completed_update".format(self.workdir))
