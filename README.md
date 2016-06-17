@@ -3,47 +3,27 @@ Gene tree updating
 
 ![](https://cdn.rawgit.com/snacktavish/physcraper/master/docs/physcraper.svg)
 
-python scrape_align_est.py ott_study_id ott_tree_id seqaln matrix_type runname
-
-Arguments: 
-ott_study_id =  OpenTree study identifier  
-ott_tree_id  = Tree id from that study  
-seqaln = the sequence alignment that generated that tree  
-matrix_type = alignment matrix type (only tested with fasta so far)  
-runname = a name for this run
-
-Study needs to be in Phylesystem, get the ott_study_id and ott_tree_id from the curator app.
-
-example:
-
-    cd shard/ascomycota
-    python /home/ejmctavish/projects/otapi/physcraper/scrape_align_est.py pg_873 tree1679 tree1679.fas fasta ascomycota
+Still work in progress (documentation in particular), please contact ejmctavish, gmail if you need any help!
+## There is a full example python script with comments in docs/example.py
 
 
-right now needs to be run in own study dir, because it generates and looks for various files.  
+Dependencies (need to be in path): 
+    PaPaRa http://sco.h-its.org/exelixis/web/software/papara/index.html 
+    Raxml http://sco.h-its.org/exelixis/web/software/raxml/index.html 
 
-also, it blasts each seq, which means it is slooow and gets slower.
+Python packages: 
+    Dendropy https://pythonhosted.org/DendroPy/ 
+    Peyotl https://github.com/OpenTreeOfLife/peyotl (currently needs to be on physcraper branch)
+    Biopython http://biopython.org/wiki/Download
 
-Dependencies
-- Papara
-- raxmlHPC
-
-Python modules 
-- peyotl (needs to be configured to access phylesystem)  
-- Bio
-- Dendropy
+Inputs needed are:
+    ott_study_id =  OpenTree study identifier  
+    ott_tree_id  = Tree id from that study  
+    seqaln = the sequence alignment that generated that tree  
+    matrix_type = alignment matrix type (only tested with fasta so far)  
+    Working directory name
 
 
-Preprocessing steps:
-
-Get alignement from ?treebase?, using orginal file:
-convert to fasta and break out to single gene: e.g. rpb2 3218-6016 (this info is in the nexus)
-using:
-    preprocess.py input.nex output_stub start stop
-
-e.g.
-    
-    preprocess.py M4058.nexorg rpb2 3218 6016
-
-This will write a fasta file with just your gene/region of interest
-
+Currently this is relying on metadata information from Open Tree of Life,
+and only uses trees from that database.
+Go to https://tree.opentreeoflife.org/curator to find a tree, or upload it!
