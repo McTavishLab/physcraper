@@ -365,7 +365,7 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
         self.blast_subdir = "{}/current_blast_run".format(self.workdir)
         if not os.path.exists(self.workdir):
             os.makedirs(self.workdir)
-        self.newseqs_file = "{}/{}.fasta".format(self.workdir, str(datetime.date.today()))
+        self.newseqs_file = "{}.fasta".format(str(datetime.date.today()))
         self.reset_markers()
  #TODO is this the right place for this?
     def reset_markers(self):
@@ -488,7 +488,7 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
         """writes out the query sequence file"""
         if not self._blast_read:
             self.read_blast()
-        fi = open(self.newseqs_file, 'w')
+        fi = open("{}/{}".format(self.workdir,self.newseqs_file), 'w')
         sys.stdout.write("writing out sequences\n")
         for otu_id in self.new_seqs_otu_id.keys():
             if otu_id not in self.data.aln: #new seqs only
@@ -507,7 +507,7 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
         pp = subprocess.call(["papara",
                               "-t", "random_resolve.tre",
                               "-s", "aln_ott.phy",
-                              "-q", "{}.fasta".format(str(datetime.date.today())),
+                              "-q", self.newseqs_file,
                               "-n", papara_runname]) #FIx directory ugliness
         os.chdir('..')
         self.data.aln = DnaCharacterMatrix.get(path="{}/papara_alignment.{}".format(self.workdir, papara_runname), schema="phylip")
