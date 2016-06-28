@@ -40,6 +40,16 @@ class ConfigObj(object):
         self.ott_ncbi = config['ncbi.taxonomy']['ott_ncbi']
 
 
+def get_aln_from_treebase(study_id,
+                          tree_id,
+                          phylesystem_loc='api'):
+    nexson = get_nexson(study_id, phylesystem_loc)
+    if 'treebase' not in nexson['nexml'][u'^ot:dataDeposit'][u'@href']:
+        sys.stderr("No treebase record associated with study ")
+    else:
+        pass
+
+    
 
 
 def generate_ATT_from_phylesystem(seqaln,
@@ -510,8 +520,11 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
                               "-q", self.newseqs_file,
                               "-n", papara_runname]) #FIx directory ugliness
         os.chdir('..')
-        self.data.aln = DnaCharacterMatrix.get(path="{}/papara_alignment.{}".format(self.workdir, papara_runname), schema="phylip")
-        self.data.aln.taxon_namespace.is_mutable = False #This should enforce name matching throughout...
+        try:
+            self.data.aln = DnaCharacterMatrix.get(path="{}/papara_alignment.{}".format(self.workdir, papara_runname), schema="phylip")
+            self.data.aln.taxon_namespace.is_mutable = False #This should enforce name matching throughout...
+        except: #TODO handle papara failure?
+            pass
         self._query_seqs_aligned = 1
     def reconcile(self):
         """all missing data seqs are sneaking in, but from where?!"""
@@ -611,103 +624,3 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
         self.reset_markers()
         pickle.dump(self, open('{}/scrape.p'.format(self.workdir), 'wb'))
         pickle.dump(self.data.otu_dict, open('{}/otu_dict{}.p'.format(self.workdir, str(datetime.date.today())), 'wb'))
-
-'''
-class PhyscraperSetup(object):
-    """This needs to vet the inputs, standardize names, and prep for
-    first run through of blasting. Does not blast itself!"""
-    _found_mrca = 0
-    _id_dicts = 0
-    _study_get = 0
-    _phylesystem = 0
-    def __init__(self,
-                 AlignTreeTax,
-                 IdDicts,
-                 study_info,
-                 runname,
-                 configfi='/home/ejmctavish/projects/otapi/physcraper/config'):
-        """initialized object, most attributes generated through self._checkArgs using config file."""
-#        self.study_id = study_info.study_id
- #       self.tree_id = study_info.tree_id
- #       self.seqaln = study_info.seqaln
- #       self.mattype = study_info.mattype
- #       self.treefile = study_info.treefile
- #       self.otu_dict = study_info.otu_dict
-        self.runname = runname
-#        self._get_study()
-#        self.ott_to_ncbi = {}
-#        self.ott_to_name = {}
-#        self.ncbi_to_ott = {}
-#        self.phy = None
-#        self.gi_ncbi_dict = {}
-        self.mrca_ott = None
-#        self.aln = None
-#        self.orig_aln = None
-#        self.tre = None
-        self.mrca = get_mrca_ott(self.ott_ids)
-        mrca_ncbi = self.ott_to_ncbi[self.mrca_ott]
-#        self.orig_seqlen = None
-#        try:
-#            self._reconcile_names()
-#        except:
-#            print "name reconcillation error"
-#        self.workdir = runname
-        self.data = AlignTreeTax
-        if not os.path.exists(self.workdir):
-            os.makedirs(self.workdir)
-#    def write_files(self):
-#        self.tre.write(path="{}/original_pruned.tre".format(self.workdir),
-#                       schema="newick",
-#                       unquoted_underscores=True)
-#        self.aln.write(path="{}/original_pruned.fas".format(self.workdir),
-#                       schema="fasta")
-#    def __getstate__(self):
-#        """hacky way to fix pickling"""
-#        result = self.__dict__.copy()
-#        del result['config']
-#        del result['phy']
-#        return result
-#    def setup_physcraper(self):
-#        """run the key steps"""
-#        self._read_config()
-#        self._get_mrca()
-#        self._reconcile_names()
-#        self._prune()
-#        self.write_files()
-# I think it should write out to files so that the PHyscarpe scrape object can just read the aln etc from those, maybe the shaould be where the OTU dict comes from too...
-#Hmmm.
-
-
-#    def _write_files(self):
-#        """Outputs both the streaming files and a ditechecked"""
-#        #First write rich annotation json file with everything needed for later?
-#        self.tre.resolve_polytomies()
-#        self.tre.deroot()
-#        tmptre = self.tre.as_string(schema="newick",
-#                                    unquoted_underscores=True,
-#                                    suppress_rooting=True)
-#        tmptre = tmptre.replace(":0.0;",";")#Papara is diffffffficult about root
-#        fi = open("{}/random_resolve.tre".format(self.workdir), "w")
-#        fi.write(tmptre)
-#        fi.close()
-#        self.aln.write(path="{}/aln_ott.phy".format(self.workdir),
-#                       schema="phylip")
-#        self.aln.write(path="{}/aln_ott.fas".format(self.workdir),
-#                       schema="fasta")
-#        self.tre.write(path="{}/random_resolve{}.tre".format(self.workdir, self.today),
-#                       schema="newick",
-#                       unquoted_underscores=True)
-#        self.aln.write(path="{}/aln_ott{}.fas".format(self.workdir, self.today),
-#                      schema="fasta")
-
-#        if setup_obj:#this should need to happen ony the first time the scrape object is run.
-#            self.runname = 
-#            
-#            self.e_value_thresh = deepcopy(setup_obj.e_value_thresh)
-#            self.hitlist_size = deepcopy(setup_obj.hitlist_size)
-#            self.seq_len_perc = deepcopy(setup_obj.seq_len_perc)
-#            self.get_ncbi_taxonomy = deepcopy(setup_obj.get_ncbi_taxonomy)
-#            self.ncbi_dmp = deepcopy(setup_obj.ncbi_dmp)
-#            self.orig_seqlen = deepcopy(setup_obj.orig_seqlen)
-        self.workdir = data_obj.workdir #TODO potnetial from clash between ids dict data obj
-'''
