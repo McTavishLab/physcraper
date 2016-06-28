@@ -8,4 +8,12 @@ setup(name='Physcraper',
       author='Emily Jane McTavish',
       author_email='ejmctavish@gmail.com',
       packages=['physcraper'],
+      dependency_links = ['https://github.com/OpenTreeOfLife/peyotl/tarball/physcraper#egg=peyotl-0.1.4devphyscraper'],
+      install_requires=[
+          'dendropy',
+          'configparser',
+          'biopython',
+          'urllib3',
+          'peyotl==0.1.4devphyscraper'
+      ]
      )
