@@ -419,14 +419,17 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
             xml_fi = "{}/{}.xml".format(blast_dir, taxon.label)
             if os.path.isfile(xml_fi):
                 result_handle = open(xml_fi)
-                blast_records = NCBIXML.parse(result_handle)
-                for blast_record in blast_records:
-                    for alignment in blast_record.alignments:
-                        for hsp in alignment.hsps:
-                            if float(hsp.expect) < float(self.config.e_value_thresh):
-                                if int(alignment.title.split('|')[1]) not in self.data.gi_dict: #skip ones we already have (does it matter if these were delted? No...)
-                                    self.new_seqs[int(alignment.title.split('|')[1])] = hsp.sbjct
-                                    self.data.gi_dict[int(alignment.title.split('|')[1])] = alignment.__dict__
+                try:
+                    blast_records = NCBIXML.parse(result_handle)
+                    for blast_record in blast_records:
+                        for alignment in blast_record.alignments:
+                            for hsp in alignment.hsps:
+                                if float(hsp.expect) < float(self.config.e_value_thresh):
+                                    if int(alignment.title.split('|')[1]) not in self.data.gi_dict: #skip ones we already have (does it matter if these were delted? No...)
+                                        self.new_seqs[int(alignment.title.split('|')[1])] = hsp.sbjct
+                                        self.data.gi_dict[int(alignment.title.split('|')[1])] = alignment.__dict__
+                except ValueError:
+                    sys.stderr.write("Problem reading {}, skipping\n".format(xml_fi))
         self._blast_read = 1
     # TODO this should go back in the class and should prune the tree
     def seq_dict_build(self, seq, label, seq_dict): #Sequence needs to be passed in as string.
