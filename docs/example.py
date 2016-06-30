@@ -1,4 +1,5 @@
 from physcraper import generate_ATT_from_phylesystem, generate_ATT_from_files, prune_short, ConfigObj, IdDicts,  PhyscraperScrape
+from dendropy import DnaCharacterMatrix
 import pickle
 import sys
 import os
@@ -16,9 +17,10 @@ configfi = "tests/local.config"
 #read the config file into a configuration object
 conf = ConfigObj(configfi)
 
+aln = DnaCharacterMatrix.get(path=seqaln, schema=mattype)
 
 #Generate an linked Alignment-Tree-Taxa object
-data_obj = generate_ATT_from_phylesystem(seqaln=seqaln,
+data_obj = generate_ATT_from_phylesystem(aln=aln,
                      mattype=mattype,
                      workdir="example",
                      study_id = study_id,
