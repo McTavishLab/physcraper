@@ -40,72 +40,23 @@ class ConfigObj(object):
         self.ott_ncbi = config['ncbi.taxonomy']['ott_ncbi']
 
 #ATT is a dumb acronym for Alignment Tree Taxa object
-def get_aln_from_treebase(study_id,
+def get_dataset_from_treebase(study_id,
                                 phylesystem_loc='api'):
     ATT_list = []
     nexson = get_nexson(study_id, phylesystem_loc)
     treebase_url =  nexson['nexml'][u'^ot:dataDeposit'][u'@href']
     if 'treebase' not in nexson['nexml'][u'^ot:dataDeposit'][u'@href']:
         sys.stderr("No treebase record associated with study ")
+        sys.exit()
     else:
-        ott_ids = get_subtree_otus(nexson,
-                               tree_id=tree_id,
-                               subtree_id="ingroup",
-                               return_format="ottid")
         tb_id = treebase_url.split(':S')[1]
         dna = DataSet.get(url="https://treebase.org/treebase-web/search/downloadAStudy.html?id={}&format=nexml".format(tb_id),
                                     schema="nexml")
-        ott_mrca = get_mrca_ott(ott_ids)
-        newick = extract_tree(nexson,
-                          tree_id,
-                          PhyloSchema('newick',
-                                      output_nexml2json='1.2.1',
-                                      content="tree",
-                                      tip_label="ot:originalLabel"))
-        newick = newick.replace(" ", "_") #UGH Very heavy handed, need to make sure happens on alignement side as well.
-        otus = get_subtree_otus(nexson, tree_id=tree_id)
-        #newick should be bare, but alignement should be DNACharacterMatrix
-        for aln in dna.char_matrices:
-            match_labels(aln, tree)
-        ATT_list.append(AlignTreeTax(otu_newick, otu_dict, aln, ingroup_mrca=ott_mrca, workdir=workdir))
-    return(ATT_list)
+        return(dna)
 
 
 
-
-
-def match_labels(aln, tree):
-    otu_dict = {}
-    orig_lab_to_otu = {}
-    treed_taxa = {}
-    tre = Tree.get(data=newick,
-                   schema="newick",
-                   preserve_underscores=True,
-                   taxon_namespace=aln.taxon_namespace)
-    for otu_id in otus:
-        otu_dict[otu_id] = extract_otu_nexson(nexson, otu_id)[otu_id]
-        otu_dict[otu_id]['^physcraper:status'] = "original"
-        otu_dict[otu_id]['^physcraper:last_blasted'] = "1900/01/01"
-        orig = otu_dict[otu_id].get(u'^ot:originalLabel').replace(" ", "_")
-        orig_lab_to_otu[orig] = otu_id
-        treed_taxa[orig] = otu_dict[otu_id].get(u'^ot:ottId')
-    for tax in aln.taxon_namespace:
-        try:
-            tax.label = orig_lab_to_otu[tax.label].encode('ascii')
-        except KeyError:
-            print "{} doesn't have an otu id. It is being removed from the alignement".format(tax.label)
-            aln.
-    otu_newick = tre.as_string(schema="newick")
-    for tax in aln.taxon_namespace:
-        tax.label = tax.label.replace(" ", "_") #Forcing all spaces to underscore UGH
-    
-
-
-    
-
-
-def generate_ATT_from_phylesystem(seqaln,
-                                  mattype,
+def generate_ATT_from_phylesystem(aln,
                                   workdir,
                                   study_id,
                                   tree_id,
@@ -113,9 +64,10 @@ def generate_ATT_from_phylesystem(seqaln,
     """gathers together tree, alignment, and study info - forces names to otu_ids.
     Outputs AlignTreeTax object.
     an alignemnt, a
-    Input can be either a study ID and tree ID from OpenTree"""
+    Input can be either a study ID and tree ID from OpenTree
+    Alignemnt need to be a Dendropy DNA character matrix!"""
     #TODO CHECK ARGS
-    aln = DnaCharacterMatrix.get(path=seqaln, schema=mattype)
+    assert(isinstance(aln, dendropy.datamodel.charmatrixmodel.DnaCharacterMatrix))
     for tax in aln.taxon_namespace:
         tax.label = tax.label.replace(" ", "_") #Forcing all spaces to underscore UGH
     nexson = get_nexson(study_id, phylesystem_loc)
@@ -150,7 +102,8 @@ def generate_ATT_from_phylesystem(seqaln,
         try:
             tax.label = orig_lab_to_otu[tax.label].encode('ascii')
         except KeyError:
-            print "{} doesn't have an otu id. What happened?".format(tax.label)#Forcing all spaces to underscore UGH
+            sys.stderr("{} doesn't have an otu id. It is being removed from the alignement. This may indicate a mismatch between tree and alignement".format(tax.label))
+   #need to prune tree to seqs and seqs to tree...     
     otu_newick = tre.as_string(schema="newick")
     return AlignTreeTax(otu_newick, otu_dict, aln, ingroup_mrca=ott_mrca, workdir=workdir) #newick should be bare, but alignement should be DNACharacterMatrix
 
