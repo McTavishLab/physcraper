@@ -15,7 +15,7 @@ import configparser
 from Bio.Blast import NCBIWWW, NCBIXML
 from Bio.Blast.Applications import NcbiblastxCommandline
 from Bio import SeqIO, Entrez
-from dendropy import Tree, DnaCharacterMatrix, DataSet
+from dendropy import Tree, DnaCharacterMatrix, DataSet, datamodel
 from peyotl import gen_otu_dict, iter_node
 from peyotl.manip import iter_trees, iter_otus
 from peyotl.api.phylesystem_api import PhylesystemAPI
@@ -67,7 +67,7 @@ def generate_ATT_from_phylesystem(aln,
     Input can be either a study ID and tree ID from OpenTree
     Alignemnt need to be a Dendropy DNA character matrix!"""
     #TODO CHECK ARGS
-    assert(isinstance(aln, dendropy.datamodel.charmatrixmodel.DnaCharacterMatrix))
+    assert(isinstance(aln, datamodel.charmatrixmodel.DnaCharacterMatrix))
     for tax in aln.taxon_namespace:
         tax.label = tax.label.replace(" ", "_") #Forcing all spaces to underscore UGH
     nexson = get_nexson(study_id, phylesystem_loc)
@@ -101,6 +101,7 @@ def generate_ATT_from_phylesystem(aln,
     for tax in aln.taxon_namespace:
         try:
             tax.label = orig_lab_to_otu[tax.label].encode('ascii')
+            otu_dict[tax.label]['^physcraper:dendropy_taxon'] = tax
         except KeyError:
             sys.stderr("{} doesn't have an otu id. It is being removed from the alignement. This may indicate a mismatch between tree and alignement".format(tax.label))
    #need to prune tree to seqs and seqs to tree...     
@@ -170,6 +171,38 @@ class AlignTreeTax(object):
             errmf = 'Some of the taxa in the alignment are not in the tree. Missing "{}"\n'
             errm = errmf.format('", "'.join(missing))
             raise ValueError(errm)
+    def reconcile(self, seq_len_perc=0.75):
+        """all missing data seqs are sneaking in, but from where?!"""
+        prune = []
+        avg_seqlen = sum(self.orig_seqlen)/len(self.orig_seqlen)
+        seq_len_cutoff = avg_seqlen*seq_len_perc
+        for taxon, seq in self.aln.items():
+            self.otu_dict[taxon.label]['^physcraper:dendropy_taxon'] = taxon
+            if len(seq.symbols_as_string().translate(None, "-?")) < seq_len_cutoff:
+                prune.append(taxon)
+        self.tre.prune_taxa(prune)
+        self.aln.remove_sequences(prune)
+        for tax in prune:
+            del self.data.otu_dict[tax.label]
+        if prune:
+            fi = open("{}/pruned_taxa".format(self.workdir), 'a')
+            fi.write("taxa pruned from tree and alignment due to excessive missing data\n")
+            for tax in prune:
+                fi.write("{}\n".format(tax))
+            fi.close()
+        aln_ids = set()
+        for tax in self.aln:
+            aln_ids.add(tax.label)
+        assert aln_ids.issubset(self.otu_dict.keys())
+        treed_taxa = set()
+        for leaf in self.tre.leaf_nodes():
+            treed_taxa.add(leaf.taxon.label)
+        assert treed_taxa.issubset(aln_ids)
+        for key in  self.otu_dict.keys():
+            if key not in aln_ids:
+                del self.otu_dict[key]
+                #sys.stderr.write("{} is in otu dict but not alignment\n".format(key))
+        self._reconciled = 1
     def add_otu(self, gi, ids_obj):
         """generates an otu_id for new sequences and adds them into the otu_dict.
         Needs to be passed an IdDict to do the mapping"""
@@ -211,6 +244,15 @@ class AlignTreeTax(object):
         """Writes out OTU dict as json"""
         with open("{}/{}".format(self.workdir, filename), 'w') as outfile:
             json.dump(self.otu_dict, outfile)
+    def remove_taxon(self, taxon_label):
+        taxon = self.otu_dict[taxon_label].get('^physcraper:dendropy_taxon')
+        if taxon:
+            self.aln.remove_sequences(taxon)
+            self.aln.taxon_namespace.remove_taxon(taxon)
+            self.tre.prune_taxa(tax)
+            del self.otu_dict[taxon_label]
+        else:
+            del self.otu_dict[taxon_label]
     def write_labelled(self, label='^ot:ottTaxonName', treepath="labelled.tre", alnpath="labelled.fas"):
         """output tree and alignement with human readble labels
         Jumps through abunch of hoops to make labels unique.
@@ -367,6 +409,7 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
     #TODO better enforce ordering
     """This is the class that does the perpetual updating"""
     def __init__(self, data_obj, ids_obj, config_obj):
+        #todo check input types assert()
         self.workdir = data_obj.workdir
         self.logfile = "{}/logfile".format(self.workdir)
         self.data = data_obj
@@ -401,28 +444,30 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
             log.write("Blast run {} \n".format(datetime.date.today()))
         for taxon, seq in self.data.aln.items():
             otu_id = taxon.label
-            last_blast = self.data.otu_dict[otu_id]['^physcraper:last_blasted']
-            today = str(datetime.date.today()).replace("-", "/")
-            if abs((datetime.datetime.strptime(today, "%Y/%m/%d") - datetime.datetime.strptime(last_blast, "%Y/%m/%d")).days) > 14: #TODO make configurable
-                equery = "txid{}[orgn] AND {}:{}[mdat]".format(self.mrca_ncbi,
-                                                               last_blast,
-                                                               today)
-                query = seq.symbols_as_string().replace("-", "").replace("?", "")
-                sys.stdout.write("blasting seq {}\n".format(taxon.label))
-                xml_fi = "{}/{}.xml".format(self.blast_subdir, taxon.label)
-                if not os.path.isfile(xml_fi):
-                    try:
-                        result_handle = NCBIWWW.qblast("blastn", "nt",
-                                                       query,
-                                                       entrez_query=equery,
-                                                       hitlist_size=self.config.hitlist_size)
-                        save_file = open(xml_fi, "w")
-                        save_file.write(result_handle.read())
-                        save_file.close()
-                        self.data.otu_dict[otu_id]['^physcraper:last_blasted'] = today
-                        result_handle.close()
-                    except (ValueError, URLError):
-                        sys.stderr.write("NCBIWWW error. Carrying on, but skipped {}".format(otu_id))
+            #TODO temp until I fix delete
+            if otu_id in self.data.otu_dict:
+                last_blast = self.data.otu_dict[otu_id]['^physcraper:last_blasted']
+                today = str(datetime.date.today()).replace("-", "/")
+                if abs((datetime.datetime.strptime(today, "%Y/%m/%d") - datetime.datetime.strptime(last_blast, "%Y/%m/%d")).days) > 14: #TODO make configurable
+                    equery = "txid{}[orgn] AND {}:{}[mdat]".format(self.mrca_ncbi,
+                                                                   last_blast,
+                                                                   today)
+                    query = seq.symbols_as_string().replace("-", "").replace("?", "")
+                    sys.stdout.write("blasting seq {}\n".format(taxon.label))
+                    xml_fi = "{}/{}.xml".format(self.blast_subdir, taxon.label)
+                    if not os.path.isfile(xml_fi):
+                        try:
+                            result_handle = NCBIWWW.qblast("blastn", "nt",
+                                                           query,
+                                                           entrez_query=equery,
+                                                           hitlist_size=self.config.hitlist_size)
+                            save_file = open(xml_fi, "w")
+                            save_file.write(result_handle.read())
+                            save_file.close()
+                            self.data.otu_dict[otu_id]['^physcraper:last_blasted'] = today
+                            result_handle.close()
+                        except (ValueError, URLError):
+                            sys.stderr.write("NCBIWWW error. Carrying on, but skipped {}".format(otu_id))
         self._blasted = 1
         return
     def read_blast(self, blast_dir=None):
@@ -468,11 +513,10 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
                         return
                     else:
                         del seq_dict[tax]
-                        self.data.tre.prune_taxa_with_labels(tax)
                         seq_dict[label] = seq
-                        del self.data.otu_dict[tax]  #hmmmmmmmm?! CHECK ME!!
-#                        print "TAXON {} should no longer be in OTU dict!"
+                        self.data.remove_taxon(tax)
                         sys.stdout.write("seq {} is supersequence of {}, {} added and {} removed\n".format(label, tax, label, tax))
+                        assert(tax not in self.data.otu_dict.keys())
                         return
         sys.stdout.write(".")
         seq_dict[label] = seq
@@ -516,7 +560,7 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
         if not self._query_seqs_written:
             self.write_query_seqs()
         for filename in glob.glob('{}/papara*'.format(self.workdir)):
-                os.rename(filename, "{}/previous_run/{}".format(self.workdir, filename.split("/")[1]))
+                os.rename(filename, "{}/{}_tmp".format(self.workdir, filename.split("/")[1]))
         sys.stdout.write("aligning query sequences \n")
         self.data.write_papara_files()
         os.chdir(self.workdir)#Clean up dir moving
@@ -525,45 +569,14 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
                               "-s", "aln_ott.phy",
                               "-q", self.newseqs_file,
                               "-n", papara_runname]) #FIx directory ugliness
+        sys.stdout.write("Papara done")
         os.chdir('..')
-        try:
-            self.data.aln = DnaCharacterMatrix.get(path="{}/papara_alignment.{}".format(self.workdir, papara_runname), schema="phylip")
-            self.data.aln.taxon_namespace.is_mutable = False #This should enforce name matching throughout...
-        except: #TODO handle papara failure?
-            pass
+        self.data.aln = DnaCharacterMatrix.get(path="{}/papara_alignment.{}".format(self.workdir, papara_runname), schema="phylip")
+        self.data.aln.taxon_namespace.is_mutable = False #This should enforce name matching throughout...
+        assert os.path.exists(path="{}/papara_alignment.{}".format(self.workdir, papara_runname))
+        sys.stdout.write("Papara done")
+        self.data.reconcile()
         self._query_seqs_aligned = 1
-    def reconcile(self):
-        """all missing data seqs are sneaking in, but from where?!"""
-        if not self._query_seqs_aligned:
-            self.align_query_seqs()
-        aln_ids = set()
-        for tax in self.data.aln:
-            aln_ids.add(tax.label)
-        assert aln_ids.issubset(self.data.otu_dict.keys())
-        for key in  self.data.otu_dict.keys():
-            if key not in aln_ids:
-                sys.stderr.write("{} is in otu dict but not alignment\n".format(key))
-        prune = []
-        tmp_dict = {}
-        avg_seqlen = sum(self.data.orig_seqlen)/len(self.data.orig_seqlen)
-        seq_len_cutoff = avg_seqlen*self.config.seq_len_perc
-        for taxon, seq in self.data.aln.items():
-            if len(seq.symbols_as_string().translate(None, "-?")) < seq_len_cutoff:
-                prune.append(taxon.label)
-            else:
-                tmp_dict[taxon.label] = seq
-                self.data.orig_seqlen.append(len(seq.symbols_as_string().translate(None, "-?")))
-        self.data.aln = DnaCharacterMatrix.from_dict(tmp_dict)
-        self.data.tre.prune_taxa_with_labels(prune)
-        for tax in prune:
-            del self.data.otu_dict[tax]
-        if prune:
-            fi = open("{}/pruned_taxa".format(self.workdir), 'a')
-            fi.write("taxa pruned from tree and alignment due to excessive missing data\n")
-            for tax in prune:
-                fi.write("{}\n".format(tax))
-            fi.close()
-        self._reconciled = 1
     def place_query_seqs(self):
         """runs raxml on the tree, and the combined alignment including the new quesry seqs
         Just for placement, to use as starting tree."""
@@ -604,13 +617,13 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
             self.data.write_files() #should happen before aligning in case of pruning
             self.write_query_seqs()
             self.align_query_seqs()
-            self.reconcile()
+            self.data.reconcile()
             self.place_query_seqs()
             self.est_full_tree()
             self.data.tre = Tree.get(path="{}/RAxML_bestTree.{}".format(self.workdir, self.rax_name),
                                      schema="newick",
                                      preserve_underscores=True,
-                                     taxon_namespace=self.data.aln.taxon_namespace)
+                                     taxon_namespace=self.data.aln.taxon_namespace) 
             self.data.write_files()
             if os.path.exists("{}/previous_run".format(self.workdir)):
                 prev_dir =  "{}/previous_run{}".format(self.workdir, str(datetime.date.today()))
