@@ -20,14 +20,14 @@ The procedure follows 6 steps (Figure 1).\\
 
 \textbf{1) Select an existing phylogeny and alignment}:
 This procedure leverages past phylogenetic inference work by relying on existing phylogenies and their associated alignemnts to select appropriate loci to resolve relationships for the taxonomic scope of interest.
-Starting from a tree in the Open Tree database, the pieline automatically searches for the associated alignement using the database link information in the tree metadata. 
+Starting from a tree in the Open Tree database, the pipeline automatically searches for the associated alignment using the database link information in the tree metadata. 
 %(?? be more specific about Phylesystem not storing alignments and why?!).
 The curated trees have information about both rooting and ingroup location. Limiting the sequence search to descendants of the ingroup of the original phylogeny 
 and to loci which have been previously vetted by taxon experts reduces the risk of mistakenly inferring homology between paralogous genes or regions and generating spurious results.\\
 
  \textbf{2)Taxon limited sequence search} 
-In the original alignemnt contains concantenated sequences, the sequences in the alignemnt are split into individual gene loci.
-A sequence search to find homologous sequences within the ingroups taxon is conducted using each of the alleles in the alignment.
+If the original alignment contains concatenated sequences, the sequences in the alignment are split into individual gene loci.
+A sequence search to find homologous sequences within the ingroup's taxon is conducted using each of the alleles in the alignment.
 Currently this search uses GenBank.
 Alternatively, this approach can utilize whole genome data for adding taxa into gene trees, by treating the observed alleles as tiny provisional reference genomes, 
 and assembling homologous loci straight out of whole genome shotgun short read data.\\
