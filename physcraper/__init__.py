@@ -183,7 +183,7 @@ class AlignTreeTax(object):
         self.tre.prune_taxa(prune)
         self.aln.remove_sequences(prune)
         for tax in prune:
-            del self.data.otu_dict[tax.label]
+            del self.otu_dict[tax.label]
         if prune:
             fi = open("{}/pruned_taxa".format(self.workdir), 'a')
             fi.write("taxa pruned from tree and alignment due to excessive missing data\n")
