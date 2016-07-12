@@ -424,7 +424,8 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
         self.blast_subdir = "{}/current_blast_run".format(self.workdir)
         if not os.path.exists(self.workdir):
             os.makedirs(self.workdir)
-        self.newseqs_file = "{}.fasta".format(str(datetime.date.today()))
+        self.newseqs_file = "tmp.fasta"
+        self.date = str(datetime.date.today()) #Date of the run - may lag behind real date!
         self.reset_markers()
  #TODO is this the right place for this?
     def reset_markers(self):
@@ -488,6 +489,7 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
                                 if int(alignment.title.split('|')[1]) not in self.data.gi_dict: #skip ones we already have (does it matter if these were delted? No...)
                                     self.new_seqs[int(alignment.title.split('|')[1])] = hsp.sbjct
                                     self.data.gi_dict[int(alignment.title.split('|')[1])] = alignment.__dict__
+        self.date = str(datetime.date.today())
         self._blast_read = 1
     # TODO this should go back in the class and should prune the tree
     def seq_dict_build(self, seq, label, seq_dict): #Sequence needs to be passed in as string.
@@ -548,6 +550,7 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
         """writes out the query sequence file"""
         if not self._blast_read:
             self.read_blast()
+        self.newseqs_file = "{}.fasta".format(self.date)
         fi = open("{}/{}".format(self.workdir,self.newseqs_file), 'w')
         sys.stdout.write("writing out sequences\n")
         for otu_id in self.new_seqs_otu_id.keys():
@@ -600,12 +603,11 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
     def est_full_tree(self):
         """Full raxml run from the placement tree as starting tree"""
         os.chdir(self.workdir)
-        self.rax_name = str(datetime.date.today())
         p2 = subprocess.call(["raxmlHPC", "-m", "GTRCAT",
                               "-s", "papara_alignment.extended",
                               "-t", "place_resolve.tre",
                               "-p", "1",
-                              "-n", "{}".format(self.rax_name)])
+                              "-n", "{}".format(self.date)])
         os.chdir('..')
         self._full_tree_est = 1
     def generate_streamed_alignment(self):
@@ -626,7 +628,7 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
                                      taxon_namespace=self.data.aln.taxon_namespace) 
             self.data.write_files()
             if os.path.exists("{}/previous_run".format(self.workdir)):
-                prev_dir =  "{}/previous_run{}".format(self.workdir, str(datetime.date.today()))
+                prev_dir =  "{}/previous_run{}".format(self.workdir, self.date)
                 i = 0
                 while os.path.exists(prev_dir):
                     i+=1
