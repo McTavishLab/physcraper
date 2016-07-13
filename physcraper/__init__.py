@@ -178,7 +178,6 @@ class AlignTreeTax(object):
         for tax in prune:
             self.otu_dict[tax.label]['physcraper:status'] = "deleted in name reconciliation"
             self.aln.taxon_namespace.remove_taxon(tax)
-        print "name reconcilaition done"
     def prune_short(self, min_seqlen=0):
         """Sometimes in the de-concatenating of the original alignment
         taxa with no sequence are generated.
@@ -199,7 +198,6 @@ class AlignTreeTax(object):
             self.otu_dict[tax.label]['physcraper:status'] = "deleted in prune short"
             self.aln.taxon_namespace.remove_taxon(tax)
         self.reconcile()
-        print "prune short done"
     def reconcile(self, seq_len_perc=0.75):
         """all missing data seqs are sneaking in, but from where?!"""
         prune = []
@@ -231,7 +229,6 @@ class AlignTreeTax(object):
       #      if key not in aln_ids:
      #           sys.stderr.write("{} was in otu dict but not alignment. it should be in new seqs...\n".format(key))
         self._reconciled = 1
-        print "reconciliation done"
     def add_otu(self, gi, ids_obj):
         """generates an otu_id for new sequences and adds them into the otu_dict.
         Needs to be passed an IdDict to do the mapping"""
@@ -526,7 +523,6 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
                         self.data.otu_dict[tax_lab]['physcraper:status'] = "new seq added in place of {}".format(tax_lab)
                         return
         sys.stdout.write(".")
-        sys.stdout.write("seq {} should be in newseqs\n".format(label))
         seq_dict[label] = seq
         return
     def remove_identical_seqs(self):
@@ -622,7 +618,6 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
         self._full_tree_est = 1
     def generate_streamed_alignment(self):
         """runs the key steps and then replaces the tree and alignemnt with the expanded ones"""
-        print "should run and read blast now"
         self.read_blast()
         pickle.dump(self, open('{}/scrape.p'.format(self.workdir), 'wb'))
         if len(self.new_seqs) > 0:
@@ -652,6 +647,7 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
                 os.rename(filename, "{}/previous_run/{}".format(self.workdir, filename.split("/")[1]))
             for filename in glob.glob('{}/papara*'.format(self.workdir)):
                 os.rename(filename, "{}/previous_run/{}".format(self.workdir, filename.split("/")[1]))
+            os.rename("{}/{}", "{}/previous_run/newseqs.fasta".format(self.workdir, newseqs_file, self.workdir))
         else:
             sys.stdout.write("No new sequences found.")
         self.reset_markers()
