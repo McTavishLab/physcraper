@@ -101,9 +101,8 @@ def generate_ATT_from_phylesystem(aln,
     for tax in aln.taxon_namespace:
         try:
             tax.label = orig_lab_to_otu[tax.label].encode('ascii')
-            otu_dict[tax.label]['^physcraper:dendropy_taxon'] = tax
         except KeyError:
-            sys.stderr("{} doesn't have an otu id. It is being removed from the alignement. This may indicate a mismatch between tree and alignement".format(tax.label))
+            sys.stderr.write("{} doesn't have an otu id. It is being removed from the alignement. This may indicate a mismatch between tree and alignement\n".format(tax.label))
    #need to prune tree to seqs and seqs to tree...     
     otu_newick = tre.as_string(schema="newick")
     return AlignTreeTax(otu_newick, otu_dict, aln, ingroup_mrca=ott_mrca, workdir=workdir) #newick should be bare, but alignement should be DNACharacterMatrix
@@ -142,7 +141,7 @@ def generate_ATT_from_files(seqaln,
 
 
 class AlignTreeTax(object):
-    """wrap up the key parts together, requires OTT_id """
+    """wrap up the key parts together, requires OTT_id, and names must already match """
     def __init__(self, newick, otu_dict, alignment, ingroup_mrca, workdir):
         self.aln = alignment
         self.tre = Tree.get(data=newick,
@@ -159,37 +158,65 @@ class AlignTreeTax(object):
         self.ott_mrca = ingroup_mrca
         self.orig_seqlen = [1000, 1000, 1000] #FIXME
         self.gi_dict = {}
+        self.orig_aln = alignment
+        self.orig_newick = newick
     def _reconcile_names(self):
         """This checks that the tree "original labels" from phylsystem
         align with those found in the taxonomy. Spaces vs underscores
         kept being an issue, so all spaces are coerced to underscores throughout!"""
         treed_taxa = set()
         for leaf in self.tre.leaf_nodes():
-            treed_taxa.add(leaf.taxon.label)
-        missing = [i.label for i in self.aln.taxon_namespace if i.label not in treed_taxa]
+            treed_taxa.add(leaf.taxon)
+        aln_tax = set([tax for tax in self.aln.taxon_namespace])
+        prune = treed_taxa ^ aln_tax
+        missing = [i.label for i in prune]
         if missing:
-            errmf = 'Some of the taxa in the alignment are not in the tree. Missing "{}"\n'
+            errmf = 'NAME RECONCILIATION Some of the taxa in the tree are not in the alignment or vice versa and will be pruned. Missing "{}"\n'
             errm = errmf.format('", "'.join(missing))
-            raise ValueError(errm)
+        self.aln.remove_sequences(prune)
+        self.tre.prune_taxa(prune)
+        for tax in prune:
+            self.otu_dict[tax.label]['physcraper:status'] = "deleted in name reconciliation"
+            self.aln.taxon_namespace.remove_taxon(tax)
+    def prune_short(self, min_seqlen=0):
+        """Sometimes in the de-concatenating of the original alignment
+        taxa with no sequence are generated.
+        This gets rid of those from both the tre and the alignement. MUTATOR"""
+        prune = []
+        for tax, seq in self.aln.items():
+            if len(seq.symbols_as_string().translate(None, "-?")) <= min_seqlen:
+                prune.append(tax)
+        self.aln.remove_sequences(prune)
+        self.tre.prune_taxa(prune)
+        if prune:
+            fi = open("{}/pruned_taxa".format(self.workdir), 'a')
+            fi.write("Taxa pruned from tree and alignment in prune short step due to sequence shorter than {}\n".format(min_seqlen))
+            for tax in prune:
+                fi.write("{}, {}\n".format(tax.label, self.otu_dict[tax.label].get('^ot:originalLabel')))
+            fi.close()
+        for tax in prune:
+            self.otu_dict[tax.label]['physcraper:status'] = "deleted in prune short"
+            self.aln.taxon_namespace.remove_taxon(tax)
+        self.reconcile()
     def reconcile(self, seq_len_perc=0.75):
         """all missing data seqs are sneaking in, but from where?!"""
         prune = []
         avg_seqlen = sum(self.orig_seqlen)/len(self.orig_seqlen)
         seq_len_cutoff = avg_seqlen*seq_len_perc
-        for taxon, seq in self.aln.items():
-            self.otu_dict[taxon.label]['^physcraper:dendropy_taxon'] = taxon
+        for tax, seq in self.aln.items():
             if len(seq.symbols_as_string().translate(None, "-?")) < seq_len_cutoff:
-                prune.append(taxon)
+                prune.append(tax)
+        if prune:
+            fi = open("{}/pruned_taxa".format(self.workdir), 'a')
+            fi.write("Taxa pruned from tree and alignment in reconcilation step due to sequence shorter than {}\n".format(seq_len_cutoff))
+            for tax in prune:
+                fi.write("{}, {}\n".format(tax.label, self.otu_dict[tax.label].get('^ot:originalLabel')))
+            fi.close()
         self.tre.prune_taxa(prune)
         self.aln.remove_sequences(prune)
         for tax in prune:
-            del self.otu_dict[tax.label]
-        if prune:
-            fi = open("{}/pruned_taxa".format(self.workdir), 'a')
-            fi.write("taxa pruned from tree and alignment due to excessive missing data\n")
-            for tax in prune:
-                fi.write("{}\n".format(tax))
-            fi.close()
+            self.otu_dict[tax.label]['physcraper:status'] = "deleted in reconcile"
+            self.aln.taxon_namespace.remove_taxon(tax)
         aln_ids = set()
         for tax in self.aln:
             aln_ids.add(tax.label)
@@ -200,8 +227,7 @@ class AlignTreeTax(object):
         assert treed_taxa.issubset(aln_ids)
         for key in  self.otu_dict.keys():
             if key not in aln_ids:
-                del self.otu_dict[key]
-                #sys.stderr.write("{} is in otu dict but not alignment\n".format(key))
+                sys.stderr.write("{} was in otu dict but not alignment. it should be in new seqs...\n".format(key))
         self._reconciled = 1
     def add_otu(self, gi, ids_obj):
         """generates an otu_id for new sequences and adds them into the otu_dict.
@@ -245,14 +271,14 @@ class AlignTreeTax(object):
         with open("{}/{}".format(self.workdir, filename), 'w') as outfile:
             json.dump(self.otu_dict, outfile)
     def remove_taxon(self, taxon_label):
-        taxon = self.otu_dict[taxon_label].get('^physcraper:dendropy_taxon')
+        taxon = self.aln.taxon_namespace.get_taxon(taxon_label)
         if taxon:
             self.aln.remove_sequences(taxon)
             self.aln.taxon_namespace.remove_taxon(taxon)
             self.tre.prune_taxa(tax)
-            del self.otu_dict[taxon_label]
+            self.otu_dict[tax.label]['physcraper:status'] = "deleted"
         else:
-            del self.otu_dict[taxon_label]
+            self.otu_dict[tax.label]['physcraper:status'] = "deleted, but it wasn't in teh alignemnet..."
     def write_labelled(self, label='^ot:ottTaxonName', treepath="labelled.tre", alnpath="labelled.fas"):
         """output tree and alignement with human readble labels
         Jumps through abunch of hoops to make labels unique.
@@ -299,32 +325,6 @@ class AlignTreeTax(object):
 #TODO... write as proper nexml?!
 
 
-def prune_short(data_obj, min_seqlen=0):
-    """Sometimes in the de-concatenating of the original alignment
-    taxa with no sequence are generated.
-    This gets rid of those from both the tre and the alignement. MUTATOR"""
-    prune = []
-    prune_orig = []
-    tmp_dict = {}
-    for taxon, seq in data_obj.aln.items():
-        if len(seq.symbols_as_string().translate(None, "-?")) <= min_seqlen:
-            prune.append(taxon.label)
-            if data_obj.otu_dict[taxon.label].get(u'^ot:originalLabel'):
-                prune_orig.append(data_obj.otu_dict[taxon.label].get(u'^ot:originalLabel'))
-            else:
-                prune_orig.append(taxon.label)
-        else:
-            tmp_dict[taxon.label] = seq
-    data_obj.aln = DnaCharacterMatrix.from_dict(tmp_dict)
-    data_obj.tre.prune_taxa_with_labels(prune)
-    for tax in prune:
-        del data_obj.otu_dict[tax]
-    if prune:
-        fi = open("{}/pruned_taxa".format(data_obj.workdir), 'w')
-        fi.write("taxa pruned from tree and alignment due to excessive missing data\n")
-        for tax in prune:
-            fi.write("{}\n".format(tax))
-        fi.close()
 
 
 def get_nexson(study_id, phylesystem_loc):
@@ -521,6 +521,7 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
                         assert(tax not in self.data.otu_dict.keys())
                         return
         sys.stdout.write(".")
+        sys.stdout.write("seq {} should be in newseqs\n".format(label))
         seq_dict[label] = seq
         return
     def remove_identical_seqs(self):
@@ -583,6 +584,8 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
     def place_query_seqs(self):
         """runs raxml on the tree, and the combined alignment including the new quesry seqs
         Just for placement, to use as starting tree."""
+        if os.path.exists("RAxML_labelledTree.PLACE"):
+                os.rename(filename, "RAxML_labelledTreePLACE.tmp")
         sys.stdout.write("placing query sequences \n")
         os.chdir(self.workdir)
         p1 = subprocess.call(["raxmlHPC", "-m", "GTRCAT",
@@ -603,17 +606,20 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
     def est_full_tree(self):
         """Full raxml run from the placement tree as starting tree"""
         os.chdir(self.workdir)
+        for filename in glob.glob('{}/RAxML*'.format(self.workdir)):
+                os.rename(filename, "{}/{}_tmp".format(self.workdir, filename.split("/")[1]))
         p2 = subprocess.call(["raxmlHPC", "-m", "GTRCAT",
                               "-s", "papara_alignment.extended",
                               "-t", "place_resolve.tre",
                               "-p", "1",
                               "-n", "{}".format(self.date)])
-        os.chdir('..')
+        os.chdir('..')#TODO mordir not always one down!
         self._full_tree_est = 1
     def generate_streamed_alignment(self):
         """runs the key steps and then replaces the tree and alignemnt with the expanded ones"""
         self.reset_markers()
         self.read_blast()
+        pickle.dump(self, open('{}/scrape.p'.format(self.workdir), 'wb'))
         if len(self.new_seqs) > 0:
             self.remove_identical_seqs()
             self.data.write_files() #should happen before aligning in case of pruning
@@ -622,7 +628,7 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
             self.data.reconcile()
             self.place_query_seqs()
             self.est_full_tree()
-            self.data.tre = Tree.get(path="{}/RAxML_bestTree.{}".format(self.workdir, self.rax_name),
+            self.data.tre = Tree.get(path="{}/RAxML_bestTree.{}".format(self.workdir, self.date),
                                      schema="newick",
                                      preserve_underscores=True,
                                      taxon_namespace=self.data.aln.taxon_namespace) 
@@ -632,7 +638,7 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
                 i = 0
                 while os.path.exists(prev_dir):
                     i+=1
-                    prev_dir = prev_dir + "_" + str(i)
+                    prev_dir = "previous_run" + str(i)
                 os.rename("{}/previous_run".format(self.workdir), prev_dir)
             os.rename(self.blast_subdir, "{}/previous_run".format(self.workdir))
             if os.path.exists("{}/last_completed_update".format(self.workdir)):
