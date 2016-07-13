@@ -178,6 +178,7 @@ class AlignTreeTax(object):
         for tax in prune:
             self.otu_dict[tax.label]['physcraper:status'] = "deleted in name reconciliation"
             self.aln.taxon_namespace.remove_taxon(tax)
+        print "name reconcilaition done"
     def prune_short(self, min_seqlen=0):
         """Sometimes in the de-concatenating of the original alignment
         taxa with no sequence are generated.
@@ -198,6 +199,7 @@ class AlignTreeTax(object):
             self.otu_dict[tax.label]['physcraper:status'] = "deleted in prune short"
             self.aln.taxon_namespace.remove_taxon(tax)
         self.reconcile()
+        print "prune short done"
     def reconcile(self, seq_len_perc=0.75):
         """all missing data seqs are sneaking in, but from where?!"""
         prune = []
@@ -225,10 +227,11 @@ class AlignTreeTax(object):
         for leaf in self.tre.leaf_nodes():
             treed_taxa.add(leaf.taxon.label)
         assert treed_taxa.issubset(aln_ids)
-        for key in  self.otu_dict.keys():
-            if key not in aln_ids:
-                sys.stderr.write("{} was in otu dict but not alignment. it should be in new seqs...\n".format(key))
+       # for key in  self.otu_dict.keys():
+      #      if key not in aln_ids:
+     #           sys.stderr.write("{} was in otu dict but not alignment. it should be in new seqs...\n".format(key))
         self._reconciled = 1
+        print "reconciliation done"
     def add_otu(self, gi, ids_obj):
         """generates an otu_id for new sequences and adds them into the otu_dict.
         Needs to be passed an IdDict to do the mapping"""
@@ -271,14 +274,14 @@ class AlignTreeTax(object):
         with open("{}/{}".format(self.workdir, filename), 'w') as outfile:
             json.dump(self.otu_dict, outfile)
     def remove_taxon(self, taxon_label):
-        taxon = self.aln.taxon_namespace.get_taxon(taxon_label)
-        if taxon:
-            self.aln.remove_sequences(taxon)
-            self.aln.taxon_namespace.remove_taxon(taxon)
+        tax = self.aln.taxon_namespace.get_taxon(taxon_label)
+        if tax:
+            self.aln.remove_sequences(tax)
+            self.aln.taxon_namespace.remove_taxon(tax)
             self.tre.prune_taxa(tax)
             self.otu_dict[tax.label]['physcraper:status'] = "deleted"
         else:
-            self.otu_dict[tax.label]['physcraper:status'] = "deleted, but it wasn't in teh alignemnet..."
+            self.otu_dict[taxon_label]['physcraper:status'] = "deleted, but it wasn't in teh alignemnet..."
     def write_labelled(self, label='^ot:ottTaxonName', treepath="labelled.tre", alnpath="labelled.fas"):
         """output tree and alignement with human readble labels
         Jumps through abunch of hoops to make labels unique.
@@ -476,6 +479,7 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
         if not blast_dir:
             blast_dir = self.blast_subdir
         if not self._blasted:
+            "I am under the impression bast hasn't been run"
             self.run_blast()
         for taxon in self.data.aln:
             xml_fi = "{}/{}.xml".format(blast_dir, taxon.label)
@@ -500,25 +504,26 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
         removes that sequence and replaces it"""
         new_seq = seq.replace("-", "")
         tax_list = deepcopy(seq_dict.keys())
-        for tax in tax_list:
-            inc_seq = seq_dict[tax].replace("-", "")
+        for tax_lab in tax_list:
+            inc_seq = seq_dict[tax_lab].replace("-", "")
             if len(inc_seq) >= len(new_seq):
                 if inc_seq.find(new_seq) != -1:
-                    sys.stdout.write("seq {} is subsequence of {}, not added\n".format(label, tax))
-                    del self.data.otu_dict[label]
+                    sys.stdout.write("seq {} is subsequence of {}, not added\n".format(label, tax_lab))
+                    self.data.otu_dict[tax_lab]['physcraper:status'] = "subsequence, not added"
                     return
             else:
                 if new_seq.find(inc_seq) != -1:#
-                    if self.data.otu_dict[tax].get('^physcraper:status') == "original":
-                        sys.stdout.write("seq {} is supersequence of original seq {}, both kept in alignment\n".format(label, tax))
+                    if self.data.otu_dict[tax_lab].get('^physcraper:status') == "original":
+                        sys.stdout.write("seq {} is supersequence of original seq {}, both kept in alignment\n".format(label, tax_lab))
+                        self.data.otu_dict[tax_lab]['physcraper:status'] = "new seq added"
                         seq_dict[label] = seq
                         return
                     else:
-                        del seq_dict[tax]
+                        del seq_dict[tax_lab]
                         seq_dict[label] = seq
-                        self.data.remove_taxon(tax)
-                        sys.stdout.write("seq {} is supersequence of {}, {} added and {} removed\n".format(label, tax, label, tax))
-                        assert(tax not in self.data.otu_dict.keys())
+                        self.data.remove_taxon(tax_lab)
+                        sys.stdout.write("seq {} is supersequence of {}, {} added and {} removed\n".format(label, tax_lab, label, tax_lab))
+                        self.data.otu_dict[tax_lab]['physcraper:status'] = "new seq added in place of {}".format(tax_lab)
                         return
         sys.stdout.write(".")
         sys.stdout.write("seq {} should be in newseqs\n".format(label))
@@ -617,7 +622,7 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
         self._full_tree_est = 1
     def generate_streamed_alignment(self):
         """runs the key steps and then replaces the tree and alignemnt with the expanded ones"""
-        self.reset_markers()
+        print "should run and read blast now"
         self.read_blast()
         pickle.dump(self, open('{}/scrape.p'.format(self.workdir), 'wb'))
         if len(self.new_seqs) > 0:

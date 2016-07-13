@@ -1,4 +1,4 @@
-from physcraper import generate_ATT_from_phylesystem, generate_ATT_from_files, prune_short, ConfigObj, IdDicts,  PhyscraperScrape
+from physcraper import generate_ATT_from_phylesystem, generate_ATT_from_files, ConfigObj, IdDicts,  PhyscraperScrape
 from dendropy import DnaCharacterMatrix
 import pickle
 import sys
@@ -35,7 +35,7 @@ data_obj = generate_ATT_from_phylesystem(aln=aln,
 
 #Prune sequnces below a certain length threshold
 #This is particularly important when using loci that have been de-concatenated, as some are 0 length which causes problems.
-prune_short(data_obj, min_seqlen=0)
+data_obj.prune_short()
 
 data_obj.write_files()
 data_obj.write_labelled()
