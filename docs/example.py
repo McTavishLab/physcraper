@@ -15,7 +15,7 @@ mattype="fasta"
 workdir="example"
 
 #A configuration file stores the key config parameters, such as teh location of phylesystem, and BLAST
-configfi = "tests/local.config"
+configfi = "example.config"
 #read the config file into a configuration object
 conf = ConfigObj(configfi)
 
