@@ -34,8 +34,8 @@ Inputs needed are:
 It is easist if you keep the taxon infomration in the included taxonomy folder. (the file is too big for github)
 To get it from the NCBI ftp site
 
-rsync -av ftp.ncbi.nih.gov::pub/taxonomy/gi_taxid_nucl.dmp.gz taxonomy/gi_taxid_nucl.dmp.gz
-gunzip taxonomy/gi_taxid_nucl.dmp.gz
+    rsync -av ftp.ncbi.nih.gov::pub/taxonomy/gi_taxid_nucl.dmp.gz taxonomy/gi_taxid_nucl.dmp.gz  
+    gunzip taxonomy/gi_taxid_nucl.dmp.gz
 
 
 
