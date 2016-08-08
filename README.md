@@ -6,7 +6,7 @@ Uses a tree from Open tree of Life and an alignment to search for and add homolo
 
 Still work in progress (documentation in particular), please contact ejmctavish, gmail if you need any help!
 ## There is a full example python script with comments in docs/example.py 
-(it runs for a very long tme though)
+(it takes a ehile long time though)
 
 ###Dependencies (need to be in path): 
 - PaPaRa http://sco.h-its.org/exelixis/web/software/papara/index.html 
@@ -27,8 +27,13 @@ Inputs needed are:
 - ott_study_id =  OpenTree study identifier  
 - ott_tree_id  = Tree id from that study  
 - seqaln = the sequence alignment that generated that tree  
-- matrix_type = alignment matrix type (only tested with fasta so far)  
-- Working directory name
+- matrix_type = alignment matrix type (only tested with fasta so far)
+- Working directory name (will be created by run)
+
+Currently Physcraper relies on metadata information from the Open Tree of Life,
+and only uses trees from that database.
+Go to https://tree.opentreeoflife.org/curator to find a tree, or upload it!
+You can get the tree ID by clicking on your tree of interest, and looking at the URL.
 
 ###Taxon infomation from ncbi
 It is easist if you keep the taxon information in the included taxonomy folder. (the file is too big for github)
@@ -39,7 +44,4 @@ To get it from the NCBI ftp site
 
 
 
-Currently Physcraper relies on metadata information from the Open Tree of Life,
-and only uses trees from that database.
-Go to https://tree.opentreeoflife.org/curator to find a tree, or upload it!
-You can get the tree ID by clicking on your tree of interest, and looking at the URL.
+
