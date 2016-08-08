@@ -393,8 +393,16 @@ class IdDicts(object):
                                                       "{}".format(gi),
                                                       "{}".format(self.config.ncbi_dmp)]).split('\t')[1])
             except ValueError:
-                sys.stderr.write("ncbi_dmp file needs to be updated. Do so and rerun.") #TODO needs to kill here!
-                sys.exit()
+                os.system("rsync -av ftp.ncbi.nih.gov::pub/taxonomy/gi_taxid_nucl.dmp.gz {}.gz".format(self.config.ncbi_dmp))
+                os.system("tar -xzvf {}.gz".format(self.config.ncbi_dmp))
+                try:
+                    tax_id = int(subprocess.check_output(["bash", self.config.get_ncbi_taxonomy,
+                                                      "{}".format(gi),
+                                                      "{}".format(self.config.ncbi_dmp)]).split('\t')[1])
+                 except ValueError:
+                    tax_id = 1
+                    sys.stderr.write("Problem getting taxon for GI {}. Assigning to LIFE and moving on.".format{gi})
+                #sys.exit()
             mapped_taxon_ids.write("{}, {}\n".format(gi, tax_id))
             self.gi_ncbi_dict[gi] = tax_id
             assert tax_id  #if this doesn't work then the gi to taxon mapping needs to be updated - shouldhappen anyhow perhaps?!
@@ -476,7 +484,6 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
         if not blast_dir:
             blast_dir = self.blast_subdir
         if not self._blasted:
-            "I am under the impression bast hasn't been run"
             self.run_blast()
         for taxon in self.data.aln:
             xml_fi = "{}/{}.xml".format(blast_dir, taxon.label)
