@@ -30,7 +30,16 @@ Inputs needed are:
 - matrix_type = alignment matrix type (only tested with fasta so far)  
 - Working directory name
 
+###Taxon infomation from ncbi
+It is easist if you keep the taxon infomration in the included taxonomy folder. (the file is too big for github)
+To get it from the NCBI ftp site
+
+rsync -av ftp.ncbi.nih.gov::pub/taxonomy/gi_taxid_nucl.dmp.gz taxonomy/gi_taxid_nucl.dmp.gz
+gunzip taxonomy/gi_taxid_nucl.dmp.gz
+
+
 
 Currently this is relying on metadata information from Open Tree of Life,
 and only uses trees from that database.
 Go to https://tree.opentreeoflife.org/curator to find a tree, or upload it!
+You can get the tree ID by clicking on your tree of interest, and looking at the URL.

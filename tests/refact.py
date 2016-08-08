@@ -1,4 +1,5 @@
-from physcraper import generate_ATT_from_phylesystem, generate_ATT_from_files, prune_short, ConfigObj, IdDicts,  PhyscraperScrape
+from physcraper import generate_ATT_from_phylesystem, generate_ATT_from_files, ConfigObj, IdDicts,  PhyscraperScrape
+import dendropy
 import pickle
 import sys
 import os
@@ -15,15 +16,16 @@ configfi = "tests/local.config"
 
 conf = ConfigObj(configfi)
 
-data_obj = generate_ATT_from_phylesystem(seqaln,
-                     mattype,
+aln = dendropy.DnaCharacterMatrix.get(file=open(seqaln), schema=mattype)
+
+data_obj = generate_ATT_from_phylesystem(aln,
                      "tmp",
                      study_id = study_id,
                      tree_id = tree_id,
                      phylesystem_loc = conf.phylesystem_loc)
 
 
-prune_short(data_obj)
+data_obj.prune_short()
 data_obj.write_files()
 data_obj.write_labelled()
 

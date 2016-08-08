@@ -156,7 +156,7 @@ class AlignTreeTax(object):
             os.makedirs(self.workdir)
         assert int(ingroup_mrca)
         self.ott_mrca = ingroup_mrca
-        self.orig_seqlen = [1000, 1000, 1000] #FIXME
+        self.orig_seqlen = [] #FIXME
         self.gi_dict = {}
         self.orig_aln = alignment
         self.orig_newick = newick
@@ -186,9 +186,9 @@ class AlignTreeTax(object):
         for tax, seq in self.aln.items():
             if len(seq.symbols_as_string().translate(None, "-?")) <= min_seqlen:
                 prune.append(tax)
-        self.aln.remove_sequences(prune)
-        self.tre.prune_taxa(prune)
         if prune:
+            self.aln.remove_sequences(prune)
+            self.tre.prune_taxa(prune)
             fi = open("{}/pruned_taxa".format(self.workdir), 'a')
             fi.write("Taxa pruned from tree and alignment in prune short step due to sequence shorter than {}\n".format(min_seqlen))
             for tax in prune:
@@ -197,6 +197,7 @@ class AlignTreeTax(object):
         for tax in prune:
             self.otu_dict[tax.label]['physcraper:status'] = "deleted in prune short"
             self.aln.taxon_namespace.remove_taxon(tax)
+        self.orig_seqlen = [len(self.aln[tax]) for tax in self.aln]
         self.reconcile()
     def reconcile(self, seq_len_perc=0.75):
         """all missing data seqs are sneaking in, but from where?!"""
@@ -227,8 +228,42 @@ class AlignTreeTax(object):
         assert treed_taxa.issubset(aln_ids)
        # for key in  self.otu_dict.keys():
       #      if key not in aln_ids:
-     #           sys.stderr.write("{} was in otu dict but not alignment. it should be in new seqs...\n".format(key))
+     #           sys.stderr.write("{} was in otu dict but not alignment. it should be in new seqs...\n".format(key)
+        self.trim()
         self._reconciled = 1
+    def trim(self, taxon_missingness = 0.75):
+        '''cuts off ends of alignemnet, mainiting similar to original seq len
+        IMportant bc other while whole chomeoosmes get dragged in!'''
+        seqlen = len(self.aln[0])
+        for tax in self.aln:
+            if len(self.aln[tax]) != seqlen:
+                sys.sterr.write("can't trim un-aligned inputs, moving on")
+                return
+        start = 0
+        stop = seqlen
+        cutoff = len(self.aln) *  taxon_missingness
+        for i in range(seqlen):
+            counts = {'?':0,'-':0}
+            for tax in self.aln:
+                call = self.aln[tax][i].label
+                if call in ['?', '-']:
+                    counts[call] += 1
+            if counts['?']+counts['-'] <= cutoff: #first ok column
+                start = i
+                break
+        for i in range(seqlen-1,0,-1):
+            counts = {'?':0,'-':0}
+            for tax in self.aln:
+                call = self.aln[tax][i].label
+                if call in ['?', '-']:
+                    counts[call] += 1
+            if counts['?']+counts['-'] <= cutoff: 
+                stop = i
+                break
+        for taxon in self.aln:
+            self.aln[taxon] = self.aln[taxon][start:stop]
+        sys.stdout.write("trimmed alignement ends to < {} missing taxa, start {}, stop {}\n".format(taxon_missingness, start, stop))
+        return
     def add_otu(self, gi, ids_obj):
         """generates an otu_id for new sequences and adds them into the otu_dict.
         Needs to be passed an IdDict to do the mapping"""
@@ -399,9 +434,10 @@ class IdDicts(object):
                     tax_id = int(subprocess.check_output(["bash", self.config.get_ncbi_taxonomy,
                                                       "{}".format(gi),
                                                       "{}".format(self.config.ncbi_dmp)]).split('\t')[1])
-                 except ValueError:
+
+                except ValueError:
                     tax_id = 1
-                    sys.stderr.write("Problem getting taxon for GI {}. Assigning to LIFE and moving on.".format{gi})
+                    sys.stderr.write("Problem getting taxon for GI {}. Assigning to LIFE and moving on.".format(gi))
                 #sys.exit()
             mapped_taxon_ids.write("{}, {}\n".format(gi, tax_id))
             self.gi_ncbi_dict[gi] = tax_id
@@ -657,7 +693,7 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
                 os.rename(filename, "{}/previous_run/{}".format(self.workdir, filename.split("/")[1]))
             for filename in glob.glob('{}/papara*'.format(self.workdir)):
                 os.rename(filename, "{}/previous_run/{}".format(self.workdir, filename.split("/")[1]))
-            os.rename("{}/{}", "{}/previous_run/newseqs.fasta".format(self.workdir, self.newseqs_file, self.workdir))
+            os.rename("{}/{}".format(self.workdir, self.newseqs_file), "{}/previous_run/newseqs.fasta".format(self.workdir))
         else:
             sys.stdout.write("No new sequences found.")
         self.reset_markers()

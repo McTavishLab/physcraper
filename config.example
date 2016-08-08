@@ -3,15 +3,23 @@ location = remote
 e_value_thresh = 0.001
 Entrez.email = ejmctavish@gmail.com
 hitlist_size = 10
+#Use your email address, please
 
-[phylesystem]
-location = api
-#local or api
-
-[ncbi.taxonomy]
-ott_ncbi = /home/ejmctavish/projects/otapi/physcraper/taxonomy/ott_ncbi
-get_ncbi_taxonomy = /home/ejmctavish/projects/otapi/physcraper/taxonomy/get_ncbi_taxonomy.sh
-ncbi_dmp = /home/ejmctavish/ncbi/gi_taxid_nucl.dmp
 
 [physcraper]
 seq_len_perc = 0.8
+
+#Things below here you should not need to change!
+
+[phylesystem]
+location = api
+#local or api, leave set to api unless you have installed phylesystem locally
+
+
+[ncbi.taxonomy]
+ott_ncbi = taxonomy/ott_ncbi
+get_ncbi_taxonomy = taxonomy/get_ncbi_taxonomy.sh
+ncbi_dmp = taxonomygi_taxid_nucl.dmp
+#You should not need to change any of these these!
+
+
