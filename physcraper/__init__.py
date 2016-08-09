@@ -308,9 +308,9 @@ class AlignTreeTax(object):
     def remove_taxon(self, taxon_label):
         tax = self.aln.taxon_namespace.get_taxon(taxon_label)
         if tax:
-            self.aln.remove_sequences(tax)
+            self.aln.remove_sequences([tax])
             self.aln.taxon_namespace.remove_taxon(tax)
-            self.tre.prune_taxa(tax)
+            self.tre.prune_taxa([tax])
             self.otu_dict[tax.label]['physcraper:status'] = "deleted"
         else:
             self.otu_dict[taxon_label]['physcraper:status'] = "deleted, but it wasn't in teh alignemnet..."
@@ -498,9 +498,9 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
                                                                    last_blast,
                                                                    today)
                     query = seq.symbols_as_string().replace("-", "").replace("?", "")
-                    sys.stdout.write("blasting seq {}\n".format(taxon.label))
                     xml_fi = "{}/{}.xml".format(self.blast_subdir, taxon.label)
                     if not os.path.isfile(xml_fi):
+                        sys.stdout.write("blasting seq {}\n".format(taxon.label))
                         try:
                             result_handle = NCBIWWW.qblast("blastn", "nt",
                                                            query,
@@ -512,7 +512,7 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
                             self.data.otu_dict[otu_id]['^physcraper:last_blasted'] = today
                             result_handle.close()
                         except (ValueError, URLError):
-                            sys.stderr.write("NCBIWWW error. Carrying on, but skipped {}".format(otu_id))
+                            sys.stderr.write("NCBIWWW error. Carrying on, but skipped {}\n".format(otu_id))
         self._blasted = 1
         return
     def read_blast(self, blast_dir=None):
