@@ -517,6 +517,8 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
         return
     def read_blast(self, blast_dir=None):
         """reads in and prcesses the blast xml files"""
+        self.new_seqs = {}
+        self.new_seqs_otu_id = {}
         if not blast_dir:
             blast_dir = self.blast_subdir
         if not self._blasted:
@@ -694,6 +696,7 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
             for filename in glob.glob('{}/papara*'.format(self.workdir)):
                 os.rename(filename, "{}/previous_run/{}".format(self.workdir, filename.split("/")[1]))
             os.rename("{}/{}".format(self.workdir, self.newseqs_file), "{}/previous_run/newseqs.fasta".format(self.workdir))
+            self.data.write_labelled()
         else:
             sys.stdout.write("No new sequences found.")
         self.reset_markers()
