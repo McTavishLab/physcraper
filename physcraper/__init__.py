@@ -517,8 +517,6 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
         return
     def read_blast(self, blast_dir=None):
         """reads in and prcesses the blast xml files"""
-        self.new_seqs = {}
-        self.new_seqs_otu_id = {}
         if not blast_dir:
             blast_dir = self.blast_subdir
         if not self._blasted:
@@ -624,10 +622,12 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
                               "-n", papara_runname]) #FIx directory ugliness
         sys.stdout.write("Papara done")
         os.chdir('..')
+        assert os.path.exists(path="{}/papara_alignment.{}".format(self.workdir, papara_runname))
         self.data.aln = DnaCharacterMatrix.get(path="{}/papara_alignment.{}".format(self.workdir, papara_runname), schema="phylip")
         self.data.aln.taxon_namespace.is_mutable = False #This should enforce name matching throughout...
-        assert os.path.exists(path="{}/papara_alignment.{}".format(self.workdir, papara_runname))
         sys.stdout.write("Papara done")
+        with open(self.logfile, "a") as log:
+            log.write("Following papara alignement, aln has {} seqs \n".format(len(self.data.aln)))
         self.data.reconcile()
         self._query_seqs_aligned = 1
     def place_query_seqs(self):
@@ -697,8 +697,10 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
                 os.rename(filename, "{}/previous_run/{}".format(self.workdir, filename.split("/")[1]))
             os.rename("{}/{}".format(self.workdir, self.newseqs_file), "{}/previous_run/newseqs.fasta".format(self.workdir))
             self.data.write_labelled()
+            self.new_seqs = {} #Wipe for next run
+            self.new_seqs_otu_id = {}
         else:
-            sys.stdout.write("No new sequences found.")
+            sys.stdout.write("No new sequences found.\n")
         self.reset_markers()
         pickle.dump(self, open('{}/scrape.p'.format(self.workdir), 'wb'))
-        pickle.dump(self.data.otu_dict, open('{}/otu_dict{}.p'.format(self.workdir, str(datetime.date.today())), 'wb'))
+        pickle.dump(self.data.otu_dict, open('{}/otu_dict.p'.format(self.workdir), 'wb'))
