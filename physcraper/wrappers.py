@@ -51,7 +51,7 @@ def standard_run(study_id,
             scraper.read_blast()
             scraper.remove_identical_seqs()
             scraper.generate_streamed_alignment()
-    while self.repeat = 1: 
+    while self.repeat == 1: 
         scraper.run_blast()
         scraper.read_blast()
         scraper.remove_identical_seqs()
