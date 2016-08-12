@@ -470,6 +470,7 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
             os.makedirs(self.workdir)
         self.newseqs_file = "tmp.fasta"
         self.date = str(datetime.date.today()) #Date of the run - may lag behind real date!
+        self.repeat = 1
         self.reset_markers()
  #TODO is this the right place for this?
     def reset_markers(self):
@@ -699,8 +700,10 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
             self.data.write_labelled()
             self.new_seqs = {} #Wipe for next run
             self.new_seqs_otu_id = {}
+            self.repeat = 1
         else:
             sys.stdout.write("No new sequences found.\n")
+            self.repeat = 0
         self.reset_markers()
         pickle.dump(self, open('{}/scrape.p'.format(self.workdir), 'wb'))
         pickle.dump(self.data.otu_dict, open('{}/otu_dict.p'.format(self.workdir), 'wb'))

@@ -13,8 +13,8 @@ def standard_run(study_id,
                  workdir,
                  configfi):
     if os.path.isfile("{}/scrape.p".format(workdir)): 
-        scraper = pickle.load(open("{}/scrape.p".format(workdir),'rb'))
         sys.stdout.write("Readloading from pickled scrapefile")
+        scraper = pickle.load(open("{}/scrape.p".format(workdir),'rb'))
     else: 
             sys.stdout.write("setting up Data Object\n")
             sys.stdout.flush()
@@ -51,7 +51,7 @@ def standard_run(study_id,
             scraper.read_blast()
             scraper.remove_identical_seqs()
             scraper.generate_streamed_alignment()
-    while len(scraper.new_seqs) > 0: 
+    while self.repeat = 1: 
         scraper.run_blast()
         scraper.read_blast()
         scraper.remove_identical_seqs()
