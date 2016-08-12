@@ -197,7 +197,7 @@ class AlignTreeTax(object):
         for tax in prune:
             self.otu_dict[tax.label]['physcraper:status'] = "deleted in prune short"
             self.aln.taxon_namespace.remove_taxon(tax)
-        self.orig_seqlen = [len(self.aln[tax]) for tax in self.aln]
+        self.orig_seqlen = [len(self.aln[tax].symbols_as_string().replace("-", "").replace("N", "")) for tax in self.aln]
         self.reconcile()
     def reconcile(self, seq_len_perc=0.75):
         """all missing data seqs are sneaking in, but from where?!"""
@@ -584,7 +584,11 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
         avg_seqlen = sum(self.data.orig_seqlen)/len(self.data.orig_seqlen) #HMMMMMMMM
         seq_len_cutoff = avg_seqlen*self.config.seq_len_perc
         for gi, seq in self.new_seqs.items():
+            print "gaps"
+            print len(seq)
             if len(seq.replace("-", "").replace("N", "")) > seq_len_cutoff:
+                print "nogaps"
+                print len(seq.replace("-", "").replace("N", ""))
                 otu_id = self.data.add_otu(gi, self.ids)
                 self.seq_dict_build(seq, otu_id, tmp_dict)
         for tax in old_seqs:
@@ -594,7 +598,7 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
                 pass
         self.new_seqs_otu_id = tmp_dict # renamed new seq to their otu_ids from GI's, but all info is in self.otu_dict
         with open(self.logfile, "a") as log:
-            log.write("{} new sequences added from genbank\n".format(len(self.new_seqs_otu_id)))
+            log.write("{} new sequences added from genbank, of {} before filtering\n".format(len(self.new_seqs_otu_id)), len(self.new_seqs))
     def write_query_seqs(self):
         """writes out the query sequence file"""
         if not self._blast_read:
@@ -672,38 +676,42 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
         if len(self.new_seqs) > 0:
             self.remove_identical_seqs()
             self.data.write_files() #should happen before aligning in case of pruning
-            self.write_query_seqs()
-            self.align_query_seqs()
-            self.data.reconcile()
-            self.place_query_seqs()
-            self.est_full_tree()
-            self.data.tre = Tree.get(path="{}/RAxML_bestTree.{}".format(self.workdir, self.date),
-                                     schema="newick",
-                                     preserve_underscores=True,
-                                     taxon_namespace=self.data.aln.taxon_namespace) 
-            self.data.write_files()
-            if os.path.exists("{}/previous_run".format(self.workdir)):
-                prev_dir =  "{}/previous_run{}".format(self.workdir, self.date)
-                i = 0
-                while os.path.exists(prev_dir):
-                    i+=1
-                    prev_dir = "previous_run" + str(i)
-                os.rename("{}/previous_run".format(self.workdir), prev_dir)
-            os.rename(self.blast_subdir, "{}/previous_run".format(self.workdir))
-            if os.path.exists("{}/last_completed_update".format(self.workdir)):
-                os.rename(self.tmpfi, "{}/last_completed_update".format(self.workdir))
-            for filename in glob.glob('{}/RAxML*'.format(self.workdir)):
-                os.rename(filename, "{}/previous_run/{}".format(self.workdir, filename.split("/")[1]))
-            for filename in glob.glob('{}/papara*'.format(self.workdir)):
-                os.rename(filename, "{}/previous_run/{}".format(self.workdir, filename.split("/")[1]))
-            os.rename("{}/{}".format(self.workdir, self.newseqs_file), "{}/previous_run/newseqs.fasta".format(self.workdir))
-            self.data.write_labelled()
-            self.new_seqs = {} #Wipe for next run
-            self.new_seqs_otu_id = {}
-            self.repeat = 1
+            if len(self.new_seqs_otu_id) > 0:#TODO rename to something more intutitive
+                self.write_query_seqs()
+                self.align_query_seqs()
+                self.data.reconcile()
+                self.place_query_seqs()
+                self.est_full_tree()
+                self.data.tre = Tree.get(path="{}/RAxML_bestTree.{}".format(self.workdir, self.date),
+                                         schema="newick",
+                                         preserve_underscores=True,
+                                         taxon_namespace=self.data.aln.taxon_namespace) 
+                self.data.write_files()
+                if os.path.exists("{}/previous_run".format(self.workdir)):
+                    prev_dir =  "{}/previous_run{}".format(self.workdir, self.date)
+                    i = 0
+                    while os.path.exists(prev_dir):
+                        i+=1
+                        prev_dir = "previous_run" + str(i)
+                    os.rename("{}/previous_run".format(self.workdir), prev_dir)
+                os.rename(self.blast_subdir, "{}/previous_run".format(self.workdir))
+                if os.path.exists("{}/last_completed_update".format(self.workdir)):
+                    os.rename(self.tmpfi, "{}/last_completed_update".format(self.workdir))
+                for filename in glob.glob('{}/RAxML*'.format(self.workdir)):
+                    os.rename(filename, "{}/previous_run/{}".format(self.workdir, filename.split("/")[1]))
+                for filename in glob.glob('{}/papara*'.format(self.workdir)):
+                    os.rename(filename, "{}/previous_run/{}".format(self.workdir, filename.split("/")[1]))
+                os.rename("{}/{}".format(self.workdir, self.newseqs_file), "{}/previous_run/newseqs.fasta".format(self.workdir))
+                self.data.write_labelled()
+                self.new_seqs = {} #Wipe for next run
+                self.new_seqs_otu_id = {}
+                self.repeat = 1
+            else:
+                sys.stdout.write("No new sequences after filtering.\n")
+                self.repeat = 0
         else:
-            sys.stdout.write("No new sequences found.\n")
-            self.repeat = 0
+                sys.stdout.write("No new sequences found.\n")
+                self.repeat = 0
         self.reset_markers()
         pickle.dump(self, open('{}/scrape.p'.format(self.workdir), 'wb'))
         pickle.dump(self.data.otu_dict, open('{}/otu_dict.p'.format(self.workdir), 'wb'))
