@@ -598,7 +598,7 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
                 pass
         self.new_seqs_otu_id = tmp_dict # renamed new seq to their otu_ids from GI's, but all info is in self.otu_dict
         with open(self.logfile, "a") as log:
-            log.write("{} new sequences added from genbank, of {} before filtering\n".format(len(self.new_seqs_otu_id)), len(self.new_seqs))
+            log.write("{} new sequences added from genbank, of {} before filtering\n".format(len(self.new_seqs_otu_id), len(self.new_seqs)))
     def write_query_seqs(self):
         """writes out the query sequence file"""
         if not self._blast_read:
