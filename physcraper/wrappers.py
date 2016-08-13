@@ -15,6 +15,7 @@ def standard_run(study_id,
     if os.path.isfile("{}/scrape.p".format(workdir)): 
         sys.stdout.write("Readloading from pickled scrapefile")
         scraper = pickle.load(open("{}/scrape.p".format(workdir),'rb'))
+        scraper.repeat == 1
     else: 
             sys.stdout.write("setting up Data Object\n")
             sys.stdout.flush()

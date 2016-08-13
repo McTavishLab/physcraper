@@ -584,11 +584,7 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
         avg_seqlen = sum(self.data.orig_seqlen)/len(self.data.orig_seqlen) #HMMMMMMMM
         seq_len_cutoff = avg_seqlen*self.config.seq_len_perc
         for gi, seq in self.new_seqs.items():
-            print "gaps"
-            print len(seq)
             if len(seq.replace("-", "").replace("N", "")) > seq_len_cutoff:
-                print "nogaps"
-                print len(seq.replace("-", "").replace("N", ""))
                 otu_id = self.data.add_otu(gi, self.ids)
                 self.seq_dict_build(seq, otu_id, tmp_dict)
         for tax in old_seqs:
