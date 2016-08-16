@@ -10,7 +10,7 @@ setup(name='Physcraper',
       packages=['physcraper'],
       dependency_links = ['https://github.com/OpenTreeOfLife/peyotl/tarball/physcraper#egg=peyotl-0.1.4devphyscraper'],
       install_requires=[
-          'dendropy',
+          'dendropy==4.1.0',
           'configparser',
           'biopython',
           'urllib3',
