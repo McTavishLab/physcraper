@@ -10,7 +10,7 @@ GI_TO_TAXID="${2}"
 # Obtain the name corresponding to a taxid or the taxid of the parent taxa
 get_name_or_taxid()
 {
-    grep --max-count=1 "^${1}"$'\t' "${2}" | cut --fields="${3}"
+    grep --max-count=1 "^${1}"$'\t' "${2}" | cut -f="${3}"
 }
 
 # Get the taxid corresponding to the GI number
