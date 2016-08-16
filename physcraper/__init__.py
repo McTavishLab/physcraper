@@ -428,8 +428,8 @@ class IdDicts(object):
                                                       "{}".format(gi),
                                                       "{}".format(self.config.ncbi_dmp)]).split('\t')[1])
             except ValueError:
-                os.system("rsync -av ftp.ncbi.nih.gov::pub/taxonomy/gi_taxid_nucl.dmp.gz {}.gz".format(self.config.ncbi_dmp))
-                os.system("tar -xzvf {}.gz".format(self.config.ncbi_dmp))
+#                os.system("rsync -av ftp.ncbi.nih.gov::pub/taxonomy/gi_taxid_nucl.dmp.gz {}.gz".format(self.config.ncbi_dmp))
+#                os.system("tar -xzvf {}.gz".format(self.config.ncbi_dmp))
                 try:
                     tax_id = int(subprocess.check_output(["bash", self.config.get_ncbi_taxonomy,
                                                       "{}".format(gi),
