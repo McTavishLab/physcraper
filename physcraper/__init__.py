@@ -301,8 +301,9 @@ class AlignTreeTax(object):
                        unquoted_underscores=True)
         self.aln.write(path="{}/{}".format(self.workdir, alnpath),
                        schema=alnschema)
-    def write_otus(self, filename):
+    def write_otus(self, filename, schema='table'):
         """Writes out OTU dict as json"""
+        assert schema in ['table','json']
         with open("{}/{}".format(self.workdir, filename), 'w') as outfile:
             json.dump(self.otu_dict, outfile)
     def remove_taxon(self, taxon_label):
