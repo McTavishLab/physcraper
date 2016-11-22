@@ -1,4 +1,4 @@
-from physcraper import StudyInfo, PhyscraperSetup, PhyscraperScrape
+from physcraper.wrappers import standard_run
 import pickle
 import sys
 import os
@@ -8,10 +8,16 @@ study_id = "pg_873"
 tree_id = "tree1679"
 seqaln = "tests/data/minitest.fas"
 mattype="fasta"
-runname="fresh3"
+configfi = "lt.config"
+workdir =  "november"
 
-info = StudyInfo(study_id, tree_id, seqaln, mattype)
-
+standard_run(study_id,
+             tree_id,
+             seqaln,
+             mattype,
+             workdir,
+             configfi)
+'''
 sys.stdout.write("setting up StudyINfo\n")
 sys.stdout.flush()
 info = StudyInfo(study_id, tree_id, seqaln, mattype)
@@ -37,3 +43,4 @@ sys.stdout.write("Instance set up\n")
 sys.stdout.flush()
 scrape.generate_streamed_alignment()
 scrape.write_labelled()
+'''

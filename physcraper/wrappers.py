@@ -12,8 +12,10 @@ def standard_run(study_id,
                  mattype,
                  workdir,
                  configfi):
+    '''looks for pickeled file to continue run, or builds and runs 
+    new analysis for as long as new seqs are found'''
     if os.path.isfile("{}/scrape.p".format(workdir)): 
-        sys.stdout.write("Readloading from pickled scrapefile")
+        sys.stdout.write("Reloading from pickled scrapefile")
         scraper = pickle.load(open("{}/scrape.p".format(workdir),'rb'))
         scraper.repeat = 1
     else: 
@@ -29,7 +31,6 @@ def standard_run(study_id,
                                  study_id = study_id,
                                  tree_id = tree_id,
                                  phylesystem_loc = conf.phylesystem_loc)
-
 
 
 
