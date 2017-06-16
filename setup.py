@@ -11,7 +11,7 @@ setup(name='Physcraper',
       install_requires=[
           'dendropy==4.1.0',
           'configparser',
-          'biopython>=1.86',
+          'biopython',
           'urllib3',
           'peyotl',
           'configparser'

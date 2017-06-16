@@ -424,6 +424,9 @@ class IdDicts(object):
             self.ott_to_ncbi[int(lii[0])] = int(lii[1])
             self.ncbi_to_ott[int(lii[1])] = int(lii[0])
             self.ott_to_name[int(lii[0])] = lii[2].strip()
+            assert len(self.ott_to_ncbi) > 0
+            assert len(self.ncbi_to_ott) > 0
+            assert len(self.ott_to_name) > 0
         fi.close()
         if os.path.isfile("{}/id_map.txt".format(workdir)): #todo config?!
             fi = open("{}/id_map.txt".format(workdir))
