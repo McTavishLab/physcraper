@@ -1,6 +1,5 @@
 DateTime==4.2
 DendroPy==4.1.0
--e git+git@github.com:snacktavish/physcraper.git@dcc4b5885bcf54721807802da64b142663ec4d8b#egg=Physcraper-master
 anyjson==0.3.3
 argcomplete==1.6.0
 argparse==1.2.1
