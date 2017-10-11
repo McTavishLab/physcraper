@@ -10,9 +10,15 @@ wget http://purl.org/opentree/ott/ott2.9/ott2.9.tgz
 
 tar -zxvf ott2.9.tgz 
 
-grep ncbi: ../ott2.8/taxonomy.tsv | sed -E -e "s/([0-9]+).+?\|.+?\|(.+?)\|.+?\|.*ncbi:([0-9]+).*/\\1,\\3,\\2/" > ott_ncbi
+
+wget files.opentreeoflife.org/ott/ott3.0/ott3.0.tgz
+tar -xzvf ott3.0.tgz
+
+grep ncbi: ../ott3.0/taxonomy.tsv | sed -E -e "s/([0-9]+).+?\|.+?\|(.+?)\|.+?\|.*ncbi:([0-9]+).*/\\1,\\3,\\2/" > ott_ncbi
+
 OR
-grep ncbi: ott2.9/taxonomy.tsv | sed -r -e "s/([0-9]+).+?\|.+?\|(.+?)\|.+?\|.*ncbi:([0-9]+).*/\\1,\\3,\\2/" > physcraper/taxonomy/ott_ncbi
+
+grep ncbi: ott3.0/taxonomy.tsv | sed -r -e "s/([0-9]+).+?\|.+?\|(.+?)\|.+?\|.*ncbi:([0-9]+).*/\\1,\\3,\\2/" > physcraper/taxonomy/ott_ncbi
 
 
 #need dev master version of dendropy

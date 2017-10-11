@@ -38,6 +38,15 @@ class ConfigObj(object):
         self.ncbi_dmp = config['ncbi.taxonomy']['ncbi_dmp']
         self.phylesystem_loc = config['phylesystem']['location']
         self.ott_ncbi = config['ncbi.taxonomy']['ott_ncbi']
+        assert os.path.isfile(self.get_ncbi_taxonomy)
+        try:
+            os.path.isfile(self.ncbi_dmp)
+        except:
+            os.system("rsync -av ftp.ncbi.nih.gov::pub/taxonomy/gi_taxid_nucl.dmp.gz {}.gz".format(self.config.ncbi_dmp))
+            os.system("tar -xzvf taxonomy/gi_taxid_nucl.dmp.gz")
+            self.ncbi_dmp = "taxonomy/gi_taxid_nucl.dmp.gz"
+        assert os.path.isfile(self.ott_ncbi)
+
 
 #ATT is a dumb acronym for Alignment Tree Taxa object
 def get_dataset_from_treebase(study_id,
@@ -223,8 +232,13 @@ class AlignTreeTax(object):
             aln_ids.add(tax.label)
         assert aln_ids.issubset(self.otu_dict.keys())
         treed_taxa = set()
+        orphaned_leafs = set()
         for leaf in self.tre.leaf_nodes():
             treed_taxa.add(leaf.taxon.label)
+            if leaf.taxon.label not in aln_ids:
+                self.otu_dict[tax.label]['physcraper:status'] = "deleted due to presence in tree but not aln. ?!"
+                orphan_leafs.add(leaf)
+        self.tre.prune_taxa(prune)
         assert treed_taxa.issubset(aln_ids)
        # for key in  self.otu_dict.keys():
       #      if key not in aln_ids:
@@ -301,8 +315,9 @@ class AlignTreeTax(object):
                        unquoted_underscores=True)
         self.aln.write(path="{}/{}".format(self.workdir, alnpath),
                        schema=alnschema)
-    def write_otus(self, filename):
+    def write_otus(self, filename, schema='table'):
         """Writes out OTU dict as json"""
+        assert schema in ['table','json']
         with open("{}/{}".format(self.workdir, filename), 'w') as outfile:
             json.dump(self.otu_dict, outfile)
     def remove_taxon(self, taxon_label):
@@ -409,6 +424,9 @@ class IdDicts(object):
             self.ott_to_ncbi[int(lii[0])] = int(lii[1])
             self.ncbi_to_ott[int(lii[1])] = int(lii[0])
             self.ott_to_name[int(lii[0])] = lii[2].strip()
+            assert len(self.ott_to_ncbi) > 0
+            assert len(self.ncbi_to_ott) > 0
+            assert len(self.ott_to_name) > 0
         fi.close()
         if os.path.isfile("{}/id_map.txt".format(workdir)): #todo config?!
             fi = open("{}/id_map.txt".format(workdir))
@@ -625,7 +643,7 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
         os.chdir('..')
         assert os.path.exists(path="{}/papara_alignment.{}".format(self.workdir, papara_runname))
         self.data.aln = DnaCharacterMatrix.get(path="{}/papara_alignment.{}".format(self.workdir, papara_runname), schema="phylip")
-        self.data.aln.taxon_namespace.is_mutable = False #This should enforce name matching throughout...
+        self.data.aln.taxon_namespace.is_mutable = True #Was too strict...
         sys.stdout.write("Papara done")
         with open(self.logfile, "a") as log:
             log.write("Following papara alignement, aln has {} seqs \n".format(len(self.data.aln)))
