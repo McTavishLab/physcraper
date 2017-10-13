@@ -30,7 +30,7 @@ def standard_run(study_id,
         scraper = pickle.load(open("{}/scrape.p".format(workdir),'rb'))
         scraper.repeat = 1
     else:   
-            sync_names()
+  #          sync_names()
             sys.stdout.write("setting up Data Object\n")
             sys.stdout.flush()
             #read the config file into a configuration object
