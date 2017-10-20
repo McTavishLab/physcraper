@@ -246,8 +246,8 @@ class AlignTreeTax(object):
         self.trim()
         self._reconciled = 1
     def trim(self, taxon_missingness = 0.75):
-        '''cuts off ends of alignemnet, mainiting similar to original seq len
-        IMportant bc other while whole chomeoosmes get dragged in!'''
+        '''cuts off ends of alignment, maintaining similar to original seq len
+        Important bc other while whole chromosomes get dragged in!'''
         seqlen = len(self.aln[0])
         for tax in self.aln:
             if len(self.aln[tax]) != seqlen:
