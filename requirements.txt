@@ -1,0 +1,20 @@
+DateTime==4.2
+DendroPy==4.1.0
+anyjson==0.3.3
+argcomplete==1.6.0
+argparse==1.2.1
+biopython==1.68
+configparser==3.5.0
+coverage==4.2
+enum34==1.1.6
+locket==0.2.0
+-e git+https://github.com/OpenTreeOfLife/peyotl@9fee31eb958042a3261ce7099717aae10169a178#egg=peyotl-master
+python-dateutil==2.6.0
+pytz==2017.2
+redis==2.10.5
+requests==2.12.1
+sh==1.11
+six==1.10.0
+urllib3==1.19.1
+wsgiref==0.1.2
+zope.interface==4.4.1

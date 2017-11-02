@@ -45,3 +45,7 @@ To get it from the NCBI ftp site
 
 
 
+Physcraper generates an ATT (alignment, taxonomy, tree) object.
+This is important because it tracks the shared namespaces across these three data objects, whcih can otherwise get a bit seperated.
+
+
