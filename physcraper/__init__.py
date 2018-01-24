@@ -17,7 +17,7 @@ from Bio.Blast.Applications import NcbiblastxCommandline
 from Bio import SeqIO, Entrez
 from dendropy import Tree, DnaCharacterMatrix, DataSet, datamodel
 from peyotl import gen_otu_dict, iter_node
-from peyotl.manip import iter_trees, iter_otus
+from peyotl.manip import iter_trees
 from peyotl.api.phylesystem_api import PhylesystemAPI
 from peyotl.sugar import tree_of_life, taxonomy
 from peyotl.nexson_syntax import extract_tree, extract_tree_nexson, get_subtree_otus, extract_otu_nexson, PhyloSchema
