@@ -455,12 +455,13 @@ class IdDicts(object):
                                                       "{}".format(gi),
                                                       "{}".format(self.config.ncbi_dmp)]).split('\t')[1])
             except ValueError:
-                os.system("rsync -av ftp.ncbi.nih.gov::pub/taxonomy/gi_taxid_nucl.dmp.gz {}.gz".format(self.config.ncbi_dmp))
-                os.system("tar -xzvf {}.gz".format(self.config.ncbi_dmp))
-                tax_id = int(subprocess.check_output(["bash", self.config.get_ncbi_taxonomy,
-                                                      "{}".format(gi),
-                                                      "{}".format(self.config.ncbi_dmp)]).split('\t')[1])
-                #sys.exit()
+ #               os.system("rsync -av ftp.ncbi.nih.gov::pub/taxonomy/gi_taxid_nucl.dmp.gz {}.gz".format(self.config.ncbi_dmp))
+ #               os.system("tar -xzvf {}.gz".format(self.config.ncbi_dmp))
+#                tax_id = int(subprocess.check_output(["bash", self.config.get_ncbi_taxonomy,
+ #                                                     "{}".format(gi),
+#                                                      "{}".format(self.config.ncbi_dmp)]).split('\t')[1])
+                sys.stderr.write("Sync with ncbi taxonomy needed\n")
+                sys.exit()
             mapped_taxon_ids.write("{}, {}\n".format(gi, tax_id))
             self.gi_ncbi_dict[gi] = tax_id
             assert tax_id  #if this doesn't work then the gi to taxon mapping needs to be updated - shouldhappen anyhow perhaps?!
