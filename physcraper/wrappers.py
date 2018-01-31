@@ -52,8 +52,7 @@ def standard_run(study_id,
 
             data_obj.write_files()
             data_obj.write_labelled()
-
-
+            data_obj.write_otus("otu_info", schema='table')
             #Mapping identifiers between OpenTree and NCBI requires and identifier dict object
             ids = IdDicts(conf, workdir="example")
 
