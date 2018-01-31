@@ -455,16 +455,11 @@ class IdDicts(object):
                                                       "{}".format(gi),
                                                       "{}".format(self.config.ncbi_dmp)]).split('\t')[1])
             except ValueError:
-#                os.system("rsync -av ftp.ncbi.nih.gov::pub/taxonomy/gi_taxid_nucl.dmp.gz {}.gz".format(self.config.ncbi_dmp))
-#                os.system("tar -xzvf {}.gz".format(self.config.ncbi_dmp))
-                try:
-                    tax_id = int(subprocess.check_output(["bash", self.config.get_ncbi_taxonomy,
+                os.system("rsync -av ftp.ncbi.nih.gov::pub/taxonomy/gi_taxid_nucl.dmp.gz {}.gz".format(self.config.ncbi_dmp))
+                os.system("tar -xzvf {}.gz".format(self.config.ncbi_dmp))
+                 tax_id = int(subprocess.check_output(["bash", self.config.get_ncbi_taxonomy,
                                                       "{}".format(gi),
                                                       "{}".format(self.config.ncbi_dmp)]).split('\t')[1])
-
-                except ValueError:
-                    tax_id = 1
-                    sys.stderr.write("Problem getting taxon for GI {}. Assigning to LIFE and moving on.".format(gi))
                 #sys.exit()
             mapped_taxon_ids.write("{}, {}\n".format(gi, tax_id))
             self.gi_ncbi_dict[gi] = tax_id
