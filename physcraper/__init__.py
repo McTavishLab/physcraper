@@ -643,12 +643,21 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
         sys.stdout.write("aligning query sequences \n")
         self.data.write_papara_files()
         os.chdir(self.workdir)#Clean up dir moving
-        pp = subprocess.call(["papara",
+        try:
+            pp = subprocess.call(["papara",
                               "-t", "random_resolve.tre",
                               "-s", "aln_ott.phy",
                               "-q", self.newseqs_file,
                               "-n", papara_runname]) #FIx directory ugliness
-        sys.stdout.write("Papara done")
+            sys.stdout.write("Papara done")
+        except OSError as e:
+            if e.errno == os.errno.ENOENT:
+                sys.sterr.write("failed running papara. Is it insatlled?\n")
+                sys.exit()
+            # handle file not found error.
+            else:
+            # Something else went wrong while trying to run `wget`
+                raise
         os.chdir('..')
         assert os.path.exists(path="{}/papara_alignment.{}".format(self.workdir, papara_runname))
         self.data.aln = DnaCharacterMatrix.get(path="{}/papara_alignment.{}".format(self.workdir, papara_runname), schema="phylip")
@@ -665,14 +674,24 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
                 os.rename(filename, "RAxML_labelledTreePLACE.tmp")
         sys.stdout.write("placing query sequences \n")
         os.chdir(self.workdir)
-        p1 = subprocess.call(["raxmlHPC", "-m", "GTRCAT",
+        try:
+            p1 = subprocess.call(["raxmlHPC", "-m", "GTRCAT",
                               "-f", "v",
                               "-s", "papara_alignment.extended",
                               "-t", "random_resolve.tre",
                               "-n", "PLACE"])
-        placetre = Tree.get(path="RAxML_labelledTree.PLACE",
+            placetre = Tree.get(path="RAxML_labelledTree.PLACE",
                             schema="newick",
                             preserve_underscores=True)
+        except OSError as e:
+            if e.errno == os.errno.ENOENT:
+                sys.sterr.write("failed running raxmlHPC. Is it installed?")
+                sys.exit()
+            # handle file not
+        # handle file not found error.
+            else:
+        # Something else went wrong while trying to run `wget`
+                raise
         placetre.resolve_polytomies()
         for taxon in placetre.taxon_namespace:
             if taxon.label.startswith("QUERY"):
