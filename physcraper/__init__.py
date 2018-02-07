@@ -133,7 +133,8 @@ def generate_ATT_from_files(seqaln,
                             otu_json,
                             ingroup_mrca=None):
     """Build an ATT object without phylesystem.
-    If no ingroup mrca ott_id is provided, will use all taxa in tree to calc mrca."""
+    If no ingroup mrca ott_id is provided, will use all taxa in tree to calc mrca.
+    otu_json should encode the taxon names for each tip"""
     aln = DnaCharacterMatrix.get(path=seqaln, schema=mattype)
     for tax in aln.taxon_namespace:
         tax.label = tax.label.replace(" ", "_") #Forcing all spaces to underscore UGH
@@ -730,7 +731,7 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
                     i = 0
                     while os.path.exists(prev_dir):
                         i+=1
-                        prev_dir = "previous_run" + str(i)
+                        prev_dir = "{}/previous_run{}".format(self.workdir, self.date) + str(i)
                     os.rename("{}/previous_run".format(self.workdir), prev_dir)
                 os.rename(self.blast_subdir, "{}/previous_run".format(self.workdir))
                 if os.path.exists("{}/last_completed_update".format(self.workdir)):
