@@ -8,22 +8,29 @@ import time
 import datetime
 import glob
 import json
-import pickle
+import configparser
 import unicodedata
 from copy import deepcopy
-import configparser
 from Bio.Blast import NCBIWWW, NCBIXML
 from Bio.Blast.Applications import NcbiblastxCommandline
 from Bio import SeqIO, Entrez
-from dendropy import Tree, DnaCharacterMatrix, DataSet, datamodel
+from dendropy import Tree,\
+                     DnaCharacterMatrix,\
+                     DataSet,\
+                     datamodel
 from peyotl.api.phylesystem_api import PhylesystemAPI
 from peyotl.sugar import tree_of_life, taxonomy
-from peyotl.nexson_syntax import extract_tree, extract_tree_nexson, get_subtree_otus, extract_otu_nexson, PhyloSchema
+from peyotl.nexson_syntax import extract_tree,\
+                                 extract_tree_nexson,\
+                                 get_subtree_otus,\
+                                 extract_otu_nexson,\
+                                 PhyloSchema
 from peyotl.api import APIWrapper
 from urllib2 import URLError
 
 
 def is_number(s):
+    """test if string can be coerced to float"""
     try:
         float(s)
         return True
@@ -32,7 +39,9 @@ def is_number(s):
 
 
 class ConfigObj(object):
-    """Pulls out the configuration information from the config file and makes it easier to pass around and pickle."""
+    """Pulls out the configuration information from
+    the config file and makes it easier to pass
+    around and store."""
     def __init__(self, configfi):
         assert os.path.isfile(configfi)
         config = configparser.ConfigParser()
@@ -43,11 +52,9 @@ class ConfigObj(object):
         self.seq_len_perc = float(config['physcraper']['seq_len_perc'])
         assert 0 < self.seq_len_perc < 1
         self.get_ncbi_taxonomy = config['ncbi.taxonomy']['get_ncbi_taxonomy']
-        assert(os.path.isfile(self.get_ncbi_taxonomy))
+        assert os.path.isfile(self.get_ncbi_taxonomy)
         self.ncbi_dmp = config['ncbi.taxonomy']['ncbi_dmp']
-        try:
-            os.path.isfile(self.ncbi_dmp)
-        except:
+        if not os.path.isfile(self.ncbi_dmp):
             os.system("rsync -av ftp.ncbi.nih.gov::pub/taxonomy/gi_taxid_nucl.dmp.gz {}.gz".format(self.config.ncbi_dmp))
             os.system("tar -xzvf taxonomy/gi_taxid_nucl.dmp.gz")
             self.ncbi_dmp = "taxonomy/gi_taxid_nucl.dmp.gz"
@@ -59,18 +66,18 @@ class ConfigObj(object):
 
 #ATT is a dumb acronym for Alignment Tree Taxa object
 def get_dataset_from_treebase(study_id,
-                                phylesystem_loc='api'):
+                              phylesystem_loc='api'):
     ATT_list = []
     nexson = get_nexson(study_id, phylesystem_loc)
-    treebase_url =  nexson['nexml'][u'^ot:dataDeposit'][u'@href']
+    treebase_url = nexson['nexml'][u'^ot:dataDeposit'][u'@href']
     if 'treebase' not in nexson['nexml'][u'^ot:dataDeposit'][u'@href']:
         sys.stderr("No treebase record associated with study ")
         sys.exit()
     else:
         tb_id = treebase_url.split(':S')[1]
         dna = DataSet.get(url="https://treebase.org/treebase-web/search/downloadAStudy.html?id={}&format=nexml".format(tb_id),
-                                    schema="nexml")
-        return(dna)
+                          schema="nexml")
+        return dna
 
 
 
@@ -85,7 +92,7 @@ def generate_ATT_from_phylesystem(aln,
     Input can be either a study ID and tree ID from OpenTree
     Alignemnt need to be a Dendropy DNA character matrix!"""
     #TODO CHECK ARGS
-    assert(isinstance(aln, datamodel.charmatrixmodel.DnaCharacterMatrix))
+    assert isinstance(aln, datamodel.charmatrixmodel.DnaCharacterMatrix)
     for tax in aln.taxon_namespace:
         tax.label = tax.label.replace(" ", "_") #Forcing all spaces to underscore UGH
     nexson = get_nexson(study_id, phylesystem_loc)
@@ -121,7 +128,7 @@ def generate_ATT_from_phylesystem(aln,
             tax.label = orig_lab_to_otu[tax.label].encode('ascii')
         except KeyError:
             sys.stderr.write("{} doesn't have an otu id. It is being removed from the alignement. This may indicate a mismatch between tree and alignement\n".format(tax.label))
-   #need to prune tree to seqs and seqs to tree...     
+   #need to prune tree to seqs and seqs to tree...
     otu_newick = tre.as_string(schema="newick")
     return AlignTreeTax(otu_newick, otu_dict, aln, ingroup_mrca=ott_mrca, workdir=workdir) #newick should be bare, but alignement should be DNACharacterMatrix
 
@@ -255,7 +262,7 @@ class AlignTreeTax(object):
      #           sys.stderr.write("{} was in otu dict but not alignment. it should be in new seqs...\n".format(key)
         self.trim()
         self._reconciled = 1
-    def trim(self, taxon_missingness = 0.75):
+    def trim(self, taxon_missingness=0.75):#TODO add to config
         '''cuts off ends of alignemnet, mainiting similar to original seq len
         IMportant bc other while whole chomeoosmes get dragged in!'''
         seqlen = len(self.aln[0])
@@ -267,7 +274,7 @@ class AlignTreeTax(object):
         stop = seqlen
         cutoff = len(self.aln) *  taxon_missingness
         for i in range(seqlen):
-            counts = {'?':0,'-':0}
+            counts = {'?':0, '-':0}
             for tax in self.aln:
                 call = self.aln[tax][i].label
                 if call in ['?', '-']:
@@ -275,13 +282,13 @@ class AlignTreeTax(object):
             if counts['?']+counts['-'] <= cutoff: #first ok column
                 start = i
                 break
-        for i in range(seqlen-1,0,-1):
-            counts = {'?':0,'-':0}
+        for i in range(seqlen-1, 0, -1):
+            counts = {'?':0, '-':0}
             for tax in self.aln:
                 call = self.aln[tax][i].label
                 if call in ['?', '-']:
                     counts[call] += 1
-            if counts['?']+counts['-'] <= cutoff: 
+            if counts['?']+counts['-'] <= cutoff:
                 stop = i
                 break
         for taxon in self.aln:
@@ -327,7 +334,7 @@ class AlignTreeTax(object):
                        schema=alnschema)
     def write_otus(self, filename, schema='table'):
         """Writes out OTU dict as json"""
-        assert schema in ['table','json']
+        assert schema in ['table', 'json']
         with open("{}/{}".format(self.workdir, filename), 'w') as outfile:
             json.dump(self.otu_dict, outfile)
     def remove_taxon(self, taxon_label):
@@ -624,7 +631,7 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
         if not self._blast_read:
             self.read_blast()
         self.newseqs_file = "{}.fasta".format(self.date)
-        fi = open("{}/{}".format(self.workdir,self.newseqs_file), 'w')
+        fi = open("{}/{}".format(self.workdir, self.newseqs_file), 'w')
         sys.stdout.write("writing out sequences\n")
         for otu_id in self.new_seqs_otu_id.keys():
             if otu_id not in self.data.aln: #new seqs only
@@ -636,16 +643,16 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
         if not self._query_seqs_written:
             self.write_query_seqs()
         for filename in glob.glob('{}/papara*'.format(self.workdir)):
-                os.rename(filename, "{}/{}_tmp".format(self.workdir, filename.split("/")[1]))
+            os.rename(filename, "{}/{}_tmp".format(self.workdir, filename.split("/")[1]))
         sys.stdout.write("aligning query sequences \n")
         self.data.write_papara_files()
         os.chdir(self.workdir)#Clean up dir moving
         try:
             pp = subprocess.call(["papara",
-                              "-t", "random_resolve.tre",
-                              "-s", "aln_ott.phy",
-                              "-q", self.newseqs_file,
-                              "-n", papara_runname]) #FIx directory ugliness
+                                  "-t", "random_resolve.tre",
+                                  "-s", "aln_ott.phy",
+                                  "-q", self.newseqs_file,
+                                  "-n", papara_runname]) #FIx directory ugliness
             sys.stdout.write("Papara done")
         except OSError as e:
             if e.errno == os.errno.ENOENT:
@@ -668,18 +675,18 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
         """runs raxml on the tree, and the combined alignment including the new quesry seqs
         Just for placement, to use as starting tree."""
         if os.path.exists("RAxML_labelledTree.PLACE"):
-                os.rename(filename, "RAxML_labelledTreePLACE.tmp")
+            os.rename(filename, "RAxML_labelledTreePLACE.tmp")
         sys.stdout.write("placing query sequences \n")
         os.chdir(self.workdir)
         try:
             p1 = subprocess.call(["raxmlHPC", "-m", "GTRCAT",
-                              "-f", "v",
-                              "-s", "papara_alignment.extended",
-                              "-t", "random_resolve.tre",
-                              "-n", "PLACE"])
+                                  "-f", "v",
+                                  "-s", "papara_alignment.extended",
+                                  "-t", "random_resolve.tre",
+                                  "-n", "PLACE"])
             placetre = Tree.get(path="RAxML_labelledTree.PLACE",
-                            schema="newick",
-                            preserve_underscores=True)
+                                schema="newick",
+                                preserve_underscores=True)
         except OSError as e:
             if e.errno == os.errno.ENOENT:
                 sys.sterr.write("failed running raxmlHPC. Is it installed?")
@@ -700,7 +707,7 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
         """Full raxml run from the placement tree as starting tree"""
         os.chdir(self.workdir)
         for filename in glob.glob('{}/RAxML*'.format(self.workdir)):
-                os.rename(filename, "{}/{}_tmp".format(self.workdir, filename.split("/")[1]))
+            os.rename(filename, "{}/{}_tmp".format(self.workdir, filename.split("/")[1]))
         p2 = subprocess.call(["raxmlHPC", "-m", "GTRCAT",
                               "-s", "papara_alignment.extended",
                               "-t", "place_resolve.tre",
@@ -711,7 +718,8 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
     def generate_streamed_alignment(self):
         """runs the key steps and then replaces the tree and alignemnt with the expanded ones"""
         self.read_blast()
-        pickle.dump(self, open('{}/scrape.p'.format(self.workdir), 'wb'))
+        json.dump(self, open('{}/scrape.json'.format(self.workdir), 'wb'))
+#        pickle.dump(self, open('{}/scrape.p'.format(self.workdir), 'wb'))
         if len(self.new_seqs) > 0:
             self.remove_identical_seqs()
             self.data.write_files() #should happen before aligning in case of pruning
@@ -724,13 +732,13 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
                 self.data.tre = Tree.get(path="{}/RAxML_bestTree.{}".format(self.workdir, self.date),
                                          schema="newick",
                                          preserve_underscores=True,
-                                         taxon_namespace=self.data.aln.taxon_namespace) 
+                                         taxon_namespace=self.data.aln.taxon_namespace)
                 self.data.write_files()
                 if os.path.exists("{}/previous_run".format(self.workdir)):
-                    prev_dir =  "{}/previous_run{}".format(self.workdir, self.date)
+                    prev_dir = "{}/previous_run{}".format(self.workdir, self.date)
                     i = 0
                     while os.path.exists(prev_dir):
-                        i+=1
+                        i += 1
                         prev_dir = "{}/previous_run{}".format(self.workdir, self.date) + str(i)
                     os.rename("{}/previous_run".format(self.workdir), prev_dir)
                 os.rename(self.blast_subdir, "{}/previous_run".format(self.workdir))
@@ -742,6 +750,7 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
                     os.rename(filename, "{}/previous_run/{}".format(self.workdir, filename.split("/")[1]))
                 os.rename("{}/{}".format(self.workdir, self.newseqs_file), "{}/previous_run/newseqs.fasta".format(self.workdir))
                 self.data.write_labelled()
+                self.data.write_otus("otu_info", schema='table')
                 self.new_seqs = {} #Wipe for next run
                 self.new_seqs_otu_id = {}
                 self.repeat = 1
@@ -749,8 +758,8 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
                 sys.stdout.write("No new sequences after filtering.\n")
                 self.repeat = 0
         else:
-                sys.stdout.write("No new sequences found.\n")
-                self.repeat = 0
+            sys.stdout.write("No new sequences found.\n")
+            self.repeat = 0
         self.reset_markers()
-        pickle.dump(self, open('{}/scrape.p'.format(self.workdir), 'wb'))
-        pickle.dump(self.data.otu_dict, open('{}/otu_dict.p'.format(self.workdir), 'wb'))
+        json.dump(self, open('{}/scrape.json'.format(self.workdir), 'wb'))
+        json.dump(self.data.otu_dict, open('{}/otu_dict.json'.format(self.workdir), 'wb'))
