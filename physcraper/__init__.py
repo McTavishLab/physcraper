@@ -8,9 +8,11 @@ import time
 import datetime
 import glob
 import json
-import configparser
 import unicodedata
 from copy import deepcopy
+from urllib2 import URLError
+import configparser
+import jsonpickle
 from Bio.Blast import NCBIWWW, NCBIXML
 from Bio.Blast.Applications import NcbiblastxCommandline
 from Bio import SeqIO, Entrez
@@ -26,7 +28,6 @@ from peyotl.nexson_syntax import extract_tree,\
                                  extract_otu_nexson,\
                                  PhyloSchema
 from peyotl.api import APIWrapper
-from urllib2 import URLError
 
 
 def is_number(s):
@@ -67,11 +68,11 @@ class ConfigObj(object):
 #ATT is a dumb acronym for Alignment Tree Taxa object
 def get_dataset_from_treebase(study_id,
                               phylesystem_loc='api'):
-    ATT_list = []
+    """gets alignment and tree directly from treebase"""
     nexson = get_nexson(study_id, phylesystem_loc)
     treebase_url = nexson['nexml'][u'^ot:dataDeposit'][u'@href']
     if 'treebase' not in nexson['nexml'][u'^ot:dataDeposit'][u'@href']:
-        sys.stderr("No treebase record associated with study ")
+        sys.stderr.write("No treebase record associated with study ")
         sys.exit()
     else:
         tb_id = treebase_url.split(':S')[1]
@@ -199,6 +200,7 @@ class AlignTreeTax(object):
         if missing:
             errmf = 'NAME RECONCILIATION Some of the taxa in the tree are not in the alignment or vice versa and will be pruned. Missing "{}"\n'
             errm = errmf.format('", "'.join(missing))
+            sys.stderr.write(errm)
         self.aln.remove_sequences(prune)
         self.tre.prune_taxa(prune)
         for tax in prune:
@@ -254,7 +256,7 @@ class AlignTreeTax(object):
             treed_taxa.add(leaf.taxon.label)
             if leaf.taxon.label not in aln_ids:
                 self.otu_dict[tax.label]['physcraper:status'] = "deleted due to presence in tree but not aln. ?!"
-                orphan_leafs.add(leaf)
+                orphaned_leafs.add(leaf)
         self.tre.prune_taxa(prune)
         assert treed_taxa.issubset(aln_ids)
        # for key in  self.otu_dict.keys():
@@ -268,7 +270,7 @@ class AlignTreeTax(object):
         seqlen = len(self.aln[0])
         for tax in self.aln:
             if len(self.aln[tax]) != seqlen:
-                sys.sterr.write("can't trim un-aligned inputs, moving on")
+                sys.stderr.write("can't trim un-aligned inputs, moving on")
                 return
         start = 0
         stop = seqlen
@@ -450,7 +452,8 @@ class IdDicts(object):
             for lin in fi:
                 self.gi_ncbi_dict[int(lin.split(",")[0])] = lin.split(",")[1]
     def add_gi(self, gi, tax_id):
-        #add assert that it isn' already there?
+        """adds the newly added ncbi identifier to dictionary"""
+        assert self.gi_ncbi_dict.get(gi, None) is None
         self.gi_ncbi_dict[gi] = tax_id
     def map_gi_ncbi(self, gi):
         """get the ncbi taxon id's for a gi input"""
@@ -656,7 +659,7 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
             sys.stdout.write("Papara done")
         except OSError as e:
             if e.errno == os.errno.ENOENT:
-                sys.sterr.write("failed running papara. Is it insatlled?\n")
+                sys.stderr.write("failed running papara. Is it insatlled?\n")
                 sys.exit()
             # handle file not found error.
             else:
@@ -675,7 +678,7 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
         """runs raxml on the tree, and the combined alignment including the new quesry seqs
         Just for placement, to use as starting tree."""
         if os.path.exists("RAxML_labelledTree.PLACE"):
-            os.rename(filename, "RAxML_labelledTreePLACE.tmp")
+            os.rename("RAxML_labelledTree.PLACE", "RAxML_labelledTreePLACE.tmp")
         sys.stdout.write("placing query sequences \n")
         os.chdir(self.workdir)
         try:
@@ -689,7 +692,7 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
                                 preserve_underscores=True)
         except OSError as e:
             if e.errno == os.errno.ENOENT:
-                sys.sterr.write("failed running raxmlHPC. Is it installed?")
+                sys.stderr.write("failed running raxmlHPC. Is it installed?")
                 sys.exit()
             # handle file not
         # handle file not found error.
@@ -718,8 +721,9 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
     def generate_streamed_alignment(self):
         """runs the key steps and then replaces the tree and alignemnt with the expanded ones"""
         self.read_blast()
-        json.dump(self, open('{}/scrape.json'.format(self.workdir), 'wb'))
-#        pickle.dump(self, open('{}/scrape.p'.format(self.workdir), 'wb'))
+        frozen = jsonpickle.encode(self)
+        pjson = open('{}/scrape.json'.format(self.workdir), 'wb')
+        pjson.write(frozen)
         if len(self.new_seqs) > 0:
             self.remove_identical_seqs()
             self.data.write_files() #should happen before aligning in case of pruning
