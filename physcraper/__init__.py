@@ -13,6 +13,7 @@ from copy import deepcopy
 from urllib2 import URLError
 import configparser
 import jsonpickle
+import pickle
 from Bio.Blast import NCBIWWW, NCBIXML
 from Bio.Blast.Applications import NcbiblastxCommandline
 from Bio import SeqIO, Entrez
@@ -52,17 +53,19 @@ class ConfigObj(object):
         self.hitlist_size = int(config['blast']['hitlist_size'])
         self.seq_len_perc = float(config['physcraper']['seq_len_perc'])
         assert 0 < self.seq_len_perc < 1
-        self.get_ncbi_taxonomy = config['ncbi.taxonomy']['get_ncbi_taxonomy']
+        self.get_ncbi_taxonomy = config['taxonomy']['get_ncbi_taxonomy']
         assert os.path.isfile(self.get_ncbi_taxonomy)
-        self.ncbi_dmp = config['ncbi.taxonomy']['ncbi_dmp']
+        self.ncbi_dmp = config['taxonomy']['ncbi_dmp']
         if not os.path.isfile(self.ncbi_dmp):
             os.system("rsync -av ftp.ncbi.nih.gov::pub/taxonomy/gi_taxid_nucl.dmp.gz {}.gz".format(self.config.ncbi_dmp))
             os.system("tar -xzvf taxonomy/gi_taxid_nucl.dmp.gz")
             self.ncbi_dmp = "taxonomy/gi_taxid_nucl.dmp.gz"
         self.phylesystem_loc = config['phylesystem']['location']
         assert(self.phylesystem_loc in ['local', 'api'])
-        self.ott_ncbi = config['ncbi.taxonomy']['ott_ncbi']
+        self.ott_ncbi = config['taxonomy']['ott_ncbi']
         assert os.path.isfile(self.ott_ncbi)
+        self.id_pickle = os.path.abspath(config['taxonomy']['id_pickle'])
+
 
 
 #ATT is a dumb acronym for Alignment Tree Taxa object
@@ -387,12 +390,12 @@ class AlignTreeTax(object):
                       suppress_edge_lengths=False)
         tmp_aln.write(path="{}/{}".format(self.workdir, alnpath),
                       schema="fasta")
-#    def tidy_otu_dict():
-#        #hmmm needs to strip out unused otus
-
-
-#TODO... write as proper nexml?!
-
+    def dump(self, filename = "att_checkpoint.p"):
+#        frozen = jsonpickle.encode(self)
+#        with open('{}/{}'.format(self.workdir, filename), 'w') as pjson:
+#            pjson.write(frozen)
+        pickle.dump(self, open("{}/{}".format(self.workdir,filename), "wb" ) )
+        #TODO... write as proper nexml?!
 
 
 
@@ -447,17 +450,17 @@ class IdDicts(object):
             assert len(self.ncbi_to_ott) > 0
             assert len(self.ott_to_name) > 0
         fi.close()
-        if os.path.isfile("{}/id_map.txt".format(workdir)): #todo config?!
-            fi = open("{}/id_map.txt".format(workdir))
-            for lin in fi:
-                self.gi_ncbi_dict[int(lin.split(",")[0])] = lin.split(",")[1]
-    def add_gi(self, gi, tax_id):
-        """adds the newly added ncbi identifier to dictionary"""
-        assert self.gi_ncbi_dict.get(gi, None) is None
-        self.gi_ncbi_dict[gi] = tax_id
+#        if os.path.isfile("{}/id_map.txt".format(workdir)): #todo config?!
+#            fi = open("{}/id_map.txt".format(workdir))
+#            for lin in fi:
+#                self.gi_ncbi_dict[int(lin.split(",")[0])] = lin.split(",")[1]
+#    def add_gi(self, gi, tax_id):
+#        """adds the newly added ncbi identifier to dictionary"""
+#        assert self.gi_ncbi_dict.get(gi, None) is None
+#        self.gi_ncbi_dict[gi] = tax_id
     def map_gi_ncbi(self, gi):
         """get the ncbi taxon id's for a gi input"""
-        mapped_taxon_ids = open("{}/id_map.txt".format(self.workdir), "a")
+#        mapped_taxon_ids = open("{}/id_map.txt".format(self.workdir), "a")
         if gi in self.gi_ncbi_dict:
             tax_id = int(self.gi_ncbi_dict[gi])
         else:
@@ -473,11 +476,19 @@ class IdDicts(object):
 #                                                      "{}".format(self.config.ncbi_dmp)]).split('\t')[1])
                 sys.stderr.write("Sync with ncbi taxonomy needed\n")
                 sys.exit()
-            mapped_taxon_ids.write("{}, {}\n".format(gi, tax_id))
+#            mapped_taxon_ids.write("{}, {}\n".format(gi, tax_id))
             self.gi_ncbi_dict[gi] = tax_id
             assert tax_id  #if this doesn't work then the gi to taxon mapping needs to be updated - shouldhappen anyhow perhaps?!
         mapped_taxon_ids.close()
         return tax_id
+    def dump(self):
+        filename = self.config.id_pickle
+#        frozen = jsonpickle.encode(self)
+#        with open('{}'.format(filename), 'w') as pjson:
+#            pjson.write(frozen)
+        pickle.dump(self, open(filename, "wb" ))
+
+
 
 
 #self.orig_seqlen = []
@@ -719,11 +730,12 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
         os.chdir('..')#TODO mordir not always one down!
         self._full_tree_est = 1
     def generate_streamed_alignment(self):
-        """runs the key steps and then replaces the tree and alignemnt with the expanded ones"""
+        """runs the key steps and then replaces the tree and alignme nt with the expanded ones"""
         self.read_blast()
-        frozen = jsonpickle.encode(self)
-        pjson = open('{}/scrape.json'.format(self.workdir), 'wb')
-        pjson.write(frozen)
+        self.data.dump()
+#        frozen = jsonpickle.encode(self.data)
+#        pjson = open('{}/att_checkpoint.json'.format(self.workdir), 'wb')
+#        pjson.write(frozen)
         if len(self.new_seqs) > 0:
             self.remove_identical_seqs()
             self.data.write_files() #should happen before aligning in case of pruning
@@ -765,5 +777,8 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
             sys.stdout.write("No new sequences found.\n")
             self.repeat = 0
         self.reset_markers()
-        json.dump(self, open('{}/scrape.json'.format(self.workdir), 'wb'))
+        self.data.dump()
+#        frozen = jsonpickle.encode(self.data)
+#        pjson = open('{}/att_checkpoint.json'.format(self.workdir), 'wb')
+#        pjson.write(frozen)
         json.dump(self.data.otu_dict, open('{}/otu_dict.json'.format(self.workdir), 'wb'))

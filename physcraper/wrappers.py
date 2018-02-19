@@ -3,6 +3,7 @@ import sys
 import os
 import subprocess
 import jsonpickle
+import pickle
 from physcraper import generate_ATT_from_phylesystem, generate_ATT_from_files, ConfigObj, IdDicts, PhyscraperScrape
 from dendropy import DnaCharacterMatrix
 
@@ -25,16 +26,21 @@ def standard_run(study_id,
                  configfi):
     '''looks for a json file to continue run, or builds and runs
     new analysis for as long as new seqs are found'''
-    if os.path.isfile("{}/scrape.json".format(workdir)):
-        sys.stdout.write("Reloading from json scrapefile\n")
-        scraper = jsonpickle.decode(open("{}/scrape.json".format(workdir), 'rb'))
-        scraper.repeat = 1
+    conf = ConfigObj(configfi)
+#    if os.path.isfile("{}/att_checkpoint.json".format(workdir)):
+#        sys.stdout.write("Reloading data object from json scrapefile\n")
+#        thawed = open("{}/att_checkpoint.json".format(workdir), 'r').readlines()
+#        data_obj = jsonpickle.decode(thawed)
+#        scraper.repeat = 1
+    if os.path.isfile("{}/att_checkpoint.p".format(workdir)):
+        sys.stdout.write("Reloading data object from pickle file\n")
+        data_obj = pickle.load( open( "{}/att_checkpoint.p".format(workdir), "rb" ) )
+#        scraper.repeat = 1
     else:
 #            sync_names()
         sys.stdout.write("setting up Data Object\n")
         sys.stdout.flush()
         #read the config file into a configuration object
-        conf = ConfigObj(configfi)
         aln = DnaCharacterMatrix.get(path=seqaln, schema=mattype)
 
         #Generate an linked Alignment-Tree-Taxa object
@@ -50,17 +56,26 @@ def standard_run(study_id,
         data_obj.write_files()
         data_obj.write_labelled()
         data_obj.write_otus("otu_info", schema='table')
+        data_obj.dump()
         #Mapping identifiers between OpenTree and NCBI requires and identifier dict object
-        ids = IdDicts(conf, workdir="example")
-
-
-        #Now combine the data, the ids, and the configuration into a single physcraper scrape object
-        scraper = PhyscraperScrape(data_obj, ids, conf)
-        #run the ananlyses
-        scraper.run_blast()
-        scraper.read_blast()
-        scraper.remove_identical_seqs()
-        scraper.generate_streamed_alignment()
+    if os.path.isfile(conf.id_pickle):
+        sys.stdout.write("Reloading id dicts from {}\n".format(conf.id_pickle))
+#        thawed_id = open(conf.id_json, 'r').readlines()
+#        ids = jsonpickle.decode(thawed_id)
+#        scraper.repeat = 1
+        ids = pickle.load(open(conf.id_pickle, "rb" ))
+    else:
+        sys.stdout.write("setting up id dictionaries\n")
+        sys.stdout.flush()
+        ids = IdDicts(conf, workdir=workdir)
+        ids.dump()
+#Now combine the data, the ids, and the configuration into a single physcraper scrape object
+    scraper = PhyscraperScrape(data_obj, ids, conf)
+    #run the ananlyses
+    scraper.run_blast()
+    scraper.read_blast()
+    scraper.remove_identical_seqs()
+    scraper.generate_streamed_alignment()
     while scraper.repeat == 1:
         scraper.data.write_labelled()
         scraper.data.write_otus("otu_info", schema='table')
