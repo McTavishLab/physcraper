@@ -165,8 +165,8 @@ def generate_ATT_from_files(seqaln,
     if ingroup_mrca:
         ott_mrca = int(ingroup_mrca)
     else:
-        ott_ids = [otu_dict[otu].get['^ot:ottId'] for otu in otu_dict]
-        ott_mrca = get_mrca_ott(ott_ids)
+        ott_ids = [otu_dict[otu].get('^ot:ottId') for otu in otu_dict]
+        ott_mrca = get_mrca_ott(set(ott_ids)) #Currently only works with V2 apis
     return AlignTreeTax(otu_newick, otu_dict, aln, ingroup_mrca=ott_mrca, workdir=workdir)
 
 
@@ -479,7 +479,7 @@ class IdDicts(object):
 #            mapped_taxon_ids.write("{}, {}\n".format(gi, tax_id))
             self.gi_ncbi_dict[gi] = tax_id
             assert tax_id  #if this doesn't work then the gi to taxon mapping needs to be updated - shouldhappen anyhow perhaps?!
-        mapped_taxon_ids.close()
+       # mapped_taxon_ids.close()
         return tax_id
     def dump(self):
         filename = self.config.id_pickle
