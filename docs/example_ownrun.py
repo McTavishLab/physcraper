@@ -1,17 +1,21 @@
-from physcraper import wrappers
-
-#Use OpenTree phylesystem identifiers to get study and tree
-study_id = "pg_873"
-tree_id = "tree1679"
-seqaln = "tests/data/minitest.fas"
+from physcraper import wrappers_nonstandard
+#
+seqaln= "docs/owndata/n_infile.fas"
 mattype="fasta"
-workdir="example_output"
+trfn= "docs/owndata/n_RAxML_bestTree.result"
+schema_trf = "newick"
+workdir="docs/owndata/example_owndata_output"
+otujson = "docs/owndata/ott_info_owntree.txt"
 configfi = "example.config"
+idtospname = "docs/owndata/uniquetip_to_name.csv"
 
 
-wrappers.standard_run(study_id,
-                      tree_id,
-                      seqaln,
-                      mattype,
-                      workdir,
-                      configfi)
+
+wrappers_nonstandard.own_data_run(idtospname,
+				 seqaln,
+                 mattype,
+                 trfn,
+                 schema_trf,
+                 workdir,
+                 otujson,
+                 configfi)
