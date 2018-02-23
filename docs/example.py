@@ -5,7 +5,7 @@ study_id = "pg_873"
 tree_id = "tree1679"
 seqaln = "tests/data/minitest.fas"
 mattype="fasta"
-workdir="example"
+workdir="example_output"
 configfi = "example.config"
 
 
