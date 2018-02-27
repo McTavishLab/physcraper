@@ -418,6 +418,7 @@ class AlignTreeTax(object):
         for tax in prune:
             self.otu_dict[tax.label]['physcraper:status'] = "deleted in prune short"
             self.aln.taxon_namespace.remove_taxon(tax)
+
         self.orig_seqlen = [len(self.aln[tax].symbols_as_string().replace("-", "").replace("N", "")) for tax in self.aln]
         self.reconcile()
 
@@ -518,10 +519,10 @@ class AlignTreeTax(object):
             else:
                 treed_taxa.add(leaf.taxon.label)
 
-        #prune = set(prune)        
+        prune = set(prune)        
         print("prune taxa here, this step is not happening!!!also not in line of code earlier. probably doesn't think it's the same string. but looks the same to me....")
         print(self.tre.taxon_namespace)
-        #self.tre.prune_taxa(prune)
+        self.tre.prune_taxa(prune)
         print("same taxon namespace? orr less taxa")
         print(self.tre.taxon_namespace)
         # print(type(prune))
