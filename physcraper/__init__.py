@@ -615,6 +615,8 @@ class AlignTreeTax(object):
         """Papara is finicky about trees and needs phylip, this writes out needed files for papara
         (except query sequences)"""
         #CAN I even evaulte things in the function definitions?
+        print(self.tre.taxon_namespace)
+
         self.tre.resolve_polytomies()
         self.tre.deroot()
         tmptre = self.tre.as_string(schema="newick",
@@ -969,8 +971,7 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
         self._query_seqs_written = 1
     def align_query_seqs(self, papara_runname="extended"):
         """runs papara on the tree, the alinment and the new query sequences"""
-        print(self.tre.taxon_namespace)
-        
+
 
         if not self._query_seqs_written:
             self.write_query_seqs()
