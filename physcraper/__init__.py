@@ -167,7 +167,7 @@ def generate_ATT_from_files(seqaln,
     
     #print(inspect.getmodule(convert).__name__)
     otu_dict = convert(otu_dict)
-    print(otu_dict, type(otu_dict))  
+    # print(otu_dict, type(otu_dict))  
     #print(otu_dict2, type(otu_dict))  
 
     # print('can i use dendropy?')
@@ -181,9 +181,9 @@ def generate_ATT_from_files(seqaln,
     # print('asstring')
     #print(aln.as_string())
     for tax in aln.taxon_namespace:
-        print(tax)
-        print(type(str(tax)))
-        #print(type(tax.as_string()))
+        # print(tax)
+        # print(type(str(tax)))
+        # #print(type(tax.as_string()))
 
         # print("try regex")
         # print(str(tax)[0:3])   
@@ -405,7 +405,7 @@ class AlignTreeTax(object):
                 prune.append(tax)
         print("i'm in prune") 
         print(prune)
-        print(self.aln.items)       
+        #print(self.aln.items)       
         if prune:
             print("prune short elements, in aln and tre")
             self.aln.remove_sequences(prune)
@@ -431,6 +431,7 @@ class AlignTreeTax(object):
         seq_len_cutoff = avg_seqlen*seq_len_perc
         # print("aln")
         # print(self.otu_dict.keys())
+        self.tre.taxon_namespace = self.aln.taxon_namespace 
 
         # print(self.aln.taxon_namespace)
         for tax, seq in self.aln.items():
@@ -479,16 +480,16 @@ class AlignTreeTax(object):
 
         print("leaf node for loop")
         for leaf in self.tre.leaf_nodes():
-            print(leaf)
-            print(leaf.taxon.label)
+            #print(leaf)
+            #print(leaf.taxon.label)
 
             # print(self.tre.leaf_nodes)
             # print(aln_ids)
             #print(treed_taxa)
             #print(leaf.taxon_label)
             
-            for tax in self.tre.taxon_namespace:
-                print(tax.label)
+            # for tax in self.tre.taxon_namespace:
+            #     print(tax.label)
 
             # print(aln_ids)
             # print(leaf.taxon.label)
@@ -498,40 +499,69 @@ class AlignTreeTax(object):
                 orphaned_leafs.add(leaf)
                 #treed_taxa.add(leaf.taxon.label)
 
-                print(self.tre.taxon_namespace)
+                # print(self.tre.taxon_namespace)
 
 
 
-                print("current problem: assert fails, because tax not removed from tree, but from alnids")
-                print("leaf not in aln_ids")
-                print(leaf.taxon.label)
-                # tl ="'"+leaf.taxon.label+"'"
+                # print("current problem: assert fails, because tax not removed from tree, but from alnids")
+                # print("leaf not in aln_ids")
+                # print(leaf.taxon.label)
+                # # tl ="'"+leaf.taxon.label+"'"
                 # print(tl)
 #               
-                print(prune)
+                # print(prune)
                 # print(self.otu_dict.keys())
                 # print(self.otu_taxonlabel_problem.keys())
                 self.otu_dict[leaf.taxon.label]['physcraper:status'] = "deleted due to presence in tree but not aln. ?!"
-                orphaned_leafs.add(leaf)
+                #orphaned_leafs.add(leaf)
                 print("tre tx namespace")
             else:
                 treed_taxa.add(leaf.taxon.label)
 
+        #prune = set(prune)        
+        print("prune taxa here, this step is not happening!!!also not in line of code earlier. probably doesn't think it's the same string. but looks the same to me....")
+        print(self.tre.taxon_namespace)
+        #self.tre.prune_taxa(prune)
+        print("same taxon namespace? orr less taxa")
+        print(self.tre.taxon_namespace)
+        # print(type(prune))
+        # print(orphaned_leafs)
+        print(prune)
+        # print("it's just not pruning it!!!")
+        # prunel=[]
 
-        print("prune taxa here")
-        self.tre.prune_taxa(prune)
+        # print("new try to prune the stupid tips")
+        # for tax in prune:
+        #     print("tax")
+
+        #     print(tax)
+        #     prunel.append(tax.label)
+        # print("prunel")    
+        # print(prunel)    
+        # taxa_to_prune = set(taxon for taxon in self.tre.taxon_namespace
+        #     if taxon in prunel)
+        #         #print("prune me")
+        # self.tre.prune_taxa(taxa_to_prune)
+        # print("same taxon namespace? orr less taxa")
+        # print(self.tre.taxon_namespace)
+
+        # for tax in self.tre.taxon_namespace:
+        #     print(tax)
+
+
         # print(treed_taxa)
-        print('assert test fails, probably because of my nameing problem. yes, has only taxa without numbers in it. all numbered tips have been deleted somewhere.')
-        print(aln_ids)
-        print('treed_taxa')
-        print(treed_taxa)
-        print(orphaned_leafs)
+        # print('assert test fails, probably because of my nameing problem. yes, has only taxa without numbers in it. all numbered tips have been deleted somewhere.')
+        # print(aln_ids)
+        # print('treed_taxa')
+        # print(treed_taxa)
+        # print(orphaned_leafs)
         assert treed_taxa.issubset(aln_ids)
        # for key in  self.otu_dict.keys():
       #      if key not in aln_ids:
      #           sys.stderr.write("{} was in otu dict but not alignment. it should be in new seqs...\n".format(key)
         self.trim()
         self._reconciled = 1
+
     def trim(self, taxon_missingness = 0.75):
         '''cuts off ends of alignemnet, mainiting similar to original seq len
         IMportant bc other while whole chomeoosmes get dragged in!'''
@@ -621,7 +651,7 @@ class AlignTreeTax(object):
         Jumps through abunch of hoops to make labels unique.
         NOT MEMORY EFFICIENT AT ALL"""
 
-        print("moving forward")
+        #print("moving forward")
 
 
         # if schema!="newick":
@@ -648,13 +678,13 @@ class AlignTreeTax(object):
         print(tmp_tre.taxon_namespace)
         for taxon in tmp_tre.taxon_namespace:
             
-            print(taxon.label)
-            print(self.otu_taxonlabel_problem.keys())
-            print(self.otu_dict.keys())
-            # print(self.otu_taxonlabel_problem[taxon.label])
-            # #print(self.otu_taxonlabel_problem[taxon.label])
+            # print(taxon.label)
+            # print(self.otu_taxonlabel_problem.keys())
+            # print(self.otu_dict.keys())
+            # # print(self.otu_taxonlabel_problem[taxon.label])
+            # # #print(self.otu_taxonlabel_problem[taxon.label])
 
-            print("problem is that some do not have ott:label")
+            #print("problem is that some do not have ott:label")
             #print(self.otu_dict[taxon.label].get(label))
             # key = self.otu_taxonlabel_problem[taxon.label]
             # print(key)

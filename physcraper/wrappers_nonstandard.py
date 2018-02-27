@@ -76,12 +76,12 @@ def own_data_run(idtospname,
             scraper.run_blast()
             scraper.read_blast()
             scraper.remove_identical_seqs()
-            #scraper.generate_streamed_alignment()
+            scraper.generate_streamed_alignment()
     while scraper.repeat == 1: 
         scraper.run_blast()
         scraper.read_blast()
         scraper.remove_identical_seqs()
-        #scraper.generate_streamed_alignment()
+        scraper.generate_streamed_alignment()
 
 
 
