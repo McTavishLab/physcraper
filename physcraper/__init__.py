@@ -937,6 +937,7 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
         the longer of two that are other wise identical, and puts them in a dict
         with new name as gi_ott_id.
         Does not test if they are identical to ones in the original alignment...."""
+        print("remove identical seqs")
         tmp_dict = dict((taxon.label, self.data.aln[taxon].symbols_as_string()) for taxon in self.data.aln)
         old_seqs = tmp_dict.keys()
         #Adding seqs that are different, but needs to be maintained as diff than aln that the tree has been run on
@@ -968,6 +969,9 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
         self._query_seqs_written = 1
     def align_query_seqs(self, papara_runname="extended"):
         """runs papara on the tree, the alinment and the new query sequences"""
+        print(self.tre.taxon_namespace)
+        
+
         if not self._query_seqs_written:
             self.write_query_seqs()
         for filename in glob.glob('{}/papara*'.format(self.workdir)):
