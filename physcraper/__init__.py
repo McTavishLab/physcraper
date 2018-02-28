@@ -1177,7 +1177,11 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
                 for filename in glob.glob('{}/papara*'.format(self.workdir)):
                     os.rename(filename, "{}/previous_run/{}".format(self.workdir, filename.split("/")[1]))
                 os.rename("{}/{}".format(self.workdir, self.newseqs_file), "{}/previous_run/newseqs.fasta".format(self.workdir))
-                self.data.write_labelled()
+                try:
+                    self.data.write_labelled(label=  '^ot:ottTaxonName')
+                except:
+                    self.data.write_labelled(label='user:TaxonName')
+   
                 self.new_seqs = {} #Wipe for next run
                 self.new_seqs_otu_id = {}
                 self.repeat = 1
