@@ -438,7 +438,6 @@ class AlignTreeTax(object):
         print(self.tre.taxon_namespace)
 
         ###here both namespaces are not the same....
-        assert(self.tre.taxon_namespace is self.aln.taxon_namespace)
 
         for tax, seq in self.aln.items():
             # print(tax)
@@ -484,7 +483,12 @@ class AlignTreeTax(object):
         aln_ids = set()
         for tax in self.aln:
             #aln_ids.add(tax.label)
-            aln_ids.add(self.otu_taxonlabel_problem[tax.label])
+            # print(tax)
+            # print(tax.label)
+            # print(self.otu_taxonlabel_problem[tax.label])
+
+            
+            aln_ids.add(tax.label)
         # print("first aln id")    
         # print(aln_ids)    
         # print("self.otu_dict.keys()")
@@ -686,8 +690,8 @@ class AlignTreeTax(object):
         (except query sequences)"""
         #CAN I even evaulte things in the function definitions?
         print("write papara files")
-        print(self.tre.taxon_namespace)
-        print(self.tre.as_string(schema="newick"))
+        # print(self.tre.taxon_namespace)
+        # print(self.tre.as_string(schema="newick"))
         self.tre.resolve_polytomies()
         self.tre.deroot()
         tmptre = self.tre.as_string(schema="newick",
@@ -1057,7 +1061,10 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
         sys.stdout.write("aligning query sequences \n")
         self.data.write_papara_files()
         os.chdir(self.workdir)#Clean up dir moving
+        print("trying to call papara")
         try:
+            print("I call papara")
+
             pp = subprocess.call(["papara",
                               "-t", "random_resolve.tre",
                               "-s", "aln_ott.phy",
@@ -1072,12 +1079,23 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
             else:
             # Something else went wrong while trying to run `wget`
                 raise
-        os.chdir('..')
-        assert os.path.exists(path="{}/papara_alignment.{}".format(self.workdir, papara_runname))
-        self.data.aln = DnaCharacterMatrix.get(path="{}/papara_alignment.{}".format(self.workdir, papara_runname), schema="phylip")
+        # os.chdir('..')
+        # os.chdir('..')
+
+        print("it' problematic if workdir in config is a path.")
+        print(self.workdir)
+        print(papara_runname)
+        
+        print(os.getcwd())
+        #wd_path = os.getcwd() + self.word
+
+        print("{}/papara_alignment.{}".format(os.getcwd(), papara_runname))
+        assert os.path.exists(path="{}/papara_alignment.{}".format(os.getcwd(), papara_runname))
+        self.data.aln = DnaCharacterMatrix.get(path="{}/papara_alignment.{}".format(os.getcwd(), papara_runname), schema="phylip")
         self.data.aln.taxon_namespace.is_mutable = True #Was too strict...
         sys.stdout.write("Papara done")
-        with open(self.logfile, "a") as log:
+        lfd = "{}/logfile".format(os.getcwd())
+        with open(lfd, "a") as log:
             log.write("Following papara alignement, aln has {} seqs \n".format(len(self.data.aln)))
         self.data.reconcile()
         self._query_seqs_aligned = 1
@@ -1087,7 +1105,8 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
         if os.path.exists("RAxML_labelledTree.PLACE"):
                 os.rename(filename, "RAxML_labelledTreePLACE.tmp")
         sys.stdout.write("placing query sequences \n")
-        os.chdir(self.workdir)
+        print(os.getcwd())
+        #os.chdir(self.workdir)
         try:
             p1 = subprocess.call(["raxmlHPC", "-m", "GTRCAT",
                               "-f", "v",
