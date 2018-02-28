@@ -1079,7 +1079,7 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
             else:
             # Something else went wrong while trying to run `wget`
                 raise
-        # os.chdir('..')
+        os.chdir('..')
         # os.chdir('..')
 
         print("it' problematic if workdir in config is a path.")
@@ -1089,24 +1089,24 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
         print(os.getcwd())
         #wd_path = os.getcwd() + self.word
 
-        print("{}/papara_alignment.{}".format(os.getcwd(), papara_runname))
-        assert os.path.exists(path="{}/papara_alignment.{}".format(os.getcwd(), papara_runname))
-        self.data.aln = DnaCharacterMatrix.get(path="{}/papara_alignment.{}".format(os.getcwd(), papara_runname), schema="phylip")
+        print("{}/papara_alignment.{}".format(self.workdir, papara_runname))
+        assert os.path.exists(path="{}/papara_alignment.{}".format(self.workdir, papara_runname))
+        self.data.aln = DnaCharacterMatrix.get(path="{}/papara_alignment.{}".format(self.workdir, papara_runname), schema="phylip")
         self.data.aln.taxon_namespace.is_mutable = True #Was too strict...
         sys.stdout.write("Papara done")
-        lfd = "{}/logfile".format(os.getcwd())
+        lfd = "{}/logfile".format(self.workdir)
         with open(lfd, "a") as log:
-            log.write("Following papara alignement, aln has {} seqs \n".format(len(self.data.aln)))
+            log.write("Following papara alignment, aln has {} seqs \n".format(len(self.data.aln)))
         self.data.reconcile()
         self._query_seqs_aligned = 1
     def place_query_seqs(self):
         """runs raxml on the tree, and the combined alignment including the new quesry seqs
         Just for placement, to use as starting tree."""
         if os.path.exists("RAxML_labelledTree.PLACE"):
-                os.rename(filename, "RAxML_labelledTreePLACE.tmp")
+                os.rename("RAxML_labelledTree.PLACE", "RAxML_labelledTreePLACE.tmp")
         sys.stdout.write("placing query sequences \n")
-        print(os.getcwd())
-        #os.chdir(self.workdir)
+        #print(os.getcwd())
+        os.chdir(self.workdir)
         try:
             p1 = subprocess.call(["raxmlHPC", "-m", "GTRCAT",
                               "-f", "v",
