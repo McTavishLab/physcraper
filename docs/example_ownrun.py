@@ -1,21 +1,26 @@
 from physcraper import wrappers_nonstandard
+import os
+
 #
 seqaln= "docs/owndata/senecio_its.fasta"
 mattype="fasta"
 trfn= "docs/owndata/its_new.tre"
 schema_trf = "newick"
 workdir="example_owndata_output_its"
-otujson = "docs/owndata/ott_info_owntree_its.txt"
 configfi = "example.config"
-idtospname = "docs/owndata/uniquetip_to_name_its.csv"
+id_to_spn = r"/home/blubb/sync-TP-T470s/physcraper_testing/uniquetip_to_name_its.csv"
+cwd = os.getcwd()  
 
 
 
-wrappers_nonstandard.own_data_run(idtospname,
-				 seqaln,
+otu_json = wrappers_nonstandard.OtuJsonDict(id_to_spn, configfi)
+
+
+
+wrappers_nonstandard.own_data_run(seqaln,
                  mattype,
                  trfn,
                  schema_trf,
                  workdir,
-                 otujson,
+                 otu_json,
                  configfi)

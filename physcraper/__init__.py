@@ -153,7 +153,7 @@ def generate_ATT_from_files(seqaln,
                             workdir,
                             treefile,
                             schema_trf,
-                            otu_json,
+                            otu_dict,
                             ingroup_mrca=None):
     """Build an ATT object without phylesystem.
     If no ingroup mrca ott_id is provided, will use all taxa in tree to calc mrca."""
@@ -161,15 +161,15 @@ def generate_ATT_from_files(seqaln,
     print(seqaln, mattype)
        
 
-    with open(otu_json) as data_file:
-        otu_dict = json.load(data_file)
+    # with open(otu_json) as data_file:
+    #     otu_dict = json.load(data_file)
 
     
-    #print(inspect.getmodule(convert).__name__)
-    otu_dict = convert(otu_dict)
-    # print(otu_dict, type(otu_dict))  
+    # #print(inspect.getmodule(convert).__name__)
+    # otu_dict = convert(otu_dict)
+    # # print(otu_dict, type(otu_dict))  
     #print(otu_dict2, type(otu_dict))  
-
+    #otu_dict = otu_json
     # print('can i use dendropy?')
     aln = DnaCharacterMatrix.get(path=seqaln, schema=mattype)
     # print(aln.taxon_namespace)

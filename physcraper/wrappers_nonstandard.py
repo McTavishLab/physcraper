@@ -5,7 +5,8 @@ import pickle
 import sys
 import os
 import subprocess
-
+import csv
+from ete2 import NCBITaxa
 
 
 def sync_ncbi(configfi):
@@ -19,13 +20,50 @@ def sync_ott(configfi):
     subprocess.call(["process_ott.sh",  "".format(conf.ott_ncbi)])
 
 
-   
+##generates IdDicts physcrapper class        
+def get_ottid(configfi, cwd):
+                     conf = ConfigObj(configfi)
+                     ids = IdDicts(conf, cwd)  
+                     return(ids)            
 
 
+print("load OtuJsonDict func")    
 
+def OtuJsonDict(id_to_spn, configfi):
+    """Make otu json dict, which is also produces within the openTreeLife-query"""
+    cwd = os.getcwd()  
+    ## reads input file into the var spInfo
+    with open(id_to_spn, mode='r') as idtospn:
+        reader = csv.reader(idtospn)
+        spInfo = dict((rows[0], rows[1]) for rows in reader)
+    #print(spInfoDict) 
+ 
+    ###generate spinfodict
+    
+    ottdic = get_ottid(configfi, cwd) 
+    print(ottdic)
+    ncbi = NCBITaxa()    
+    
+    spInfoDict = {}
+    for item in spInfo:
+        spn = spInfo[item].replace("_", " ")
+        name2taxid = ncbi.get_name_translator([spn])
+       
+        
+        if len(name2taxid.items())>=1:
+            ncbiid = name2taxid.items()[0][1][0]
+            ott = ottdic.ncbi_to_ott[ncbiid]
+            spn = ottdic.ott_to_name[ott]
+            get_info = {'^ncbiID': ncbiid, '^ot:ottTaxonName': spn, 'ot:ottId': ott, '^user:TaxonName': spInfo[item],  '^physcraper:status': 'original','^physcraper:last_blasted' : "1900/01/01" }  
+            spInfoDict[item] = get_info
+        else:
+            
+            spInfoDict[item] = {'^user:TaxonName': spInfo[item],  '^physcraper:status': 'original','^physcraper:last_blasted' : "1900/01/01"}
+        return  spInfoDict 
 
-def own_data_run(idtospname,
-                 seqaln,
+    
+
+def own_data_run(seqaln,
                  mattype,
                  trfn,
                  schema_trf,
@@ -56,8 +94,6 @@ def own_data_run(idtospname,
                                  otu_json=otujson,
                                  ingroup_mrca=None)
 
-
-            print('or here?')
             #Prune sequnces below a certain length threshold
             #This is particularly important when using loci that have been de-concatenated, as some are 0 length which causes problems.
             data_obj.prune_short()
@@ -82,9 +118,6 @@ def own_data_run(idtospname,
         scraper.read_blast()
         scraper.remove_identical_seqs()
         scraper.generate_streamed_alignment()
-
-
-
 
 
 # ott_ids = get_subtree_otus(nexson,
