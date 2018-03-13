@@ -59,7 +59,8 @@ def OtuJsonDict(id_to_spn, configfi):
         else:
             
             spInfoDict[item] = {'^user:TaxonName': spInfo[item],  '^physcraper:status': 'original','^physcraper:last_blasted' : "1900/01/01"}
-        return  spInfoDict 
+    print(spInfoDict)
+    return  spInfoDict 
 
     
 
@@ -68,7 +69,7 @@ def own_data_run(seqaln,
                  trfn,
                  schema_trf,
                  workdir,
-                 otujson,
+                 spInfoDict,
                  configfi):
     '''looks for pickeled file to continue run, or builds and runs 
     new analysis for as long as new seqs are found'''
@@ -91,7 +92,7 @@ def own_data_run(seqaln,
                                  workdir=workdir,
                                  treefile=trfn,
                                  schema_trf = schema_trf,
-                                 otu_json=otujson,
+                                 otu_dict=spInfoDict,
                                  ingroup_mrca=None)
 
             #Prune sequnces below a certain length threshold
