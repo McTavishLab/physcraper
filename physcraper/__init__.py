@@ -412,11 +412,27 @@ def get_mrca_ott(ott_ids):
     mrca according to the ncbi taxonomy"""
     if None in ott_ids:
         ott_ids.remove(None)
-    try:
-        mrca_node = tree_of_life.mrca(ott_ids=list(ott_ids), wrap_response=True)
-    except  RuntimeError:
-        sys.stderr.write("POST to get MRCA of ingroup failed - check internet connectivity, and or provide ingroup mrca OTT_ID, or check treemachine MRCA call\n")
-        sys.exit()
+    synth_tree_ott_ids = []
+    from peyotl.sugar import tree_of_life
+    
+    #assert tuple() == mrca_node.invalid_node_ids
+    #assert tuple() == mrca_node.node_ids_not_in_tree
+    if mrca_node.invalid_ott_ids:
+        errstream.write(
+            'The following OTT IDs were not valid: {}\n'.format(' '.join([str(i) for i in mrca_node.invalid_ott_ids])))
+    if mrca_node.ott_ids_not_in_tree:
+        f = 'The following OTT IDs are valid identifiers, but not recovered in the synthetic estimate of the tree of life: {}\n'
+        errstream.write(f.format(' '.join([str(i) for i in mrca_node.ott_ids_not_in_tree])))
+    for ott in ott_ids:
+    #    tree_of_life.in_synth_tree(ott)
+        try:
+            mrca_node = tree_of_life.mrca(ott_ids=list(ott_ids), wrap_response=True)
+        except RuntimeError:
+    #        sys.stderr.write("POST to get MRCA of ingroup failed - check internet connectivity, and or provide ingroup mrca OTT_ID, or check treemachine MRCA call\n")
+    #        sys.exit()
+    #except HTTPError:
+    #    sys.stderr.write("OTT API doesn't like the request\n")
+    #    sys.exit()
     return mrca_node.nearest_taxon.ott_id
 
 
