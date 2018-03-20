@@ -168,7 +168,7 @@ def generate_ATT_from_files(seqaln,
                             ingroup_mrca=None):
     """Build an ATT object without phylesystem.
     If no ingroup mrca ott_id is provided, will use all taxa in tree to calc mrca.
-    otu_json should encode the taxon names for each tip""
+    otu_json should encode the taxon names for each tip"""
     aln = DnaCharacterMatrix.get(path=seqaln, schema=mattype)
     # print(aln.taxon_namespace)
     # for seq in aln.taxon_namespace:
