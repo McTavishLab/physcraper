@@ -10,7 +10,7 @@ schema_trf = "newick"
 workdir="owndata_testrun"
 otujson = "docs/owndata/ott_info_owntree_its.txt"
 configfi = "example.config"
-id_to_spn = r"/home/blubb/sync-TP-T470s/physcraper_testing/uniquetip_to_name_its.csv"
+id_to_spn = "docs/owndata/uniquetip_to_name_its.csv"
 cwd = os.getcwd()  
 
 
