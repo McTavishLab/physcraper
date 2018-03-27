@@ -79,41 +79,44 @@ def own_data_run(seqaln,
         scraper.repeat = 1
     else:   
 #            sync_names()
-            sys.stdout.write("setting up Data Object\n")
-            sys.stdout.flush()
-            #read the config file into a configuration object
-            conf = ConfigObj(configfi)
-            print(seqaln, mattype)
-            #aln = DnaCharacterMatrix.get(path=seqaln, schema=mattype)
-            
-            #Generate an linked Alignment-Tree-Taxa object
-            data_obj = generate_ATT_from_files(seqaln=seqaln, 
-                                 mattype=mattype, 
-                                 workdir=workdir,
-                                 treefile=trfn,
-                                 schema_trf = schema_trf,
-                                 otu_dict=spInfoDict,
-                                 ingroup_mrca=None)
+        sys.stdout.write("setting up Data Object\n")
+        sys.stdout.flush()
+        #read the config file into a configuration object
+        conf = ConfigObj(configfi)
+        print(seqaln, mattype)
+        #aln = DnaCharacterMatrix.get(path=seqaln, schema=mattype)
+        
+        #Generate an linked Alignment-Tree-Taxa object
+        data_obj = generate_ATT_from_files(seqaln=seqaln, 
+                             mattype=mattype, 
+                             workdir=workdir,
+                             treefile=trfn,
+                             schema_trf = schema_trf,
+                             otu_json=spInfoDict,
+                             ingroup_mrca=None)
 
-            #Prune sequnces below a certain length threshold
-            #This is particularly important when using loci that have been de-concatenated, as some are 0 length which causes problems.
-            data_obj.prune_short()
+        #Prune sequnces below a certain length threshold
+        #This is particularly important when using loci that have been de-concatenated, as some are 0 length which causes problems.
+        data_obj.prune_short()
 
-            data_obj.write_files()
+        data_obj.write_files()
 
-            data_obj.write_labelled( label='user:TaxonName')
-            data_obj.write_otus("otu_info", schema='table')
-            #Mapping identifiers between OpenTree and NCBI requires and identifier dict object
-            ids = IdDicts(conf, workdir="example")
+        data_obj.write_labelled( label='user:TaxonName')
+        data_obj.write_otus("otu_info", schema='table')
+        #Mapping identifiers between OpenTree and NCBI requires and identifier dict object
+        ids = IdDicts(conf, workdir="example")
 
 
-            #Now combine the data, the ids, and the configuration into a single physcraper scrape object
-            scraper =  PhyscraperScrape(data_obj, ids, conf)
-            #run the ananlyses
-            scraper.run_blast()
-            scraper.read_blast()
-            scraper.remove_identical_seqs()
-            scraper.generate_streamed_alignment()
+        #Now combine the data, the ids, and the configuration into a single physcraper scrape object
+        scraper =  PhyscraperScrape(data_obj, ids, conf)
+        #run the ananlyses
+        scraper.run_blast()
+        scraper.read_blast()
+        scraper.remove_identical_seqs()
+        scraper.how_many_sp_to_keep(treshold=threshold)
+        sp_in_aln = self.sp_d
+        sp_blast = self.new_seqs
+        scraper.generate_streamed_alignment()
     while scraper.repeat == 1: 
         scraper.run_blast()
         scraper.read_blast()
