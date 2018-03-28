@@ -304,7 +304,7 @@ class AlignTreeTax(object):
             print("prune short elements, in aln and tre")
             self.aln.remove_sequences(prune)
             self.tre.prune_taxa(prune)
-            self.aln.taxon_namespace.remove_taxon(tax)
+            #self.aln.taxon_namespace.remove_taxon(tax)
             fi = open("{}/pruned_taxa".format(self.workdir), 'a')
             fi.write("Taxa pruned from tree and alignment in prune short step due to sequence shorter than {}\n".format(min_seqlen))
             for tax in prune:
