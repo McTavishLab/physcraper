@@ -302,6 +302,7 @@ class AlignTreeTax(object):
             print("prune short elements, in aln and tre")
             self.aln.remove_sequences(prune)
             self.tre.prune_taxa(prune)
+            self.aln.taxon_namespace.remove_taxon(tax)
             fi = open("{}/pruned_taxa".format(self.workdir), 'a')
             fi.write("Taxa pruned from tree and alignment in prune short step due to sequence shorter than {}\n".format(min_seqlen))
             for tax in prune:
@@ -310,6 +311,7 @@ class AlignTreeTax(object):
         for tax in prune:
             self.otu_dict[tax.label]['physcraper:status'] = "deleted in prune short"
             self.aln.taxon_namespace.remove_taxon(tax)
+        assert self.aln.taxon_namespace == self.tre.taxon_namespace
 
         self.orig_seqlen = [len(self.aln[tax].symbols_as_string().replace("-", "").replace("N", "")) for tax in self.aln]
         print("I'm in reconcile method, coming from prune.")
@@ -811,6 +813,7 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
         self.new_seqs_otu_id = tmp_dict # renamed new seq to their otu_ids from GI's, but all info is in self.otu_dict
         with open(self.logfile, "a") as log:
             log.write("{} new sequences added from genbank, of {} before filtering\n".format(len(self.new_seqs_otu_id), len(self.new_seqs)))
+        self.data.dump()
 
     def how_many_sp_to_keep(self, treshold):
         sp_in_aln = self.sp_d
