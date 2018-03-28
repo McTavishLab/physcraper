@@ -321,7 +321,7 @@ class AlignTreeTax(object):
 
         print("I'm in reconcile method. Now here seq shorter than 75% will be deleted.")
         """all missing data seqs are sneaking in, but from where?!"""
-        assert self.aln.taxon_namespace == self.tre.taxon_namespace
+        #assert self.aln.taxon_namespace == self.tre.taxon_namespace
         prune = []
         avg_seqlen = sum(self.orig_seqlen)/len(self.orig_seqlen)
         seq_len_cutoff = avg_seqlen*seq_len_perc
@@ -464,7 +464,7 @@ class AlignTreeTax(object):
     def remove_taxa_aln_tre(self, taxon_label):
         #self.aln.taxon_namespace=self.tre.taxon_namespace
         print("here i remove stuff from aln and tre, because that function is newly defined in physcraper.")
-        assert self.aln.taxon_namespace == self.tre.taxon_namespace
+        #assert self.aln.taxon_namespace == self.tre.taxon_namespace
         tax = self.aln.taxon_namespace.get_taxon(taxon_label)
         
         if tax:
