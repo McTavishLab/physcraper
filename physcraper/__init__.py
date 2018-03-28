@@ -32,6 +32,9 @@ from peyotl.api import APIWrapper
 
 import collections 
 
+
+import datetime
+
 def is_number(s):
     """test if string can be coerced to float"""
     try:
@@ -407,6 +410,9 @@ class AlignTreeTax(object):
     def add_otu(self, gi, ids_obj):
         """generates an otu_id for new sequences and adds them into the otu_dict.
         Needs to be passed an IdDict to do the mapping"""
+        print("this func takes ages")
+        print(datetime.datetime.now())
+
         otu_id = "otuPS{}".format(self.ps_otu)
         self.ps_otu += 1
         self.otu_dict[otu_id] = {}
@@ -418,6 +424,9 @@ class AlignTreeTax(object):
         self.otu_dict[otu_id]['^physcraper:status'] = "query"
         self.otu_dict[otu_id]['^ot:ottTaxonName'] = ids_obj.ott_to_name.get(self.otu_dict[otu_id]['^ot:ottId'])
         self.otu_dict[otu_id]['^physcraper:last_blasted'] = "1900/01/01"#TODO check propagation...
+        print("end of func")
+        print(datetime.datetime.now())
+
         return otu_id
     def write_papara_files(self, treefilename="random_resolve.tre", alnfilename="aln_ott.phy"):
         """Papara is finicky about trees and needs phylip, this writes out needed files for papara
@@ -590,13 +599,24 @@ class IdDicts(object):
     def map_gi_ncbi(self, gi):
         """get the ncbi taxon id's for a gi input"""
 #        mapped_taxon_ids = open("{}/id_map.txt".format(self.workdir), "a")
+        print("map_gi_ncbi")
+        print("no its this guy who takes ages")
+
+        print(datetime.datetime.now())
+
         if gi in self.gi_ncbi_dict:
             tax_id = int(self.gi_ncbi_dict[gi])
         else:
             try:
+                print("before bash")
+                print(datetime.datetime.now())
+
                 tax_id = int(subprocess.check_output(["bash", self.config.get_ncbi_taxonomy,
                                                       "{}".format(gi),
                                                       "{}".format(self.config.ncbi_dmp)]).split('\t')[1])
+                print("after bash")
+                print(datetime.datetime.now())
+
             except ValueError:
  #               os.system("rsync -av ftp.ncbi.nih.gov::pub/taxonomy/gi_taxid_nucl.dmp.gz {}.gz".format(self.config.ncbi_dmp))
  #               os.system("tar -xzvf {}.gz".format(self.config.ncbi_dmp))
@@ -608,6 +628,9 @@ class IdDicts(object):
 #            mapped_taxon_ids.write("{}, {}\n".format(gi, tax_id))
             self.gi_ncbi_dict[gi] = tax_id
             assert tax_id  #if this doesn't work then the gi to taxon mapping needs to be updated - shouldhappen anyhow perhaps?!
+        print("end func")
+        print(datetime.datetime.now())
+    
        # mapped_taxon_ids.close()
         return tax_id
     def dump(self):
@@ -746,17 +769,20 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
             else:
                 if new_seq.find(inc_seq) != -1:#
                     if self.data.otu_dict[tax_lab].get('^physcraper:status') == "original":
+                        print("delete because its a superseq")
+
                         sys.stdout.write("seq {} is supersequence of original seq {}, both kept in alignment\n".format(label, tax_lab))
                         self.data.otu_dict[tax_lab]['physcraper:status'] = "new seq added"
                         seq_dict[label] = seq
                         return
                     else:
+                        print("delete because its a superseq")
                         del seq_dict[tax_lab]
                         seq_dict[label] = seq
                         self.data.remove_taxa_aln_tre(tax_lab)
                         sys.stdout.write("seq {} is supersequence of {}, {} added and {} removed\n".format(label, tax_lab, label, tax_lab))
                         self.data.otu_dict[tax_lab]['physcraper:status'] = "new seq added in place of {}".format(tax_lab)
-                        return
+                        return                        
         sys.stdout.write(".")
         seq_dict[label] = seq
         return
@@ -772,6 +798,7 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
         #Adding seqs that are different, but needs to be maintained as diff than aln that the tree has been run on
         avg_seqlen = sum(self.data.orig_seqlen)/len(self.data.orig_seqlen) #HMMMMMMMM
         seq_len_cutoff = avg_seqlen*self.config.seq_len_perc
+        
         for gi, seq in self.new_seqs.items():
             if len(seq.replace("-", "").replace("N", "")) > seq_len_cutoff:
                 otu_id = self.data.add_otu(gi, self.ids)
@@ -784,14 +811,35 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
         self.new_seqs_otu_id = tmp_dict # renamed new seq to their otu_ids from GI's, but all info is in self.otu_dict
         with open(self.logfile, "a") as log:
             log.write("{} new sequences added from genbank, of {} before filtering\n".format(len(self.new_seqs_otu_id), len(self.new_seqs)))
-    
+
     def how_many_sp_to_keep(self, treshold):
         sp_in_aln = self.sp_d
         sp_blast = self.new_seqs
         print(sp_in_aln)
         print(sp_blast)
 
+        # read blast data to check similarity of sequences: copy of read_blast
+        if not blast_dir:
+            blast_dir = self.blast_subdir
+        if not self._blasted:
+            self.run_blast()
+        for taxon in self.data.aln:
+            xml_fi = "{}/{}.xml".format(blast_dir, taxon.label)
+            if os.path.isfile(xml_fi):
+                result_handle = open(xml_fi)
+                #try:
+                blast_records = NCBIXML.parse(result_handle)
+                for blast_record in blast_records:
+                    dir(blast_record)
+                    for alignment in blast_record.alignments:
+                        print(alignment)
+                        for hsp in alignment.hsps:
+                            print(hsp)
 
+                                # if float(hsp.expect) < float(self.config.e_value_thresh):
+                                #     if int(alignment.title.split('|')[1]) not in self.data.gi_dict: #skip ones we already have (does it matter if these were delted? No...)
+                                #         self.new_seqs[int(alignment.title.split('|')[1])] = hsp.sbjct
+                                #         self.data.gi_dict[int(alignment.title.split('|')[1])] = alignment.__dict__
 
 
 
