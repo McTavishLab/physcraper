@@ -285,6 +285,8 @@ class AlignTreeTax(object):
                 self.otu_dict[self.otu_taxonlabel_problem[tax.label]]['physcraper:status'] = "deleted in name reconciliation"
     
             self.aln.taxon_namespace.remove_taxon(tax)
+        assert(self.aln.taxon_namespace==self.tre.taxon_namespace)
+    
 
     
     def prune_short(self, min_seqlen=0):
@@ -326,6 +328,8 @@ class AlignTreeTax(object):
         avg_seqlen = sum(self.orig_seqlen)/len(self.orig_seqlen)
         seq_len_cutoff = avg_seqlen*seq_len_perc
         
+        assert(self.aln.taxon_namespace==self.tre.taxon_namespace)
+
         for tax, seq in self.aln.items():
             # print(tax)
             if len(seq.symbols_as_string().translate(None, "-?")) < seq_len_cutoff:
@@ -337,12 +341,19 @@ class AlignTreeTax(object):
                 fi.write("{}, {}\n".format(tax.label, self.otu_dict[tax.label].get('^ot:originalLabel')))
             fi.close()
 
+  
+
+        assert(self.aln.taxon_namespace==self.tre.taxon_namespace)
+
+
         for tax in prune:
             self.otu_dict[tax.label]['physcraper:status'] = "deleted in reconcile"
             
             self.remove_taxa_aln_tre(tax.label)
 
-        
+        print(self.tre)
+        print(self.tre.taxon_namespace)
+
         aln_ids = set()
         for tax in self.aln:
             aln_ids.add(tax.label)
@@ -447,6 +458,7 @@ class AlignTreeTax(object):
         fi.write(tmptre)
         fi.close()
         self.aln.write(path="{}/{}".format(self.workdir, alnfilename), schema="phylip")
+    
     def write_files(self, treepath="physcraper.tre", treeschema="newick", alnpath="physcraper.fas", alnschema="fasta"):
         """Outputs both the streaming files and a ditechecked"""
         #First write rich annotation json file with everything needed for later?
@@ -466,7 +478,9 @@ class AlignTreeTax(object):
         print("here i remove stuff from aln and tre, because that function is newly defined in physcraper.")
         #assert self.aln.taxon_namespace == self.tre.taxon_namespace
         tax = self.aln.taxon_namespace.get_taxon(taxon_label)
-        
+        assert(self.aln.taxon_namespace==self.tre.taxon_namespace)
+        print(self.tre)
+        print(self.tre.taxon_namespace)
         if tax:
             print("remove from aln")
             self.aln.remove_sequences([tax])
@@ -475,7 +489,8 @@ class AlignTreeTax(object):
             self.otu_dict[tax.label]['physcraper:status'] = "deleted"
         else:
             self.otu_dict[taxon_label]['physcraper:status'] = "deleted, but it wasn't in teh alignemnet..."
-        
+        print(self.tre)
+        print(self.tre.taxon_namespace)
     
 
     def write_labelled(self, label, treepath="labelled.tre", alnpath="labelled.fas"):
@@ -890,6 +905,7 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
         os.chdir('..')
         # os.chdir('..')
 
+        
         print("it' problematic if workdir in config is a path.")
         print(self.workdir)
         print(papara_runname)
