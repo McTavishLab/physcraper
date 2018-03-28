@@ -115,14 +115,14 @@ def own_data_run(seqaln,
         scraper.remove_identical_seqs()
         sp_in_aln = self.sp_d
         sp_blast = self.new_seqs
-        scraper.how_many_sp_to_keep(treshold=treshhold)
+#        scraper.how_many_sp_to_keep(treshold=treshhold)
 
         scraper.generate_streamed_alignment()
     while scraper.repeat == 1: 
         scraper.run_blast()
         scraper.read_blast()
         scraper.remove_identical_seqs()
-        scraper.how_many_sp_to_keep(treshold=treshhold)
+#        scraper.how_many_sp_to_keep(treshold=treshhold)
 
         scraper.generate_streamed_alignment()
 
