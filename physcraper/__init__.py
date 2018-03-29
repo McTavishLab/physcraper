@@ -830,6 +830,14 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
             log.write("{} new sequences added from genbank, of {} before filtering\n".format(len(self.new_seqs_otu_id), len(self.new_seqs)))
         self.data.dump()
 
+
+    def dump(self, filename = "scrape_checkpoint.p"):
+#        frozen = jsonpickle.encode(self)
+#        with open('{}/{}'.format(self.workdir, filename), 'w') as pjson:
+#            pjson.write(frozen)
+        pickle.dump(self, open("{}/{}".format(self.workdir,filename), "wb" ) )
+        #TODO... write as proper nexml?!    
+
     def how_many_sp_to_keep(self, treshold):
         sp_in_aln = self.sp_d
         sp_blast = self.new_seqs
