@@ -4,9 +4,9 @@ import os
 
 
 #################################
-seqaln =  "/home/blubb/Documents/gitdata/physcraper/small_test_example/test.fas"
-trfn= "/home/blubb/Documents/gitdata/physcraper/small_test_example/test.tre"
-id_to_spn = r"/home/blubb/Documents/gitdata/physcraper/small_test_example/test_nicespl.csv"
+seqaln =  "/home/martha/physcraper-git/physcraper/small_test_example/test.fas"
+trfn= "/home/martha/physcraper-git/physcraper/small_test_example/test.tre"
+id_to_spn = r"/home/martha/physcraper-git/physcraper/small_test_example/test_nicespl.csv"
 workdir="senecio_out_numSpecies"
 mattype="fasta"
 schema_trf = "newick"
