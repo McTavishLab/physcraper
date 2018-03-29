@@ -73,9 +73,9 @@ def own_data_run(seqaln,
                  configfi):
     '''looks for pickeled file to continue run, or builds and runs 
     new analysis for as long as new seqs are found'''
-    if os.path.isfile("{}/scrape.p".format(workdir)): 
+    if os.path.isfile("{}/att_checkpoint.p".format(workdir)): 
         sys.stdout.write("Reloading from pickled scrapefile\n")
-        scraper = pickle.load(open("{}/scrape.p".format(workdir),'rb'))
+        scraper = pickle.load(open("{}/att_checkpoint.p".format(workdir),'rb'))
         scraper.repeat = 1
     else:   
 #            sync_names()
