@@ -104,11 +104,7 @@ def own_data_run(seqaln,
         data_obj.write_labelled( label='user:TaxonName')
         data_obj.write_otus("otu_info", schema='table')
         data_obj.dump()
-
-        if os.path.isfile("{}/att_checkpoint.p".format(workdir)):
-            sys.stdout.write("Reloading data object from pickle file\n")
-            data_obj = pickle.load( open( "{}/att_checkpoint.p".format(workdir), "rb" ) )
-        #Mapping identifiers between OpenTree and NCBI requires and identifier dict object
+        
         ids = IdDicts(conf, workdir="example")
 
 
@@ -121,7 +117,7 @@ def own_data_run(seqaln,
         scraper.dump()
         if os.path.isfile("{}/scrape_checkpoint.p".format(workdir)):
             sys.stdout.write("Reloading data object from pickle file\n")
-            data_obj = pickle.load( open( "{}/scrape_checkpoint.p".format(workdir), "rb" ) )
+            scraper = pickle.load( open( "{}/scrape_checkpoint.p".format(workdir), "rb" ) )
         scraper.how_many_sp_to_keep(treshold=treshhold)
 
         scraper.generate_streamed_alignment()
