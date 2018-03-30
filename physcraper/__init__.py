@@ -278,10 +278,8 @@ class AlignTreeTax(object):
  
         for tax in prune:
             try:
-                print("i'm in try")
                 self.otu_dict[tax.label]['physcraper:status'] = "deleted in name reconciliation"
             except:
-                print("i'm in except")
                 self.otu_dict[self.otu_taxonlabel_problem[tax.label]]['physcraper:status'] = "deleted in name reconciliation"
     
             self.aln.taxon_namespace.remove_taxon(tax)
@@ -297,11 +295,7 @@ class AlignTreeTax(object):
         for tax, seq in self.aln.items():
             if len(seq.symbols_as_string().translate(None, "-?")) <= min_seqlen:
                 prune.append(tax)
-        print("i'm in prune. here short taxa are not deleted, as following prune is empty") 
-        print(prune)
-        #print(self.aln.items)       
         if prune:
-            print("prune short elements, in aln and tre")
             self.aln.remove_sequences(prune)
             self.tre.prune_taxa(prune)
             #self.aln.taxon_namespace.remove_taxon(tax)
@@ -316,12 +310,10 @@ class AlignTreeTax(object):
         assert self.aln.taxon_namespace == self.tre.taxon_namespace
 
         self.orig_seqlen = [len(self.aln[tax].symbols_as_string().replace("-", "").replace("N", "")) for tax in self.aln]
-        print("I'm in reconcile method, coming from prune.")
         self.reconcile()
 
     def reconcile(self, seq_len_perc=0.75):
 
-        print("I'm in reconcile method. Now here seq shorter than 75% will be deleted.")
         """all missing data seqs are sneaking in, but from where?!"""
         #assert self.aln.taxon_namespace == self.tre.taxon_namespace
         prune = []
@@ -341,18 +333,16 @@ class AlignTreeTax(object):
                 fi.write("{}, {}\n".format(tax.label, self.otu_dict[tax.label].get('^ot:originalLabel')))
             fi.close()
 
-  
 
-        assert(self.aln.taxon_namespace==self.tre.taxon_namespace)
+        #assert(self.aln.taxon_namespace==self.tre.taxon_namespace)
 
 
         for tax in prune:
             self.otu_dict[tax.label]['physcraper:status'] = "deleted in reconcile"
-            
             self.remove_taxa_aln_tre(tax.label)
 
-        print(self.tre)
-        print(self.tre.taxon_namespace)
+        # print(self.tre)
+        # print(self.tre.taxon_namespace)
 
         aln_ids = set()
         for tax in self.aln:
@@ -363,9 +353,8 @@ class AlignTreeTax(object):
         orphaned_leafs = set()
 
         assert self.aln.taxon_namespace == self.tre.taxon_namespace
-        ## here leaf_nodes have taxa that were dropped before. Why do we have this anyways?
-        print("leaf node for loop")
-  
+        
+        ## here leaf_nodes have taxa that were dropped before. Why do we have this anyways?  
         for leaf in self.tre.leaf_nodes():
             treed_taxa.add(leaf.taxon.label)
             if leaf.taxon.label not in aln_ids:
@@ -423,9 +412,6 @@ class AlignTreeTax(object):
     def add_otu(self, gi, ids_obj):
         """generates an otu_id for new sequences and adds them into the otu_dict.
         Needs to be passed an IdDict to do the mapping"""
-        print("this func takes ages")
-        print(datetime.datetime.now())
-
         otu_id = "otuPS{}".format(self.ps_otu)
         self.ps_otu += 1
         self.otu_dict[otu_id] = {}
@@ -437,9 +423,6 @@ class AlignTreeTax(object):
         self.otu_dict[otu_id]['^physcraper:status'] = "query"
         self.otu_dict[otu_id]['^ot:ottTaxonName'] = ids_obj.ott_to_name.get(self.otu_dict[otu_id]['^ot:ottId'])
         self.otu_dict[otu_id]['^physcraper:last_blasted'] = "1900/01/01"#TODO check propagation...
-        print("end of func")
-        print(datetime.datetime.now())
-
         return otu_id
     def write_papara_files(self, treefilename="random_resolve.tre", alnfilename="aln_ott.phy"):
         """Papara is finicky about trees and needs phylip, this writes out needed files for papara
@@ -462,7 +445,6 @@ class AlignTreeTax(object):
     def write_files(self, treepath="physcraper.tre", treeschema="newick", alnpath="physcraper.fas", alnschema="fasta"):
         """Outputs both the streaming files and a ditechecked"""
         #First write rich annotation json file with everything needed for later?
-        print("write out files, aln is correct, tre has still the deleted sp.")
         self.tre.write(path="{}/{}".format(self.workdir, treepath),
                        schema=treeschema,
                        unquoted_underscores=True)
@@ -475,12 +457,11 @@ class AlignTreeTax(object):
             json.dump(self.otu_dict, outfile)
     def remove_taxa_aln_tre(self, taxon_label):
         #self.aln.taxon_namespace=self.tre.taxon_namespace
-        print("here i remove stuff from aln and tre, because that function is newly defined in physcraper.")
         #assert self.aln.taxon_namespace == self.tre.taxon_namespace
         tax = self.aln.taxon_namespace.get_taxon(taxon_label)
         assert(self.aln.taxon_namespace==self.tre.taxon_namespace)
-        print(self.tre)
-        print(self.tre.taxon_namespace)
+        # print(self.tre)
+        # print(self.tre.taxon_namespace)
         if tax:
             print("remove from aln")
             self.aln.remove_sequences([tax])
@@ -489,8 +470,8 @@ class AlignTreeTax(object):
             self.otu_dict[tax.label]['physcraper:status'] = "deleted"
         else:
             self.otu_dict[taxon_label]['physcraper:status'] = "deleted, but it wasn't in teh alignemnet..."
-        print(self.tre)
-        print(self.tre.taxon_namespace)
+        # print(self.tre)
+        # print(self.tre.taxon_namespace)
     
 
     def write_labelled(self, label, treepath="labelled.tre", alnpath="labelled.fas"):
@@ -504,9 +485,9 @@ class AlignTreeTax(object):
         tmp_tre = Tree.get(data=tmp_newick,
                            schema="newick",
                            preserve_underscores=True)
-        print("temp tre namespace has taxa which were pruned earlier, because sp are only deleted from namespace, not from tree.")
-        print(self.tre.taxon_namespace)
-        print(tmp_tre.taxon_namespace)
+        # print("temp tre namespace has taxa which were pruned earlier, because sp are only deleted from namespace, not from tree.")
+        # print(self.tre.taxon_namespace)
+        # print(tmp_tre.taxon_namespace)
         tmp_fasta = self.aln.as_string(schema="fasta")
 
         tmp_aln = DnaCharacterMatrix.get(data=tmp_fasta,
@@ -540,8 +521,8 @@ class AlignTreeTax(object):
                       schema="newick",
                       unquoted_underscores=True,
                       suppress_edge_lengths=False)
-        print("tmp_aln.as_string, somewhere between the two prints must have happened s.th. to temp_aln, as it is empty now")
-        print(tmp_aln.as_string(schema="fasta"))
+        # print("tmp_aln.as_string, somewhere between the two prints must have happened s.th. to temp_aln, as it is empty now")
+        # print(tmp_aln.as_string(schema="fasta"))
         tmp_aln.write(path="{}/{}".format(self.workdir, alnpath),
                       schema="fasta")
     def dump(self, filename = "att_checkpoint.p"):
@@ -645,10 +626,7 @@ class IdDicts(object):
 #            mapped_taxon_ids.write("{}, {}\n".format(gi, tax_id))
             self.gi_ncbi_dict[gi] = tax_id
             assert tax_id  #if this doesn't work then the gi to taxon mapping needs to be updated - shouldhappen anyhow perhaps?!
-        print("end func")
-        print(datetime.datetime.now())
-    
-       # mapped_taxon_ids.close()
+        # mapped_taxon_ids.close()
         return tax_id
     def dump(self):
         filename = self.config.id_pickle

@@ -77,6 +77,10 @@ def own_data_run(seqaln,
         sys.stdout.write("Reloading from pickled scrapefile\n")
         scraper = pickle.load(open("{}/scrape_checkpoint.p".format(workdir),'rb'))
         scraper.repeat = 1
+    elif os.path.isfile("{}/ATT_checkpoint.p".format(workdir)): 
+        sys.stdout.write("Reloading from pickled scrapefile\n")
+        scraper = pickle.load(open("{}/ATT_checkpoint.p".format(workdir),'rb'))
+        scraper.repeat = 1    
     else:   
 #            sync_names()
         sys.stdout.write("setting up Data Object\n")
