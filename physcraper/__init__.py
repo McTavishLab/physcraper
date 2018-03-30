@@ -320,7 +320,7 @@ class AlignTreeTax(object):
         avg_seqlen = sum(self.orig_seqlen)/len(self.orig_seqlen)
         seq_len_cutoff = avg_seqlen*seq_len_perc
         
-        assert(self.aln.taxon_namespace==self.tre.taxon_namespace)
+#        assert(self.aln.taxon_namespace==self.tre.taxon_namespace)
 
         for tax, seq in self.aln.items():
             # print(tax)
@@ -352,7 +352,7 @@ class AlignTreeTax(object):
         treed_taxa = set()
         orphaned_leafs = set()
 
-        assert self.aln.taxon_namespace == self.tre.taxon_namespace
+        #assert self.aln.taxon_namespace == self.tre.taxon_namespace
         
         ## here leaf_nodes have taxa that were dropped before. Why do we have this anyways?  
         for leaf in self.tre.leaf_nodes():

@@ -4,10 +4,10 @@ import os
 
 
 #################################
-seqaln =  "/home/blubb/Documents/gitdata/physcraper/small_test_example/test.fas"
-trfn= "/home/blubb/Documents/gitdata/physcraper/small_test_example/test.tre"
-id_to_spn = r"/home/blubb/Documents/gitdata/physcraper/small_test_example/test_nicespl.csv"
-workdir="senecio_out_numSpecies"
+seqaln =  "/home/blubb/Documents/gitdata/physcraper/smaller_test_example/test.fas"
+trfn= "/home/blubb/Documents/gitdata/physcraper/smaller_test_example/test.tre"
+id_to_spn = r"/home/blubb/Documents/gitdata/physcraper/smaller_test_example/test_nicespl.csv"
+workdir="numSpeciesSmaller"
 mattype="fasta"
 schema_trf = "newick"
 configfi = "example.config"
@@ -24,6 +24,6 @@ wrappers_nonstandard.own_data_run(seqaln,
                  trfn,
                  schema_trf,
                  workdir,
-                 treshhold,
+		treshhold,
                  otu_json,
                  configfi)
