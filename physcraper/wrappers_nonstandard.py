@@ -69,7 +69,6 @@ def own_data_run(seqaln,
                  trfn,
                  schema_trf,
                  workdir,
-                 treshold,
                  spInfoDict,
                  configfi):
     '''looks for pickeled file to continue run, or builds and runs 

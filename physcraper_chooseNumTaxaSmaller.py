@@ -1,4 +1,4 @@
-from physcraper import wrappers_nonstandard
+from physcraper import wrappers_numTaxa
 import os
 
 
@@ -15,11 +15,11 @@ cwd = os.getcwd()
 treshhold=2
 
 
-otu_json = wrappers_nonstandard.OtuJsonDict(id_to_spn, configfi)
+otu_json = wrappers_numTaxa.OtuJsonDict(id_to_spn, configfi)
 
 
 
-wrappers_nonstandard.own_data_run(seqaln,
+wrappers_numTaxa.own_data_run(seqaln,
                  mattype,
                  trfn,
                  schema_trf,
