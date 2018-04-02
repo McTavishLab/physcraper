@@ -459,7 +459,7 @@ class AlignTreeTax(object):
         #self.aln.taxon_namespace=self.tre.taxon_namespace
         #assert self.aln.taxon_namespace == self.tre.taxon_namespace
         tax = self.aln.taxon_namespace.get_taxon(taxon_label)
-        assert(self.aln.taxon_namespace==self.tre.taxon_namespace)
+        #assert(self.aln.taxon_namespace==self.tre.taxon_namespace)
         # print(self.tre)
         # print(self.tre.taxon_namespace)
         if tax:
@@ -497,9 +497,11 @@ class AlignTreeTax(object):
         
         new_names = set()
         print(tmp_tre.taxon_namespace)
+        #print(tre.taxon_namespace)
         for taxon in tmp_tre.taxon_namespace:
-            
+            print(taxon)
             new_label = self.otu_dict[taxon.label].get(label)
+            print(new_label)
             if new_label:
                 if new_label in new_names:
                     new_label = " ".join([new_label, taxon.label])
@@ -525,6 +527,7 @@ class AlignTreeTax(object):
         # print(tmp_aln.as_string(schema="fasta"))
         tmp_aln.write(path="{}/{}".format(self.workdir, alnpath),
                       schema="fasta")
+        #print(something_stupid_tobreak)
     def dump(self, filename = "att_checkpoint.p"):
 #        frozen = jsonpickle.encode(self)
 #        with open('{}/{}'.format(self.workdir, filename), 'w') as pjson:
@@ -601,17 +604,22 @@ class IdDicts(object):
         print("no its this guy who takes ages")
 
         print(datetime.datetime.now())
-
         if gi in self.gi_ncbi_dict:
+            
             tax_id = int(self.gi_ncbi_dict[gi])
         else:
             try:
                 print("before bash")
                 print(datetime.datetime.now())
 
-                tax_id = int(subprocess.check_output(["bash", self.config.get_ncbi_taxonomy,
-                                                      "{}".format(gi),
-                                                      "{}".format(self.config.ncbi_dmp)]).split('\t')[1])
+                # tax_id = int(subprocess.check_output(["bash", self.config.get_ncbi_taxonomy,
+                #                                       "{}".format(gi),
+                #                                       "{}".format(self.config.ncbi_dmp)]).split('\t')[1])
+                
+                Entrez.email = 'kandzior@ucmerced.edu' #### don"t hardcode it
+                handle = Entrez.efetch(db="nucleotide",id=gi, retmode="xml")
+                tax_name = Entrez.read(handle)[0]['GBSeq_source']
+                tax_id = Entrez.read(Entrez.esearch(db="taxonomy",term=tax_name, RetMax = 100))['IdList'][0]
                 print("after bash")
                 print(datetime.datetime.now())
 
@@ -670,13 +678,16 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
         for key in self.data.otu_dict:
             try:
                 value = self.data.otu_dict[key]['^ot:ottTaxonName']
+                print(value)
             except:
                 value = self.data.otu_dict[key]['^user:TaxonName']
+                print(value)
 
     
             if value not in sp_d:
                 sp_d[value] = self.data.otu_dict[key]
-        self.sp_d
+            print(sp_d)    
+        #self.sp_d
                     
  #TODO is this the right place for this?
     def reset_markers(self):
@@ -809,7 +820,7 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
         self.data.dump()
 
 
-    def dump(self, filename = "scrape_checkpoint.p"):
+    def dump(self, filename = "ATT_checkpoint.p"):
 #        frozen = jsonpickle.encode(self)
 #        with open('{}/{}'.format(self.workdir, filename), 'w') as pjson:
 #            pjson.write(frozen)
