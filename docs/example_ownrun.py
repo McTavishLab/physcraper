@@ -8,7 +8,7 @@ trfn= "docs/owndata/its_new.tre"
 schema_trf = "newick"
 workdir="example_owndata_output_its"
 configfi = "example.config"
-id_to_spn = r"/home/blubb/sync-TP-T470s/physcraper_testing/uniquetip_to_name_its.csv"
+id_to_spn = r"docs/owndata/uniquetip_to_name_its.csv"
 cwd = os.getcwd()  
 
 

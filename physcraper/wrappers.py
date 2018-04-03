@@ -43,7 +43,6 @@ def standard_run(study_id,
         #read the config file into a configuration object
         conf = ConfigObj(configfi)
         aln = DnaCharacterMatrix.get(path=seqaln, schema=mattype)
-
         #Generate an linked Alignment-Tree-Taxa object
         data_obj = generate_ATT_from_phylesystem(aln=aln,
                              workdir=workdir,
