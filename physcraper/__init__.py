@@ -165,7 +165,7 @@ def generate_ATT_from_files(seqaln,
                             workdir,
                             treefile,
                             otu_json,
-                            schema_trf="newick",
+                            schema_trf = 'newick',
                             ingroup_mrca=None):
     """Build an ATT object without phylesystem.
     If no ingroup mrca ott_id is provided, will use all taxa in tree to calc mrca.
@@ -521,15 +521,20 @@ def get_mrca_ott(ott_ids):
     """finds the mrca of the taxa in the ingroup of the original
     tree. The blast search later is limited to descendents of this
     mrca according to the ncbi taxonomy"""
-
     if None in ott_ids:
         ott_ids.remove(None)
-    try:
-        mrca_node = tree_of_life.mrca(ott_ids=list(ott_ids), wrap_response=True)
-    except  RuntimeError:
-        sys.stderr.write("POST to get MRCA of ingroup failed - check internet connectivity, and or provide ingroup mrca OTT_ID, or check treemachine MRCA call\n")
-        sys.exit()
-    return mrca_node.nearest_taxon.ott_id
+    synth_tree_ott_ids = []
+    ott_ids_not_in_synth = []
+    for ott in ott_ids:
+        try:
+            tree_of_life.mrca(ott_ids=[ott], wrap_response=False)
+            synth_tree_ott_ids.append(ott)
+        except:
+            ott_ids_not_in_synth.append(ott) 
+    mrca_node = tree_of_life.mrca(ott_ids=synth_tree_ott_ids, wrap_response=False)# need to fix wrap eventually
+    tax_id = mrca_node[u'mrca'][u'taxon'][u'ott_id']
+    sys.stdout.write('MRCA of sampled taxa is {}\n'.format(mrca_node[u'mrca'][u'taxon'][u'name']))
+    return tax_id
 
 
 def get_ott_ids_from_otu_dict(otu_dict): #TODO put into data obj?

@@ -13,7 +13,8 @@ data_obj = generate_ATT_from_files(seqaln,
                         mattype,
                         workdir,
                         treefile,
-                        otu_json)
+                        otu_json,
+                        )
 
 
 conf = ConfigObj(configfi)
