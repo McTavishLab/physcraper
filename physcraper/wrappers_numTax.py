@@ -74,13 +74,9 @@ def own_data_run(seqaln,
                  configfi):
     '''looks for pickeled file to continue run, or builds and runs 
     new analysis for as long as new seqs are found'''
-    if os.path.isfile("{}/scrape_checkpoint.p".format(workdir)): 
-        sys.stdout.write("Reloading from pickled scrapefile: scrape\n")
-        scraper = pickle.load(open("{}/scrape_checkpoint.p".format(workdir),'rb'))
-        scraper.repeat = 1
-    elif os.path.isfile("{}/ATT_checkpoint.p".format(workdir)): 
+    if os.path.isfile("{}/att_checkpoint.p".format(workdir)): 
         sys.stdout.write("Reloading from pickled scrapefile: ATT\n")
-        scraper = pickle.load(open("{}/ATT_checkpoint.p".format(workdir),'rb'))
+        scraper = pickle.load(open("{}/att_checkpoint.p".format(workdir),'rb'))
         scraper.repeat = 1    
     else:   
 #            sync_names()
@@ -88,9 +84,12 @@ def own_data_run(seqaln,
         sys.stdout.flush()
         #read the config file into a configuration object
         conf = ConfigObj(configfi)
-        print(seqaln, mattype)
-        #aln = DnaCharacterMatrix.get(path=seqaln, schema=mattype)
-        
+        # print("config")
+        print(dir(conf))
+        print(conf.email)
+        # print(seqaln, mattype)
+        # #aln = DnaCharacterMatrix.get(path=seqaln, schema=mattype)
+
         #Generate an linked Alignment-Tree-Taxa object
         data_obj = generate_ATT_from_files(seqaln=seqaln, 
                              mattype=mattype, 
@@ -109,10 +108,32 @@ def own_data_run(seqaln,
         data_obj.write_labelled( label='user:TaxonName')
         data_obj.write_otus("otu_info", schema='table')
         data_obj.dump()
-        
-        ids = IdDicts(conf, workdir="example")
+    
+    #ids = IdDicts(conf, workdir="example")
+#         if os.path.isfile("{}/id_pickle.p".format(workdir)): 
 
+#         #if os.path.isfile(conf.id_pickle):
+#             sys.stdout.write("Reloading id dicts from {}\n".format(conf.id_pickle))
+# #        thawed_id = open(conf.id_json, 'r').readlines()
+# #        ids = jsonpickle.decode(thawed_id)
+# #        scraper.repeat = 1
+#             ids = pickle.load(open("{}/id_pickle.p".format(workdir),'rb'))
+#         else:
+    sys.stdout.write("setting up id dictionaries\n")
+    sys.stdout.flush()
+    if os.path.isfile("{}/id_pickle.p".format(workdir)): 
+        sys.stdout.write("Reloading from pickled scrapefile: id\n")
+        ids = pickle.load(open("{}/id_pickle.p".format(workdir),'rb'))
 
+    else:   
+        ids = IdDicts(conf, workdir=workdir)
+        ids.dump()
+
+    if os.path.isfile("{}/scrape_checkpoint.p".format(workdir)): 
+        sys.stdout.write("Reloading from pickled scrapefile: scrape\n")
+        scraper = pickle.load(open("{}/scrape_checkpoint.p".format(workdir),'rb'))
+        scraper.repeat = 1    
+    else:   
         #Now combine the data, the ids, and the configuration into a single physcraper scrape object
         scraper =  PhyscraperScrape(data_obj, ids, conf)
         #run the ananlyses
@@ -120,17 +141,23 @@ def own_data_run(seqaln,
         scraper.read_blast()
         scraper.remove_identical_seqs()
         scraper.dump()
-        scraper.sp_dict()
-        scraper.how_many_sp_to_keep(treshold=treshold)
-
-        scraper.generate_streamed_alignment()
+    print("make sp_dict")    
+    scraper.sp_dict()
+    scraper.how_many_sp_to_keep(treshold=treshold)
+    scraper.replace_new_seq()
+    scraper.generate_streamed_alignment(treshold)
     while scraper.repeat == 1: 
+        scraper.data.write_labelled(label='user:TaxonName')
+        scraper.data.write_otus("otu_info", schema='table')
         scraper.run_blast()
         scraper.read_blast()
         scraper.remove_identical_seqs()
 #        scraper.how_many_sp_to_keep(treshold=treshhold)
-
-        scraper.generate_streamed_alignment()
+        print("make sp_dict")    
+        scraper.sp_dict()
+        scraper.how_many_sp_to_keep(treshold=treshold)
+        scraper.replace_new_seq()
+        scraper.generate_streamed_alignment(treshold)
 
 
 # ott_ids = get_subtree_otus(nexson,

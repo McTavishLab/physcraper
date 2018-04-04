@@ -2,7 +2,7 @@
 import sys
 import os
 import subprocess
-import jsonpickle
+import json
 import pickle
 from physcraper import generate_ATT_from_phylesystem, generate_ATT_from_files, ConfigObj, IdDicts, PhyscraperScrape
 from dendropy import DnaCharacterMatrix
