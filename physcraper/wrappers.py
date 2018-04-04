@@ -120,12 +120,11 @@ def OtuJsonDict(id_to_spn, configfi):
             ncbiid = name2taxid.items()[0][1][0]
             ott = ottdic.ncbi_to_ott[ncbiid]
             spn = ottdic.ott_to_name[ott]
-            get_info = {'^ncbiID': ncbiid, '^ot:ottTaxonName': spn, 'ot:ottId': ott, '^user:TaxonName': spInfo[item],  '^physcraper:status': 'original','^physcraper:last_blasted' : "1900/01/01" }  
+            get_info = {'^ncbiID': ncbiid, '^ot:ottTaxonName': spn, '^ot:ottId': ott, '^user:TaxonName': spInfo[item],  '^physcraper:status': 'original','^physcraper:last_blasted' : "1900/01/01" }  
             spInfoDict[item] = get_info
         else:
             
             spInfoDict[item] = {'^user:TaxonName': spInfo[item],  '^physcraper:status': 'original','^physcraper:last_blasted' : "1900/01/01"}
-    print(spInfoDict)
     return  spInfoDict 
 
 

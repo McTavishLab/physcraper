@@ -156,7 +156,7 @@ def convert(data):
     else:
         return data
 
-import inspect
+
 
 
 
@@ -189,7 +189,6 @@ def generate_ATT_from_files(seqaln,
     else:
         otu_dict = json.load(open(otu_json,"r"))
         ott_ids = [otu_dict[otu].get(u'^ot:ottId',) for otu in otu_dict]
-        print ott_ids
         ott_ids = filter(None, ott_ids)
         #for ottid in ott_ids:
         ott_ids = set(ott_ids)
@@ -307,7 +306,6 @@ class AlignTreeTax(object):
             self.otu_dict[tax.label]['physcraper:status'] = "deleted in prune short"
             self.aln.taxon_namespace.remove_taxon(tax)
         assert self.aln.taxon_namespace == self.tre.taxon_namespace
-
         self.orig_seqlen = [len(self.aln[tax].symbols_as_string().replace("-", "").replace("N", "")) for tax in self.aln]
         self.reconcile()
 
@@ -325,7 +323,8 @@ class AlignTreeTax(object):
             fi = open("{}/pruned_taxa".format(self.workdir), 'a')
             fi.write("Taxa pruned from tree and alignment in reconcilation step due to sequence shorter than {}\n".format(seq_len_cutoff))
             for tax in prune:
-                fi.write("{}, {}\n".format(tax.label, self.otu_dict[tax.label].get('^ot:originalLabel')))
+                print tax.label, otu_dict.get(tax.label)
+                fi.write("{}, {}\n".format(tax.label, self.otu_dict.get(tax.label).get('^ot:originalLabel')))
             fi.close()
         for tax in prune:
             self.otu_dict[tax.label]['physcraper:status'] = "deleted in reconcile"
