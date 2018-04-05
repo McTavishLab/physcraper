@@ -22,7 +22,7 @@ from dendropy import Tree,\
                      DataSet,\
                      datamodel
 from peyotl.api.phylesystem_api import PhylesystemAPI
-from peyotl.sugar import tree_of_life, taxonomy
+from peyotl.sugar import tree_of_life
 from peyotl.nexson_syntax import extract_tree,\
                                  extract_tree_nexson,\
                                  get_subtree_otus,\
@@ -534,8 +534,12 @@ def get_mrca_ott(ott_ids):
         except:
             ott_ids_not_in_synth.append(ott) 
     mrca_node = tree_of_life.mrca(ott_ids=synth_tree_ott_ids, wrap_response=False)# need to fix wrap eventually
-    tax_id = mrca_node[u'mrca'][u'taxon'][u'ott_id']
-    sys.stdout.write('MRCA of sampled taxa is {}\n'.format(mrca_node[u'mrca'][u'taxon'][u'name']))
+    try:
+        tax_id = mrca_node[u'mrca'][u'taxon'][u'ott_id']
+        sys.stdout.write('MRCA of sampled taxa is {}\n'.format(mrca_node[u'mrca'][u'taxon'][u'name']))
+    except: #Hackaround for V2 apis
+        tax_id = mrca_node[u'nearest_taxon_mrca_ott_id']
+        sys.stdout.write('MRCA of sampled taxa is {}\n'.format(mrca_node[ u'nearest_taxon_mrca_unique_name']))
     return tax_id
 
 
