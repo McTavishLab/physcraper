@@ -1,5 +1,8 @@
 from physcraper import generate_ATT_from_phylesystem, generate_ATT_from_files, ConfigObj, IdDicts,  PhyscraperScrape
+<<<<<<< Updated upstream
 import dendropy
+=======
+>>>>>>> Stashed changes
 import pickle
 import sys
 import os
@@ -26,6 +29,7 @@ data_obj = generate_ATT_from_phylesystem(aln,
 
 
 data_obj.prune_short()
+
 data_obj.write_files()
 data_obj.write_labelled()
 
