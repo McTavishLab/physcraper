@@ -193,15 +193,13 @@ def generate_ATT_from_files(seqaln,
         #for ottid in ott_ids:
         ott_ids = set(ott_ids)
         ott_mrca = get_mrca_ott(ott_ids)
-    return AlignTreeTax(otu_newick, otu_json, aln, ingroup_mrca=ott_mrca, workdir=workdir, schema=schema_trf)#, taxon_namespace=global_taxonnamespace)
+    return AlignTreeTax(otu_newick, otu_dict, aln, ingroup_mrca=ott_mrca, workdir=workdir, schema=schema_trf)#, taxon_namespace=global_taxonnamespace)
 
 
 class AlignTreeTax(object):
     """wrap up the key parts together, requires OTT_id, and names must already match """
     def __init__(self, newick, otu_dict, alignment, ingroup_mrca, workdir, schema=None, taxon_namespace=None ):
-
-
-
+        #TODO add assertions that inputs are correct type!!!
         self.otu_taxonlabel_problem={}
         self.aln = alignment
         # print('key match')
@@ -323,7 +321,6 @@ class AlignTreeTax(object):
             fi = open("{}/pruned_taxa".format(self.workdir), 'a')
             fi.write("Taxa pruned from tree and alignment in reconcilation step due to sequence shorter than {}\n".format(seq_len_cutoff))
             for tax in prune:
-                print tax.label, otu_dict.get(tax.label)
                 fi.write("{}, {}\n".format(tax.label, self.otu_dict.get(tax.label).get('^ot:originalLabel')))
             fi.close()
         for tax in prune:
