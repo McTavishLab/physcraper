@@ -355,10 +355,9 @@ class AlignTreeTax(object):
      #           sys.stderr.write("{} was in otu dict but not alignment. it should be in new seqs...\n".format(key)
         self.trim()
         self._reconciled = 1
-
-    def trim(self, taxon_missingness=0.75):#TODO add to config
-        '''cuts off ends of alignemnet, mainiting similar to original seq len
-        IMportant bc other while whole chomeoosmes get dragged in!'''
+    def trim(self, taxon_missingness = 0.75):
+        '''cuts off ends of alignment, maintaining similar to original seq len
+        Important bc other while whole chromosomes get dragged in!'''
         seqlen = len(self.aln[0])
         for tax in self.aln:
             if len(self.aln[tax]) != seqlen:
