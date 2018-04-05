@@ -3,6 +3,7 @@ import pickle
 import sys
 import os
 import subprocess
+import json
 import csv
 from ete2 import NCBITaxa
 from physcraper import generate_ATT_from_phylesystem, generate_ATT_from_files, ConfigObj, IdDicts, PhyscraperScrape
