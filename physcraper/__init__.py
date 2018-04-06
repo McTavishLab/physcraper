@@ -51,6 +51,8 @@ class ConfigObj(object):
     the config file and makes it easier to pass
     around and store."""
     def __init__(self, configfi):
+        if __debug__:
+             sys.stderr.write("Building config object\n")
         assert os.path.isfile(configfi)
         config = configparser.ConfigParser()
         config.read(configfi)
@@ -77,8 +79,10 @@ class ConfigObj(object):
 #ATT is a dumb acronym for Alignment Tree Taxa object
 def get_dataset_from_treebase(study_id,
                               phylesystem_loc='api'):
-    """gets alignment and tree directly from treebase"""
-    nexson = get_nexson(study_id, phylesystem_loc)
+    try:
+        nexson = get_nexson(study_id, phylesystem_loc)
+    except:
+        sys.stderr.write("couldn't find study id {} in phylesystem location {}\n".format(study_id, phylesystem_loc))
     treebase_url = nexson['nexml'][u'^ot:dataDeposit'][u'@href']
     if 'treebase' not in nexson['nexml'][u'^ot:dataDeposit'][u'@href']:
         sys.stderr.write("No treebase record associated with study ")
@@ -204,7 +208,7 @@ class AlignTreeTax(object):
         self.aln = alignment
         # print('key match')
         #make new otu dict
-        for key in self.aln.taxon_namespace:
+        for key in self.aln.taxon_namespace: #MK_TODO this should get pull out into a function
             # print(key)
             # print(str(key))
             match = re.match("'n[0-9]{1,3}", str(key))
@@ -222,20 +226,24 @@ class AlignTreeTax(object):
                 newname=newname[1:]
                 # print(newname) 
             self.otu_taxonlabel_problem[key.label]= newname
-
-        if schema != None:
-            self.tre = Tree.get(data=newick,
-                            schema=schema,
-                            preserve_underscores=True,
-                            taxon_namespace=self.aln.taxon_namespace)
-        else:
+        if schema == None:
             self.tre = Tree.get(data=newick,
                             schema="newick",
                             preserve_underscores=True,
                             taxon_namespace=self.aln.taxon_namespace)
+        else:
+            self.tre = Tree.get(data=newick,
+                            schema=schema,
+                            preserve_underscores=True,
+                            taxon_namespace=self.aln.taxon_namespace)
 
         assert(self.tre.taxon_namespace is self.aln.taxon_namespace)
-    
+        assert isinstance(self.aln, datamodel.charmatrixmodel.DnaCharacterMatrix)
+        self.tre = Tree.get(data=newick,
+                            schema="newick",
+                            preserve_underscores=True,
+                            taxon_namespace=self.aln.taxon_namespace)
+        assert isinstance(otu_dict, dict)
         self.otu_dict = otu_dict
         self.ps_otu = 1 #iterator for new otu IDs
         self._reconcile_names()
