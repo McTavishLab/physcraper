@@ -162,14 +162,12 @@ def convert(data):
     else:
         return data
 
-
-
 def generate_ATT_from_files(seqaln,
                             mattype,
                             workdir,
                             treefile,
+                            schema_trf,
                             otu_json,
-                            schema_trf = 'newick',
                             ingroup_mrca=None):
     """Build an ATT object without phylesystem.
     If no ingroup mrca ott_id is provided, will use all taxa in tree to calc mrca.
@@ -191,14 +189,13 @@ def generate_ATT_from_files(seqaln,
     if ingroup_mrca:
         ott_mrca = int(ingroup_mrca)
     else:
-        otu_dict = json.load(open(otu_json,"r"))
-        ott_ids = [otu_dict[otu].get(u'^ot:ottId',) for otu in otu_dict]
+        ott_ids = [otu_json[otu].get('ot:ottId') for otu in otu_json]
         ott_ids = filter(None, ott_ids)
         #for ottid in ott_ids:
         ott_ids = set(ott_ids)
         ott_mrca = get_mrca_ott(ott_ids)
-    return AlignTreeTax(otu_newick, otu_dict, aln, ingroup_mrca=ott_mrca, workdir=workdir, schema=schema_trf)#, taxon_namespace=global_taxonnamespace)
 
+    return AlignTreeTax(otu_newick, otu_json, aln, ingroup_mrca=ott_mrca, workdir=workdir, schema=schema_trf)#, taxon_namespace=global_taxonnamespace)
 
 class AlignTreeTax(object):
     """wrap up the key parts together, requires OTT_id, and names must already match """
