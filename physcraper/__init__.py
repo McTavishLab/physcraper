@@ -166,8 +166,8 @@ def generate_ATT_from_files(seqaln,
                             mattype,
                             workdir,
                             treefile,
-                            schema_trf,
                             otu_json,
+                            schema_trf="newick",
                             ingroup_mrca=None):
     """Build an ATT object without phylesystem.
     If no ingroup mrca ott_id is provided, will use all taxa in tree to calc mrca.
