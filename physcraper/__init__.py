@@ -45,13 +45,14 @@ def is_number(s):
     except ValueError:
         return False
 
+_DEBUG = 0
 
 class ConfigObj(object):
     """Pulls out the configuration information from
     the config file and makes it easier to pass
     around and store."""
     def __init__(self, configfi):
-        if __debug__:
+        if _DEBUG:
              sys.stderr.write("Building config object\n")
         assert os.path.isfile(configfi)
         config = configparser.ConfigParser()
@@ -72,7 +73,7 @@ class ConfigObj(object):
         assert(self.phylesystem_loc in ['local', 'api'])
         self.ott_ncbi = config['taxonomy']['ott_ncbi']
         assert os.path.isfile(self.ott_ncbi)
-        self.id_pickle = os.path.abspath(config['taxonomy']['id_pickle'])
+        self.id_pickle = os.path.abspath(config['taxonomy']['id_pickle'])#TODO what is theis doing again?
         self.email = config['blast']['Entrez.email']
 
 

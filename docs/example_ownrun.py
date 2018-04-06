@@ -10,7 +10,7 @@ schema_trf = "newick"
 workdir="example_owndata_output_its"
 configfi = "example.config"
 id_to_spn = r"docs/owndata/uniquetip_to_name_its.csv"
-otu_jsonfi = "example_owndata_output_its/otu_dict.json"
+otu_jsonfi = "{}/otu_dict.json".format(workdir)
 
 cwd = os.getcwd()  
 
