@@ -18,8 +18,7 @@ if not os.path.exists(otu_jsonfi):
     otu_json = wrappers.OtuJsonDict(id_to_spn, configfi)
     if not os.path.exists(workdir):
        os.mkdir(workdir)
-    with open(otu_jsonfi,"w") as outfile:
-        json.dump(otu_json, outfile)
+       json.dump(otu_json, outfile)
 
 wrappers.own_data_run(seqaln,
                  mattype,
