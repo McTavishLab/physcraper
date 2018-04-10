@@ -45,7 +45,7 @@ def is_number(s):
     except ValueError:
         return False
 
-_DEBUG = 0
+_DEBUG = 1
 
 class ConfigObj(object):
     """Pulls out the configuration information from
@@ -90,7 +90,11 @@ def get_dataset_from_treebase(study_id,
         sys.exit()
     else:
         tb_id = treebase_url.split(':S')[1]
-        dna = DataSet.get(url="https://treebase.org/treebase-web/search/downloadAStudy.html?id={}&format=nexml".format(tb_id),
+        url = "https://treebase.org/treebase-web/search/downloadAStudy.html?id={}&format=nexus".format(tb_id)
+#        url = "http://treebase.org/treebase-web/phylows/study/TB2:S{}?format=nexml".format(tb_id)
+        if _DEBUG:
+             sys.stderr.write(url +"\n")
+        dna = DataSet.get(url=url,
                           schema="nexml")
         return dna
 
@@ -115,8 +119,6 @@ def generate_ATT_from_phylesystem(aln,
                                tree_id=tree_id,
                                subtree_id="ingroup",
                                return_format="ottid")
-    # print("ottids")
-    # print(ott_ids)
     ott_mrca = get_mrca_ott(ott_ids)
     newick = extract_tree(nexson,
                           tree_id,
@@ -129,8 +131,6 @@ def generate_ATT_from_phylesystem(aln,
                    schema="newick",
                    preserve_underscores=True,
                    taxon_namespace=aln.taxon_namespace)
-    # print("tree")
-    # print(tre)
     otus = get_subtree_otus(nexson, tree_id=tree_id)
     otu_dict = {}
     orig_lab_to_otu = {}
@@ -193,7 +193,6 @@ def generate_ATT_from_files(seqaln,
         otu_dict = json.load(open(otu_json,"r"))
         ott_ids = [otu_dict[otu].get(u'^ot:ottId',) for otu in otu_dict]
         ott_ids = filter(None, ott_ids)
-        #for ottid in ott_ids:
         ott_ids = set(ott_ids)
         ott_mrca = get_mrca_ott(ott_ids)
 
@@ -205,8 +204,6 @@ class AlignTreeTax(object):
         #TODO add assertions that inputs are correct type!!!
         self.otu_taxonlabel_problem={}
         self.aln = alignment
-        # print('key match')
-        #make new otu dict
         for key in self.aln.taxon_namespace: #MK_TODO this should get pull out into a function
             # print(key)
             # print(str(key))
@@ -345,11 +342,9 @@ class AlignTreeTax(object):
         for leaf in self.tre.leaf_nodes():
             treed_taxa.add(leaf.taxon.label)
             if leaf.taxon.label not in aln_ids:
-       #         print("leaf not in aln ids")
                 self.otu_dict[leaf.taxon.label]['physcraper:status'] = "deleted due to presence in tree but not aln. ?!"
                 orphaned_leafs.add(leaf)
-                
-                # print(self.otu_taxonlabel_problem.keys())
+                print(self.otu_taxonlabel_problem.keys())
                 self.otu_dict[leaf.taxon.label]['physcraper:status'] = "deleted due to presence in tree but not aln. ?!"
                 #orphaned_leafs.add(leaf)
                
@@ -358,8 +353,8 @@ class AlignTreeTax(object):
         
         assert treed_taxa.issubset(aln_ids)
        # for key in  self.otu_dict.keys():
-      #      if key not in aln_ids:
-     #           sys.stderr.write("{} was in otu dict but not alignment. it should be in new seqs...\n".format(key)
+       #      if key not in aln_ids:
+       #           sys.stderr.write("{} was in otu dict but not alignment. it should be in new seqs...\n".format(key)
         self.trim()
         self._reconciled = 1
     def trim(self, taxon_missingness = 0.75):
@@ -413,8 +408,7 @@ class AlignTreeTax(object):
     def write_papara_files(self, treefilename="random_resolve.tre", alnfilename="aln_ott.phy"):
         """Papara is finicky about trees and needs phylip, this writes out needed files for papara
         (except query sequences)"""
-        #CAN I even evaulte things in the function definitions?
-   #     print("write papara files")
+        # print("write papara files")
         # print(self.tre.taxon_namespace)
         # print(self.tre.as_string(schema="newick"))
         self.tre.resolve_polytomies()
@@ -458,12 +452,12 @@ class AlignTreeTax(object):
     
 
     def write_labelled(self, label, treepath="labelled.tre", alnpath="labelled.fas"):
-        """output tree and alignement with human readble labels
+        """output tree and alignement with human readable labels
         Jumps through abunch of hoops to make labels unique.
         NOT MEMORY EFFICIENT AT ALL"""
-      #  print("write labelled files")
+        # print("write labelled files")
         assert label in ['^ot:ottTaxonName','user:TaxonName', "^ot:originalLabel", "^ot:ottId", "^ncbi:taxon"]
-        #print(label)
+        # print(label)
         tmp_newick = self.tre.as_string(schema="newick")
         tmp_tre = Tree.get(data=tmp_newick,
                            schema="newick",
@@ -472,8 +466,6 @@ class AlignTreeTax(object):
 
         tmp_aln = DnaCharacterMatrix.get(data=tmp_fasta,
                                          schema="fasta")
-        #,
-        #                                 taxon_namespace=tmp_tre.taxon_namespace)
         new_names = set()
         for taxon in tmp_tre.taxon_namespace:      
             new_label = self.otu_dict[taxon.label].get(label)
@@ -500,7 +492,6 @@ class AlignTreeTax(object):
                     new_label = " ".join([new_label, taxon.label])
                 new_names.add(new_label)
                 taxon.label = new_label
-            print(taxon.label)
     
         tmp_tre.write(path="{}/{}".format(self.workdir, treepath),
                       schema="newick",
@@ -508,7 +499,6 @@ class AlignTreeTax(object):
                       suppress_edge_lengths=False)
         tmp_aln.write(path="{}/{}".format(self.workdir, alnpath),
                       schema="fasta")
-        #print(something_stupid_tobreak)
     def dump(self, filename = "att_checkpoint.p"):
 #        frozen = jsonpickle.encode(self)
 #        with open('{}/{}'.format(self.workdir, filename), 'w') as pjson:
@@ -516,14 +506,11 @@ class AlignTreeTax(object):
         pickle.dump(self, open("{}/{}".format(self.workdir,filename), "wb" ) )
         #TODO... write as proper nexml?!
 
-
-
 def get_nexson(study_id, phylesystem_loc):
     """Grabs nexson from phylesystem"""
     phy = PhylesystemAPI(get_from=phylesystem_loc)
     nexson = phy.get_study(study_id)['data']
     return  nexson
-
 
 def get_mrca_ott(ott_ids):
     """finds the mrca of the taxa in the ingroup of the original
@@ -589,22 +576,15 @@ class IdDicts(object):
 #        self.gi_ncbi_dict[gi] = tax_id
     def map_gi_ncbi(self, gi):
         """get the ncbi taxon id's for a gi input"""
-
-
 # #        mapped_taxon_ids = open("{}/id_map.txt".format(self.workdir), "a")
-#         print("map_gi_ncbi")
-#         print("no its this guy who takes ages")
-
-#         print(datetime.datetime.now())
-        print("gi")
-        print(gi)
+        if _DEBUG:
+            sys.stderr.write(datetime.datetime.now())
+            sys.stderr.write("gi {}".format(gi))
         if gi in self.gi_ncbi_dict:
-            
             tax_id = int(self.gi_ncbi_dict[gi])
         else:
-            
-            print("get taxid")
-
+            if _DEBUG:
+                sys.stderr.write("get taxid")
             Entrez.email = self.config.email
             handle = Entrez.efetch(db="nucleotide",id=gi, retmode="xml")
             tax_name = Entrez.read(handle)[0]['GBSeq_source']
@@ -655,24 +635,12 @@ class IdDicts(object):
         #tax_id = Entrez.read(Entrez.esearch(db="taxonomy",term=tax_name, RetMax = 100))['IdList'][0]
 #         tax_id = Entrez.read(Entrez.esearch(db="taxonomy",term=tax_name, RetMax = 100))['IdList'][0]
 #                         
-
-
-
-
-
-
-
             try:
                 assert tax_id
 
             except:
                 print("entrez query did not work")
                 tax_id = 0
-                  #if this doesn't work then the gi to taxon mapping needs to be updated - shouldhappen anyhow perhaps?!
-        # mapped_taxon_ids.close()
-            # print('tax_id')
-            # print(tax_id)
-
         return tax_id
     def dump(self):
         filename = "id_pickle.p"
@@ -681,8 +649,6 @@ class IdDicts(object):
 #            pjson.write(frozen)
         pickle.dump(IdDicts, open("{}/{}".format(self.workdir,filename), "wb" ) )
         
-    
-#self.orig_seqlen = []
 
 class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in a different way?!
     #set up needed variables as nones here?!
@@ -849,29 +815,24 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
         #TODO... write as proper nexml?!    
 
     def how_many_sp_to_keep(self, treshold):
-        print("in how many sp to keep")
+        if _DEBUG:
+            sys.stderr.write("in how many sp to keep func\n")
 
         sp_in_aln = self.sp_d
 
         #sp_blast = self.new_seqs
-        print("ncbi taxon id with blast seq info in list")
-        print(sp_in_aln)
-
-        print("gi and new_seqs")
-        print(self.new_seqs)
+        if _DEBUG:
+            sys.stderr.write("ncbi taxon id with blast seq info in list {}\n".format(sp_in_aln))
+            sys.stderr.write("gi and new_seqs{}\n".format(self.newseqs))
         # print('give otu id and seq')
         # print(self.new_seqs_otu_id)
         # print(" next is dict with otu id key and all other numbers")
         # print(self.data.otu_dict)
-        print("self.seq_dict_build")
-
-        print(self.seq_dict_build)
-        print(dir(self.seq_dict_build))
+            sys.stderr.write("self.seq_dict_build")
+            sys.stderr.write(self.seq_dict_build)
+            sys.stderr.write(dir(self.seq_dict_build))
         # read blast data to check similarity of sequences: copy of read_blast
-        print(self.seq_dict_build.__getattribute__)
-        
-
-
+            sys.stderr.write(self.seq_dict_build.__getattribute__)
         blast_dir = self.blast_subdir        
         self.new_seqs_dic = {}
         for key in self.sp_d:
