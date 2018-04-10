@@ -10,7 +10,7 @@ workdir="example_owndata_output_its"
 configfi = "example.config"
 id_to_spn = r"docs/owndata/uniquetip_to_name_its.csv"
 cwd = os.getcwd()  
-
+treshold=1000
 
 
 otu_json = wrappers_nonstandard.OtuJsonDict(id_to_spn, configfi)
@@ -22,5 +22,6 @@ wrappers_nonstandard.own_data_run(seqaln,
                  trfn,
                  schema_trf,
                  workdir,
+                 treshold,
                  otu_json,
                  configfi)

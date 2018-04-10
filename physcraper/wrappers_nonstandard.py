@@ -69,6 +69,7 @@ def own_data_run(seqaln,
                  trfn,
                  schema_trf,
                  workdir,
+                 treshold,
                  spInfoDict,
                  configfi):
     '''looks for pickeled file to continue run, or builds and runs 
@@ -118,14 +119,14 @@ def own_data_run(seqaln,
         # scraper.sp_dict()
         # scraper.how_many_sp_to_keep(treshold=treshold)
 
-        scraper.generate_streamed_alignment()
+        scraper.generate_streamed_alignment(treshold)
     while scraper.repeat == 1: 
         scraper.run_blast()
         scraper.read_blast()
         scraper.remove_identical_seqs()
 #        scraper.how_many_sp_to_keep(treshold=treshhold)
 
-        scraper.generate_streamed_alignment()
+        scraper.generate_streamed_alignment(treshold)
 
 
 # ott_ids = get_subtree_otus(nexson,
