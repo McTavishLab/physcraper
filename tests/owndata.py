@@ -9,13 +9,17 @@ seqaln= "docs/owndata/senecio_its.fasta"
 mattype="fasta"
 trfn= "docs/owndata/its_new.tre"
 schema_trf = "newick"
-workdir="tests/owndata"
+workdir="tests_owndata"
 configfi = "example.config"
 id_to_spn = r"docs/owndata/uniquetip_to_name_its.csv"
 otu_jsonfi = "{}/otu_dict.json".format(workdir)
 
 """Tests if your own input files will generate a data object of class AlignTreeTax
 """
+
+if not os.path.exists("{}".format(workdir)):
+	os.makedirs("{}".format(workdir))
+
 
 otu_json = wrappers.OtuJsonDict(id_to_spn, configfi)
 with open(otu_jsonfi,"w") as outfile:
