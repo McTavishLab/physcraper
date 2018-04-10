@@ -1230,13 +1230,14 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
                               "-n", "{}".format(self.date)])
         os.chdir('..')#TODO mordir not always one down!
         self._full_tree_est = 1
-    def generate_streamed_alignment(self, treshold):
+    def generate_streamed_alignment(self, treshold=None):
         """runs the key steps and then replaces the tree and alignme nt with the expanded ones"""
         self.read_blast()
         self.data.dump()
-        self.sp_dict()
-        self.how_many_sp_to_keep(treshold)
-        self.replace_new_seq()
+	if treshold!=None:
+	        self.sp_dict()
+        	self.how_many_sp_to_keep(treshold)
+        	self.replace_new_seq()
 #        frozen = jsonpickle.encode(self.data)
 #        pjson = open('{}/att_checkpoint.json'.format(self.workdir), 'wb')
 #        pjson.write(frozen)
