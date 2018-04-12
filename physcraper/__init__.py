@@ -707,8 +707,10 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
                     if not os.path.isfile(xml_fi):
                         sys.stdout.write("blasting seq {}\n".format(taxon.label))
                         try:
-                            result_handle = NCBIWWW.qblast("blastn", "nt",
-                                                           query,
+                            result_handle = NCBIWWW.qblast("blastn",
+                                                           "nt",
+                                                            query,
+                                                           url_base ="http://ec2-54-164-191-132.compute-1.amazonaws.com/cgi-bin/blast.cgi",
                                                            entrez_query=equery,
                                                            hitlist_size=self.config.hitlist_size)
                             save_file = open(xml_fi, "w")
