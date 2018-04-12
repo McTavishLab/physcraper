@@ -578,7 +578,7 @@ class IdDicts(object):
         """get the ncbi taxon id's for a gi input"""
 # #        mapped_taxon_ids = open("{}/id_map.txt".format(self.workdir), "a")
         if _DEBUG:
-            sys.stderr.write(datetime.datetime.now())
+#            sys.stderr.write(datetime.datetime.now())
             sys.stderr.write("gi {}".format(gi))
         if gi in self.gi_ncbi_dict:
             tax_id = int(self.gi_ncbi_dict[gi])

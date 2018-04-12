@@ -88,7 +88,7 @@ def standard_run(study_id,
     scraper.remove_identical_seqs()
     scraper.generate_streamed_alignment()
     while scraper.repeat == 1:
-        scraper.data.write_labelled()
+        scraper.data.write_labelled(label=  '^ot:ottTaxonName')
         scraper.data.write_otus("otu_info", schema='table')
         scraper.run_blast()
         scraper.read_blast()
