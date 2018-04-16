@@ -71,13 +71,14 @@ def own_data_run(seqaln,
                  workdir,
                  treshold,
                  selectby,
+                 downtorank,
                  spInfoDict,
                  configfi):
     '''looks for pickeled file to continue run, or builds and runs 
     new analysis for as long as new seqs are found'''
-    if os.path.isfile("{}/att_checkpoint.p".format(workdir)): 
-        sys.stdout.write("Reloading from pickled scrapefile: ATT\n")
-        scraper = pickle.load(open("{}/att_checkpoint.p".format(workdir),'rb'))
+    if os.path.isfile("{}/scrape_checkpoint.p".format(workdir)): 
+        sys.stdout.write("Reloading from pickled scrapefile: scrape\n")
+        scraper = pickle.load(open("{}/scrape_checkpoint.p".format(workdir),'rb'))
         scraper.repeat = 1    
     else:   
 #            sync_names()
@@ -143,7 +144,7 @@ def own_data_run(seqaln,
         scraper.remove_identical_seqs()
         scraper.dump()
         print("make sp_dict")    
-        scraper.sp_dict()
+        scraper.sp_dict(downtorank)
         scraper.make_new_seq_dict(treshold=treshold, selectby=selectby)
         scraper.how_many_sp_to_keep(treshold=treshold, selectby=selectby)
         scraper.replace_new_seq()
@@ -157,7 +158,7 @@ def own_data_run(seqaln,
         scraper.remove_identical_seqs()
 #        scraper.how_many_sp_to_keep(treshold=treshhold)
         print("make sp_dict")    
-        scraper.sp_dict()
+        scraper.sp_dict(downtorank)
         scraper.make_new_seq_dict(treshold=treshold, selectby=selectby)
 
         scraper.how_many_sp_to_keep(treshold=treshold, selectby=selectby)
