@@ -9,3 +9,5 @@ peyotl/
 standard-RAxML
 *.aux
 *.log
+*egg*
+build
