@@ -997,20 +997,6 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
                             self.new_seqs_dic[userName.label] = seq 
 
     def replace_new_seq(self):
-        # print("self.data.add_otu")
-        # print(self.data.add_otu)
-        
-        # print(something)
-
-
-        print("self.data.gi_dict")
-        print(self.data.gi_dict)
-
-
-
-
-
-
         keylist = self.new_seqs_dic.keys()
         keylist = [x for x in keylist if type(x) == int]
         print(keylist)
@@ -1031,8 +1017,6 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
             print(type(key))
             if type(key)==int: 
                 self.new_seqs[key] = self.new_seqs_dic[key]
-
-
 
     def sp_dict(self):
         print("make sp_dict")
