@@ -15,6 +15,7 @@ import configparser
 import json
 import pickle
 from Bio.Blast import NCBIWWW, NCBIXML
+import physcraper.AWSWWW as AWSWWW
 from Bio.Blast.Applications import NcbiblastxCommandline
 from Bio import SeqIO, Entrez
 from dendropy import Tree,\
@@ -76,6 +77,10 @@ class ConfigObj(object):
         self.id_pickle = os.path.abspath(config['taxonomy']['id_pickle'])#TODO what is theis doing again?
         self.email = config['blast']['Entrez.email']
         # self.blastdb = config["blast"]["localblastdb_wd"]
+        self.url_base = config['blast'].get('url_base')
+        if _DEBUG:
+            sys.stderr.write("{}\n".format(self.email))
+            sys.stderr.write("{}\n".format(self.url_base))
 
 
 #ATT is a dumb acronym for Alignment Tree Taxa object
@@ -405,6 +410,8 @@ class AlignTreeTax(object):
         self.otu_dict[otu_id]['^physcraper:status'] = "query"
         self.otu_dict[otu_id]['^ot:ottTaxonName'] = ids_obj.ott_to_name.get(self.otu_dict[otu_id]['^ot:ottId'])
         self.otu_dict[otu_id]['^physcraper:last_blasted'] = "1900/01/01"#TODO check propagation...
+        if _DEBUG:
+            sys.stderr.write("gi:{} assigned new otu: {}\n".format(gi, otu_id))
         return otu_id
     def write_papara_files(self, treefilename="random_resolve.tre", alnfilename="aln_ott.phy"):
         """Papara is finicky about trees and needs phylip, this writes out needed files for papara
@@ -567,86 +574,81 @@ class IdDicts(object):
             assert len(self.ncbi_to_ott) > 0
             assert len(self.ott_to_name) > 0
         fi.close()
-#        if os.path.isfile("{}/id_map.txt".format(workdir)): #todo config?!
-#            fi = open("{}/id_map.txt".format(workdir))
-#            for lin in fi:
-#                self.gi_ncbi_dict[int(lin.split(",")[0])] = lin.split(",")[1]
-#    def add_gi(self, gi, tax_id):
-#        """adds the newly added ncbi identifier to dictionary"""
-#        assert self.gi_ncbi_dict.get(gi, None) is None
-#        self.gi_ncbi_dict[gi] = tax_id
+        if os.path.isfile("{}/id_map.txt".format(workdir)): #todo config?!
+            fi = open("{}/id_map.txt".format(workdir))
+            for lin in fi:
+                self.gi_ncbi_dict[int(lin.split(",")[0])] = lin.split(",")[1]
     def map_gi_ncbi(self, gi):
         """get the ncbi taxon id's for a gi input"""
+# <<<<<<< HEAD
 # #        mapped_taxon_ids = open("{}/id_map.txt".format(self.workdir), "a")
         if gi in self.gi_ncbi_dict:
             tax_id = int(self.gi_ncbi_dict[gi])
         else:
-            if _DEBUG:
-                print("get taxid")
-            Entrez.email = self.config.email
-            # print(Entrez.email)
-            # print(gi)
-            handle = Entrez.efetch(db="nucleotide",id=gi, retmode="xml")
-            tax_name = Entrez.read(handle)[0]['GBSeq_source']
+#             if _DEBUG:
+#                 print("get taxid")
+#             Entrez.email = self.config.email
+#             # print(Entrez.email)
+#             # print(gi)
+#             handle = Entrez.efetch(db="nucleotide",id=gi, retmode="xml")
+#             tax_name = Entrez.read(handle)[0]['GBSeq_source']
 
-### !!!! NCBITaxa seems to be a bit slower than the genbank query but more reliabale!
-            ncbi = NCBITaxa()    
-            tax_info = ncbi.get_name_translator([tax_name])
-            tax_id = tax_info.items()[0][1][0]
-
-                #tax_id = Entrez.read(Entrez.esearch(db="taxonomy",term=tax_name, RetMax = 100))['IdList'][0]
-            # print(tax_id)
-#             try:
-#                 print("in try")
-#                 # print("before bash")
-#                 # print(datetime.datetime.now())
-
-#                 # tax_id = int(subprocess.check_output(["bash", self.config.get_ncbi_taxonomy,
-#                 #                                       "{}".format(gi),
-#                 #                                       "{}".format(self.config.ncbi_dmp)]).split('\t')[1])
-                
-                
-#                 # print(gi)
-#                 # print(tax_name)
-                
-# 
-#                 #tax_id = Entrez.read(Entrez.esearch(db="taxonomy",term=tax_name, RetMax = 100))['IdList'][0]
-#            
-#             except:
-#                  os.system("rsync -av ftp.ncbi.nih.gov::pub/taxonomy/gi_taxid_nucl.dmp.gz {}.gz".format(self.config.ncbi_dmp))
-#  #               os.system("tar -xzvf {}.gz".format(self.config.ncbi_dmp))
-# #                tax_id = int(subprocess.check_output(["bash", self.config.get_ncbi_taxonomy,
-#  #                                                     "{}".format(gi),
-# #                                                      "{}".format(self.config.ncbi_dmp)]).split('\t')[1])
-#                 sys.stderr.write("some error?!\n")
-#                 sys.exit()
-# #            mapped_taxon_ids.write("{}, {}\n".format(gi, tax_id))
-#     
-
-
-
-# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-                # ##### try this out:
-                # ncbi = NCBITaxa()    
-                # tax_id = ncbi.get_name_translator([tax_name])
-       
-        # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        # !!!! this is faster but less reliable
-        #tax_id = Entrez.read(Entrez.esearch(db="taxonomy",term=tax_name, RetMax = 100))['IdList'][0]
-#         tax_id = Entrez.read(Entrez.esearch(db="taxonomy",term=tax_name, RetMax = 100))['IdList'][0]
-#                         
+# ### !!!! NCBITaxa seems to be a bit slower than the genbank query but more reliabale!
+#             ncbi = NCBITaxa()    
+#             tax_info = ncbi.get_name_translator([tax_name])
+#             tax_id = tax_info.items()[0][1][0]
             try:
-                assert tax_id
-
+                Entrez.email = self.config.email
+                handle = Entrez.efetch(db="nucleotide",id=gi, retmode="xml")
+                tax_name = Entrez.read(handle)[0]['GBSeq_source']
+                ncbi = NCBITaxa()    
+                tax_info = ncbi.get_name_translator([tax_name])
+                tax_id = tax_info.items()[0][1][0]
+                self.gi_ncbi_dict[gi] = tax_id
             except:
-                print("entrez query did not work")
-                tax_id = 0
-        return tax_id
+                if _DEBUG:
+                    sys.stderr.write("Entrez fetch failed, for GI:{} running subprocess to get taxon id\n".format(gi))
+                tax_id = int(subprocess.check_output(["bash", self.config.get_ncbi_taxonomy,
+                                                      "{}".format(gi),
+                                                      "{}".format(self.config.ncbi_dmp)]).split('\t')[1])  
+                self.gi_ncbi_dict[gi] = tax_id    
+                       
+# =======
+        mapped_taxon_ids = open("{}/id_map.txt".format(self.workdir), "a")
+        if _DEBUG:
+            sys.stderr.write("Mapping gi {} to taxon\n".format(gi))
+        if gi in self.gi_ncbi_dict:
+            tax_id = int(self.gi_ncbi_dict[gi])
+        else:
+            tax_id = None
+
+
+# #############################3
+
+# >>>>>>> aws_blast
+#             # try:
+#             #     Entrez.email = self.config.email
+#             #     handle = Entrez.efetch(db="nucleotide",id=gi, retmode="xml")
+#             #     tax_name = Entrez.read(handle)[0]['GBSeq_source']
+#             #     ncbi = NCBITaxa()    
+#             #     tax_info = ncbi.get_name_translator([tax_name])
+#             #     tax_id = tax_info.items()[0][1][0]
+#             #     self.gi_ncbi_dict[gi] = tax_id
+#             # except:
+#             #     if _DEBUG:
+#             #         sys.stderr.write("Entrez fetch failed, for GI:{} running subprocess to get taxon id\n".format(gi))
+#             #     tax_id = int(subprocess.check_output(["bash", self.config.get_ncbi_taxonomy,
+#             #                                           "{}".format(gi),
+#             #                                           "{}".format(self.config.ncbi_dmp)]).split('\t')[1])  
+#             #     self.gi_ncbi_dict[gi] = tax_id    
+#         if tax_id == None:
+#             sys.stderr.write("Taxon not identified GI:{}\n".format(gi))             
+#             tax_id = 0
+#         if _DEBUG:
+#             sys.stderr.write("gi {} mapped to taxon ncbi {}\n".format(gi, tax_id))
+#         return tax_id
     def dump(self):
         filename = "id_pickle.p"
-#        frozen = jsonpickle.encode(self)
-#        with open('{}'.format(filename), 'w') as pjson:
-#            pjson.write(frozen)
         pickle.dump(IdDicts, open("{}/{}".format(self.workdir,filename), "wb" ) )
         
 
@@ -666,7 +668,7 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
         self.otu_by_gi = {}
         self._to_be_pruned = []
         self.mrca_ncbi = ids_obj.ott_to_ncbi[data_obj.ott_mrca]
-#        self.tmpfi = "{}/physcraper_run_in_progress".format(self.workdir)
+        self.tmpfi = "{}/physcraper_run_in_progress".format(self.workdir)
         self.blast_subdir = "{}/current_blast_run".format(self.workdir)
         if not os.path.exists(self.workdir):
             os.makedirs(self.workdir)
@@ -699,9 +701,9 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
                 last_blast = self.data.otu_dict[otu_id]['^physcraper:last_blasted']
                 today = str(datetime.date.today()).replace("-", "/")
                 if abs((datetime.datetime.strptime(today, "%Y/%m/%d") - datetime.datetime.strptime(last_blast, "%Y/%m/%d")).days) > 14: #TODO make configurable
-                    equery = "txid{}[orgn] AND {}:{}[mdat]".format(self.mrca_ncbi,
-                                                                   last_blast,
-                                                                   today)
+                    equery = "{}:{}[mdat]".format(self.mrca_ncbi,
+                                                  last_blast,
+                                                  today)
                     query = seq.symbols_as_string().replace("-", "").replace("?", "")
                     
                     fn_oldseq = taxon.label +  "_tobeblasted"
@@ -714,6 +716,7 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
                     xml_fi = "{}/{}.xml".format(self.blast_subdir, fn_oldseq)
                     if not os.path.isfile(xml_fi):
                         sys.stdout.write("blasting seq {}\n".format(taxon.label))
+# <<<<<<< HEAD
                         try:
                             # result_handle = NCBIWWW.qblast("blastn", "nt",
                             #                                query,
@@ -724,8 +727,6 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
                             
                             # blastcmd = "blastn -query " + "{}/{}".format(self.blast_subdir,fn_oldseq) +" -db " + self.blastdb +"/nt -out " + xml_fi + " -outfmt 5 -num_threads 8"
                             
-
-
                             print(blastcmd)
                             os.system(blastcmd)
                             
@@ -736,8 +737,32 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
                             # save_file.close()
                             self.data.otu_dict[otu_id]['^physcraper:last_blasted'] = today
                             # result_handle.close()
-                        except (ValueError, URLError):
-                            sys.stderr.write("NCBIWWW error. Carrying on, but skipped {}\n".format(otu_id))
+#                         except (ValueError, URLError):
+#                             sys.stderr.write("NCBIWWW error. Carrying on, but skipped {}\n".format(otu_id))
+# =======
+                       # try:
+                        except:
+                            if self.config.url_base:
+                                result_handle = AWSWWW.qblast("blastn",
+                                                               "nt",
+                                                               query,
+                                                               url_base = self.config.url_base,
+                                                               entrez_query=equery,
+                                                               hitlist_size=self.config.hitlist_size,
+                                                               num_threads=4)
+                            else:
+                                result_handle = AWSWWW.qblast("blastn",
+                                                               "nt",
+                                                               query,
+                                                               entrez_query=equery,
+                                                               hitlist_size=self.config.hitlist_size)
+                            save_file = open(xml_fi, "w")
+                            save_file.write(result_handle.read())
+                            save_file.close()
+                            self.data.otu_dict[otu_id]['^physcraper:last_blasted'] = today
+                            result_handle.close()
+                       # except (ValueError, URLError): TODO what to do when NCBI down?! how to handle error
+                       #     sys.stderr.write("NCBIWWW error. Carrying on, but skipped {}\n".format(otu_id))
         self._blasted = 1
         return
     def read_blast(self, blast_dir=None):
@@ -748,13 +773,9 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
             self.run_blast()
         for taxon in self.data.aln:
             # xml_fi =  str(taxon.label) + ".xml"
+            # xml_fi = "{}/{}.xml".format(blast_dir, taxon.label)
             xml_fi = "{}/{}_tobeblasted.xml".format(self.blast_subdir, taxon.label)
                     
-            # print(xml_fi)
-            # print(taxon)
-            # print(taxon.label)
-
-            # xml_fi = "{}/{}.xml".format(blast_dir, taxon.label)
             if os.path.isfile(xml_fi):
                 result_handle = open(xml_fi)
                 try:
@@ -793,7 +814,9 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
         removes that sequence and replaces it"""
         new_seq = seq.replace("-", "")
         tax_list = deepcopy(seq_dict.keys())
+        i = 0
         for tax_lab in tax_list:
+            i += 1
             inc_seq = seq_dict[tax_lab].replace("-", "")
             if len(inc_seq) >= len(new_seq):
                 if inc_seq.find(new_seq) != -1:
@@ -816,8 +839,10 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
                         self.data.remove_taxa_aln_tre(tax_lab)
                         sys.stdout.write("seq {} is supersequence of {}, {} added and {} removed\n".format(label, tax_lab, label, tax_lab))
                         self.data.otu_dict[tax_lab]['physcraper:status'] = "new seq added in place of {}".format(tax_lab)
-                        return                        
+                        return
         sys.stdout.write(".")
+        if i%50 == 0:
+            sys.stdout.write("\n")
         seq_dict[label] = seq
         return
     def remove_identical_seqs(self):
@@ -857,10 +882,8 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
 
     def how_many_sp_to_keep(self, treshold):
         if _DEBUG:
-            sys.stderr.write("in how many sp to keep func\n")
-
+            sys.stderr.write("Runing func: how_many_sp_to_keep\n")
         sp_in_aln = self.sp_d
-
         #sp_blast = self.new_seqs
         if _DEBUG:
             sys.stderr.write("ncbi taxon id with blast seq info in list {}\n".format(sp_in_aln))
@@ -949,9 +972,6 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
                 elif len(seq_w_maxlen) == treshold:
                     random_seq_ofsp = seq_w_maxlen
 
-
-
-
                 else:
                     toselect = range(len(seq_w_maxlen), treshold)   
                     print("secondlen")
@@ -1022,83 +1042,6 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
             if type(key)==int: 
                 self.new_seqs[key] = self.new_seqs_dic[key]
 
-        #print(something_stupid)
-
-
-        # tmp_dict = dict((taxon.label, self.data.aln[taxon].symbols_as_string()) for taxon in self.data.aln)
-        # old_seqs = tmp_dict.keys()
-        # #Adding seqs that are different, but needs to be maintained as diff than aln that the tree has been run on
-        # avg_seqlen = sum(self.data.orig_seqlen)/len(self.data.orig_seqlen) #HMMMMMMMM
-        # seq_len_cutoff = avg_seqlen*self.config.seq_len_perc
-        
-        # for gi, seq in self.new_seqs.items():
-        #     if len(seq.replace("-", "").replace("N", "")) > seq_len_cutoff:
-        #         otu_id = self.data.add_otu(gi, self.ids)
-        #         self.seq_dict_build(seq, otu_id, tmp_dict)
-        # for tax in old_seqs:
-        #     try:
-        #         del tmp_dict[tax]
-        #     except KeyError:
-        #         pass
-        # self.new_seqs_otu_id = tmp_dict # renamed new seq to their otu_ids from GI's, but all info is in self.otu_dict
-        # with open(self.logfile, "a") as log:
-        #     log.write("{} new sequences added from genbank, of {} before filtering\n".format(len(self.new_seqs_otu_id), len(self.new_seqs)))
-        # self.data.dump()
-
-
-        # new_seq = seq.replace("-", "")
-        # tax_list = deepcopy(seq_dict.keys())
-        # for tax_lab in tax_list:
-        #     inc_seq = seq_dict[tax_lab].replace("-", "")
-        #     if len(inc_seq) >= len(new_seq):
-        #         if inc_seq.find(new_seq) != -1:
-        #             sys.stdout.write("seq {} is subsequence of {}, not added\n".format(label, tax_lab))
-        #             self.data.otu_dict[tax_lab]['physcraper:status'] = "subsequence, not added"
-        #             return
-        #     else:
-        #         if new_seq.find(inc_seq) != -1:#
-        #             if self.data.otu_dict[tax_lab].get('^physcraper:status') == "original":
-        #                 # print("delete because its a superseq")
-
-        #                 sys.stdout.write("seq {} is supersequence of original seq {}, both kept in alignment\n".format(label, tax_lab))
-        #                 self.data.otu_dict[tax_lab]['physcraper:status'] = "new seq added"
-        #                 seq_dict[label] = seq
-        #                 return
-        #             else:
-        #                 # print("delete because its a superseq")
-        #                 del seq_dict[tax_lab]
-        #                 seq_dict[label] = seq
-        #                 self.data.remove_taxa_aln_tre(tax_lab)
-        #                 sys.stdout.write("seq {} is supersequence of {}, {} added and {} removed\n".format(label, tax_lab, label, tax_lab))
-        #                 self.data.otu_dict[tax_lab]['physcraper:status'] = "new seq added in place of {}".format(tax_lab)
-        #                 return                        
-        # sys.stdout.write(".")
-        # seq_dict[label] = seq
-
-
-
-        # print("access data.aln")
-        # for taxon in self.data.aln:
-        #     xml_fi = "{}/{}.xml".format(blast_dir, taxon.label)
-        #     if os.path.isfile(xml_fi):
-        #         result_handle = open(xml_fi)
-        #         #try:
-        #         blast_records = NCBIXML.parse(result_handle)
-        #         for blast_record in blast_records:
-        #             x = dir(blast_record)
-        #             print("blast_record")
-        #             print(x)
-        #             for alignment in blast_record.alignments:
-        #                 print("aln")
-        #                 print(alignment)
-        #                 for hsp in alignment.hsps:
-        #                     print("hsp")
-        #                     print(hsp)
-
-        #                         # if float(hsp.expect) < float(self.config.e_value_thresh):
-        #                         #     if int(alignment.title.split('|')[1]) not in self.data.gi_dict: #skip ones we already have (does it matter if these were delted? No...)
-        #                         #         self.new_seqs[int(alignment.title.split('|')[1])] = hsp.sbjct
-        #                         #         self.data.gi_dict[int(alignment.title.split('|')[1])] = alignment.__dict__
 
 
     def sp_dict(self):
