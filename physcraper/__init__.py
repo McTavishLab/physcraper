@@ -707,13 +707,13 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
                     query = seq.symbols_as_string().replace("-", "").replace("?", "")
                     
                     fn_oldseq = taxon.label +  "_tobeblasted"
-
+                    print("{}/{}".format(self.blast_subdir,fn_oldseq))
                     fi_old = open("{}/{}".format(self.blast_subdir,fn_oldseq), 'w')
                     fi_old.write(">{}\n".format(taxon.label))
                     fi_old.write("{}\n".format(query))
                     fi_old.close()
 
-                    xml_fi = "{}/{}_tobeblasted.xml".format(self.blast_subdir, taxon.label)
+                    xml_fi = "{}/{}_tobeblasted.xml".format(self.blast_subdir, fn_oldseq)
                     if not os.path.isfile(xml_fi):
                         sys.stdout.write("blasting seq {}\n".format(taxon.label))
                         try:
@@ -721,8 +721,8 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
                             #                                query,
                             #                                entrez_query=equery,
                             #                                hitlist_size=self.config.hitlist_size)
-                            
-                            blastcmd = "blastn -query " + str(fn_oldseq) +" -db /shared/local_blastdb/nt -out " + "{}/{}".format(self.blast_subdir,fn_oldseq) + ".xml -outfmt 5 -num_threads 8"
+                            print(datetime.datetime.now())
+                            blastcmd = "blastn -query " + "{}/{}".format(self.blast_subdir,fn_oldseq) +" -db /shared/localblastdb_meta/nt -out " + xml_fi + " -outfmt 5 -num_threads 8"
                             print(blastcmd)
                             os.system(blastcmd)
                             

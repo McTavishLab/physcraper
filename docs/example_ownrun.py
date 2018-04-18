@@ -27,3 +27,16 @@ wrappers.own_data_run(seqaln,
                  workdir,
                  otu_jsonfi,
                  configfi)
+
+
+data_obj = generate_ATT_from_files(seqaln,
+                        mattype,
+                        workdir,
+                        treefile,
+                        otu_json,
+                        )
+
+
+conf = ConfigObj(configfi)
+ids = IdDicts(conf, workdir=workdir)
+scraper = PhyscraperScrape(data_obj, ids, conf)
