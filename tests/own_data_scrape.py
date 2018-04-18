@@ -11,7 +11,7 @@ mattype="fasta"
 trfn= "small_test_example/test.tre"
 schema_trf = "newick"
 workdir="test_own_mini"
-configfi = "example.config"
+configfi = "tests/data/aws.config"
 id_to_spn = r"small_test_example/test_nicespl.csv"
 otu_jsonfi = "{}/otu_dict.json".format(workdir)
 
