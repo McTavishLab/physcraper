@@ -3,4 +3,11 @@ venv*/
 *.xml
 papara*
 RAxML*
-
+venv_physcraper2
+taxonomy/*
+peyotl/
+standard-RAxML
+*.aux
+*.log
+*egg*
+build

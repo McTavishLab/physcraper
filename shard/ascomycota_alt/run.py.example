@@ -7,7 +7,7 @@ seqaln = "shard/ascomycota_alt/rpb2.fas"
 mattype="fasta"
 workdir="rpb2"
 
-configfi = "/share/work1/ejmctavish/physcraper/config"
+configfi = "/home/ejmctavish/projects/physcraper/example.config"
 
 wrappers.standard_run(study_id,
                       tree_id,
