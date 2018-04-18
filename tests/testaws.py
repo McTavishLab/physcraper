@@ -20,7 +20,7 @@ result_handle = AWSWWW.qblast("blastn",
                                "nt",
                                query,
                                url_base = conf.url_base,
-                               hitlist_size=10,
+                               hitlist_size=2,
                                num_threads=4)
 
 
@@ -37,7 +37,7 @@ sys.stderr.write("running a blast query against NCBI START {}".format(start))
 result_handle = AWSWWW.qblast("blastn",
                                "nt",
                                query,
-                               hitlist_size=10)
+                               hitlist_size=2)
 
 
 end = datetime.datetime.now()
