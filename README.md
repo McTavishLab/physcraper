@@ -49,3 +49,19 @@ Physcraper generates an ATT (alignment, taxonomy, tree) object.
 This is important because it tracks the shared namespaces across these three data objects, whcih can otherwise get a bit seperated.
 
 
+#### local blast databases
+To initiate a local Blast db run the following commands:
+sudo apt-get insatll ncbi-blast+
+
+in the folder of your future blast database run:
+1. update_blastdb nt
+2. cat *.tar.gz | tar -xvzf - -i
+3. blastdbcmd -db nt -info
+
+The last command shows you if it worked correclty. 'nt' means, we are making the nucleotide database.
+The database needs to be update regularly.
+
+
+
+
+

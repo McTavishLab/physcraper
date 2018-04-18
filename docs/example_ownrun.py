@@ -18,7 +18,7 @@ if not os.path.exists(otu_jsonfi):
     otu_json = wrappers.OtuJsonDict(id_to_spn, configfi)
     if not os.path.exists(workdir):
        os.mkdir(workdir)
-       json.dump(otu_json, outfile)
+       json.dump(otu_json, otu_jsonfi)
 
 wrappers.own_data_run(seqaln,
                  mattype,
@@ -27,3 +27,16 @@ wrappers.own_data_run(seqaln,
                  workdir,
                  otu_jsonfi,
                  configfi)
+
+
+data_obj = generate_ATT_from_files(seqaln,
+                        mattype,
+                        workdir,
+                        treefile,
+                        otu_json,
+                        )
+
+
+conf = ConfigObj(configfi)
+ids = IdDicts(conf, workdir=workdir)
+scraper = PhyscraperScrape(data_obj, ids, conf)

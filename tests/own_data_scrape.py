@@ -33,4 +33,4 @@ wrappers.own_data_run(seqaln,
                  schema_trf,
                  workdir,
                  otu_jsonfi,
-configfi)
+                 configfi)
