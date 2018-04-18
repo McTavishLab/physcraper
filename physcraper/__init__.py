@@ -725,7 +725,7 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
                             fi_old.close()
                             blastcmd = "blastn -query " + \
                                        "{}/tmp.fas".format(self.blast_subdir) + \
-                                       " -db {}/nt -out ".format(self.config.localblastdb) + \
+                                       " -db {}/nt -out ".format(self.config.blastdb) + \
                                        xml_fi + \
                                        " -outfmt 5 -num_threads {}".format(self.config.num_threads) #TODO query via stdin                                                        
                           #  print(blastcmd)
