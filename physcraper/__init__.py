@@ -15,6 +15,7 @@ import configparser
 import json
 import pickle
 from Bio.Blast import NCBIWWW, NCBIXML
+import physcraper.AWSWWW as AWSWWW
 from Bio.Blast.Applications import NcbiblastxCommandline
 from Bio import SeqIO, Entrez
 from dendropy import Tree,\
@@ -75,7 +76,10 @@ class ConfigObj(object):
         assert os.path.isfile(self.ott_ncbi)
         self.id_pickle = os.path.abspath(config['taxonomy']['id_pickle'])#TODO what is theis doing again?
         self.email = config['blast']['Entrez.email']
-
+        self.url_base = config['blast'].get('url_base')
+        if _DEBUG:
+            sys.stderr.write(self.email+"\n")
+            sys.stderr.write(self.url_base+"\n")
 
 #ATT is a dumb acronym for Alignment Tree Taxa object
 def get_dataset_from_treebase(study_id,
@@ -584,9 +588,9 @@ class IdDicts(object):
             tax_id = int(self.gi_ncbi_dict[gi])
         else:
             if _DEBUG:
-                sys.stderr.write("get taxid")
+                sys.stderr.write("get taxid") 
             Entrez.email = self.config.email
-            handle = Entrez.efetch(db="nucleotide",id=gi, retmode="xml")
+            handle = Entrez.efetch(db="nucleotide",id=gi, retmode="xml") #TODO Add possible accession!
             tax_name = Entrez.read(handle)[0]['GBSeq_source']
 
 ### !!!! NCBITaxa seems to be a bit slower than the genbank query but more reliabale!
@@ -699,27 +703,37 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
                 last_blast = self.data.otu_dict[otu_id]['^physcraper:last_blasted']
                 today = str(datetime.date.today()).replace("-", "/")
                 if abs((datetime.datetime.strptime(today, "%Y/%m/%d") - datetime.datetime.strptime(last_blast, "%Y/%m/%d")).days) > 14: #TODO make configurable
-                    equery = "txid{}[orgn] AND {}:{}[mdat]".format(self.mrca_ncbi,
-                                                                   last_blast,
-                                                                   today)
+                    equery = "{}:{}[mdat]".format(self.mrca_ncbi,
+                                                  last_blast,
+                                                  today)
                     query = seq.symbols_as_string().replace("-", "").replace("?", "")
                     xml_fi = "{}/{}.xml".format(self.blast_subdir, taxon.label)
                     if not os.path.isfile(xml_fi):
                         sys.stdout.write("blasting seq {}\n".format(taxon.label))
-                        try:
-                            result_handle = NCBIWWW.qblast("blastn",
+                       # try:
+                        if self.config.url_base:
+                            result_handle = AWSWWW.qblast("blastn",
                                                            "nt",
-                                                            query,
-                                                           url_base ="http://ec2-54-164-191-132.compute-1.amazonaws.com/cgi-bin/blast.cgi",
+                                                           query,
+                                                           url_base =config.url_base,
+                                                           entrez_query=equery,
+                                                           hitlist_size=self.config.hitlist_size,
+                                                           num_threads=4)
+                        else:
+                            result_handle = AWSWWW.qblast("blastn",
+                                                           "nt",
+                                                           query,
                                                            entrez_query=equery,
                                                            hitlist_size=self.config.hitlist_size)
-                            save_file = open(xml_fi, "w")
-                            save_file.write(result_handle.read())
-                            save_file.close()
-                            self.data.otu_dict[otu_id]['^physcraper:last_blasted'] = today
-                            result_handle.close()
-                        except (ValueError, URLError):
-                            sys.stderr.write("NCBIWWW error. Carrying on, but skipped {}\n".format(otu_id))
+                        if _DEBUG:
+                            sys.stderr.write(result_handle)
+                        save_file = open(xml_fi, "w")
+                        save_file.write(result_handle.read())
+                        save_file.close()
+                        self.data.otu_dict[otu_id]['^physcraper:last_blasted'] = today
+                        result_handle.close()
+                       # except (ValueError, URLError): TODO what to do when NCBI down?! how to handle error
+                       #     sys.stderr.write("NCBIWWW error. Carrying on, but skipped {}\n".format(otu_id))
         self._blasted = 1
         return
     def read_blast(self, blast_dir=None):
