@@ -586,6 +586,8 @@ class IdDicts(object):
             if _DEBUG:
                 sys.stderr.write("get taxid")
             Entrez.email = self.config.email
+            print(Entrez.email)
+            print(gi)
             handle = Entrez.efetch(db="nucleotide",id=gi, retmode="xml")
             tax_name = Entrez.read(handle)[0]['GBSeq_source']
 
@@ -703,19 +705,34 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
                                                                    last_blast,
                                                                    today)
                     query = seq.symbols_as_string().replace("-", "").replace("?", "")
-                    xml_fi = "{}/{}.xml".format(self.blast_subdir, taxon.label)
+                    
+                    fn_oldseq = taxon.label +  "_tobeblasted"
+
+                    fi_old = open("{}/{}".format(self.blast_subdir,fn_oldseq), 'w')
+                    fi_old.write(">{}\n".format(taxon.label))
+                    fi_old.write("{}\n".format(query))
+                    fi_old.close()
+
+                    xml_fi = "{}/{}_tobeblasted.xml".format(self.blast_subdir, taxon.label)
                     if not os.path.isfile(xml_fi):
                         sys.stdout.write("blasting seq {}\n".format(taxon.label))
                         try:
-                            result_handle = NCBIWWW.qblast("blastn", "nt",
-                                                           query,
-                                                           entrez_query=equery,
-                                                           hitlist_size=self.config.hitlist_size)
-                            save_file = open(xml_fi, "w")
-                            save_file.write(result_handle.read())
-                            save_file.close()
+                            # result_handle = NCBIWWW.qblast("blastn", "nt",
+                            #                                query,
+                            #                                entrez_query=equery,
+                            #                                hitlist_size=self.config.hitlist_size)
+                            
+                            blastcmd = "blastn -query " + str(fn_oldseq) +" -db /shared/local_blastdb/nt -out " + "{}/{}".format(self.blast_subdir,fn_oldseq) + ".xml -outfmt 5 -num_threads 8"
+                            print(blastcmd)
+                            os.system(blastcmd)
+                            
+
+
+                            # save_file = open(xml_fi, "w")
+                            # save_file.write(result_handle.read())
+                            # save_file.close()
                             self.data.otu_dict[otu_id]['^physcraper:last_blasted'] = today
-                            result_handle.close()
+                            # result_handle.close()
                         except (ValueError, URLError):
                             sys.stderr.write("NCBIWWW error. Carrying on, but skipped {}\n".format(otu_id))
         self._blasted = 1
@@ -727,7 +744,12 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
         if not self._blasted:
             self.run_blast()
         for taxon in self.data.aln:
-            xml_fi = "{}/{}.xml".format(blast_dir, taxon.label)
+            xml_fi =  str(taxon.label) + ".xml"
+            # print(xml_fi)
+            # print(taxon)
+            # print(taxon.label)
+
+            # xml_fi = "{}/{}.xml".format(blast_dir, taxon.label)
             if os.path.isfile(xml_fi):
                 result_handle = open(xml_fi)
                 try:
@@ -736,9 +758,21 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
                         for alignment in blast_record.alignments:
                             for hsp in alignment.hsps:
                                 if float(hsp.expect) < float(self.config.e_value_thresh):
-                                    if int(alignment.title.split('|')[1]) not in self.data.gi_dict: #skip ones we already have (does it matter if these were delted? No...)
-                                        self.new_seqs[int(alignment.title.split('|')[1])] = hsp.sbjct
-                                        self.data.gi_dict[int(alignment.title.split('|')[1])] = alignment.__dict__
+                                    # print(self.data.gi_dict)
+                                    # print(int(alignment.title.split('|')[1]))
+                                    gi = alignment.title.split(" ")[1]
+                                    print(gi)
+                                    print(blast_record.query_id)
+                                    print(alignment.hit_id)
+                                    print("hsp")
+                                    print(hsp)
+                                    # print(something_stupid)
+                                    if gi not in self.data.gi_dict: #skip ones we already have (does it matter if these were delted? No...)
+                                        self.new_seqs[gi] = hsp.sbjct
+                                        self.data.gi_dict[gi] = alignment.__dict__
+                                    # if int(alignment.title.split('|')[1]) not in self.data.gi_dict: #skip ones we already have (does it matter if these were delted? No...)
+                                        # self.new_seqs[int(alignment.title.split('|')[1])] = hsp.sbjct
+                                        # self.data.gi_dict[int(alignment.title.split('|')[1])] = alignment.__dict__
                 except ValueError:
                     sys.stderr.write("Problem reading {}, skipping\n".format(xml_fi))
         self.date = str(datetime.date.today())
