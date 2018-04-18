@@ -75,6 +75,7 @@ class ConfigObj(object):
         assert os.path.isfile(self.ott_ncbi)
         self.id_pickle = os.path.abspath(config['taxonomy']['id_pickle'])#TODO what is theis doing again?
         self.email = config['blast']['Entrez.email']
+        # self.blastdb = config["blast"]["localblastdb_wd"]
 
 
 #ATT is a dumb acronym for Alignment Tree Taxa object
@@ -577,17 +578,14 @@ class IdDicts(object):
     def map_gi_ncbi(self, gi):
         """get the ncbi taxon id's for a gi input"""
 # #        mapped_taxon_ids = open("{}/id_map.txt".format(self.workdir), "a")
-        if _DEBUG:
-#            sys.stderr.write(datetime.datetime.now())
-            sys.stderr.write("gi {}".format(gi))
         if gi in self.gi_ncbi_dict:
             tax_id = int(self.gi_ncbi_dict[gi])
         else:
             if _DEBUG:
-                sys.stderr.write("get taxid")
+                print("get taxid")
             Entrez.email = self.config.email
-            print(Entrez.email)
-            print(gi)
+            # print(Entrez.email)
+            # print(gi)
             handle = Entrez.efetch(db="nucleotide",id=gi, retmode="xml")
             tax_name = Entrez.read(handle)[0]['GBSeq_source']
 
@@ -713,7 +711,7 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
                     fi_old.write("{}\n".format(query))
                     fi_old.close()
 
-                    xml_fi = "{}/{}_tobeblasted.xml".format(self.blast_subdir, fn_oldseq)
+                    xml_fi = "{}/{}.xml".format(self.blast_subdir, fn_oldseq)
                     if not os.path.isfile(xml_fi):
                         sys.stdout.write("blasting seq {}\n".format(taxon.label))
                         try:
@@ -723,6 +721,11 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
                             #                                hitlist_size=self.config.hitlist_size)
                             print(datetime.datetime.now())
                             blastcmd = "blastn -query " + "{}/{}".format(self.blast_subdir,fn_oldseq) +" -db /shared/localblastdb_meta/nt -out " + xml_fi + " -outfmt 5 -num_threads 8"
+                            
+                            # blastcmd = "blastn -query " + "{}/{}".format(self.blast_subdir,fn_oldseq) +" -db " + self.blastdb +"/nt -out " + xml_fi + " -outfmt 5 -num_threads 8"
+                            
+
+
                             print(blastcmd)
                             os.system(blastcmd)
                             
@@ -744,7 +747,9 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
         if not self._blasted:
             self.run_blast()
         for taxon in self.data.aln:
-            xml_fi =  str(taxon.label) + ".xml"
+            # xml_fi =  str(taxon.label) + ".xml"
+            xml_fi = "{}/{}_tobeblasted.xml".format(self.blast_subdir, taxon.label)
+                    
             # print(xml_fi)
             # print(taxon)
             # print(taxon.label)
@@ -760,12 +765,14 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
                                 if float(hsp.expect) < float(self.config.e_value_thresh):
                                     # print(self.data.gi_dict)
                                     # print(int(alignment.title.split('|')[1]))
-                                    gi = alignment.title.split(" ")[1]
-                                    print(gi)
-                                    print(blast_record.query_id)
-                                    print(alignment.hit_id)
-                                    print("hsp")
-                                    print(hsp)
+                                    # print(alignment.title.split("|"))
+                                    gi = alignment.title.split("|")[1]
+                                    # print(gi)
+                                    # print(something_stupid)
+                                    # print(blast_record.query_id)
+                                    # print(alignment.hit_id)
+                                    # print("hsp")
+                                    # print(hsp)
                                     # print(something_stupid)
                                     if gi not in self.data.gi_dict: #skip ones we already have (does it matter if these were delted? No...)
                                         self.new_seqs[gi] = hsp.sbjct
@@ -819,7 +826,7 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
         the longer of two that are other wise identical, and puts them in a dict
         with new name as gi_ott_id.
         Does not test if they are identical to ones in the original alignment...."""
-        sys.stdout.write("remove identical seqs")
+        print("remove identical seqs")
         tmp_dict = dict((taxon.label, self.data.aln[taxon].symbols_as_string()) for taxon in self.data.aln)
         old_seqs = tmp_dict.keys()
         #Adding seqs that are different, but needs to be maintained as diff than aln that the tree has been run on
