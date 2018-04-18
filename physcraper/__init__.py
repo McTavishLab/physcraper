@@ -76,11 +76,21 @@ class ConfigObj(object):
         assert os.path.isfile(self.ott_ncbi)
         self.id_pickle = os.path.abspath(config['taxonomy']['id_pickle'])#TODO what is theis doing again?
         self.email = config['blast']['Entrez.email']
-        # self.blastdb = config["blast"]["localblastdb_wd"]
-        self.url_base = config['blast'].get('url_base')
+        self.blast_loc = config['blast']['location']
+        self.num_threads = config['blast'].get('num_threads')
+        assert self.blast_loc in ['local', 'remote']
+        if self.blast_loc =='local':
+            self.blastdb = config['blast']['localblastdb']
+        if self.blast_loc =='remote':
+            self.url_base = config['blast'].get('url_base')
         if _DEBUG:
             sys.stderr.write("{}\n".format(self.email))
-            sys.stderr.write("{}\n".format(self.url_base))
+            if self.blast_loc =='remote':
+                sys.stderr.write("url base = {}\n".format(self.url_base))
+            sys.stderr.write("{}\n".format(self.blast_loc))
+            if self.blast_loc =='local':
+                sys.stderr.write("local blast db {}\n".format(self.blastdb))
+
 
 
 #ATT is a dumb acronym for Alignment Tree Taxa object
@@ -705,43 +715,23 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
                                                   last_blast,
                                                   today)
                     query = seq.symbols_as_string().replace("-", "").replace("?", "")
-                    
-                    fn_oldseq = taxon.label +  "_tobeblasted"
-                    print("{}/{}".format(self.blast_subdir,fn_oldseq))
-                    fi_old = open("{}/{}".format(self.blast_subdir,fn_oldseq), 'w')
-                    fi_old.write(">{}\n".format(taxon.label))
-                    fi_old.write("{}\n".format(query))
-                    fi_old.close()
-
-                    xml_fi = "{}/{}.xml".format(self.blast_subdir, fn_oldseq)
+                    xml_fi = "{}/{}.xml".format(self.blast_subdir, taxon.label)
                     if not os.path.isfile(xml_fi):
                         sys.stdout.write("blasting seq {}\n".format(taxon.label))
-# <<<<<<< HEAD
-                        try:
-                            # result_handle = NCBIWWW.qblast("blastn", "nt",
-                            #                                query,
-                            #                                entrez_query=equery,
-                            #                                hitlist_size=self.config.hitlist_size)
-                            print(datetime.datetime.now())
-                            blastcmd = "blastn -query " + "{}/{}".format(self.blast_subdir,fn_oldseq) +" -db /shared/localblastdb_meta/nt -out " + xml_fi + " -outfmt 5 -num_threads 8"
-                            
-                            # blastcmd = "blastn -query " + "{}/{}".format(self.blast_subdir,fn_oldseq) +" -db " + self.blastdb +"/nt -out " + xml_fi + " -outfmt 5 -num_threads 8"
-                            
-                            print(blastcmd)
+                        if self.config.blast_loc == 'local':
+                            fi_old = open("{}/tmp.fas".format(self.blast_subdir), 'w')
+                            fi_old.write(">{}\n".format(taxon.label))
+                            fi_old.write("{}\n".format(query))
+                            fi_old.close()
+                            blastcmd = "blastn -query " + \
+                                       "{}/tmp.fas".format(self.blast_subdir) + \
+                                       " -db {}/nt -out ".format(self.config.localblastdb) + \
+                                       xml_fi + \
+                                       " -outfmt 5 -num_threads {}".format(self.config.num_threads) #TODO query via stdin                                                        
+                          #  print(blastcmd)
                             os.system(blastcmd)
-                            
-
-
-                            # save_file = open(xml_fi, "w")
-                            # save_file.write(result_handle.read())
-                            # save_file.close()
                             self.data.otu_dict[otu_id]['^physcraper:last_blasted'] = today
-                            # result_handle.close()
-#                         except (ValueError, URLError):
-#                             sys.stderr.write("NCBIWWW error. Carrying on, but skipped {}\n".format(otu_id))
-# =======
-                       # try:
-                        except:
+                        if self.config.blast_loc == 'remote':
                             if self.config.url_base:
                                 result_handle = AWSWWW.qblast("blastn",
                                                                "nt",
@@ -749,7 +739,7 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
                                                                url_base = self.config.url_base,
                                                                entrez_query=equery,
                                                                hitlist_size=self.config.hitlist_size,
-                                                               num_threads=4)
+                                                               num_threads=self.config.num_threads)
                             else:
                                 result_handle = AWSWWW.qblast("blastn",
                                                                "nt",
