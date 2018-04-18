@@ -614,13 +614,13 @@ class IdDicts(object):
                 self.gi_ncbi_dict[gi] = tax_id    
                        
 # =======
-        mapped_taxon_ids = open("{}/id_map.txt".format(self.workdir), "a")
-        if _DEBUG:
-            sys.stderr.write("Mapping gi {} to taxon\n".format(gi))
-        if gi in self.gi_ncbi_dict:
-            tax_id = int(self.gi_ncbi_dict[gi])
-        else:
-            tax_id = None
+        # mapped_taxon_ids = open("{}/id_map.txt".format(self.workdir), "a")
+        # if _DEBUG:
+        #     sys.stderr.write("Mapping gi {} to taxon\n".format(gi))
+        # if gi in self.gi_ncbi_dict:
+        #     tax_id = int(self.gi_ncbi_dict[gi])
+        # else:
+        #     tax_id = None
 
 
 # #############################3
