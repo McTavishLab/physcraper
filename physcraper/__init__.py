@@ -221,17 +221,10 @@ class AlignTreeTax(object):
         self.otu_taxonlabel_problem={}
         self.aln = alignment
         for key in self.aln.taxon_namespace: #MK_TODO this should get pull out into a function
-            # print(key)
-            # print(str(key))
             match = re.match("'n[0-9]{1,3}", str(key))
-            # print(match)
             if match:
-                # print('do something')
                 newname=str(key)[2:]
                 newname=newname[:-1]
-                # print(newname)
-                #key.label=newname
-                #print(key.label)
             else: 
                 newname=str(key) 
                 newname=newname[:-1]
@@ -268,8 +261,6 @@ class AlignTreeTax(object):
         self.gi_dict = {}
         self.orig_aln = alignment
         self.orig_newick = newick
-
-
 
     def _reconcile_names(self):
         """This checks that the tree "original labels" from phylsystem
@@ -553,7 +544,6 @@ def get_mrca_ott(ott_ids):
         sys.stdout.write('MRCA of sampled taxa is {}\n'.format(mrca_node[ u'nearest_taxon_mrca_unique_name']))
     return tax_id
 
-
 def get_ott_ids_from_otu_dict(otu_dict): #TODO put into data obj?
     """Get the ott ids from an otu dict object"""
     ott_ids = []
@@ -774,22 +764,10 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
                         for alignment in blast_record.alignments:
                             for hsp in alignment.hsps:
                                 if float(hsp.expect) < float(self.config.e_value_thresh):
-                                    # print(self.data.gi_dict)
-                                    # print(int(alignment.title.split('|')[1]))
-                                    # print(alignment.title.split("|"))
                                     gi = alignment.title.split("|")[1]
-                                    # print(gi)
-                                    # print(something_stupid)
-                                    # print(blast_record.query_id)
-                                    # print(alignment.hit_id)
-                                    # print("hsp")
-                                    # print(hsp)
-                                    # print(something_stupid)
                                     if gi not in self.data.gi_dict: #skip ones we already have (does it matter if these were delted? No...)
                                         self.new_seqs[gi] = hsp.sbjct
                                         self.data.gi_dict[gi] = alignment.__dict__
-                                    # if int(alignment.title.split('|')[1]) not in self.data.gi_dict: #skip ones we already have (does it matter if these were delted? No...)
-                                        # self.new_seqs[int(alignment.title.split('|')[1])] = hsp.sbjct
                                         # self.data.gi_dict[int(alignment.title.split('|')[1])] = alignment.__dict__
                 except ValueError:
                     sys.stderr.write("Problem reading {}, skipping\n".format(xml_fi))
@@ -1043,7 +1021,6 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
                 print("it breaks")
                 print(self.data.otu_dict[key])
                 
-
             if value in self.sp_d:    
                 self.sp_d[value].append(self.data.otu_dict[key])
             else:
