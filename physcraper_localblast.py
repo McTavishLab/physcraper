@@ -1,31 +1,47 @@
-from physcraper import wrappers_numTax
+from physcraper import wrappers
 import os
-
+import sys
+import json
 
 
 #################################
-seqaln =  "/home/blubb/Documents/gitdata/physcraper/smaller_test_example/test.fas"
-trfn= "/home/blubb/Documents/gitdata/physcraper/smaller_test_example/test.tre"
-id_to_spn = r"/home/blubb/Documents/gitdata/physcraper/smaller_test_example/test_nicespl.csv"
-workdir="localblast_numSpeciesSmaller"
+
+workdir="blast_numSpeciesTiny"
+seqaln =  "tiny_test_example/test.fas"
+trfn= "tiny_test_example/test.tre"
+id_to_spn = r"tiny_test_example/test_nicespl.csv"
+otu_jsonfi = "{}/otu_dict.json".format(workdir)
+
 mattype="fasta"
 schema_trf = "newick"
-configfi = "example.config"
+configfi = "tests/data/localblast.config"
 cwd = os.getcwd() 
-treshhold=2
+treshold=2
 selectby="blast"
+downtorank = "species"
+add_local_seq = None
+id_to_spn_addseq_json = None
 
 
-otu_json = wrappers_numTax.OtuJsonDict(id_to_spn, configfi)
+
+if os.path.exists(otu_jsonfi):
+    otu_json = json.load(open(otu_jsonfi))
+else:
+    otu_json = wrappers.OtuJsonDict(id_to_spn, configfi)
+    if not os.path.exists(workdir):
+       os.mkdir(workdir)
+    json.dump(otu_json, open(otu_jsonfi,"w"))
 
 
-
-wrappers_numTax.own_data_run(seqaln,
+wrappers.own_data_run(seqaln,
                  mattype,
                  trfn,
                  schema_trf,
                  workdir,
-				treshhold,
-				selectby,
-                 otu_json,
+                 treshold,
+                 selectby,
+                 downtorank,
+                 otu_jsonfi,
+                 add_local_seq,
+                 id_to_spn_addseq_json,
                  configfi)
