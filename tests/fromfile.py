@@ -8,12 +8,15 @@ workdir="tests/fromfile"
 configfi = "example.config"
 treefile = "tests/data/input.tre"
 otu_json = "tests/data/otu_dict.json"
+schema_trf = "newick"
 
 data_obj = generate_ATT_from_files(seqaln,
                         mattype,
                         workdir,
                         treefile,
+                        schema_trf,
                         otu_json)
+
 
 
 conf = ConfigObj(configfi)

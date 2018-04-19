@@ -73,6 +73,8 @@ def own_data_run(seqaln,
                  selectby,
                  downtorank,
                  spInfoDict,
+                 add_local_seq,
+                 id_to_spn_addseq_json,
                  configfi):
     '''looks for pickeled file to continue run, or builds and runs 
     new analysis for as long as new seqs are found'''
@@ -138,6 +140,16 @@ def own_data_run(seqaln,
         # else:   
             #Now combine the data, the ids, and the configuration into a single physcraper scrape object
         scraper =  PhyscraperScrape(data_obj, ids, conf)
+        if add_local_seq != None:
+            print("will add local sequences now")
+            scraper.add_local_seq(add_local_seq, id_to_spn_addseq_json)
+            # scraper.replace_new_seq()
+            scraper.remove_identical_seqs()
+            scraper.generate_streamed_alignment(treshold)
+
+
+
+
         #run the ananlyses
         scraper.run_blast()
         scraper.read_blast()

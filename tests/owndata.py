@@ -40,6 +40,8 @@ data_obj = generate_ATT_from_files(seqaln=seqaln,
                                  otu_json=otu_json,
                                  ingroup_mrca=None)
 
-print(type(data_obj))
+print(data_obj.gi_dict)
+print(data_obj.otu_dict)
+# print(type(data_obj))
 if isinstance(data_obj, AlignTreeTax):
     print data_obj, "is of type AlignTreeTax. Success, your input should be working."
