@@ -19,6 +19,7 @@ data_obj = generate_ATT_from_files(seqaln,
 
 
 
+
 conf = ConfigObj(configfi)
 ids = IdDicts(conf, workdir=workdir)
 scraper = PhyscraperScrape(data_obj, ids, conf)

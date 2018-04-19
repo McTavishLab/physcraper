@@ -1,21 +1,22 @@
-from physcraper import wrappers
+import sys
 import os
 import json
+from physcraper import wrappers, generate_ATT_from_files, AlignTreeTax
+#
+
 
 #
-seqaln= "docs/owndata/senecio_its.fasta"
+seqaln= "small_test_example/test.fas"
 mattype="fasta"
-trfn= "docs/owndata/its_new.tre"
+trfn= "small_test_example/test.tre"
 schema_trf = "newick"
-workdir="example_owndata_output_its"
+workdir="test_own_mini"
 configfi = "example.config"
-id_to_spn = r"docs/owndata/uniquetip_to_name_its.csv"
+id_to_spn = r"small_test_example/test_nicespl.csv"
+otu_jsonfi = "{}/otu_dict.json".format(workdir)
 treshold=1000
 
 
-otu_jsonfi = "{}/otu_dict.json".format(workdir)
-
- 
 if os.path.exists(otu_jsonfi):
     otu_json = json.load(open(otu_jsonfi))
 else:
@@ -23,6 +24,7 @@ else:
     if not os.path.exists(workdir):
        os.mkdir(workdir)
     json.dump(otu_json, open(otu_jsonfi,"w"))
+
 
 wrappers.own_data_run(seqaln,
                  mattype,
@@ -32,16 +34,3 @@ wrappers.own_data_run(seqaln,
                  treshold,
                  otu_jsonfi,
                  configfi)
-
-
-data_obj = generate_ATT_from_files(seqaln,
-                        mattype,
-                        workdir,
-                        treefile,
-                        otu_json,
-                        )
-
-
-conf = ConfigObj(configfi)
-ids = IdDicts(conf, workdir=workdir)
-scraper = PhyscraperScrape(data_obj, ids, conf)
