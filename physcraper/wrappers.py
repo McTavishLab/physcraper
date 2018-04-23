@@ -167,6 +167,7 @@ def own_data_run(seqaln,
                              treefile=trfn,
                              schema_trf = schema_trf,
                              otu_json=spInfoDict,
+                             email = conf.email,
                              ingroup_mrca=None)
 
         #Prune sequnces below a certain length threshold
@@ -191,13 +192,13 @@ def own_data_run(seqaln,
     #         else:
         sys.stdout.write("setting up id dictionaries\n")
         sys.stdout.flush()
-        if os.path.isfile("{}/id_pickle.p".format(workdir)): 
-            sys.stdout.write("Reloading from pickled scrapefile: id\n")
-            ids = pickle.load(open("{}/id_pickle.p".format(workdir),'rb'))
+        # if os.path.isfile("{}/id_pickle.p".format(workdir)): 
+        #     sys.stdout.write("Reloading from pickled scrapefile: id\n")
+        #     ids = pickle.load(open("{}/id_pickle.p".format(workdir),'rb'))
 
-        else:   
-            ids = IdDicts(conf, workdir=workdir)
-            ids.dump()
+        # else:   
+        ids = IdDicts(conf, workdir=workdir)
+        ids.dump()
 
         # if os.path.isfile("{}/scrape_checkpoint.p".format(workdir)): 
         #     sys.stdout.write("Reloading from pickled scrapefile: scrape\n")
@@ -223,7 +224,7 @@ def own_data_run(seqaln,
         scraper.dump()
         print(treshold)
         if treshold != None:  
-            
+
             scraper.sp_dict(downtorank)
             scraper.make_new_seq_dict(treshold=treshold, selectby=selectby)
             scraper.how_many_sp_to_keep(treshold=treshold, selectby=selectby)
@@ -244,3 +245,6 @@ def own_data_run(seqaln,
             scraper.how_many_sp_to_keep(treshold=treshold, selectby=selectby)
             scraper.replace_new_seq()
         scraper.generate_streamed_alignment(treshold)
+
+def concat(gene1, gene2, user_concat = None):
+    comb = combine(gene1, gene2)
