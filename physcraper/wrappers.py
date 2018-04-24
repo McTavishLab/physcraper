@@ -94,6 +94,7 @@ def standard_run(study_id,
         scraper.read_blast()
         scraper.remove_identical_seqs()
         scraper.generate_streamed_alignment()
+    return 1
 
 
 def OtuJsonDict(id_to_spn, configfi):
@@ -245,6 +246,7 @@ def own_data_run(seqaln,
             scraper.how_many_sp_to_keep(treshold=treshold, selectby=selectby)
             scraper.replace_new_seq()
         scraper.generate_streamed_alignment(treshold)
+    return 1
 
 def concat(gene1, gene2, user_concat = None):
     comb = combine(gene1, gene2)

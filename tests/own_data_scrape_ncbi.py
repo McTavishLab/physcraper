@@ -1,6 +1,7 @@
 import sys
 import os
 import json
+import shutil
 from physcraper import wrappers, generate_ATT_from_files, AlignTreeTax
 #
 
@@ -10,8 +11,8 @@ seqaln= "tiny_test_example/test.fas"
 mattype="fasta"
 trfn= "tiny_test_example/test.tre"
 schema_trf = "newick"
-workdir="tests/test_own_local"
-configfi = "tests/data/localblast.config"
+workdir="tests/test_ncbi_blast"
+configfi = "tests/data/ncbiblast.config"
 # configfi = "tests/data/aws.config"
 id_to_spn = r"tiny_test_example/test_nicespl.csv"
 otu_jsonfi = "{}/otu_dict.json".format(workdir)
@@ -43,3 +44,5 @@ wrappers.own_data_run(seqaln,
                       add_local_seq,
                       id_to_spn_addseq_json,
                       configfi)
+
+shutil.rmtree(workdir)
