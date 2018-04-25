@@ -7,3 +7,9 @@ venv_physcraper2
 taxonomy/*
 peyotl/
 standard-RAxML
+*.pyc
+*.pyo
+*.aux
+*.log
+build/
+
