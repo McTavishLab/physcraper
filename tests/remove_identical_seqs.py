@@ -10,7 +10,7 @@ from physcraper import ConfigObj, PhyscraperScrape, IdDicts
 
 ##todo Make Sure 
 
-sys.stdout.write("\nTesting 'generate_ATT_from_files'\n")
+sys.stdout.write("\nTesting 'remove_identical_seqs'\n")
 try:
 	data_obj = pickle.load(open("tests/data/tiny_dataobj.p", 'rb'))
 	conf = ConfigObj("tests/data/aws.config")
