@@ -10,7 +10,6 @@ configfi = "tests/data/aws.config"
 
 conf = ConfigObj(configfi)
 
-
 start = datetime.datetime.now()
 sys.stderr.write("running a blast query against AWS instance START {}".format(start))
 
@@ -44,3 +43,5 @@ end = datetime.datetime.now()
 sys.stderr.write("END {}".format(end))
 sys.stderr.write(result_handle.read())
 result_handle.close()
+
+assert result_handle

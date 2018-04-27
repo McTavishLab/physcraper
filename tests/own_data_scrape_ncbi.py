@@ -7,14 +7,14 @@ from physcraper import wrappers, generate_ATT_from_files, AlignTreeTax
 
 
 #
-seqaln= "tiny_test_example/test.fas"
+seqaln= "tests/data/tiny_test_example/test.fas"
 mattype="fasta"
-trfn= "tiny_test_example/test.tre"
+trfn= "tests/data/tiny_test_example/test.tre"
 schema_trf = "newick"
 workdir="tests/test_ncbi_blast"
 configfi = "tests/data/ncbiblast.config"
 # configfi = "tests/data/aws.config"
-id_to_spn = r"tiny_test_example/test_nicespl.csv"
+id_to_spn = r"tests/data/tiny_test_example/test_nicespl.csv"
 otu_jsonfi = "{}/otu_dict.json".format(workdir)
 treshold=2
 selectby="blast"

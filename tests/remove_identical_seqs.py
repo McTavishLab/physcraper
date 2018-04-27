@@ -1,0 +1,52 @@
+import pickle
+import sys
+from physcraper import ConfigObj, PhyscraperScrape, IdDicts
+
+#Function we want to test is scrape.remove_identical_seqs()
+#What are the inputs?  
+#physracper.scrape object, with new sequences read in.
+#to make that we need: input data, idObject, and a configuration object.
+
+##todo Make Sure 
+
+
+data_obj = pickle.load(open("tests/data/tiny_dataobj.p", 'rb'))
+conf = ConfigObj("tests/data/aws.config")
+ids = IdDicts(conf, workdir=data_obj.workdir)
+ids.gi_ncbi_dict = pickle.load(open("tests/data/tiny_gi_map.p", "rb" ))
+
+scraper =  PhyscraperScrape(data_obj, ids)
+scraper.read_blast(blast_dir="tests/data/tiny_test_example/blast_files")
+#scraper = pickle.load(open("tests/data/tiny_scraper_blast_read.p",'rb'))
+
+assert len(scraper.new_seqs) == 40
+assert len(scraper.data.aln) == 5
+assert len(scraper.new_seqs_otu_id) == 0
+
+
+scraper.remove_identical_seqs()
+
+assert len(scraper.new_seqs) == 40
+assert len(scraper.data.aln) == 5
+assert len(scraper.new_seqs_otu_id) == 37
+
+
+#Second test checks that seq len prec is affecting results
+
+data_obj = pickle.load(open("tests/data/tiny_dataobj.p", 'rb')) #reload bc data object is mutable
+#conf = ConfigObj("tests/data/aws.config")
+scraper2 = PhyscraperScrape(data_obj, ids)
+assert len(scraper2.data.aln) == 5
+
+scraper2.read_blast(blast_dir="tests/data/tiny_test_example/blast_files")
+scraper2.config.seq_len_perc = 0.998 #Change seq match percentage
+
+assert len(scraper2.new_seqs) == 40
+assert len(scraper2.new_seqs_otu_id) == 0
+
+scraper2.remove_identical_seqs()
+
+assert len(scraper2.new_seqs_otu_id) == 35
+
+
+sys.stdout.write("\n\nTest `remove_identical_seqs' passed\n\n")

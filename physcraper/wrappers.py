@@ -37,11 +37,6 @@ def standard_run(study_id,
     '''looks for a json file to continue run, or builds and runs
     new analysis for as long as new seqs are found'''
     conf = ConfigObj(configfi)
-#    if os.path.isfile("{}/att_checkpoint.json".format(workdir)):
-#        sys.stdout.write("Reloading data object from json scrapefile\n")
-#        thawed = open("{}/att_checkpoint.json".format(workdir), 'r').readlines()
-#        data_obj = jsonpickle.decode(thawed)
-#        scraper.repeat = 1
     if os.path.isfile("{}/att_checkpoint.p".format(workdir)):
         sys.stdout.write("Reloading data object from pickle file\n")
         data_obj = pickle.load( open( "{}/att_checkpoint.p".format(workdir), "rb" ) )
@@ -51,16 +46,16 @@ def standard_run(study_id,
         sys.stdout.write("setting up Data Object\n")
         sys.stdout.flush()
         #read the config file into a configuration object
-        conf = ConfigObj(configfi)
         aln = DnaCharacterMatrix.get(path=seqaln, schema=mattype)
         #Generate an linked Alignment-Tree-Taxa object
         data_obj = generate_ATT_from_phylesystem(aln=aln,
                              workdir=workdir,
                              study_id = study_id,
                              tree_id = tree_id,
-                             phylesystem_loc = conf.phylesystem_loc)
-        #Mapping identifiers between OpenTree and NCBI requires and identifier dict object
-        ids = IdDicts(conf, workdir="example")
+                             phylesystem_loc = conf.phylesystem_loc,
+                             email = conf.email)
+        #Mapping identifiers between OpenTree and NCBI requires an identifier dict object
+        ids = IdDicts(conf, workdir=workdir)
         #Prune sequnces below a certain length threshold
         #This is particularly important when using loci that have been de-concatenated, as some are 0 length which causes problems.
         data_obj.prune_short()
@@ -94,7 +89,7 @@ def standard_run(study_id,
         scraper.read_blast()
         scraper.remove_identical_seqs()
         scraper.generate_streamed_alignment()
-    return 1
+    return
 
 
 def OtuJsonDict(id_to_spn, configfi):
