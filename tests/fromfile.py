@@ -24,6 +24,6 @@ try:
                                    treefile = treefile,
                                    schema_trf = schema_trf,
                                    otu_json = otu_jsonfi)
-    sys.stdout.write("\nTest fromfile.py passed'\n")
+    sys.stdout.write("\nTest fromfile.py passed\n")
 except:
     sys.stdout.write("\nTest fromfile.py FAILED'\n")

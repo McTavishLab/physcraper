@@ -800,8 +800,11 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
         """reads in and prcesses the blast xml files"""
         if _DEBUG:
             sys.stderr.write("Read blast\n")
-        if not blast_dir:
-            blast_dir = self.blast_subdir
+        if blast_dir:
+            print blast_dir
+            self.blast_subdir = os.path.abspath(blast_dir)
+        print self.blast_subdir
+        assert os.path.exists(self.blast_subdir)
         if not self._blasted:
             self.run_blast()
         for taxon in self.data.aln:
