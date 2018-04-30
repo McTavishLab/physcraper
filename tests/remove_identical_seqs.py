@@ -24,6 +24,7 @@ try:
     assert len(scraper.new_seqs) == 40
     assert len(scraper.data.aln) == 5
     assert len(scraper.new_seqs_otu_id) == 0
+    
     scraper.remove_identical_seqs()
 
     assert len(scraper.new_seqs) == 40
