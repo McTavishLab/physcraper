@@ -38,6 +38,7 @@ try:
 
 #Second test checks that seq len prec is affecting results
     data_obj = pickle.load(open("tests/data/tiny_dataobj.p", 'rb')) #reload bc data object is mutable
+    data_obj.workdir = absworkdir
     scraper2 = PhyscraperScrape(data_obj, ids)
     assert len(scraper2.data.aln) == 5
 
