@@ -10,9 +10,13 @@ from physcraper import ConfigObj, PhyscraperScrape, IdDicts
 
 ##todo Make Sure 
 
+workdir="tests/output/owndata"
+absworkdir = os.path.abspath(workdir)
+
 sys.stdout.write("\nTesting 'remove_identical_seqs'\n")
 try:
     data_obj = pickle.load(open("tests/data/tiny_dataobj.p", 'rb'))
+    data_obj.workdir = absworkdir
     conf = ConfigObj("tests/data/aws.config")
     ids = IdDicts(conf, workdir=data_obj.workdir)
     ids.gi_ncbi_dict = pickle.load(open("tests/data/tiny_gi_map.p", "rb" ))
