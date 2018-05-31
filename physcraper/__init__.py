@@ -747,31 +747,31 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
         sequence already in the dict.
         If the new sequence is a super suquence of one in the dict, it
         removes that sequence and replaces it"""
-        
+        new_otu_label = label
         new_seq = seq.replace("-", "")
         tax_list = deepcopy(seq_dict.keys())
         i = 0
-        for tax_lab in tax_list:
+        for existing in tax_list:
             i += 1
-            inc_seq = seq_dict[tax_lab].replace("-", "")
-            if len(inc_seq) >= len(new_seq):
-                if inc_seq.find(new_seq) != -1:
-                    sys.stdout.write("seq {} is subsequence of {}, not added\n".format(label, tax_lab))
-                    self.data.otu_dict[tax_lab]['physcraper:status'] = "subsequence, not added"
+            included_seq = seq_dict[existing].replace("-", "")
+            if len(included_seq) >= len(new_seq):
+                if included_seq.find(new_seq) != -1:
+                    sys.stdout.write("seq {} is subsequence of {}, not added\n".format(new_otu_label, existing))
+                    self.data.otu_dict[new_otu_label]['physcraper:status'] = "subsequence, not added"
                     return
             else:
-                if new_seq.find(inc_seq) != -1:#
-                    if self.data.otu_dict[tax_lab].get('^physcraper:status') == "original":
-                        sys.stdout.write("seq {} is supersequence of original seq {}, both kept in alignment\n".format(label, tax_lab))
-                        self.data.otu_dict[tax_lab]['physcraper:status'] = "new seq added"
-                        seq_dict[label] = seq
+                if new_seq.find(included_seq) != -1:#
+                    if self.data.otu_dict[existing].get('^physcraper:status') == "original":
+                        sys.stdout.write("seq {} is supersequence of original seq {}, both kept in alignment\n".format(new_otu_label, existing))
+                        self.data.otu_dict[new_otu_label]['physcraper:status'] = "new seq added"
+                        seq_dict[new_otu_label] = seq
                         return
                     else:
-                        del seq_dict[tax_lab]
-                        seq_dict[label] = seq
-                        self.data.remove_taxa_aln_tre(tax_lab)
-                        sys.stdout.write("seq {} is supersequence of {}, {} added and {} removed\n".format(label, tax_lab, label, tax_lab))
-                        self.data.otu_dict[tax_lab]['physcraper:status'] = "new seq added in place of {}".format(tax_lab)
+                        del seq_dict[existing]
+                        seq_dict[new_otu_label] = seq
+                        self.data.remove_taxa_aln_tre(existing)
+                        sys.stdout.write("seq {} is supersequence of {}, {} added and {} removed\n".format(new_otu_label, existing, new_otu_label, existing))
+                        self.data.otu_dict[new_otu_label]['physcraper:status'] = "new seq added in place of {}".format(existing)
                         return
         sys.stdout.write(".")
         if i%50 == 0:

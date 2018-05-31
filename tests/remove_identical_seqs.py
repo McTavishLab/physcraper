@@ -54,3 +54,7 @@ try:
     sys.stdout.write("\n\nTest `remove_identical_seqs' passed\n\n")
 except:
 	sys.stdout.write("\n\nTest `remove_identical_seqs' FAILED\n\n")
+
+
+#TODO - Check that out_dicts are correct,
+#NO taxa labelled as not added, should be in the tree!!!
