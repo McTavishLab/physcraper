@@ -9,12 +9,11 @@ from physcraper import ConfigObj, PhyscraperScrape, IdDicts
 #to make that we need: input data, idObject, and a configuration object.
 
 ##todo Make Sure 
-
-workdir="tests/output/owndata"
-absworkdir = os.path.abspath(workdir)
-
-sys.stdout.write("\nTesting 'remove_identical_seqs'\n")
 try:
+    workdir="tests/output/owndata"
+    absworkdir = os.path.abspath(workdir)
+
+    sys.stdout.write("\nTesting 'remove_identical_seqs'\n")
     data_obj = pickle.load(open("tests/data/tiny_dataobj.p", 'rb'))
     data_obj.workdir = absworkdir
     conf = ConfigObj("tests/data/aws.config")
@@ -28,7 +27,7 @@ try:
     assert len(scraper.new_seqs) == 40
     assert len(scraper.data.aln) == 5
     assert len(scraper.new_seqs_otu_id) == 0
-    
+
     scraper.remove_identical_seqs()
 
     assert len(scraper.new_seqs) == 40
@@ -36,7 +35,12 @@ try:
     assert len(scraper.new_seqs_otu_id) == 37
 
 
-#Second test checks that seq len prec is affecting results
+    for taxon in scraper.data.tre.taxon_namespace:
+        assert taxon.label in scraper.data.otu_dict
+        status =  scraper.data.otu_dict[taxon.label].get(u'^physcraper:status')
+        assert status in ('original', 'query')
+
+    #Second test checks that seq len prec is affecting results
     data_obj = pickle.load(open("tests/data/tiny_dataobj.p", 'rb')) #reload bc data object is mutable
     data_obj.workdir = absworkdir
     scraper2 = PhyscraperScrape(data_obj, ids)
@@ -51,10 +55,7 @@ try:
     scraper2.remove_identical_seqs()
 
     assert len(scraper2.new_seqs_otu_id) == 35
+
     sys.stdout.write("\n\nTest `remove_identical_seqs' passed\n\n")
 except:
-	sys.stdout.write("\n\nTest `remove_identical_seqs' FAILED\n\n")
-
-
-#TODO - Check that out_dicts are correct,
-#NO taxa labelled as not added, should be in the tree!!!
+    sys.stdout.write("\n\nTest `remove_identical_seqs' FAILED\n\n")
