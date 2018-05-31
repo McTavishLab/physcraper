@@ -46,6 +46,7 @@ for taxon in tre.taxon_namespace:
     new_label = "{}_{}".format(taxname,status)
     i = 0
     while new_label in new_names:
+        i += 1
         new_label = "{}{}".format(i, new_label)
     new_names.add(new_label)
     taxon.label = new_label
