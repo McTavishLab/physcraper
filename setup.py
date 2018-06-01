@@ -13,6 +13,7 @@ setup(name='Physcraper',
           'configparser',
           'biopython',
           'urllib3',
-          'peyotl'
+          'peyotl',
+          'configparser'
       ]
      )

@@ -4,7 +4,18 @@ from dendropy import DnaCharacterMatrix
 import pickle
 import sys
 import os
+import subprocess
 
+
+def sync_ncbi(configfi):
+    conf = ConfigObj(configfi)
+    subprocess.call(["rsync", "av", "ftp.ncbi.nih.gov::pub/taxonomy/gi_taxid_nucl.dmp.gz", "{}/gi_taxid_nucl.dmp.gz".format(conf.ncbi_dmp)])
+    subprocess.call(["gunzip", "{}/gi_taxid_nucl.dmp.gz".format(dir)])
+
+
+def sync_ott(configfi):
+    conf = ConfigObj(configfi)
+    subprocess.call(["process_ott.sh",  "".format(conf.ott_ncbi)])
 
 def standard_run(study_id,
                  tree_id,
@@ -12,11 +23,14 @@ def standard_run(study_id,
                  mattype,
                  workdir,
                  configfi):
+    '''looks for pickeled file to continue run, or builds and runs 
+    new analysis for as long as new seqs are found'''
     if os.path.isfile("{}/scrape.p".format(workdir)): 
-        sys.stdout.write("Readloading from pickled scrapefile")
+        sys.stdout.write("Reloading from pickled scrapefile")
         scraper = pickle.load(open("{}/scrape.p".format(workdir),'rb'))
         scraper.repeat = 1
-    else: 
+    else:   
+  #          sync_names()
             sys.stdout.write("setting up Data Object\n")
             sys.stdout.flush()
             #read the config file into a configuration object
@@ -29,7 +43,6 @@ def standard_run(study_id,
                                  study_id = study_id,
                                  tree_id = tree_id,
                                  phylesystem_loc = conf.phylesystem_loc)
-
 
 
 

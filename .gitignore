@@ -1,4 +1,5 @@
-venv/
+gi_taxid*
+venv*/
 *.xml
 papara*
 RAxML*
