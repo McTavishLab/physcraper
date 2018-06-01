@@ -89,6 +89,7 @@ class ConfigObj(object):
         assert self.blast_loc in ['local', 'remote']
         if self.blast_loc =='local':
             self.blastdb = config['blast']['localblastdb']
+            self.url_base = None
         if self.blast_loc =='remote':
             self.url_base = config['blast'].get('url_base')
         if _DEBUG:
