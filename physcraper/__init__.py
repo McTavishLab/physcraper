@@ -22,6 +22,8 @@ import physcraper.AWSWWW as AWSWWW
 from Bio.Blast import NCBIWWW, NCBIXML
 from Bio.Blast.Applications import NcbiblastxCommandline
 from Bio import SeqIO, Entrez
+from Bio.SeqRecord import SeqRecord
+from Bio.Seq import Seq
 from dendropy import Tree,\
                   DnaCharacterMatrix,\
                   DataSet,\
@@ -35,7 +37,8 @@ from peyotl.nexson_syntax import extract_tree,\
                               PhyloSchema
 from peyotl.api import APIWrapper
 from ete2 import NCBITaxa
-
+from copy import deepcopy
+from urllib2 import URLError
 
 _DEBUG = 1
 _DEBUG_MK = 1
