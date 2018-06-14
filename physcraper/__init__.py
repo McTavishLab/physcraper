@@ -16,10 +16,25 @@ import inspect
 import random
 import logging
 import numpy
+import collections 
+import inspect
 import physcraper.AWSWWW as AWSWWW
 from Bio.Blast import NCBIWWW, NCBIXML
 from Bio.Blast.Applications import NcbiblastxCommandline
 from Bio import SeqIO, Entrez
+from dendropy import Tree,\
+                  DnaCharacterMatrix,\
+                  DataSet,\
+                  datamodel
+from peyotl.api.phylesystem_api import PhylesystemAPI
+from peyotl.sugar import tree_of_life
+from peyotl.nexson_syntax import extract_tree,\
+                              extract_tree_nexson,\
+                              get_subtree_otus,\
+                              extract_otu_nexson,\
+                              PhyloSchema
+from peyotl.api import APIWrapper
+from ete2 import NCBITaxa
 
 
 _DEBUG = 1
