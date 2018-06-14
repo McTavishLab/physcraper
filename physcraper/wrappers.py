@@ -6,12 +6,8 @@ import subprocess
 import json
 import csv
 from ete2 import NCBITaxa
-<<<<<<< Updated upstream
-from physcraper import generate_ATT_from_phylesystem, generate_ATT_from_files, ConfigObj, IdDicts, PhyscraperScrape
-=======
 from physcraper import generate_ATT_from_phylesystem, generate_ATT_from_files, ConfigObj, IdDicts, PhyscraperScrape 
 from physcraper import FilterBlast, debug #, Concat
->>>>>>> Stashed changes
 from dendropy import DnaCharacterMatrix
 
 
