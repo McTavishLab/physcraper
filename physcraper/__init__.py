@@ -613,10 +613,12 @@ class AlignTreeTax(object):
         self.rewrite_files(inputfn="physcraper.fas")
         for key in self.otu_dict.keys():
             if "'" in key:
-                debug("did i solve the problem somewhere else now??")
+                debug("': still non unicode symbols present")
+            if "-" in key:
+                debug(" -: still non unicode symbols present")
 
             else:
-                debug("did i solve the problem somewhere else now??")
+                debug("only unicode?")
             self.otu_dict[key.replace("'", "_")] = self.otu_dict.pop(key)
 
 
@@ -688,6 +690,8 @@ class AlignTreeTax(object):
         for taxon in tmp_tre.taxon_namespace:
             # ### here the double names of the labelled tre files are generated.
             # debug(self.otu_dict[taxon.label].get(label))
+            debug(taxon)
+            taxon.label = str(taxon.label).replace("-", "_")
             if self.otu_dict[taxon.label].get('^ot:ottTaxonName') != None:
                 new_label = self.otu_dict[taxon.label].get('^ot:ottTaxonName').replace(' ', '_')
             else:
@@ -806,7 +810,7 @@ class IdDicts(object):
         # debug("get_rank_info")
         Entrez.email = self.config.email
         if gi_id != False:
-            # debug(gi_id)
+            debug("gi_id to tax_name")
             tries = 5
             for i in range(tries):
                 try:
@@ -825,16 +829,18 @@ class IdDicts(object):
             tax_name = taxon_name.replace("_", " ")
         # debug(tax_name)
         if tax_name not in self.otu_rank.keys():
+            debug("tax_name to rank")
             try:
+                debug("try")
                 tax_id = Entrez.read(Entrez.esearch(db="taxonomy", term=tax_name, RetMax=100))['IdList'][0]
             except:
+                debug("except")
                 ncbi = NCBITaxa()
                 tax_info = ncbi.get_name_translator([tax_name])
                 debug(tax_info)
                 if tax_info == {}:
                     print("Taxon name does not match any species name in ncbi. Check that the name is written correctly!")
                 tax_id = tax_info.items()[0][1][0]
-
             ncbi = NCBITaxa()
             lineage = ncbi.get_lineage(tax_id)
             lineage2ranks = ncbi.get_rank(lineage)
@@ -1045,6 +1051,8 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
         self.date = str(datetime.date.today())
         self._blast_read = 1
     # TODO this should go back in the class and should prune the tree
+
+
     def seq_dict_build(self, seq, label, seq_dict): #Sequence needs to be passed in as string.
         """takes a sequence, a label (the otu_id) and a dictionary and adds the
         sequence to the dict only if it is not a subsequence of a
@@ -1063,6 +1071,7 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
         new_seq = seq.replace("-", "")
         tax_list = deepcopy(seq_dict.keys())
         i = 0
+
         for tax_lab in tax_list:
             if '^user:TaxonName' in self.data.otu_dict[tax_lab].keys():
                 existing_taxa = self.data.otu_dict[tax_lab]['^user:TaxonName']
@@ -1090,7 +1099,7 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
                             print(spn_of_label, " not added, subseq of ", existing_taxa)
                     return
             else:
-                if new_seq.find(inc_seq) != -1:#
+                if new_seq.find(inc_seq) != -1:#this statement adds seq that are the same
                     if self.data.otu_dict[tax_lab].get('^physcraper:status') == "original":
                         # print("delete because its a superseq")
 
@@ -1731,16 +1740,39 @@ class FilterBlast(PhyscraperScrape):
             # elif gi_id['^physcraper:last_blasted'] == '1800/01/01':
             #debug(gi_id)
 
+            
+
+
             if '^physcraper:status' in gi_id:
                 if gi_id['^physcraper:status'].split(' ')[0] not in self.seq_filter:
                     if gi_id['^physcraper:last_blasted'] == '1800/01/01':
                         gi_num = gi_id['^ncbi:gi']
                         debug(gi_num)
-                        if gi_num in self.new_seqs.keys():
-                            # debug(self.new_seqs[gi_num])
-                            seq = self.new_seqs[gi_num]
-                            # seq = self.sp_seq_d[key][gi_num]
-                            self.filtered_seq[gi_num] = seq
+
+
+                        tmp_dict = dict((taxon.label, self.data.aln[taxon].symbols_as_string()) for taxon in self.data.aln)
+
+
+                        avg_seqlen = sum(self.data.orig_seqlen)/len(self.data.orig_seqlen) #HMMMMMMMM
+                        assert self.config.seq_len_perc <= 1
+                        seq_len_cutoff = avg_seqlen*self.config.seq_len_perc
+
+                        for gi, seq in self.new_seqs.items():
+                            if len(seq.replace("-", "").replace("N", "")) > seq_len_cutoff:
+                                otu_id = self.data.add_otu(gi, self.ids)
+                                self.seq_dict_build(seq, otu_id, tmp_dict)
+
+
+                                for gi_num, seq in tmp_dict.items():
+
+
+                                    self.filtered_seq[gi_num] = seq
+
+                        # if gi_num, seq in self.new_seqs.items():
+                        #     # debug(self.new_seqs[gi_num])
+                            
+                        #     # seq = self.sp_seq_d[key][gi_num]
+                        #     self.filtered_seq[gi_num] = seq
         return self.filtered_seq
 
     def loop_for_write_blast_files(self, key, selectby):
