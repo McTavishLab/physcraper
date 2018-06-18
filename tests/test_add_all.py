@@ -37,6 +37,7 @@ if os.path.isfile("{}/test_add_all.p".format(workdir)):
  
 else:   
     data_obj = pickle.load(open("tests/data/tiny_dataobj.p", 'rb'))
+    data_obj.workdir = workdir
     conf = ConfigObj(configfi)
     ids = IdDicts(conf, workdir=data_obj.workdir)
     ids.gi_ncbi_dict = pickle.load(open("tests/data/tiny_gi_map.p", "rb" ))
