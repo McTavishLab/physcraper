@@ -13,4 +13,4 @@ try:
     assert conf.__dict__.keys() == expected_keys
     sys.stdout.write("\nTest configread.py passed\n")
 except:
-	sys.stdout.write("\nTest configread.py FAILED (expected, test in progress)\n")
+  sys.stdout.write("\nTest configread.py FAILED (expected, test in progress)\n")
