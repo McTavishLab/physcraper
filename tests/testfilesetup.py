@@ -11,7 +11,7 @@ mattype="fasta"
 trfn= "tests/data/tiny_test_example/test.tre"
 schema_trf = "newick"
 workdir="tests/output/owndata"
-configfi = "tests/data/aws.config"
+configfi = "tests/data/localblast.config"
 id_to_spn = r"tests/data/tiny_test_example/test_nicespl.csv"
 otu_jsonfi = "{}/otu_dict.json".format(workdir)
 
@@ -34,7 +34,6 @@ data_obj = generate_ATT_from_files(seqaln=seqaln,
                              treefile=trfn,
                              schema_trf = schema_trf,
                              otu_json=otu_jsonfi,
-                             email = "test@fake.edu",
                              ingroup_mrca=None)
 
 data_obj.prune_short()
