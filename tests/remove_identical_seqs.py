@@ -29,7 +29,7 @@ except:
 
 scraper =  PhyscraperScrape(data_obj, ids)
 scraper._blasted = 1
-blast_dir = "tests/data/tiny_test_example/blast_files"
+blast_dir = "tests/data/precooked/tiny_test_example/blast_files"
 scraper.read_blast(blast_dir=blast_dir)
 
 a = len(scraper.new_seqs) == 40
@@ -40,7 +40,7 @@ scraper.remove_identical_seqs()
 
 d = len(scraper.new_seqs) == 40
 e = len(scraper.data.aln) == 5
-f = len(scraper.new_seqs_otu_id) == 38
+f = len(scraper.new_seqs_otu_id) == 37
 
 
 g = 1
