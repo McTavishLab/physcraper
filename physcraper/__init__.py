@@ -41,8 +41,8 @@ from peyotl.api import APIWrapper
 import physcraper.AWSWWW as AWSWWW
 
 
-_DEBUG = 1
-_DEBUG_MK = 1
+_DEBUG = 0
+_DEBUG_MK = 0
 
 def debug(msg):
     """short debugging command
@@ -66,7 +66,7 @@ class ConfigObj(object):
     around and store."""
     def __init__(self, configfi):
         if _DEBUG:
-            sys.stderr.write("Building config object\n")
+            sys.stdout.write("Building config object\n")
         debug(configfi)
         assert os.path.isfile(configfi)
         config = configparser.ConfigParser()
@@ -99,12 +99,12 @@ class ConfigObj(object):
         if self.blast_loc =='remote':
             self.url_base = config['blast'].get('url_base')
         if _DEBUG:
-            sys.stderr.write("{}\n".format(self.email))
+            sys.stdout.write("{}\n".format(self.email))
             if self.blast_loc =='remote':
-                sys.stderr.write("url base = {}\n".format(self.url_base))
-            sys.stderr.write("{}\n".format(self.blast_loc))
+                sys.stdout.write("url base = {}\n".format(self.url_base))
+            sys.stdout.write("{}\n".format(self.blast_loc))
             if self.blast_loc =='local':
-                sys.stderr.write("local blast db {}\n".format(self.blastdb))
+                sys.stdout.write("local blast db {}\n".format(self.blastdb))
 
 
 #ATT is a dumb acronym for Alignment Tree Taxa object
@@ -242,6 +242,8 @@ def standardize_label(item):
         """
         # Note: has test, runs -> test_edit_dict_key.py
         item_edit = item.replace("-", "")
+        item_edit = item_edit.replace(" ", "")
+        item_edit = item_edit.replace("_", "")
         item_edit = item_edit.replace("'", "")
         item_edit = item_edit.replace("/", "")
         return item_edit
@@ -251,7 +253,7 @@ def get_ott_taxon_info(spp_name):
     try:
         res = taxomachine.TNRS(spp_name)['results'][0]
     except:
-        "match to taxon {} not found in open tree taxonomy".format(spp_name)
+        sys.stderr.write("match to taxon {} not found in open tree taxonomy".format(spp_name))
         return 0
     if res['matches'][0]['is_approximate_match'] == 1:
         sys.stderr.write("""exact match to taxon {} not found in open tree taxonomy.
@@ -266,7 +268,7 @@ def get_ott_taxon_info(spp_name):
                 ncbi_id = source.split(":")[1]
         return ottid, ottname,ncbi_id
     else:
-        "match to taxon {} not found in open tree taxonomy".format(spp_name)
+        sys.stderr.write("match to taxon {} not found in open tree taxonomy".format(spp_name))
         return 0
 
 
@@ -286,11 +288,13 @@ def OtuJsonDict(id_to_spn, id_dict):
             if info:
                 ottid, ottname, ncbiid = info
             if not info:
-                sys.stderr.write("match to taxon {} not found in open tree taxonomy. Trying NCBI next.\n".format(spn))
+                if _DEBUG:
+                    sys.stdout.write("match to taxon {} not found in open tree taxonomy. Trying NCBI next.\n".format(spn))
                 ncbi = NCBITaxa()
                 name2taxid = ncbi.get_name_translator([spn])
                 if len(name2taxid.items())>=1:
-                    sys.stderr.write("found taxon {} in ncbi".format(spn))
+                    if _DEBUG:
+                        sys.stdout.write("found taxon {} in ncbi".format(spn))
                     ncbiid = name2taxid.items()[0][1][0]
                     ottid = id_dict.ncbi_to_ott[ncbiid]
                     ottname = id_dict.ott_to_name[ott]
@@ -364,21 +368,21 @@ class AlignTreeTax(object):
         assert(self.aln.taxon_namespace==self.tre.taxon_namespace)
         reverse_otu_dict = {}
         for tax in self.aln.taxon_namespace:
-            found_label = 0
-            match = re.match("'n[0-9]{1,3}", tax.label)
-            newname = ''
-            if match:
-                newname = tax.label[2:]
-                newname = newname[:-1]
-            for otu in self.otu_dict:
-                if self.otu_dict[otu].get('^ot:originalLabel') == tax.label or self.otu_dict[otu].get('^ot:originalLabel') == newname:
-                    print("renaming {} to {}".format(tax.label, otu))
-                    tax.label = otu
-                    found_label = 1
-            if found_label == 0:
-                sys.stderr.write("could not match tiplabel {} or {} to an OTU\n".format(tax.label, newname))
-        for tax in self.aln.taxon_namespace:
-            print tax.label
+            if tax.label in self.otu_dict.keys():
+                pass
+            else:
+                found_label = 0
+                match = re.match("'n[0-9]{1,3}", tax.label)
+                newname = ''
+                if match:
+                    newname = tax.label[2:]
+                    newname = newname[:-1]
+                for otu in self.otu_dict:
+                    if self.otu_dict[otu].get('^ot:originalLabel') == tax.label or self.otu_dict[otu].get('^ot:originalLabel') == newname:
+                        tax.label = otu
+                        found_label = 1
+                if found_label == 0:
+                    sys.stderr.write("could not match tiplabel {} or {} to an OTU\n".format(tax.label, newname))
 #            assert tax.label in self.otu_dict
         #TODO - make sure all taxon labels are unique OTU ids.
 
@@ -442,8 +446,6 @@ class AlignTreeTax(object):
         aln_ids = set()
         for tax in self.aln:
             aln_ids.add(tax.label)
-        print aln_ids
-        print self.otu_dict.keys()
         assert aln_ids.issubset(self.otu_dict.keys())
         treed_taxa = set()
         orphaned_leafs = set()
@@ -571,39 +573,44 @@ class AlignTreeTax(object):
                        schema=alnschema)
         # hack to remove illegal characters in files
 
-    def write_labelled(self, label, treepath="labelled.tre", alnpath="labelled.fas"):
+    def write_labelled(self, label, treepath=None, alnpath=None, norepeats=True):
         """output tree and alignement with human readable labels
         Jumps through abunch of hoops to make labels unique.
         NOT MEMORY EFFICIENT AT ALL"""
         debug("write labelled files")
-        assert label in ['^ot:ottTaxonName', 'user:TaxonName', "^ot:originalLabel", "^ot:ottId", "^ncbi:taxon"]
+        if treepath == None:
+            treepath = "{}/{}".format(self.workdir, 'labelled.tre')
+        if alnpath == None:
+            alnpath = "{}/{}".format(self.workdir, 'labelled.aln')
+        assert label in ['^ot:ottTaxonName', '^user:TaxonName', "^ot:originalLabel", "^ot:ottId", "^ncbi:taxon"]
         tmp_newick = self.tre.as_string(schema="newick")
         tmp_tre = Tree.get(data=tmp_newick,
                            schema="newick",
                            preserve_underscores=True)
         tmp_fasta = self.aln.as_string(schema="fasta")
         tmp_aln = DnaCharacterMatrix.get(data=tmp_fasta,
-                                         schema="fasta")
+                                         schema="fasta",
+                                         taxon_namespace=tmp_tre.taxon_namespace)
         new_names = set()  
         for taxon in tmp_tre.taxon_namespace:
             debug(taxon)
             ### here the double names of the labelled tre files are generated.
             new_label = self.otu_dict[taxon.label].get(label, None)
             if new_label == None:
-                if otu_dict[taxon.label].get("^ot:originalLabel"):
-                    new_label = "orig_".format(otu_dict[taxon.label]["^ot:originalLabel"])
+                if self.otu_dict[taxon.label].get("^ot:originalLabel"):
+                    new_label = "orig_{}".format(self.otu_dict[taxon.label]["^ot:originalLabel"])
                 else:
-                    new_label = "ncbi_{}_ottname_{}".format(otu_dict[taxon.label].get("^ncbi:taxon", "unk"), otu_dict[taxon.label].get('^ot:ottTaxonName', "unk"))
-            new_label = new_label.replace(' ', '_')
-            if new_label in new_names:
+                    new_label = "ncbi_{}_ottname_{}".format(self.otu_dict[taxon.label].get("^ncbi:taxon", "unk"), self.otu_dict[taxon.label].get('^ot:ottTaxonName', "unk"))
+            new_label = str(new_label).replace(' ', '_')
+            if new_label in new_names and norepeats:
                 new_label = " ".join([new_label, taxon.label])
-                new_names.add(new_label)
             taxon.label = new_label
-        tmp_tre.write(path="{}/{}".format(self.workdir, treepath),
+            new_names.add(new_label)
+        tmp_tre.write(path=treepath,
                       schema="newick",
                       unquoted_underscores=True,
                       suppress_edge_lengths=False)
-        tmp_aln.write(path="{}/{}".format(self.workdir, alnpath),
+        tmp_aln.write(path=alnpath,
                       schema="fasta")
 
 
@@ -671,10 +678,20 @@ def get_mrca_ott(ott_ids):
             synth_tree_ott_ids.append(ott)
         except:
             ott_ids_not_in_synth.append(ott)
-    assert len(synth_tree_ott_ids) > 0
+    if len(synth_tree_ott_ids) == 0:
+        sys.stderr.write('No sampled taxa were found in the current sysnthetic tree. Please find and input and approppriate OTT id as ingroup mrca in generate_ATT_from_files')
+        sys.exit()
     mrca_node = tree_of_life.mrca(ott_ids=synth_tree_ott_ids, wrap_response=False)# need to fix wrap eventually
-    tax_id = mrca_node[u'nearest_taxon'].get(u'ott_id')
-    sys.stdout.write('MRCA of sampled taxa is {}\n'.format(mrca_node[u'nearest_taxon'][u'name']))
+    if u'nearest_taxon' in mrca_node.keys():
+        tax_id = mrca_node[u'nearest_taxon'].get(u'ott_id')
+        sys.stdout.write('(v3) MRCA of sampled taxa is {}\n'.format(mrca_node[u'nearest_taxon'][u'name']))
+    elif u'taxon' in mrca_node['mrca'].keys():
+        tax_id = mrca_node['mrca'][u'taxon'][u'ott_id']
+        sys.stdout.write('(v3) MRCA of sampled taxa is {}\n'.format(mrca_node['mrca'][u'taxon'][u'name']))
+    else:
+        print mrca_node.keys()
+        sys.stderr.write('(v3) MRCA of sampled taxa not found. Please find and input and approppriate OTT id as ingroup mrca in generate_ATT_from_files')
+        sys.exit()
     return tax_id
 
 
@@ -906,12 +923,14 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
         """reads in and prcesses the blast xml files"""
         debug("read blast")
         if blast_dir:
-            sys.stdout.write("blast dir {}".format(blast_dir))
+            sys.stdout.write("blast dir is {}\n".format(blast_dir))
             self.blast_subdir = os.path.abspath(blast_dir)
-        sys.stdout.write("blast dir {}".format(self.blast_subdir))
-        assert os.path.exists(self.blast_subdir)
+        else:
+            sys.stdout.write("blast dir is {}\n".format(self.blast_subdir))
+            os.mkdir(self.blast_subdir)
         if not self._blasted:
             self.run_blast()
+        assert os.path.exists(self.blast_subdir)
         if self.config.blast_loc == 'local': #because local db doens't have taxon info, needed to limit to group of interest
             gi_list_mrca = self.get_all_gi_mrca()
         else:

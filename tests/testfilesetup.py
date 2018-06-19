@@ -10,7 +10,7 @@ seqaln= "tests/data/tiny_test_example/test.fas"
 mattype="fasta"
 trfn= "tests/data/tiny_test_example/test.tre"
 schema_trf = "newick"
-workdir="tests/output/owndata"
+workdir="tests/tmp/owndata"
 configfi = "tests/data/test.config"
 id_to_spn = r"tests/data/tiny_test_example/test_nicespl.csv"
 otu_jsonfi = "{}/otu_dict.json".format(workdir)
@@ -24,10 +24,9 @@ if not os.path.exists("{}".format(workdir)):
 conf = ConfigObj(configfi)
 ids = IdDicts(conf, workdir=workdir)
 
-if not os.path.exists(otu_jsonfi):
-    otu_json = OtuJsonDict(id_to_spn, ids)
-    with open(otu_jsonfi,"w") as outfile:
-        json.dump(otu_json, outfile)
+otu_json = OtuJsonDict(id_to_spn, ids)
+with open(otu_jsonfi,"w") as outfile:
+    json.dump(otu_json, outfile)
 
 
 
@@ -40,10 +39,10 @@ data_obj = generate_ATT_from_files(seqaln=seqaln,
                              ingroup_mrca=None)
 
 data_obj.prune_short()
-data_obj.dump(filename = "tests/data/tiny_dataobj.p")
+data_obj.dump(filename = "tests/data/precooked/tiny_dataobj.p")
 
 scraper =  PhyscraperScrape(data_obj, ids)
-scraper.read_blast(blast_dir="tests/data/tiny_test_example/blast_files")
+scraper.read_blast(blast_dir="tests/data/precooked/tiny_test_example/blast_files")
 scraper.remove_identical_seqs()
 
-pickle.dump(ids.gi_ncbi_dict, open("tests/data/tiny_gi_map.p", "wb" ))
+pickle.dump(ids.gi_ncbi_dict, open("tests/data/precooked/tiny_gi_map.p", "wb" ))

@@ -1,49 +1,48 @@
 import os
+import sys
 import json
 import pickle
+import filecmp
 from physcraper import FilterBlast, wrappers, ConfigObj, generate_ATT_from_files, IdDicts
 
 # tests if I can write proper labelled files
 
+print("Running test_write_labelled\n\n")
 
-# I need to generate a FilterBlast object first
-seqaln = "tiny_test_example/test.fas"
-mattype = "fasta"
-trfn = "tiny_test_example/test.tre"
-schema_trf = "newick"
-workdir = "tests/output/test_write_label"
-configfi = "tests/data/aws.config"
-id_to_spn = r"tiny_test_example/test_nicespl.csv"
-otu_jsonfi = "{}/otu_dict.json".format(workdir)
-treshold = 2
-selectby = 'blast'
-downtorank = None
-add_local_seq = None
-id_to_spn_addseq_json = None
+expected_tree_path = "tests/data/expected_output/labelled.tre"
+expected_aln_path = "tests/data/expected_output/labelled.fas"
+expected_tree_path_ottid = "tests/data/expected_output/labelled_ottid.tre"
+expected_aln_path_ottid = "tests/data/expected_output/labelled_ottid.fas"
 
+try:
+   data_obj = pickle.load(open("tests/data/precooked/tiny_dataobj.p", 'rb'))
+except:
+   print("run 'python tests/testfilesetup.py' to setup data files for tests")
 
+treepath = 'tests/data/tmp/labelled.tre'
+alnpath = "tests/data/tmp/labelled.fas"
 
-otu_json = wrappers.OtuJsonDict(id_to_spn, configfi)
-if not os.path.exists(workdir):
-   os.mkdir(workdir)
-json.dump(otu_json, open(otu_jsonfi,"w"))
+data_obj.write_labelled(label='^user:TaxonName', treepath=treepath, alnpath=alnpath)
 
-  
-conf = ConfigObj(configfi)
-data_obj = generate_ATT_from_files(seqaln=seqaln, 
-                     mattype=mattype, 
-                     workdir=workdir,
-                     treefile=trfn,
-                     schema_trf=schema_trf,
-                     otu_json=otu_jsonfi,
-                     ingroup_mrca=None)
+a =  os.path.isfile(treepath)
+b = os.path.isfile(alnpath)
+c = filecmp.cmp(treepath, expected_tree_path)
+d = filecmp.cmp(alnpath, expected_aln_path)
 
-data_obj.write_labelled(label='user:TaxonName', treepath="labelled.tre", alnpath="labelled.fas")
+treepath_ottid = 'tests/data/tmp/labelled_ottid.tre'
+alnpath_ottid = "tests/data/tmp/labelled_ottid.fas"
+
+data_obj.write_labelled(label='^ot:ottId', treepath=treepath_ottid, alnpath=alnpath_ottid, norepeats = False)
+
+e = os.path.isfile(treepath_ottid)
+f = os.path.isfile(alnpath_ottid)
+g = filecmp.cmp(treepath_ottid, expected_tree_path_ottid)
+h = filecmp.cmp(alnpath_ottid, expected_aln_path_ottid)
 
 
-if os.path.isfile('{}/labelled.tre'.format(workdir)) == True and os.path.isfile('{}/labelled.fas'.format(workdir)) == True:
-	print('files written') 
+if a*b*c*d*e*f*g*h:
+	sys.stdout.write("Test write_lablled passed\n\n") 
 else:
-	print('did not write files')
+   sys.stderr.write("Test write_labelled FAILED\n\n") 
 	
 
