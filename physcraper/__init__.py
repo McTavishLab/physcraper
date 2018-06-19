@@ -931,7 +931,7 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
                             for hsp in alignment.hsps:
                                 if float(hsp.expect) < float(self.config.e_value_thresh):
                                     gi_id = int(alignment.title.split('|')[1])
-                                    if gi_list_mrca and (gi not in gi_list_mrca):
+                                    if gi_list_mrca and (gi_id not in gi_list_mrca):
                                         pass
                                     else:
                                        if gi_id not in self.data.gi_dict: #skip ones we already have (does it matter if these were deleted? No...)
