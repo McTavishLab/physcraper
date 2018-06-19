@@ -258,10 +258,10 @@ def get_ott_taxon_info(spp_name):
                           Check spelling. Maybe {}?""".format(spn, res['matches'][0][u'ot:ottTaxonName']))
         return 0
     if res['matches'][0]['is_approximate_match'] == 0:
-        ottid = res['matches'][0][u'ot:ottId']
-        ottname = res['matches'][0][ u'ot:ottTaxonName']
+        ottid = res['matches'][0]['taxon'][u'ott_id']
+        ottname = res['matches'][0]['taxon'][ u'unique_name']
         ncbi_id = None
-        for source in res['matches'][0][u'tax_sources']:
+        for source in res['matches'][0]['taxon'][u'tax_sources']:
             if source.startswith('ncbi'):
                 ncbi_id = source.split(":")[1]
         return ottid, ottname,ncbi_id
@@ -673,12 +673,8 @@ def get_mrca_ott(ott_ids):
             ott_ids_not_in_synth.append(ott)
     assert len(synth_tree_ott_ids) > 0
     mrca_node = tree_of_life.mrca(ott_ids=synth_tree_ott_ids, wrap_response=False)# need to fix wrap eventually
-    try:
-        tax_id = mrca_node[u'mrca'][u'taxon'][u'ott_id']
-        sys.stdout.write('MRCA of sampled taxa is {}\n'.format(mrca_node[u'mrca'][u'taxon'][u'name']))
-    except: #Hackaround for V2 apis
-        tax_id = mrca_node[u'nearest_taxon_mrca_ott_id']
-        sys.stdout.write('MRCA of sampled taxa is {}\n'.format(mrca_node[ u'nearest_taxon_mrca_unique_name']))
+    tax_id = mrca_node[u'nearest_taxon'].get(u'ott_id')
+    sys.stdout.write('MRCA of sampled taxa is {}\n'.format(mrca_node[u'nearest_taxon'][u'name']))
     return tax_id
 
 
@@ -918,6 +914,8 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
             self.run_blast()
         if self.config.blast_loc == 'local': #because local db doens't have taxon info, needed to limit to group of interest
             gi_list_mrca = self.get_all_gi_mrca()
+        else:
+            gi_list_mrca = None
         for taxon in self.data.aln:
             debug("add blast seq to new seqs")
             xml_fi = "{}/{}.xml".format(self.blast_subdir, taxon.label)
