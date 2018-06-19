@@ -52,12 +52,12 @@ for taxon in scraper.data.tre.taxon_namespace:
     g = g*i
 
 #Second test checks that seq len prec is affecting results
-data_obj = pickle.load(open("tests/data/tiny_dataobj.p", 'rb')) #reload bc data object is mutable
+data_obj = pickle.load(open("tests/data/precooked/tiny_dataobj.p", 'rb')) #reload bc data object is mutable
 data_obj.workdir = absworkdir
 scraper2 = PhyscraperScrape(data_obj, ids)
 j = len(scraper2.data.aln) == 5
 
-scraper2.read_blast(blast_dir="tests/data/tiny_test_example/blast_files")
+scraper2.read_blast(blast_dir="tests/data/precooked/tiny_test_example/blast_files")
 scraper2.config.seq_len_perc = 0.998 #Change seq match percentage
 
 k = len(scraper2.new_seqs) == 40
