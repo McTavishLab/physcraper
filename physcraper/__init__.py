@@ -648,9 +648,10 @@ class AlignTreeTax(object):
         else:
             self.otu_dict[taxon_label]['^physcraper:status'] = "deleted, but it wasn't in the alignment..."
 
-
     def dump(self, filename = None ):
         if filename:
+            if not os.path.exists(os.path.dirname(filename)):
+                os.makedirs(os.path.dirname(filename))
             ofi = open(filename, "wb" )
         else:
             ofi = open("{}/att_checkpoint.p".format(self.workdir), "wb" )
