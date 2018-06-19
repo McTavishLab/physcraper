@@ -31,7 +31,7 @@ from dendropy import Tree,\
                   DataSet,\
                   datamodel
 from peyotl.api.phylesystem_api import PhylesystemAPI
-from peyotl.sugar import tree_of_life, taxonomy
+from peyotl.sugar import tree_of_life, taxonomy, taxomachine
 from peyotl.nexson_syntax import extract_tree,\
                               extract_tree_nexson,\
                               get_subtree_otus,\
@@ -241,36 +241,63 @@ def standardize_label(item):
         """try to make names unicode
         """
         # Note: has test, runs -> test_edit_dict_key.py
-        debug("standardize label")
-        item_edit = item.replace("-", "_")
-        item_edit = item_edit.replace("'", "_")
-        item_edit = item_edit.replace("/", "_")
+        item_edit = item.replace("-", "")
+        item_edit = item_edit.replace("'", "")
+        item_edit = item_edit.replace("/", "")
         return item_edit
+
+def get_ott_taxon_info(spp_name):
+    "get ottid, taxon name, and ncbid (if present) from Open Tree Taxonomy"
+    try:
+        res = taxomachine.TNRS(spp_name)['results'][0]
+    except:
+        "match to taxon {} not found in open tree taxonomy".format(spp_name)
+        return 0
+    if res['matches'][0]['is_approximate_match'] == 1:
+        sys.stderr.write("""exact match to taxon {} not found in open tree taxonomy.
+                          Check spelling. Maybe {}?""".format(spn, res['matches'][0][u'ot:ottTaxonName']))
+        return 0
+    if res['matches'][0]['is_approximate_match'] == 0:
+        ottid = res['matches'][0][u'ot:ottId']
+        ottname = res['matches'][0][ u'ot:ottTaxonName']
+        ncbi_id = None
+        for source in res['matches'][0][u'tax_sources']:
+            if source.startswith('ncbi'):
+                ncbi_id = source.split(":")[1]
+        return ottid, ottname,ncbi_id
+    else:
+        "match to taxon {} not found in open tree taxonomy".format(spp_name)
+        return 0
+
 
 def OtuJsonDict(id_to_spn, id_dict):
     """Make otu json dict, which is also produced within the openTreeLife-query
     reads input file into the var spInfo, tranaltes using an IdDict object
-    using web for NCBI"""
-
-    with open(id_to_spn, mode='r') as idtospn:
-        reader = csv.reader(idtospn)
-        spInfo = dict((rows[0], rows[1]) for rows in reader)
-    ncbi = NCBITaxa()    
+    using web to call Open tree, then ncbi if not found""" 
     spInfoDict = {}
-    for item in spInfo:
-        spn = spInfo[item].replace("_", " ")
-        name2taxid = ncbi.get_name_translator([spn])
-        clean_lab = standardize_label(item)
-        otuid = "otu{}".format(clean_lab)
-        if len(name2taxid.items())>=1:
-            ncbiid = name2taxid.items()[0][1][0]
-            ott = id_dict.ncbi_to_ott[ncbiid]
-            spn = id_dict.ott_to_name[ott]
-            get_info = {'^ncbiID': ncbiid, '^ot:ottTaxonName': spn, '^ot:ottId': ott, '^ot:originalLabel': item, '^user:TaxonName': spInfo[item],  '^physcraper:status': 'original','^physcraper:last_blasted' : "1900/01/01" }  
-            spInfoDict[otuid] = get_info
-        else:
-            
-            spInfoDict[otuid] = {'^user:TaxonName': spInfo[item], '^ot:originalLabel': item, '^physcraper:status': 'original','^physcraper:last_blasted' : "1900/01/01"}
+    with open(id_to_spn, mode='r') as infile:
+        for lin in infile:
+            tipname, species = lin.strip().split(',')
+            clean_lab = standardize_label(tipname)
+            assert clean_lab not in spInfoDict
+            otu_id = "otu{}".format(clean_lab)
+            spn = species.replace("_", " ")
+            info = get_ott_taxon_info(spn)
+            if info:
+                ottid, ottname, ncbiid = info
+            if not info:
+                sys.stderr.write("match to taxon {} not found in open tree taxonomy. Trying NCBI next.\n".format(spn))
+                ncbi = NCBITaxa()
+                name2taxid = ncbi.get_name_translator([spn])
+                if len(name2taxid.items())>=1:
+                    sys.stderr.write("found taxon {} in ncbi".format(spn))
+                    ncbiid = name2taxid.items()[0][1][0]
+                    ottid = id_dict.ncbi_to_ott[ncbiid]
+                    ottname = id_dict.ott_to_name[ott]
+                else:
+                    sys.stderr.write("match to taxon {} not found in open tree taxonomy or NCBI. Proceeding without taxon info\n".format(spn))
+                    ottid, ottname, ncbiid = None, None, None
+            spInfoDict[otu_id] = {'^ncbiID': ncbiid, '^ot:ottTaxonName': ottname, '^ot:ottId': ottid, '^ot:originalLabel': tipname, '^user:TaxonName': species,  '^physcraper:status': 'original','^physcraper:last_blasted' : "1900/01/01" }  
     return  spInfoDict 
 
 class AlignTreeTax(object):
@@ -336,7 +363,7 @@ class AlignTreeTax(object):
             self.aln.taxon_namespace.remove_taxon(tax)
         assert(self.aln.taxon_namespace==self.tre.taxon_namespace)
         reverse_otu_dict = {}
-        for tax in aln.taxon_namespace:
+        for tax in self.aln.taxon_namespace:
             found_label = 0
             match = re.match("'n[0-9]{1,3}", tax.label)
             newname = ''
@@ -344,11 +371,15 @@ class AlignTreeTax(object):
                 newname = tax.label[2:]
                 newname = newname[:-1]
             for otu in self.otu_dict:
-                if self.otu_dict[otu]['^ot:originalLabel'] == tax.label or self.otu_dict[otu]['^ot:originalLabel'] == newname:
-                    tax.label == otu
+                if self.otu_dict[otu].get('^ot:originalLabel') == tax.label or self.otu_dict[otu].get('^ot:originalLabel') == newname:
+                    print("renaming {} to {}".format(tax.label, otu))
+                    tax.label = otu
                     found_label = 1
             if found_label == 0:
-                sys.stderr.write("could not match tiplabel {} or {} to an OTU".format(tax.label, newname))
+                sys.stderr.write("could not match tiplabel {} or {} to an OTU\n".format(tax.label, newname))
+        for tax in self.aln.taxon_namespace:
+            print tax.label
+#            assert tax.label in self.otu_dict
         #TODO - make sure all taxon labels are unique OTU ids.
 
 
@@ -406,13 +437,13 @@ class AlignTreeTax(object):
             debug(tax)
             debug(tax.label)
             debug(self.otu_dict[tax.label])
-
             self.otu_dict[tax.label]['^physcraper:status'] = "deleted in reconcile" # unnecessary? gehts overwriten in next line
             self.remove_taxa_aln_tre(tax.label)
         aln_ids = set()
-        self.edit_dict_key()
         for tax in self.aln:
             aln_ids.add(tax.label)
+        print aln_ids
+        print self.otu_dict.keys()
         assert aln_ids.issubset(self.otu_dict.keys())
         treed_taxa = set()
         orphaned_leafs = set()
@@ -640,6 +671,7 @@ def get_mrca_ott(ott_ids):
             synth_tree_ott_ids.append(ott)
         except:
             ott_ids_not_in_synth.append(ott)
+    assert len(synth_tree_ott_ids) > 0
     mrca_node = tree_of_life.mrca(ott_ids=synth_tree_ott_ids, wrap_response=False)# need to fix wrap eventually
     try:
         tax_id = mrca_node[u'mrca'][u'taxon'][u'ott_id']
@@ -1046,7 +1078,6 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
             os.rename(filename, "{}/{}_tmp".format(self.workdir, filename.split("/")[1]))
         sys.stdout.write("aligning query sequences \n")
         ## hack around stupid characters for phylogen. tools
-        self.data.edit_dict_key()
         ### note: sometimes there are still sp in any of the aln/tre and I still have not found out why sometimes the label is needed
         for tax_lab in self.data.aln.taxon_namespace:
             if tax_lab not in self.data.tre.taxon_namespace:
