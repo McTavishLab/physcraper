@@ -8,7 +8,7 @@ configparser==3.5.0
 coverage==4.2
 enum34==1.1.6
 locket==0.2.0
--e git+https://github.com/OpenTreeOfLife/peyotl@9fee31eb958042a3261ce7099717aae10169a178#egg=peyotl-master
+-e git+https://github.com/OpenTreeOfLife/peyotl@6adad67ecd76251b823f6b98b3dc8831ac118768#egg=peyotl-origin/api_v3
 python-dateutil==2.6.0
 pytz==2017.2
 redis==2.10.5

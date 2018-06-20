@@ -249,7 +249,9 @@ def standardize_label(item):
         return item_edit
 
 def get_ott_taxon_info(spp_name):
-    "get ottid, taxon name, and ncbid (if present) from Open Tree Taxonomy"
+    """get ottid, taxon name, and ncbid (if present) from Open Tree Taxonomy.
+    ONLY works with version 3 of Open tree APIs
+    """
     try:
         res = taxomachine.TNRS(spp_name)['results'][0]
     except:
@@ -266,7 +268,7 @@ def get_ott_taxon_info(spp_name):
         for source in res['matches'][0]['taxon'][u'tax_sources']:
             if source.startswith('ncbi'):
                 ncbi_id = source.split(":")[1]
-        return ottid, ottname,ncbi_id
+        return ottid, ottname, ncbi_id
     else:
         sys.stderr.write("match to taxon {} not found in open tree taxonomy".format(spp_name))
         return 0
