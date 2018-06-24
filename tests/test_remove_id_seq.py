@@ -106,15 +106,15 @@ print(tmp_dict)
 filteredScrape.new_seqs_otu_id = tmp_dict
 
 
-if len(filteredScrape.new_seqs) > 0:
-    filteredScrape.remove_identical_seqs()
-    filteredScrape.data.write_files() #should happen before aligning in case of pruning
-    if len(filteredScrape.new_seqs_otu_id) > 0:#TODO rename to something more intutitive
-        filteredScrape.write_query_seqs()
-        filteredScrape.align_query_seqs()
-        filteredScrape.data.reconcile()
-        filteredScrape.place_query_seqs()
-        filteredScrape.est_full_tree()
+# if len(filteredScrape.new_seqs) > 0:
+#     filteredScrape.remove_identical_seqs()
+#     filteredScrape.data.write_files() #should happen before aligning in case of pruning
+#     if len(filteredScrape.new_seqs_otu_id) > 0:#TODO rename to something more intutitive
+#         filteredScrape.write_query_seqs()
+#         filteredScrape.align_query_seqs()
+#         filteredScrape.data.reconcile()
+#         filteredScrape.place_query_seqs()
+#         filteredScrape.est_full_tree()
 
 ##################3
 expected_add =1
@@ -123,5 +123,6 @@ print(len(filteredScrape.new_seqs_otu_id))
 try:
     assert expected_add == len(filteredScrape.new_seqs_otu_id)
     print("test passed")
+    print("todo: add check that newly added seq are checked. they are, but there is no test")
 except:
     print("test failed")
