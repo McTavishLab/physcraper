@@ -1046,9 +1046,14 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
             i += 1
             inc_seq = seq_dict[tax_lab].replace("-", "")
             if len(inc_seq) >= len(new_seq): # if seq is identical and shorter
+                debug("first if")
+                # debug(new_seq)
+                # debug(inc_seq)
+                # debug(new_seq)
+                # debug(inc_seq.find(new_seq) != -1)
                 if inc_seq.find(new_seq) != -1:
+                    debug("second if")
                     ## changed the code, that seq which are identical but belong to different species concepts, will be added
-                    if spn_of_label != existing_taxa:
                     if (existing_taxa != spn_of_label and existing_taxa != None) or (existing_id != id_of_label and existing_id != None):
                         # debug((x in added_taxon for x in exists))
                     # if not (x in added_taxon for x in exists):
@@ -1959,31 +1964,6 @@ class FilterBlast(PhyscraperScrape):
                 # debug(self.sp_seq_d[taxon_id].keys())
 
                 count_dict = self.count_num_seq(taxon_id)
-                # #############
-                # count = 0
-                # if taxon_id in self.sp_seq_d.keys(): #if added to exclude stuff, that has more info in sp_d, but has no new seq in sp_seq_dic
-                #     ## do some counting to redirect the different filters.
-                #     for sp_keys in self.sp_seq_d[taxon_id].keys():
-                #         # debug(type(sp_keys))
-                #         if isinstance(sp_keys, str):
-                #             count += 1
-                #     #this calculates how many seq of species have already
-                #     # been present in the aln
-                #     new_taxon = True
-                #     toadd = 0
-                #     query_count = 0
-                #     for item in self.sp_d[taxon_id]:
-                #             if '^physcraper:status' in item:
-                #                 not_to_add = ['deleted', 'subsequence,', 'not']
-                #                 if item['^physcraper:status'].split(' ')[0] not in not_to_add:
-                #                     # debug("giId not in not_to_add")
-                #                     toadd += 1
-                #                     if item['^physcraper:last_blasted'] != '1800/01/01':
-                #                         debug("taxon not new")
-                #                         new_taxon = False
-                #                 if  item['^physcraper:status'] == "query":
-                #                     query_count += 1
-                #                     #####################
 
 
                 if taxon_id in self.sp_seq_d.keys():
