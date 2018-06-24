@@ -497,10 +497,10 @@ class AlignTreeTax(object):
             if counts['?']+counts['-'] <= cutoff: #first ok column
                 start = i
                 break
-        for i in range(seqlen-1, 0, -1):
+        for i in range(seqlen, 0, -1): ### seqlen-1 cuts off last character of aln, I changed it.
             counts = {'?':0, '-':0}
             for tax in self.aln:
-                call = self.aln[tax][i].label
+                call = self.aln[tax][i-1].label ## changing seqlen-1 to seqlen requires that we have here i-1
                 if call in ['?', '-']:
                     counts[call] += 1
             if counts['?']+counts['-'] <= cutoff:
@@ -520,6 +520,27 @@ class AlignTreeTax(object):
 
         ncbi_id = ids_obj.map_gi_ncbi(gi) #check that try/execpt is working here
         #TODO do we need rank info here?
+        
+        ##seems like without the try and except we are missing tons of information
+        try:
+            ncbi_id = int(ids_obj.map_gi_ncbi(gi))
+            try:
+                ott = int(ids_obj.ncbi_to_ott[ncbi_id])
+            except:
+                ott = "OTT_{}".format(self.ps_otu)
+                self.ps_otu += 1
+            spn = str(ids_obj.ott_to_name[ott]).replace(" ", "_")
+        except:
+            # spn = ids_obj.get_rank_info(gi, taxon_name = False).replace(" ", "_")
+            # debug(gi)
+            spn = ids_obj.get_rank_info(gi_id=gi)
+
+            ncbi_id = ids_obj.otu_rank[spn]["taxon id"]
+            try:
+                ott = int(ids_obj.ncbi_to_ott[ncbi_id])
+            except:
+                ott = "OTT_{}".format(self.ps_otu)
+                self.ps_otu += 1
         self.otu_dict[otu_id] = {}
         self.otu_dict[otu_id]['^ncbi:gi'] = gi
         self.otu_dict[otu_id]['^ncbi:accession'] = self.gi_dict[gi]['accession']
@@ -970,6 +991,8 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
                 except ValueError:
                     sys.stderr.write("Problem reading {}, skipping\n".format(xml_fi))
         self.date = str(datetime.date.today())
+        with open(self.logfile, "a") as log:
+            log.write("{} new sequences added from genbank sfter evalue filtering\n".format(len(self.new_seqs)))
         self._blast_read = 1
 
     # TODO this should go back in the class and should prune the tree
@@ -1026,12 +1049,22 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
                 if inc_seq.find(new_seq) != -1:
                     ## changed the code, that seq which are identical but belong to different species concepts, will be added
                     if spn_of_label != existing_taxa:
+                    if (existing_taxa != spn_of_label and existing_taxa != None) or (existing_id != id_of_label and existing_id != None):
+                        # debug((x in added_taxon for x in exists))
+                    # if not (x in added_taxon for x in exists):
+                        debug("different sp concept")
+                        # debug(x in added_taxon for x in exists)
+
+                    # if spn_of_label not in exists: # if sp. concepts are different
                         sys.stdout.write("seq {} is subsequence of {}, but different species concept\n".format(label, tax_lab))
+                        
                         self.data.otu_dict[label]['^physcraper:status'] = "new seq added; subsequence, but different species"
                         seq_dict[label] = seq
                         if _DEBUG_MK == 1:
                             print(spn_of_label, "and", existing_taxa, "subsequences, but different sp. concept")
-                    else:
+                        continue_search = True
+                        continue
+                    else: #subseq of same sp.
                         sys.stdout.write("seq {} is subsequence of {}, not added\n".format(label, tax_lab))
                         self.data.otu_dict[label]['^physcraper:status'] = "subsequence, not added"
                         if _DEBUG_MK == 1:
@@ -1114,9 +1147,18 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
         assert self.config.seq_len_perc <= 1
         seq_len_cutoff = avg_seqlen*self.config.seq_len_perc
         for gi, seq in self.new_seqs.items():
-            if len(seq.replace("-", "").replace("N", "")) > seq_len_cutoff:
-                otu_id = self.data.add_otu(gi, self.ids)                   
-                self.seq_dict_build(seq, otu_id, tmp_dict)
+
+            if self.blacklist != None and gi in self.blacklist:
+                pass
+            elif gi in self.newseqsgi: ##added to increase speed. often seq was found in another blast file
+                pass
+            else:
+                self.newseqsgi.append(gi)
+                if len(seq.replace("-", "").replace("N", "")) > seq_len_cutoff:
+                    otu_id = self.data.add_otu(gi, self.ids)                   
+                    self.seq_dict_build(seq, otu_id, tmp_dict)
+            # else:
+            #     debug("gi was already compared")
         for tax in old_seqs:
             try:
                 del tmp_dict[tax]
