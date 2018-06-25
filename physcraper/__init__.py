@@ -228,25 +228,16 @@ def generate_ATT_from_files(seqaln,
     return AlignTreeTax(otu_newick, otu_dict, aln, ingroup_mrca=ott_mrca, workdir=workdir, schema=schema_trf)
 
 
-#def otu_tiplabel(aln):
-#    """makes a dictionary with tiplabels of aln as key and
-#    removes 'n' from tiplabels that start with a number as value.
-#    """
-#    otu_taxonlabel_problem = {}
-#    otu_taxonlabel_problem[key.label] = newname
-#    return otu_taxonlabel_problem
-
-
 def standardize_label(item):
-        """try to make names unicode
-        """
-        # Note: has test, runs -> test_edit_dict_key.py
-        item_edit = item.replace("-", "")
-        item_edit = item_edit.replace(" ", "")
-        item_edit = item_edit.replace("_", "")
-        item_edit = item_edit.replace("'", "")
-        item_edit = item_edit.replace("/", "")
-        return item_edit
+    """try to make names unicode
+    """
+    # Note: has test, runs -> test_edit_dict_key.py
+    item_edit = item.replace("-", "")
+    item_edit = item_edit.replace(" ", "")
+    item_edit = item_edit.replace("_", "")
+    item_edit = item_edit.replace("'", "")
+    item_edit = item_edit.replace("/", "")
+    return item_edit
 
 def get_ott_taxon_info(spp_name):
     """get ottid, taxon name, and ncbid (if present) from Open Tree Taxonomy.
@@ -303,7 +294,7 @@ def OtuJsonDict(id_to_spn, id_dict):
                 else:
                     sys.stderr.write("match to taxon {} not found in open tree taxonomy or NCBI. Proceeding without taxon info\n".format(spn))
                     ottid, ottname, ncbiid = None, None, None
-            spInfoDict[otu_id] = {'^ncbiID': ncbiid, '^ot:ottTaxonName': ottname, '^ot:ottId': ottid, '^ot:originalLabel': tipname, '^user:TaxonName': species,  '^physcraper:status': 'original','^physcraper:last_blasted' : "1900/01/01" }  
+            spInfoDict[otu_id] = {'^ncbi:taxon': ncbiid, '^ot:ottTaxonName': ottname, '^ot:ottId': ottid, '^ot:originalLabel': tipname, '^user:TaxonName': species,  '^physcraper:status': 'original','^physcraper:last_blasted' : "1900/01/01" }  
     return  spInfoDict 
 
 class AlignTreeTax(object):
@@ -440,9 +431,9 @@ class AlignTreeTax(object):
                 fi.write("{}, {}\n".format(tax.label, self.otu_dict.get(tax.label).get('^ot:originalLabel')))
             fi.close()
         for tax in prune:
-            debug(tax)
-            debug(tax.label)
-            debug(self.otu_dict[tax.label])
+            # debug(tax)
+            # debug(tax.label)
+            # debug(self.otu_dict[tax.label])
             self.otu_dict[tax.label]['^physcraper:status'] = "deleted in reconcile" # unnecessary? gehts overwriten in next line
             self.remove_taxa_aln_tre(tax.label)
         aln_ids = set()
@@ -506,10 +497,10 @@ class AlignTreeTax(object):
             if counts['?']+counts['-'] <= cutoff: #first ok column
                 start = i
                 break
-        for i in range(seqlen-1, 0, -1):
+        for i in range(seqlen, 0, -1): ### seqlen-1 cuts off last character of aln, I changed it.
             counts = {'?':0, '-':0}
             for tax in self.aln:
-                call = self.aln[tax][i].label
+                call = self.aln[tax][i-1].label ## changing seqlen-1 to seqlen requires that we have here i-1
                 if call in ['?', '-']:
                     counts[call] += 1
             if counts['?']+counts['-'] <= cutoff:
@@ -529,6 +520,28 @@ class AlignTreeTax(object):
 
         ncbi_id = ids_obj.map_gi_ncbi(gi) #check that try/execpt is working here
         #TODO do we need rank info here?
+        
+        ##seems like without the try and except we are missing tons of information
+        try:
+            # ncbi_id = int(ids_obj.map_gi_ncbi(gi))
+            # try:
+            ott = int(ids_obj.ncbi_to_ott[ncbi_id])
+            # except:
+            if ott is None:
+                ott = "OTT_{}".format(self.ps_otu)
+                self.ps_otu += 1
+            spn = str(ids_obj.ott_to_name[ott]).replace(" ", "_")
+        except:
+            # spn = ids_obj.get_rank_info(gi, taxon_name = False).replace(" ", "_")
+            # debug(gi)
+            spn = ids_obj.get_rank_info(gi_id=gi)
+
+            ncbi_id = ids_obj.otu_rank[spn]["taxon id"]
+            try:
+                ott = int(ids_obj.ncbi_to_ott[ncbi_id])
+            except:
+                ott = "OTT_{}".format(self.ps_otu)
+                self.ps_otu += 1
         self.otu_dict[otu_id] = {}
         self.otu_dict[otu_id]['^ncbi:gi'] = gi
         self.otu_dict[otu_id]['^ncbi:accession'] = self.gi_dict[gi]['accession']
@@ -561,8 +574,8 @@ class AlignTreeTax(object):
         fi.close()
         self.aln.write(path="{}/{}".format(self.workdir, alnfilename), schema="phylip")
         # hack to remove illegal characters in files
-        self.rewrite_files(inputfn="random_resolve.tre")
-        self.rewrite_files(inputfn="aln_ott.phy")
+        # self.rewrite_files(inputfn="random_resolve.tre")
+        # self.rewrite_files(inputfn="aln_ott.phy")
 
 
     def write_files(self, treepath="physcraper.tre", treeschema="newick", alnpath="physcraper.fas", alnschema="fasta"):
@@ -575,7 +588,7 @@ class AlignTreeTax(object):
                        schema=alnschema)
         # hack to remove illegal characters in files
 
-    def write_labelled(self, label, treepath=None, alnpath=None, norepeats=True):
+    def write_labelled(self, label, treepath=None, alnpath=None, norepeats=True, gi_id=False):
         """output tree and alignement with human readable labels
         Jumps through abunch of hoops to make labels unique.
         NOT MEMORY EFFICIENT AT ALL"""
@@ -604,8 +617,20 @@ class AlignTreeTax(object):
                 else:
                     new_label = "ncbi_{}_ottname_{}".format(self.otu_dict[taxon.label].get("^ncbi:taxon", "unk"), self.otu_dict[taxon.label].get('^ot:ottTaxonName', "unk"))
             new_label = str(new_label).replace(' ', '_')
-            if new_label in new_names and norepeats:
-                new_label = " ".join([new_label, taxon.label])
+            if gi_id == True:
+                sp_counter = 2
+                if new_label in new_names and norepeats:
+                    # debug(self.otu_dict[taxon.label])
+
+                    gi_id = self.otu_dict[taxon.label].get('^ncbi:gi')
+                    if gi_id == None:
+                        gi_id = sp_counter
+                        sp_counter +=1
+                    # debug(gi_id)
+                    new_label = "_".join([new_label, str(gi_id)])
+            else:
+                if new_label in new_names and norepeats:
+                    new_label = "_".join([new_label, taxon.label])
             taxon.label = new_label
             new_names.add(new_label)
         tmp_tre.write(path=treepath,
@@ -628,15 +653,15 @@ class AlignTreeTax(object):
         takes a single taxon_label as input.
         """
         # note: has test, test_remove_taxa_aln_tre.py, runs, passes
-        debug('remove_taxa_aln_tre')
-        debug(taxon_label)
-        debug(type(taxon_label))
+        # debug('remove_taxa_aln_tre')
+        # debug(taxon_label)
+        # debug(type(taxon_label))
         tax = self.aln.taxon_namespace.get_taxon(taxon_label)
         tax2 = self.tre.taxon_namespace.get_taxon(taxon_label)
-        debug(tax)
-        debug(tax2)
-        #assert tax==tax2
-        debug(len(self.tre.taxon_namespace))
+        # debug(tax)
+        # debug(tax2)
+        # #assert tax==tax2
+        # debug(len(self.tre.taxon_namespace))
         if tax:
             self.aln.remove_sequences([tax])
             self.aln.taxon_namespace.remove_taxon_label(taxon_label) # raises an error if label not found
@@ -645,7 +670,7 @@ class AlignTreeTax(object):
             self.tre.prune_taxa_with_labels([taxon_label])
             self.tre.prune_taxa_with_labels([tax2])
             # self.tre.taxon_namespace.remove_taxon_label(taxon_label) # cannot happen here, as then the seq_dict_build_ crashes, if taxon was just added?
-            debug(len(self.tre.taxon_namespace))
+            # debug(len(self.tre.taxon_namespace))
             self.otu_dict[tax.label]['^physcraper:status'] = "deleted"
         else:
             self.otu_dict[taxon_label]['^physcraper:status'] = "deleted, but it wasn't in the alignment..."
@@ -739,10 +764,8 @@ class IdDicts(object):
     def get_rank_info(self, gi_id=False, taxon_name=False):
         """collect rank and linegae information from ncbi,
         used to delimit the sequences from blast,
-        when you have a local blast database
+        when you have a local blast database or a Filter Blast run
         """
-        ##I do this, to limit the results to the taxon group, as usually done directly during the blast search.
-        # do that now with get_all_gi_mrca, this function is stil used somewhere else
         # debug("get_rank_info")
         Entrez.email = self.config.email
         if gi_id != False:
@@ -752,7 +775,8 @@ class IdDicts(object):
                 try:
                     handle = Entrez.efetch(db="nucleotide", id=gi_id, retmode="xml")
                 except:
-                    print(i)
+                    # print(i)
+                    # debug(gi_id)
                     if i < tries - 1: # i is zero indexed
                         continue
                     else:
@@ -762,30 +786,41 @@ class IdDicts(object):
             tax_name = read_handle['GBSeq_feature-table'][0]['GBFeature_quals'][0]['GBQualifier_value']
             # debug(tax_name)
         else:
-            tax_name = taxon_name.replace("_", " ")
+            tax_name = str(taxon_name).replace("_", " ")
         # debug(tax_name)
         if tax_name not in self.otu_rank.keys():
-            debug("tax_name to rank")
+            # debug("tax_name to rank")
             try:
-                debug("try")
-                tax_id = Entrez.read(Entrez.esearch(db="taxonomy", term=tax_name, RetMax=100))['IdList'][0]
+                # debug("try")
+                tax_id = int(Entrez.read(Entrez.esearch(db="taxonomy", term=tax_name, RetMax=100))['IdList'][0])
+                # print(tax_id)
+                # print(type(tax_id))
             except:
-                debug("except")
+                # debug("except")
                 ncbi = NCBITaxa()
                 tax_info = ncbi.get_name_translator([tax_name])
-                debug(tax_info)
+                # debug(tax_info)
                 if tax_info == {}:
                     print("Taxon name does not match any species name in ncbi. Check that the name is written correctly!")
-                tax_id = tax_info.items()[0][1][0]
+                tax_id = int(tax_info.items()[0][1][0])
+                # print("get rank info")
+                # print(tax_id)
+                # print(type(tax_id))
+                # print(some)
             ncbi = NCBITaxa()
             lineage = ncbi.get_lineage(tax_id)
             lineage2ranks = ncbi.get_rank(lineage)
             tax_name = str(tax_name).replace(" ", "_")
+            # print(tax_id)
+            # print(type(tax_id))
+            assert type(tax_id) == int
             self.otu_rank[tax_name] = {"taxon id": tax_id, "lineage": lineage, "rank": lineage2ranks}
+        
+        # print(some)
         return tax_name
 
 
-    def map_gi_ncbi(self, gi, get_rank = True):
+    def map_gi_ncbi(self, gi):
         """get the ncbi taxon id's for a gi input"""
         if _DEBUG == 2:
             sys.stderr.write("mapping gi {}\n".format(gi))
@@ -830,7 +865,12 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
         self.newseqs_file = "tmp.fasta"
         self.date = str(datetime.date.today()) #Date of the run - may lag behind real date!
         self.repeat = 1
+        self.newseqsgi = []
+        self.blacklist = []
+        self.gi_list_mrca = []
+        self.seq_filter = ['deleted', 'subsequence,', 'not', "removed", "deleted,"]
         self.reset_markers()
+        
 
  #TODO is this the right place for this?
     def reset_markers(self):
@@ -913,31 +953,32 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
         """get all available gi numbers from Genbank for mrca.
         The list will be used to filter out sequences from the local Blast search,
         that do not belong to ingroup."""
+        ## gi list limited to 100000000, for huge trees that is a problem
         debug("get_all_gi_mrca")
         Entrez.email = self.config.email
-        handle = Entrez.esearch(db="nucleotide", term="txid{}[Orgn]".format(self.mrca_ncbi), RetMax=1000000)
+        handle = Entrez.esearch(db="nucleotide", term="txid{}[Orgn]".format(self.mrca_ncbi), 
+                 usehistory='n', RetMax=100000000)
         records = Entrez.read(handle)
         id_list = records['IdList']
         id_list = [int(x) for x in id_list]
         return id_list
 
-
     def read_blast(self, blast_dir=None):
         """reads in and prcesses the blast xml files"""
         debug("read blast")
+        # debug(blast_dir)
         if blast_dir:
             sys.stdout.write("blast dir is {}\n".format(blast_dir))
             self.blast_subdir = os.path.abspath(blast_dir)
         else:
             sys.stdout.write("blast dir is {}\n".format(self.blast_subdir))
-            os.mkdir(self.blast_subdir)
+            if not os.path.exists(self.blast_subdir):
+                os.mkdir(self.blast_subdir)
         if not self._blasted:
             self.run_blast()
         assert os.path.exists(self.blast_subdir)
-        if self.config.blast_loc == 'local': #because local db doens't have taxon info, needed to limit to group of interest
-            gi_list_mrca = self.get_all_gi_mrca()
-        else:
-            gi_list_mrca = None
+        if self.config.blast_loc == 'local' and len(self.gi_list_mrca) == 0: #because local db doens't have taxon info, needed to limit to group of interest
+            self.gi_list_mrca = self.get_all_gi_mrca()
         for taxon in self.data.aln:
             debug("add blast seq to new seqs")
             xml_fi = "{}/{}.xml".format(self.blast_subdir, taxon.label)
@@ -951,18 +992,59 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
                             for hsp in alignment.hsps:
                                 if float(hsp.expect) < float(self.config.e_value_thresh):
                                     gi_id = int(alignment.title.split('|')[1])
-                                    if gi_list_mrca and (gi_id not in gi_list_mrca):
+                                    if len(self.gi_list_mrca)>=1 and (gi_id not in self.gi_list_mrca):
                                         pass
                                     else:
-                                       if gi_id not in self.data.gi_dict: #skip ones we already have (does it matter if these were deleted? No...)
-                                                self.new_seqs[gi_id] = hsp.sbjct
-                                                self.data.gi_dict[gi_id] = alignment.__dict__
+                                        ##because of the next if, we have to delete the files if its breaks in a round
+                                        if gi_id not in self.data.gi_dict: #skip ones we already have (does it matter if these were deleted? No...)
+                                            # debug("add gi to new seqs")
+                                            self.new_seqs[gi_id] = hsp.sbjct
+                                            self.data.gi_dict[gi_id] = alignment.__dict__
                 except ValueError:
                     sys.stderr.write("Problem reading {}, skipping\n".format(xml_fi))
         self.date = str(datetime.date.today())
+        debug("len new seqs dict after evalue filter")
+        debug(len(self.new_seqs))
+        with open(self.logfile, "a") as log:
+            log.write("{} new sequences added from GenBank after evalue filtering\n".format(len(self.new_seqs)))
+        
         self._blast_read = 1
 
     # TODO this should go back in the class and should prune the tree
+
+
+    def get_sp_id_of_otulabel(self, label):
+        """gets the species name and the corresponding ncbi id of the otu
+        """
+        # debug("get_spn_id_of_otulabel")
+        # debug(label)
+        if '^ot:ottTaxonName' in self.data.otu_dict[label].keys():
+            spn_of_label = self.data.otu_dict[label]['^ot:ottTaxonName']
+        elif '^user:TaxonName' in self.data.otu_dict[label].keys():
+            spn_of_label = self.data.otu_dict[label]['^user:TaxonName']
+        if spn_of_label != None:
+            spn_of_label = str(spn_of_label).replace(" ", "_").replace("-", "_")
+        if '^ncbi:taxon' in self.data.otu_dict[label].keys():
+            id_of_label = self.data.otu_dict[label]['^ncbi:taxon']
+            # debug(id_of_label)
+            # debug(type(id_of_label))
+        elif spn_of_label in self.ids.otu_rank.keys():
+            id_of_label = int(self.ids.otu_rank[spn_of_label]["taxon id"])  
+        else:
+            # debug("else")
+            # debug(spn_of_label)
+
+            # debug(label)
+            tax_name = self.ids.get_rank_info(taxon_name=spn_of_label)
+            # debug(tax_name)
+            # spn_of_label = str(tax_name)
+            id_of_label = int(self.ids.otu_rank[tax_name]["taxon id"]) 
+            # debug(self.ids.otu_rank[tax_name]["taxon id"] )
+        # debug(id_of_label)
+        # debug(type(id_of_label))      
+        # spn_id_list = [spn_of_label, int(id_of_label)]
+        # debug(some)
+        return  id_of_label
 
 
     def seq_dict_build(self, seq, label, seq_dict): #Sequence needs to be passed in as string.
@@ -972,71 +1054,164 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
         If the new sequence is a super suquence of one in the dict, it
         removes that sequence and replaces it"""
         #TODO unify spp name somehow?
-        if '^user:TaxonName' in self.data.otu_dict[label].keys():
-            spn_of_label = self.data.otu_dict[label]['^user:TaxonName']
-        elif '^ot:ottTaxonName' in self.data.otu_dict[label].keys():
-            spn_of_label = self.data.otu_dict[label]['^ot:ottTaxonName']
-        if spn_of_label is None:
-            try:
-                spn_of_label = self.data.otu_dict[label]['^ncbi:taxon']
-            except:
-                spn_of_label = None
+        id_of_label = self.get_sp_id_of_otulabel(label)
+        # debug("spn_id_list")
+        # debug(spn_id_list)
+        # spn_of_label = [x for x in spn_id_list if x is not int]
+        # id_of_label = [x for x in spn_id_list if x is int]
+        # print(spn_of_label, id_of_label)
+        # if '^user:TaxonName' in self.data.otu_dict[label].keys():
+        #     spn_of_label = self.data.otu_dict[label]['^user:TaxonName']
+        # elif '^ot:ottTaxonName' in self.data.otu_dict[label].keys():
+        #     spn_of_label = self.data.otu_dict[label]['^ot:ottTaxonName']
+        #     if spn_of_label != None:
+        #         spn_of_label = spn_of_label.replace(" ", "_").replace("-", "_")
+        # if '^ncbi:taxon' in self.data.otu_dict[label].keys():
+        #     id_of_label = str(self.data.otu_dict[label]['^ncbi:taxon'])
+        # else:
+        #     debug(label)
+        #     tax_name = self.ids.get_rank_info(self, taxon_name=spn_of_label)
+        #     debug(spn_of_label)
+        #     debug(tax_name)
+        #     id_of_label = self.ids.otu_rank[tax_name]["taxon id"]        
+        # added_taxon = [spn_of_label, id_of_label]
+        # added_taxon = [x for x in added_taxon if x is not None]
+
+
         new_seq = seq.replace("-", "")
         tax_list = deepcopy(seq_dict.keys())
         i = 0
+        continue_search = False
+        never_add = False
+        
         for tax_lab in tax_list:
-            if '^user:TaxonName' in self.data.otu_dict[tax_lab].keys():
-                existing_taxa = self.data.otu_dict[tax_lab]['^user:TaxonName']
-            elif '^ot:ottTaxonName' in self.data.otu_dict[tax_lab].keys():
-                existing_taxa = self.data.otu_dict[tax_lab]['^ot:ottTaxonName']
-                if existing_taxa is None:
-                    existing_taxa = self.data.otu_dict[tax_lab]['^ncbi:taxon']
-            existing_taxa = existing_taxa.replace("_", " ")
-            spn_of_label = spn_of_label.replace("_", " ")
+            # if '^ncbi:taxon' in self.data.otu_dict[tax_lab].keys(): 
+            #     existing_id = str(self.data.otu_dict[tax_lab]['^ncbi:taxon'])
+            # else:
+            #     existing_id = None
+            # if '^user:TaxonName' in self.data.otu_dict[tax_lab].keys():
+            #     existing_taxa = self.data.otu_dict[tax_lab]['^user:TaxonName']
+            # elif '^ot:ottTaxonName' in self.data.otu_dict[tax_lab].keys():
+            #     existing_taxa = self.data.otu_dict[tax_lab]['^ot:ottTaxonName']
+            #     if existing_taxa is None:
+            #         existing_taxa = str(self.data.otu_dict[tax_lab]['^ncbi:taxon'])
+            # existing_taxa = str(existing_taxa.replace(" ", "_").replace("-", "_"))
+            existing_id = self.get_sp_id_of_otulabel(tax_lab)
+            # debug(spn_id_tax_lab)
+            # existing_taxa = [x for x in spn_id_tax_lab if x is not int]
+            # existing_id = [x for x in spn_id_tax_lab if x is int]
+            # debug(spn_id_tax_lab)
+
+            # exists = [str(existing_taxa), existing_id]
+            # exists = [x for x in exists if x is not None]
+            # print(exists, added_taxon)
+            # print((existing_taxa != spn_of_label and existing_taxa != None) )
+            # print((existing_id != id_of_label and existing_id != None))
+            new_taxon = []
             i += 1
             inc_seq = seq_dict[tax_lab].replace("-", "")
-            if len(inc_seq) >= len(new_seq):
+            if len(inc_seq) >= len(new_seq): # if seq is identical and shorter
+                # debug("first if")
+                # debug(new_seq)
+                # debug(inc_seq)
+                # debug(new_seq)
+                # debug(inc_seq.find(new_seq) != -1)
                 if inc_seq.find(new_seq) != -1:
+                    # debug("second if")
                     ## changed the code, that seq which are identical but belong to different species concepts, will be added
-                    if spn_of_label != existing_taxa:
+                    # print("existing_id, id_of_label")
+                    # print(type(existing_id))
+                    # print(type(id_of_label))
+                    # print(existing_id, id_of_label)
+                    # print(type(existing_id) == int)
+                    # print(existing_id != id_of_label)
+                    # print(type(existing_id) == int and existing_id != id_of_label)
+                    # debug(existing_id != id_of_label)
+                    # debug(existing_id is int)
+                    # debug(existing_id is int and existing_id != id_of_label)
+                    # if (existing_taxa != spn_of_label and existing_taxa is not  None) or 
+                    if  type(existing_id) == int and existing_id != id_of_label:
+                        # debug((x in added_taxon for x in exists))
+                    # if not (x in added_taxon for x in exists):
+                        # debug("different sp concept")
+                        # debug(x in added_taxon for x in exists)
+
+                    # if spn_of_label not in exists: # if sp. concepts are different
                         sys.stdout.write("seq {} is subsequence of {}, but different species concept\n".format(label, tax_lab))
+                        
                         self.data.otu_dict[label]['^physcraper:status'] = "new seq added; subsequence, but different species"
                         seq_dict[label] = seq
                         if _DEBUG_MK == 1:
-                            print(spn_of_label, "and", existing_taxa, "subsequences, but different sp. concept")
-                    else:
+                            print(id_of_label, "and", existing_id, "subsequences, but different sp. concept")
+                        continue_search = True
+                        continue
+                    else: #subseq of same sp.
                         sys.stdout.write("seq {} is subsequence of {}, not added\n".format(label, tax_lab))
                         self.data.otu_dict[label]['^physcraper:status'] = "subsequence, not added"
                         if _DEBUG_MK == 1:
-                            print(spn_of_label, " not added, subseq of ", existing_taxa)
-                    return
-            else:
-                if new_seq.find(inc_seq) != -1:#this statement adds seq that are the same
+                            print(id_of_label, " not added, subseq of ", existing_id)
+                        never_add = True
+                        continue
+                    return seq_dict
+            else: # if seq is longer and identical
+                debug("else")
+                if new_seq.find(inc_seq) != -1:
+                    debug("seq longer")
                     if self.data.otu_dict[tax_lab].get('^physcraper:status') == "original":
-                        # print("delete because its a superseq")
-
                         sys.stdout.write("seq {} is supersequence of original seq {}, both kept in alignment\n".format(label, tax_lab))
 
                         self.data.otu_dict[label]['^physcraper:status'] = "new seq added"
                         seq_dict[label] = seq
                         if _DEBUG_MK == 1:
-                            print(spn_of_label, " and ", existing_taxa, "added")
-                        return
+                            print(id_of_label, " and ", existing_id, "added")
+                        continue_search = True
+                        continue
+                    elif type(existing_id) == int and existing_id != id_of_label:
+
+                    # elif spn_of_label not in exists:
+                        sys.stdout.write("seq {} is supersequence of {}, but different species concept\n".format(label, tax_lab))
+                        self.data.otu_dict[label]['^physcraper:status'] = "new seq added; supersequence, but different species"
+                        seq_dict[label] = seq
+                        if _DEBUG_MK == 1:
+                            print(id_of_label, "and", existing_id, "supersequence, but different sp. concept")
+                        continue_search = True
+                        continue 
                     else:
-                        # print("delete because its a superseq")
                         del seq_dict[tax_lab]
                         seq_dict[label] = seq
                         self.data.remove_taxa_aln_tre(tax_lab)
                         sys.stdout.write("seq {} is supersequence of {}, {} added and {} removed\n".format(label, tax_lab, label, tax_lab))
                         self.data.otu_dict[label]['^physcraper:status'] = "new seq added in place of {}".format(tax_lab)
                         if _DEBUG_MK == 1:
-                            print(spn_of_label, "added, instead of ", existing_taxa)
-                        return
+                            print(id_of_label, "added, instead of ", existing_id)
+                        continue_search = True
+                        continue
+                    return seq_dict
+
+        if continue_search == True or never_add == True:
+            if (self.data.otu_dict[label]['^physcraper:status'].split(' ')[0] in self.seq_filter) or never_add == True:
+                try:
+                    del seq_dict[label]
+                except:
+                    debug("label was never added to seq_dict")
+                try:
+                    self.data.remove_taxa_aln_tre(label)
+                except:
+                    debug("label was never added to aln or tre")
+                self.data.otu_dict[label]['^physcraper:status'] = "removed in seq dict build"  # should not be deleted, as this is in self.seq_filter
+                return seq_dict
         sys.stdout.write(".")
         if i%50 == 0:
             sys.stdout.write("\n")
         seq_dict[label] = seq
-        return
+        # try:
+        #     debug("end of func")
+        #     debug(self.data.otu_dict[label])
+        #     debug(seq_dict)
+        #     # debug(self.data.tre[label])
+        # except:
+        #     debug("try failed")
+        return seq_dict
 
 
     def remove_identical_seqs(self):
@@ -1053,9 +1228,18 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
         assert self.config.seq_len_perc <= 1
         seq_len_cutoff = avg_seqlen*self.config.seq_len_perc
         for gi, seq in self.new_seqs.items():
-            if len(seq.replace("-", "").replace("N", "")) > seq_len_cutoff:
-                otu_id = self.data.add_otu(gi, self.ids)                   
-                self.seq_dict_build(seq, otu_id, tmp_dict)
+
+            if self.blacklist != None and gi in self.blacklist:
+                pass
+            elif gi in self.newseqsgi: ##added to increase speed. often seq was found in another blast file
+                pass
+            else:
+                self.newseqsgi.append(gi)
+                if len(seq.replace("-", "").replace("N", "")) > seq_len_cutoff:
+                    otu_id = self.data.add_otu(gi, self.ids)                   
+                    self.seq_dict_build(seq, otu_id, tmp_dict)
+            # else:
+            #     debug("gi was already compared")
         for tax in old_seqs:
             try:
                 del tmp_dict[tax]
@@ -1063,7 +1247,7 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
                 pass
         self.new_seqs_otu_id = tmp_dict # renamed new seq to their otu_ids from GI's, but all info is in self.otu_dict
         with open(self.logfile, "a") as log:
-            log.write("{} new sequences added from genbank, of {} before filtering\n".format(len(self.new_seqs_otu_id), len(self.new_seqs)))
+            log.write("{} new sequences added from genbank after removing identical seq, of {} before filtering\n".format(len(self.new_seqs_otu_id), len(self.new_seqs)))
         self.data.dump()
 
 
@@ -1130,7 +1314,7 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
                              "-q", self.newseqs_file,
                              "-n", papara_runname]) #FIx directory ugliness
             sys.stdout.write("Papara done")
-            self.data.rewrite_files(inputfn="papara_alignment.extended")
+            # self.data.rewrite_files(inputfn="papara_alignment.extended")
         except OSError as e:
             if e.errno == os.errno.ENOENT:
                 sys.stderr.write("failed running papara. Is it installed?\n")
@@ -1250,10 +1434,25 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
                          "-p", "1", "-x", "1", "-#", "autoMRE", "-s", "aln_ott.phy",
                          "-n", "rapidBS_{}".format(self.date)])
 
+    def remove_blacklistitem(self):
+        '''note, this removes items from aln, and tree, if they were added to the blacklist.
+        seq that were not added because they were similar to the item, are being lost
+        '''
+        #that should not be a major issue though.
+        for tax in self.data.aln.taxon_namespace:
+            gi_id = self.data.otu_dict[tax.label].get("^ncbi:gi")
+            if gi_id in self.blacklist:
+                self.data.remove_taxa_aln_tre(tax.label)
+                self.data.otu_dict[tax.label]['^physcraper:status'] = "deleted, gi is part of blacklist"
+
 
     def generate_streamed_alignment(self):
         """runs the key steps and then replaces the tree and alignment with the expanded ones"""
         ## first if should not be necessary, as this is in the wrapper
+
+        if self.blacklist:
+            self.remove_blacklistitem()
+
         if len(self.new_seqs) > 0:
             self.remove_identical_seqs()
             self.data.write_files() #should happen before aligning in case of pruning
@@ -1284,7 +1483,7 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
                     os.rename(filename, "{}/previous_run/{}".format(self.workdir, filename.split("/")[1]))
                 os.rename("{}/{}".format(self.workdir, self.newseqs_file), "{}/previous_run/newseqs.fasta".format(self.workdir))
                 try:
-                    self.data.write_labelled(label=  '^ot:ottTaxonName')
+                    self.data.write_labelled(label='^ot:ottTaxonName')
                 except:
                     self.data.write_labelled(label='user:TaxonName')
                 self.data.write_otus("otu_info", schema='table')
@@ -1310,7 +1509,7 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
 
 class FilterBlast(PhyscraperScrape):
     """takes the Physcraper Superclass and filters the ncbi blast results."""
-    def __init__(self, data_obj, ids_obj):
+    def __init__(self, data_obj, ids_obj, settings=None):
         super(FilterBlast, self).__init__(data_obj, ids_obj)
         self.workdir = data_obj.workdir
         self.logfile = "{}/logfile".format(self.workdir)
@@ -1334,8 +1533,13 @@ class FilterBlast(PhyscraperScrape):
         self.sp_d = {}
         self.sp_seq_d = {}
         self.filtered_seq = {}
-        self.not_added = []
-        self.seq_filter = ['deleted', 'subsequence,', 'not']
+        self.gi_list_mrca = []
+        # self.not_added = []
+        if settings != None:
+            self.blacklist = settings.blacklist
+        else:
+            self.blacklist = []
+        self.seq_filter = ['deleted', 'subsequence,', 'not', "removed", "deleted,"]
 
     def sp_dict(self, downtorank=None):
         """makes dict with species name as key and the corresponding seq
@@ -1346,46 +1550,70 @@ class FilterBlast(PhyscraperScrape):
         debug("make sp_dict")
         self.sp_d = {}
         for key in self.data.otu_dict:
-            if downtorank != None:
-                debug("downto is not None")
-                ncbi = NCBITaxa()
-                if '^ot:ottTaxonName' in self.data.otu_dict[key]:
-                    tax_name = self.data.otu_dict[key]['^ot:ottTaxonName']
-                    # ncbiID = ncbi.get_name_translator(tax_name)
-                    ## does not always seem to work
-                elif '^user:TaxonName' in self.data.otu_dict[key]:
-                    tax_name = self.data.otu_dict[key]['^user:TaxonName']
-                    # ncbiID = ncbi.get_name_translator(tax_name)
-                # elif '^ncbi:taxon' in self.data.otu_dict[key]:
-                #     ncbiID = self.data.otu_dict[key]['^ncbi:taxon']
-                # elif '^ncbiID' in self.data.otu_dict[key]:
-                #     ncbiID = self.data.otu_dict[key]['^ncbiID']
-                else:
-                    debug("no taxon name provided! It will fail")
-                debug(tax_name)
-                self.ids.get_rank_info(taxon_name=tax_name)
-                debug(self.ids.otu_rank.keys())
-                lineage2ranks = self.ids.otu_rank[tax_name.replace(" ", "_")]["rank"]
-                for key_rank, val in lineage2ranks.iteritems():
-                    if val == downtorank:
-                        tax_id = key_rank
-                        value_d = ncbi.get_taxid_translator([tax_id])
-                        value = value_d[int(tax_id)]
-            else:
-                if '^user:TaxonName' in self.data.otu_dict[key].keys():
-                    value = self.data.otu_dict[key]['^user:TaxonName']
-                elif '^ot:ottTaxonName' in self.data.otu_dict[key].keys():
-                    value = self.data.otu_dict[key]['^ot:ottTaxonName']
-                    if value is None:
-                        value = self.data.otu_dict[key]['^ncbi:taxon']
+            # debug(key)
+            # debug(key['^physcraper:status'])
+            if self.data.otu_dict[key]['^physcraper:status'].split(' ')[0] not in self.seq_filter:
+                
+                # debug(self.downtorank )
+                if self.downtorank  != None:
+                    # debug("downto is not None")
+                    ncbi = NCBITaxa()
+                    if '^ot:ottTaxonName' in self.data.otu_dict[key]:
+                        tax_name = self.data.otu_dict[key]['^ot:ottTaxonName']
+                        # ncbiID = ncbi.get_name_translator(tax_name)
+                        ## does not always seem to work
+                    elif '^user:TaxonName' in self.data.otu_dict[key]:
+                        tax_name = self.data.otu_dict[key]['^user:TaxonName']
+                        # ncbiID = ncbi.get_name_translator(tax_name)
+                    # elif '^ncbi:taxon' in self.data.otu_dict[key]:
+                    #     ncbiID = self.data.otu_dict[key]['^ncbi:taxon']
+                    # elif '^ncbiID' in self.data.otu_dict[key]:
+                    #     ncbiID = self.data.otu_dict[key]['^ncbiID']
+                    else:
+                        debug("no taxon name provided! It will fail")
+                    # debug(tax_name)
 
-            # debug("populate dict with values")
-            value = str(value).replace(" ", "_")
-            if value in self.sp_d:
-                self.sp_d[value].append(self.data.otu_dict[key])
-                # assert value = self.data.otu_dict[key]['^ncbi:taxon'] or
-            else:
-                self.sp_d[value] = [self.data.otu_dict[key]]
+                    tax_name = str(tax_name).replace(" ", "_")
+                    if tax_name in self.ids.otu_rank.keys():
+                        lineage2ranks = self.ids.otu_rank[tax_name]["rank"]
+                    else:
+                        
+                        self.ids.get_rank_info(taxon_name=tax_name)
+                        # debug(self.ids.otu_rank.keys())
+                        lineage2ranks = self.ids.otu_rank[str(tax_name).replace(" ", "_")]["rank"]
+                        # debug(lineage2ranks)s
+                    for key_rank, val in lineage2ranks.iteritems():
+                        if val == downtorank:
+                            tax_id = key_rank
+                            value_d = ncbi.get_taxid_translator([tax_id])
+                            value = value_d[int(tax_id)]
+                else:
+                    if '^user:TaxonName' in self.data.otu_dict[key].keys():
+                        value = self.data.otu_dict[key]['^user:TaxonName']
+                    elif '^ot:ottTaxonName' in self.data.otu_dict[key].keys():
+                        value = self.data.otu_dict[key]['^ot:ottTaxonName']
+                        if value is None:
+                            # debug("value is None")
+                            gi_id = self.data.otu_dict[key]['^ncbi:gi']
+                            # debug(gi_id)
+                            # debug(type(gi_id))
+                            value = self.ids.get_rank_info(gi_id=gi_id)
+                            # value = self.data.otu_dict[key]['^ot:ottTaxonName']
+                            if value is None:
+                                print("something is going wrong!Check species name")
+                            # ncbiid =  self.data.otu_dict[key]['^ncbi:taxon']
+                            # debug(ncbiid)
+                            # # debug(some)
+                            # self.otu_rank[tax_name] 
+                            # value = self.data.otu_dict[key]['^ncbi:taxon']
+
+                # debug("populate dict with values")
+                value = str(value).replace(" ", "_")
+                if value in self.sp_d:
+                    self.sp_d[value].append(self.data.otu_dict[key])
+                    # assert value = self.data.otu_dict[key]['^ncbi:taxon'] or
+                else:
+                    self.sp_d[value] = [self.data.otu_dict[key]]
         return self.sp_d
 
 
@@ -1404,8 +1632,8 @@ class FilterBlast(PhyscraperScrape):
             tres_minimizer = 0
             for gi_id in self.sp_d[key]:
                 if '^physcraper:status' in gi_id:
-                    self.not_added = ['deleted', 'subsequence,', 'not']
-                    if gi_id['^physcraper:status'].split(' ')[0] not in self.not_added:
+                    # self.not_added = ['deleted', 'subsequence,', 'not', "removed", "deleted,"]
+                    if gi_id['^physcraper:status'].split(' ')[0] not in self.seq_filter: #already implemented in sp_d
                         if gi_id['^physcraper:last_blasted'] != '1800/01/01':
                             if '^user:TaxonName'  in gi_id:
                                 #generate entry for already existing sp
@@ -1443,7 +1671,7 @@ class FilterBlast(PhyscraperScrape):
         return
 
 
-    def run_local_blast(self, blast_seq, blast_db):
+    def run_local_blast(self, blast_seq, blast_db, output=None):
         """run local blast to select number of sequences to be kept
         """
         # Note: has test, runs -> test_run_local_blast.py
@@ -1452,7 +1680,10 @@ class FilterBlast(PhyscraperScrape):
         out_fn = "{}_tobeblasted".format(str(blast_seq))
         cmd1 = "makeblastdb -in {}_db -dbtype nucl".format(blast_seq)
         os.system(cmd1)
-        cmd2 = "blastn -query {} -db {}_db -out output_{}.xml -outfmt 5".format(out_fn, blast_db, out_fn)
+        if output == None:
+            cmd2 = "blastn -query {} -db {}_db -out output_{}.xml -outfmt 5".format(out_fn, blast_db, out_fn)
+        else:
+            cmd2 = "blastn -query {} -db {}_db -out {} -outfmt 5".format(out_fn, blast_db, output)
         os.system(cmd2)
         os.chdir(general_wd)
 
@@ -1631,26 +1862,6 @@ class FilterBlast(PhyscraperScrape):
         # Note: has test, test_add_all.py: runs
         debug('add_all')
         for gi_id in self.sp_d[key]:
-            # if gi_id['^physcraper:last_blasted'] != '1800/01/01':
-            #     """seq was already blasted"""
-            #     if '^user:TaxonName' in gi_id:
-            #         user_name = gi_id['^user:TaxonName']
-            #         for user_name_aln, seq in self.data.aln.items():
-            #             if '^user:TaxonName' in self.data.otu_dict[user_name_aln.label]:
-            #                 if user_name == self.data.otu_dict[user_name_aln.label]['^user:TaxonName']:
-            #                     self.filtered_seq[user_name_aln.label] = seq.symbols_as_string()
-            #     elif '^ot:ottTaxonName' in gi_id:
-            #         user_name = gi_id['^ot:ottTaxonName']
-            #         for user_name_aln, seq in self.data.aln.items():
-            #             if '^ot:ottTaxonName' in self.data.otu_dict[user_name_aln.label]:
-            #                 if user_name == self.data.otu_dict[user_name_aln.label]['^ot:ottTaxonName']:
-            #                     self.filtered_seq[user_name] = seq.symbols_as_string()
-            # elif gi_id['^physcraper:last_blasted'] == '1800/01/01':
-            #debug(gi_id)
-
-            
-
-
             if '^physcraper:status' in gi_id:
                 if gi_id['^physcraper:status'].split(' ')[0] not in self.seq_filter:
                     if gi_id['^physcraper:last_blasted'] == '1800/01/01':
@@ -1665,22 +1876,19 @@ class FilterBlast(PhyscraperScrape):
                         assert self.config.seq_len_perc <= 1
                         seq_len_cutoff = avg_seqlen*self.config.seq_len_perc
 
-                        for gi, seq in self.new_seqs.items():
-                            if len(seq.replace("-", "").replace("N", "")) > seq_len_cutoff:
-                                otu_id = self.data.add_otu(gi, self.ids)
-                                self.seq_dict_build(seq, otu_id, tmp_dict)
+                        seq = self.new_seqs[gi_num]
 
 
-                                for gi_num, seq in tmp_dict.items():
+                        # for gi, seq in self.new_seqs.items():
+                        #     if len(seq.replace("-", "").replace("N", "")) > seq_len_cutoff:
+                        #         otu_id = self.data.add_otu(gi, self.ids)
+                        #         self.seq_dict_build(seq, otu_id, tmp_dict)
 
 
-                                    self.filtered_seq[gi_num] = seq
+                        #         for gi_num, seq in tmp_dict.items():
 
-                        # if gi_num, seq in self.new_seqs.items():
-                        #     # debug(self.new_seqs[gi_num])
-                            
-                        #     # seq = self.sp_seq_d[key][gi_num]
-                        #     self.filtered_seq[gi_num] = seq
+
+                        self.filtered_seq[gi_num] = seq
         return self.filtered_seq
 
     def loop_for_write_blast_files(self, key, selectby):
@@ -1784,6 +1992,7 @@ class FilterBlast(PhyscraperScrape):
             nametoreturn = key
         if nametoreturn is None:
             nametoreturn = namegi
+
         return nametoreturn
 
     def count_num_seq(self, taxon_id):
@@ -1797,6 +2006,8 @@ class FilterBlast(PhyscraperScrape):
         if taxon_id in self.sp_seq_d.keys():
             for sp_keys in self.sp_seq_d[taxon_id].keys():
                 if isinstance(sp_keys, str):
+                    seq_present += 1
+                if isinstance(sp_keys, unicode):
                     seq_present += 1
         #this calculates how many seq of species have already
         # been present in the aln
@@ -1829,31 +2040,6 @@ class FilterBlast(PhyscraperScrape):
                 # debug(self.sp_seq_d[taxon_id].keys())
 
                 count_dict = self.count_num_seq(taxon_id)
-                # #############
-                # count = 0
-                # if taxon_id in self.sp_seq_d.keys(): #if added to exclude stuff, that has more info in sp_d, but has no new seq in sp_seq_dic
-                #     ## do some counting to redirect the different filters.
-                #     for sp_keys in self.sp_seq_d[taxon_id].keys():
-                #         # debug(type(sp_keys))
-                #         if isinstance(sp_keys, str):
-                #             count += 1
-                #     #this calculates how many seq of species have already
-                #     # been present in the aln
-                #     new_taxon = True
-                #     toadd = 0
-                #     query_count = 0
-                #     for item in self.sp_d[taxon_id]:
-                #             if '^physcraper:status' in item:
-                #                 not_to_add = ['deleted', 'subsequence,', 'not']
-                #                 if item['^physcraper:status'].split(' ')[0] not in not_to_add:
-                #                     # debug("giId not in not_to_add")
-                #                     toadd += 1
-                #                     if item['^physcraper:last_blasted'] != '1800/01/01':
-                #                         debug("taxon not new")
-                #                         new_taxon = False
-                #                 if  item['^physcraper:status'] == "query":
-                #                     query_count += 1
-                #                     #####################
 
 
                 if taxon_id in self.sp_seq_d.keys():
@@ -1888,14 +2074,14 @@ class FilterBlast(PhyscraperScrape):
                                 self.select_seq_by_local_blast(self.sp_seq_d[taxon_id], taxonfn, treshold, seq_present)
                             elif query_count + seq_present <= treshold:
                                 self.add_all(taxon_id)
-                        elif seq_present == 0 and count_dict["new_taxon"] == True:
+                        elif seq_present == 0 and count_dict["new_taxon"] == True and query_count>=1:
                             debug("completely new taxon to blast")
                             #species is completely new in alignment, \
                             #make blast with random species
                             # debug(self.sp_seq_d[taxon_id])
                             for item in self.sp_d[taxon_id]:
                                 if '^ncbi:gi' in item:
-                                    self.data.add_otu(item['^ncbi:gi'], self.ids, self.config.email)
+                                    self.data.add_otu(item['^ncbi:gi'], self.ids)
                             blast_seq = self.sp_seq_d[taxon_id].keys()[0]
                             if type(blast_seq) == int:
                                 str_db = str(taxon_id)
@@ -1946,8 +2132,10 @@ class FilterBlast(PhyscraperScrape):
         keylist = self.filtered_seq.keys()
         #debug(keylist)
         keylist = [x for x in keylist if type(x) == int]
+        debug(self.new_seqs.keys())
         seq_not_added = self.new_seqs.keys()
         seq_not_added = [x for x  in seq_not_added if type(x) == int]
+        reduced_new_seqs_dic = {}
         for gi_num in seq_not_added:
             for key in self.data.otu_dict.keys():
                 if '^ncbi:gi' in self.data.otu_dict[key]:
@@ -1960,6 +2148,7 @@ class FilterBlast(PhyscraperScrape):
                 # debug(self.data.otu_dict[key])
                 if '^ncbi:gi' in self.data.otu_dict[key]:
                     if  self.data.otu_dict[key]['^ncbi:gi'] == gi_num:
+                        reduced_new_seqs_dic[key] = self.filtered_seq[gi_num]
                         # if self.data.otu_dict[key]['^physcraper:last_blasted'] == "1800/01/01":
                         self.data.otu_dict[key]['^physcraper:last_blasted'] = "1900/01/01"
                         self.data.otu_dict[key]['^physcraper:status'] = 'added, as one of the representatives of the taxon'
@@ -1971,9 +2160,14 @@ class FilterBlast(PhyscraperScrape):
         # debug(reduced_gi_dict)
         # self.data.gi_dict.clear()
         # self.data.gi_dict = reduced_gi_dict # data.gi_dict seems to only have newly blasted stuff
-        reduced_new_seqs_dic = {k: self.filtered_seq[k] for k in keylist}
+        reduced_new_seqs = {k: self.filtered_seq[k] for k in keylist}
+
+
         # debug(reduced_new_seqs_dic)
-        self.new_seqs = deepcopy(reduced_new_seqs_dic)
+        with open(self.logfile, "a") as log:
+            log.write("{} sequences added after filtering, of {} before filtering\n".format(len(reduced_new_seqs_dic), len(self.new_seqs_otu_id)))
+        
+        self.new_seqs = deepcopy(reduced_new_seqs)
         ### !!! key is not exactly same format as before in new_seqs_otu_id
         self.new_seqs_otu_id = deepcopy(reduced_new_seqs_dic)
         #set back to empty dict
@@ -2097,3 +2291,24 @@ class FilterBlast(PhyscraperScrape):
         file = open('taxon_sampling.csv', 'w')
         file.write(str(sp_info)+"\n")
         file.close()
+
+
+class Settings(object):
+    """A class to store all settings for PhyScraper"""
+    def __init__(self, seqaln, mattype, trfn, schema_trf, workdir, treshold=None, 
+                selectby=None, downtorank=None, spInfoDict=None, add_local_seq=None, 
+                id_to_spn_addseq_json=None, configfi=None, blacklist=None):
+        """Initialize the settings."""
+        self.seqaln = seqaln
+        self.mattype = mattype
+        self.trfn = trfn
+        self.schema_trf = schema_trf
+        self.workdir = workdir
+        self.treshold = treshold
+        self.selectby = selectby
+        self.downtorank = downtorank
+        self.spInfoDict = spInfoDict
+        self.add_local_seq = add_local_seq
+        self.id_to_spn_addseq_json = id_to_spn_addseq_json
+        self.configfi = configfi
+        self.blacklist = blacklist

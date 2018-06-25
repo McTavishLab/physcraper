@@ -12,8 +12,8 @@
 1105_anomalochorus,Senecio_anomalochorus
 1110_chrysocoma,Senecio_chrysocoma
 1114_macrospermus,Senecio_macrospermus
-1119_glanduloso_lanosus,Senecio_lanosus
-1120_glanduloso_pilosus,Senecio_pilosus
+1119_glanduloso_lanosus,Senecio_glanduloso_lanosus
+1120_glanduloso_pilosus,Senecio_glanduloso_pilosus
 1124_affinis,Senecio_affinis
 1126_austromontanus,Senecio_austromontanus
 1127_byrnensis,Senecio_byrnensis
@@ -35,7 +35,7 @@
 2001_Crassocephalum_vitellinium,Crassocephalum_vitellinium
 2004_volckmannii,Senecio_volckmannii
 2005_chilensis,Senecio_chilensis
-2007_humillimus,Senecio_himilimus
+2007_humillimus,Senecio_humillimus
 2009_spartioides,Senecio_spartioides
 2010_flaccidus,Senecio_flaccidus
 2011_aphanactis,Senecio_aphanactis

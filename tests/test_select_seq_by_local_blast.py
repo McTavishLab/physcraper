@@ -12,7 +12,7 @@ mattype = "fasta"
 trfn = "tests/data/tiny_test_example/test.tre"
 schema_trf = "newick"
 workdir = "tests/output/test_select_seq_local_blast"
-configfi = "tests/data/blubb_localblast.config"
+configfi = "tests/data/test.config"
 id_to_spn = r"tests/data/tiny_test_example/test_nicespl.csv"
 otu_jsonfi = "{}/otu_dict.json".format(workdir)
 treshold = 2
@@ -22,50 +22,41 @@ add_local_seq = None
 id_to_spn_addseq_json = None
 
 
-if os.path.exists(otu_jsonfi):
-    print("reload from file")
-    otu_json = json.load(open(otu_jsonfi))
-else:
-    otu_json = wrappers.OtuJsonDict(id_to_spn, configfi)
-    if not os.path.exists(workdir):
-       os.mkdir(workdir)
-    json.dump(otu_json, open(otu_jsonfi,"w"))
+absworkdir = os.path.abspath(workdir)
 
-if os.path.isfile("{}/select_seq_local_blast_test.p".format(workdir)): 
-    print("reload to before test")
-    filteredScrape = pickle.load(open("{}/select_seq_local_blast_test.p".format(workdir),'rb'))
- 
-else:   
+
+try:
     conf = ConfigObj(configfi)
-    data_obj = generate_ATT_from_files(seqaln=seqaln, 
-                         mattype=mattype, 
-                         workdir=workdir,
-                         treefile=trfn,
-                         schema_trf=schema_trf,
-                         otu_json=otu_jsonfi,
-                         ingroup_mrca=None)
+    data_obj = pickle.load(open("tests/data/precooked/tiny_dataobj.p", 'rb'))
+    data_obj.workdir = absworkdir
+    ids = IdDicts(conf, workdir=data_obj.workdir)
+    ids.gi_ncbi_dict = pickle.load(open("tests/data/precooked/tiny_gi_map.p", "rb" ))
+except:
+    # sys.stderr.write("run 'python tests/testfilesetup.py' to setup data files for tests. EXITING")
+    sys.stdout.write("\n\nTest FAILED\n\n")
+    sys.exit()
 
-    data_obj.prune_short()
-    data_obj.dump()
+filteredScrape =  FilterBlast(data_obj, ids)
 
-    ids = IdDicts(conf, workdir=workdir)
-    ids.dump()
-
-    filteredScrape = FilterBlast(data_obj, ids)
-    filteredScrape.run_blast()
-    filteredScrape.read_blast()
-    filteredScrape.remove_identical_seqs()
-    filteredScrape.sp_dict(downtorank)
-    filteredScrape.make_sp_seq_dict(treshold=treshold, selectby=selectby)
-    filteredScrape.dump("{}/select_seq_local_blast_test.p".format(workdir))
+# filteredScrape.run_blast()
+filteredScrape._blasted = 1
+blast_dir = "tests/data/precooked/fixed/tte_blast_files"
+filteredScrape.read_blast(blast_dir=blast_dir)
+filteredScrape.remove_identical_seqs()
+filteredScrape.sp_dict(downtorank)
+filteredScrape.make_sp_seq_dict(treshold=treshold, selectby=selectby)
+filteredScrape.dump("{}/select_seq_local_blast_test.p".format(workdir))
 
 ##this is the code of the first part of how many seq to keep. if threshold is bigger than number of seq for sp, just add all
 # filtered_seq = {}
 print("start test")
 count = 0
 for giID in filteredScrape.sp_d:
+    print(giID)
+    # print(filteredScrape.sp_seq_d.keys())
     if len(filteredScrape.sp_d[giID]) > treshold:
         count_dict = filteredScrape.count_num_seq(giID)
+        print(count_dict)
         if count_dict["new_taxon"]:
             if count_dict["query_count"] < treshold:
                 count += count_dict["query_count"]
@@ -77,6 +68,7 @@ for giID in filteredScrape.sp_d:
             if count_dict["seq_present"] > treshold:
                 count += 0
         if giID in filteredScrape.sp_seq_d.keys():
+            print(giID in filteredScrape.sp_seq_d.keys())
             seq_present = count_dict["seq_present"]
             query_count = count_dict["query_count"]
             for item in filteredScrape.sp_d[giID]:
@@ -98,9 +90,10 @@ for giID in filteredScrape.sp_d:
 
 print(count)
 print(len(filteredScrape.filtered_seq))
+print((filteredScrape.filtered_seq))
 
 try:
-    assert count == len(filteredScrape.filtered_seq)
+    assert count == len(filteredScrape.filtered_seq) and count>0
     print("test passed")
 except:
     print("test failed")

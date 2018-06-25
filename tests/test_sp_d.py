@@ -11,7 +11,7 @@ mattype = "fasta"
 trfn = "tests/data/tiny_test_example/test.tre"
 schema_trf = "newick"
 workdir = "tests/output/sp_d_test"
-configfi = "tests/data/blubb_localblast.config"
+configfi = "tests/data/test.config"
 id_to_spn = r"tests/data/tiny_test_example/test_nicespl.csv"
 otu_jsonfi = "{}/otu_dict.json".format(workdir)
 treshold = 2
@@ -22,50 +22,32 @@ id_to_spn_addseq_json = None
 
 print("trying to run sp_d")
 
+absworkdir = os.path.abspath(workdir)
+
+
 try:
-    if os.path.exists(otu_jsonfi):
-        print("reload from file")
-        otu_json = json.load(open(otu_jsonfi))
-    else:
-        otu_json = wrappers.OtuJsonDict(id_to_spn, configfi)
-        if not os.path.exists(workdir):
-           os.mkdir(workdir)
-        json.dump(otu_json, open(otu_jsonfi,"w"))
+    conf = ConfigObj(configfi)
+    data_obj = pickle.load(open("tests/data/precooked/tiny_dataobj.p", 'rb'))
+    data_obj.workdir = absworkdir
+    ids = IdDicts(conf, workdir=data_obj.workdir)
+    ids.gi_ncbi_dict = pickle.load(open("tests/data/precooked/tiny_gi_map.p", "rb" ))
+except:
+    # sys.stderr.write("run 'python tests/testfilesetup.py' to setup data files for tests. EXITING")
+    sys.stdout.write("\n\nTest FAILED\n\n")
+    sys.exit()
 
-    if os.path.isfile("{}/sp_d_test.p".format(workdir)): 
-        filteredScrape = pickle.load(open("{}/sp_d_test.p".format(workdir),'rb'))
-     
-    else:   
-        conf = ConfigObj(configfi)
-        data_obj = generate_ATT_from_files(seqaln=seqaln, 
-                             mattype=mattype, 
-                             workdir=workdir,
-                             treefile=trfn,
-                             schema_trf=schema_trf,
-                             otu_json=otu_jsonfi,
-                             ingroup_mrca=None)
+filteredScrape =  FilterBlast(data_obj, ids)
 
-
-        data_obj.prune_short()
-        data_obj.dump()
-
-        ids = IdDicts(conf, workdir=workdir)
-        ids.dump()
-
-        filteredScrape = FilterBlast(data_obj, ids)
-        filteredScrape.run_blast()
-        filteredScrape.read_blast()
-        filteredScrape.remove_identical_seqs()
-        filteredScrape.dump("{}/sp_d_test.p".format(workdir))
+try:
+    filteredScrape._blasted = 1
+    blast_dir = "tests/data/precooked/fixed/tte_blast_files"
+    filteredScrape.read_blast(blast_dir=blast_dir)
+    filteredScrape.remove_identical_seqs()
 
     filteredScrape.sp_dict(downtorank)
     print(filteredScrape.sp_d)
-    # len_sp = 0
-    # for k,v in filteredScrape.sp_d.iteritems():
-    #     len_sp += len(v)
-
-    # print("length sp_d:" , len_sp)
-
+    
+    
 
     #attempt for test
     gi_data_otu_dict = []
@@ -113,7 +95,7 @@ try:
 
     assert sorted(gi_data_otu_dict) == sorted(gi_sp_d)
     assert sorted(user_data_otu_dict) == sorted(user_sp_d)
-
+    # print(filteredScrape.sp_d)
     print("When generating the sp_d no entries which either have a gi or a userName are being lost.")
 
 except:
