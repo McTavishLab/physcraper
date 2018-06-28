@@ -63,18 +63,18 @@ for taxonID in filteredScrape.sp_d:
 	    # print(taxonID)
 	    # print(filteredScrape.sp_seq_d[taxonID].keys())
 	    blast_db = filteredScrape.sp_seq_d[taxonID].keys()[1:]
-	    print(blast_db)
+	    # print(blast_db)
 	    for blast_key in blast_db:
 	    	seq = filteredScrape.sp_seq_d[taxonID][blast_key]
 
 	    	filteredScrape.write_blast_files(blast_key, seq, db=True, fn=str(taxonID))
 	    break
 
-print(taxonID)
+# print(taxonID)
 blast_file_blast = "{}/blast/{}_tobeblasted".format(workdir, taxonID)
-print(blast_file_blast)
+# print(blast_file_blast)
 blast_file_db = "{}/blast/{}_db".format(workdir, taxonID)
-print(blast_file_db, blast_file_blast)
+# print(blast_file_db, blast_file_blast)
 if os.path.exists(blast_file_blast):
 	with open(blast_file_blast) as f:
 		first_line = f.readline()

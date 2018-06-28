@@ -50,7 +50,7 @@ Spring_S_laxus,Senecio_laxus
 1133_mauricei,Senecio_mauricei
 28_4_schimperi,Senecio_schimperi
 23_2_myriocephalus,Senecio_myriocephalus
-1119_glanduloso_lanosus,Senecio_lanosus
+1119_glanduloso_lanosus,Senecio_glanduloso_lanosus
 2013_rufescens,Senecio_rufescens
 1134_mooreanus,Senecio_mooreanus
 24_1_ochrocarpus,Senecio_ochrocarpus
@@ -106,7 +106,7 @@ S_bollei,Senecio_bollei
 S_tauricola,Senecio_tauricola
 S_olympicus,Senecio_olympicus
 S_decurrens,Senecio_decurrens
-5_1_aequinoctalis,Senecio_aequinoctalis
+5_1_aequinoctalis,Senecio_aequinoctialis
 S_hesperidium,Senecio_hesperidium
 16_4_fresenii,Senecio_fresenii
 2035_deferens,Senecio_deferens
@@ -130,8 +130,7 @@ S_doria,Senecio_doria
 Spring_53_1_abruptus,Senecio_abruptus
 2017_montevidensis,Senecio_montevidensis
 S_nemorensis,Senecio_nemorensis
-1113_hirsutiloides,Senecio_hirsutiloides
-1126_austromontanus,Senecio_austromontanus
+1113_hirsutiloides,Senecio_hirsutilobus
 S_panduriformis,Senecio_panduriformis
 S_aethnensis,Senecio_aethnensis
 2029_doronicum,Senecio_doronicum
@@ -176,7 +175,7 @@ S_vestitus,Senecio_vestitus
 1101_lydenburgensis,Senecio_lydenburgensis
 S_castagneanus,Senecio_castagneanus
 S_inaequidens,Senecio_inaequidens
-1025_S_hieraco,Senecio_hieraco
+1025_S_hieraco,Senecio_hieracioides
 S_glutinosus,Senecio_glutinosus
 42_1_caloneotes,Senecio_caloneotes
 2011_aphanactis,Senecio_aphanactis
@@ -198,7 +197,7 @@ S_franchetii,Senecio_franchetii
 S_maulinus,Senecio_maulinus
 S_flaccidus,Senecio_flaccidus
 S_integerrimus,Senecio_integerrimus
-5_3_aequinoctalis,Senecio_aequinoctalis
+5_3_aequinoctalis,Senecio_aequinoctialis
 S_mairetianus,Senecio_mairetianus
 S_wairauensis,Senecio_wairauensis
 1129_citriceps,Senecio_citriceps
@@ -210,7 +209,7 @@ S_pinnulatus,Senecio_pinnulatus
 S_laetevirens,Senecio_laetevirens
 4_3_keniophytum,Senecio_keniophytum
 1_9_schweinfurtii,Senecio_schweinfurtii
-1120_glanduloso_pilosus,Senecio_pilosus
+1120_glanduloso_pilosus,Senecio_glanduloso_pilosus
 2030_doriiformis,Senecio_doriiformis
 S_roseus,Senecio_roseus
 51_1_seminiveus,Senecio_seminiveus
@@ -228,7 +227,7 @@ S_humillimus,Senecio_humillimus
 42_2_caloneotes,Senecio_caloneotes
 S_ilicifolius,Senecio_ilicifolius
 S_consanguineus,Senecio_consanguineus
-1125_S_arnicifloris,Senecio_arnicifloris
+1125_S_arnicifloris,Senecio_arniciflorus
 S_dregeanus,Senecio_dregeanus
 S_macedonicus,Senecio_macedonicus
 43_1_cathcartensis,Senecio_cathcartensis
@@ -246,3 +245,4 @@ S_brasiliensis,Senecio_brasiliensis
 2012_lemmonii,Senecio_lemmonii
 2021_niveoaureus,Senecio_niveoaureus
 S_stoechadiformis,Senecio_stoechadiformis
+1126_austromontanus, Senecio_austromontanus
