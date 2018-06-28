@@ -34,7 +34,7 @@ scraper.read_blast(blast_dir=blast_dir)
 
 a = len(scraper.new_seqs) == 40
 b = len(scraper.data.aln) == 5
-c =  len(scraper.new_seqs_otu_id) == 0
+c = len(scraper.new_seqs_otu_id) == 0
 
 scraper.remove_identical_seqs()
 
@@ -58,7 +58,7 @@ scraper2 = PhyscraperScrape(data_obj, ids)
 j = len(scraper2.data.aln) == 5
 
 scraper2.read_blast(blast_dir="tests/data/precooked/fixed/tte_blast_files")
-scraper2.config.seq_len_perc = 0.998 #Change seq match percentage
+scraper2.config.seq_len_perc = 0.998 #Change seq len percentage from default of 75%
 
 k = len(scraper2.new_seqs) == 40
 l = len(scraper2.new_seqs_otu_id) == 0
@@ -71,4 +71,10 @@ m = len(scraper2.new_seqs_otu_id) == 37
 if a*b*c*d*e*f*g*h*i*j*k*l*m:
     sys.stdout.write("\n\nTest `remove_identical_seqs' passed\n\n")
 else:
-    sys.stderr.write("\n\nTest `remove_identical_seqs' FAILED\n\n")
+    sys.stderr.write("\n\nTest `remove_identical_seqs' FAILED  expected - need to check new correct number of seqs, dig into seq len perc\n\n")
+    count = 0
+    for var in [a,b,c,d,e,f,g,h,i,j,k,l,m]:
+        if var != 1:
+          trials = ['a','b','c','d','e','f','g','h','i','j','k','l','m']
+          sys.stdout.write("{} is not true\n".format(trials[count]))
+        count += 1
