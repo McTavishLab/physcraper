@@ -2247,7 +2247,7 @@ class FilterBlast(PhyscraperScrape):
                 # self.otu_dict[otu_id]['^ot:ottId'] = ids_obj.ncbi_to_ott.get(ids_obj.map_gi_ncbi(gi))
                 # self.otu_dict[otu_id]['^physcraper:status'] = "query"
                 self.data.otu_dict[key]['^ot:ottTaxonName'] = id_to_spn_addseq_json[key]['^ot:ottTaxonName']
-                self.data.otu_dict[key]['^ncbi:taxon'] = id_to_spn_addseq_json[key]['^ncbiID']
+                self.data.otu_dict[key]['^ncbi:taxon'] = id_to_spn_addseq_json[key]['^ncbiID'] #TODO FIX key id change
                 self.data.otu_dict[key]['^ot:ottId'] = id_to_spn_addseq_json[key]['ot:ottId']
                 self.data.otu_dict[key]['^physcraper:status'] = "local seq"
                 self.data.otu_dict[key]['^physcraper:last_blasted'] = "1800/01/01"
