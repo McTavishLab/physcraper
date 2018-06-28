@@ -95,36 +95,36 @@ def standard_run(study_id,
         scraper.generate_streamed_alignment()
     return
 
-def OtuJsonDict(id_to_spn, configfi):
-    """Make otu json dict, which is also produced within the openTreeLife-query"""
-    cwd = os.getcwd()  
-    ## reads input file into the var spInfo
-    with open(id_to_spn, mode='r') as idtospn:
-        reader = csv.reader(idtospn)
-        spInfo = dict((rows[0], rows[1]) for rows in reader)
-    #print(spInfoDict) 
+# def OtuJsonDict(id_to_spn, configfi):
+#     """Make otu json dict, which is also produced within the openTreeLife-query"""
+#     cwd = os.getcwd()  
+#     ## reads input file into the var spInfo
+#     with open(id_to_spn, mode='r') as idtospn:
+#         reader = csv.reader(idtospn)
+#         spInfo = dict((rows[0], rows[1]) for rows in reader)
+#     #print(spInfoDict) 
  
-    ###generate spinfodict
+#     ###generate spinfodict
     
-    ottdic = get_ottid(configfi, cwd) 
-    # print(ottdic)
-    ncbi = NCBITaxa()    
+#     ottdic = get_ottid(configfi, cwd) 
+#     # print(ottdic)
+#     ncbi = NCBITaxa()    
     
-    spInfoDict = {}
-    for item in spInfo:
-        spn = spInfo[item].replace("_", " ")
-        name2taxid = ncbi.get_name_translator([spn])
-        otuid = "otu{}".format(spn)
-        if len(name2taxid.items())>=1:
-            ncbiid = name2taxid.items()[0][1][0]
-            ott = ottdic.ncbi_to_ott[ncbiid]
-            spn = ottdic.ott_to_name[ott]
-            get_info = {'^ncbiID': ncbiid, '^ot:ottTaxonName': spn, '^ot:ottId': ott, '^user:TaxonName': spInfo[item],  '^physcraper:status': 'original','^physcraper:last_blasted' : "1900/01/01" }  
-            spInfoDict[item] = get_info
-        else:
+#     spInfoDict = {}
+#     for item in spInfo:
+#         spn = spInfo[item].replace("_", " ")
+#         name2taxid = ncbi.get_name_translator([spn])
+#         otuid = "otu{}".format(spn)
+#         if len(name2taxid.items())>=1:
+#             ncbiid = name2taxid.items()[0][1][0]
+#             ott = ottdic.ncbi_to_ott[ncbiid]
+#             spn = ottdic.ott_to_name[ott]
+#             get_info = {'^ncbiID': ncbiid, '^ot:ottTaxonName': spn, '^ot:ottId': ott, '^user:TaxonName': spInfo[item],  '^physcraper:status': 'original','^physcraper:last_blasted' : "1900/01/01" }  
+#             spInfoDict[item] = get_info
+#         else:
             
-            spInfoDict[item] = {'^user:TaxonName': spInfo[item],  '^physcraper:status': 'original','^physcraper:last_blasted' : "1900/01/01"}
-    return  spInfoDict 
+#             spInfoDict[item] = {'^user:TaxonName': spInfo[item],  '^physcraper:status': 'original','^physcraper:last_blasted' : "1900/01/01"}
+#     return  spInfoDict 
 
 
 
@@ -382,32 +382,8 @@ def run_with_settings(settings):
         data_obj.write_otus("otu_info", schema='table')
         data_obj.dump()
         
-        #ids = IdDicts(conf, workdir="example")
-    #         if os.path.isfile("{}/id_pickle.p".format(workdir)): 
-
-    #         #if os.path.isfile(conf.id_pickle):
-    #             sys.stdout.write("Reloading id dicts from {}\n".format(conf.id_pickle))
-    # #        thawed_id = open(conf.id_json, 'r').readlines()
-    # #        ids = jsonpickle.decode(thawed_id)
-    # #        scraper.repeat = 1
-    #             ids = pickle.load(open("{}/id_pickle.p".format(workdir),'rb'))
-    #         else:
-        sys.stdout.write("setting up id dictionaries\n")
-        sys.stdout.flush()
-        # if os.path.isfile("{}/id_pickle.p".format(workdir)): 
-        #     sys.stdout.write("Reloading from pickled scrapefile: id\n")
-        #     ids = pickle.load(open("{}/id_pickle.p".format(workdir),'rb'))
-
-        # else:   
         ids = IdDicts(conf, workdir=settings.workdir)
-        # ids.dump()
 
-        # if os.path.isfile("{}/scrape_checkpoint.p".format(workdir)): 
-        #     sys.stdout.write("Reloading from pickled scrapefile: scrape\n")
-        #     scraper = pickle.load(open("{}/scrape_checkpoint.p".format(workdir),'rb'))
-        #     scraper.repeat = 1    
-        # else:   
-            #Now combine the data, the ids, and the configuration into a single physcraper scrape object
         filteredScrape =  FilterBlast(data_obj, ids, settings)
         filteredScrape.write_otu_info(settings.downtorank)
         if settings.add_local_seq != None:
@@ -438,11 +414,6 @@ def run_with_settings(settings):
         filteredScrape.read_blast()
         filteredScrape.remove_identical_seqs()
 
-        # folder = '{}/blast/'.format(filteredScrape.workdir)
-        # for the_file in os.listdir(folder):
-        #     file_path = os.path.join(folder, the_file)
-        #     if os.path.isfile(file_path):
-        #         os.unlink(file_path)
         debug("make sp_dict")    
         if settings.treshold != None:  
             filteredScrape.sp_dict(settings.downtorank)
@@ -452,3 +423,4 @@ def run_with_settings(settings):
         filteredScrape.generate_streamed_alignment()
         filteredScrape.dump()
         filteredScrape.write_otu_info(settings.downtorank)
+        return filteredScrape

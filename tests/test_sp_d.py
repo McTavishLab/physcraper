@@ -45,7 +45,7 @@ try:
     filteredScrape.remove_identical_seqs()
 
     filteredScrape.sp_dict(downtorank)
-    print(filteredScrape.sp_d)
+    # print(filteredScrape.sp_d)
     
     
 
@@ -55,7 +55,7 @@ try:
         if '^ncbi:gi' in v:
             # print(v['^ncbi:gi'])
             gi_data_otu_dict.append(v['^ncbi:gi'])
-    print(len(gi_data_otu_dict))
+    # print(len(gi_data_otu_dict))
 
 
     gi_sp_d = []
@@ -70,7 +70,7 @@ try:
             if '^ncbi:gi' in v2:
                 # print(v2['^ncbi:gi'])
                 gi_sp_d.append(v2['^ncbi:gi'])
-    print(len(gi_sp_d))
+    # print(len(gi_sp_d))
 
 
     user_data_otu_dict = []
@@ -78,7 +78,7 @@ try:
         if '^user:TaxonName' in v:
             # print(v['^ncbi:gi'])
             user_data_otu_dict.append(v['^user:TaxonName'])
-    print(len(user_data_otu_dict))
+    # print(len(user_data_otu_dict))
 
     user_sp_d = []
     # print(filteredScrape.sp_d.keys())
@@ -89,7 +89,7 @@ try:
             if '^user:TaxonName' in v2:
                 # print(v2['^ncbi:gi'])
                 user_sp_d.append(v2['^user:TaxonName'])
-    print(len(user_sp_d))
+    # print(len(user_sp_d))
 
 
 

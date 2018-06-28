@@ -47,18 +47,18 @@ filteredScrape.make_sp_seq_dict(treshold=treshold, selectby=selectby)
 
 
 print("prepare test")
-print(filteredScrape.sp_d)
+# print(filteredScrape.sp_d)
 for taxonID in filteredScrape.sp_d:
 	if len(filteredScrape.sp_seq_d[taxonID]) > treshold:
-	    print(taxonID)
+	    # print(taxonID)
 	    blast_seq = filteredScrape.sp_seq_d[taxonID].keys()[0]
 	    seq = filteredScrape.sp_seq_d[taxonID][blast_seq]
 	    filteredScrape.write_blast_files(taxonID, seq)
-        print("2nd taxonid")
-        print(taxonID)
-        print(filteredScrape.sp_seq_d[taxonID].keys())
+        # print("2nd taxonid")
+        # print(taxonID)
+        # print(filteredScrape.sp_seq_d[taxonID].keys())
         blast_db = [item for item in filteredScrape.sp_seq_d[taxonID].keys()[1:] if type(item) == int]
-        print(blast_db)
+        # print(blast_db)
         for blast_key in blast_db:
 	    	seq = filteredScrape.sp_seq_d[taxonID][blast_key]
 
@@ -75,9 +75,9 @@ blast_seq = "Senecio_lagascanus"
 key = 'Senecio_lagascanus'
 
 filteredScrape.run_local_blast(blast_seq, blast_db)
-print(taxonID)
+# print(taxonID)
 
-print(filteredScrape.sp_seq_d.keys())
+# print(filteredScrape.sp_seq_d.keys())
 filteredScrape.read_local_blast(filteredScrape.sp_seq_d[key], blast_db)
 
 

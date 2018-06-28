@@ -52,11 +52,11 @@ filteredScrape.dump("{}/select_seq_local_blast_test.p".format(workdir))
 print("start test")
 count = 0
 for giID in filteredScrape.sp_d:
-    print(giID)
+    # print(giID)
     # print(filteredScrape.sp_seq_d.keys())
     if len(filteredScrape.sp_d[giID]) > treshold:
         count_dict = filteredScrape.count_num_seq(giID)
-        print(count_dict)
+        # print(count_dict)
         if count_dict["new_taxon"]:
             if count_dict["query_count"] < treshold:
                 count += count_dict["query_count"]
@@ -68,7 +68,7 @@ for giID in filteredScrape.sp_d:
             if count_dict["seq_present"] > treshold:
                 count += 0
         if giID in filteredScrape.sp_seq_d.keys():
-            print(giID in filteredScrape.sp_seq_d.keys())
+            # print(giID in filteredScrape.sp_seq_d.keys())
             seq_present = count_dict["seq_present"]
             query_count = count_dict["query_count"]
             for item in filteredScrape.sp_d[giID]:
@@ -88,9 +88,9 @@ for giID in filteredScrape.sp_d:
                     
 
 
-print(count)
-print(len(filteredScrape.filtered_seq))
-print((filteredScrape.filtered_seq))
+# print(count)
+# print(len(filteredScrape.filtered_seq))
+# print((filteredScrape.filtered_seq))
 
 try:
     assert count == len(filteredScrape.filtered_seq) and count>0

@@ -52,12 +52,12 @@ os.system('cp -r' + path1 + ' ' + path2)
 filteredScrape.run_local_blast(blast_seq, blast_db)
 
 blast_out = "{}/blast/output_S_lagascanus_tobeblasted.xml".format(workdir)
-print(blast_out)
+# print(blast_out)
 # xml_file = open(blast_out)
 # print(xml_file)
 if os.path.exists(blast_out):
     xml_file = open(blast_out)
-    print(xml_file)
+    # print(xml_file)
     print("succesfully read local blast output file")
 else:
     print("error")

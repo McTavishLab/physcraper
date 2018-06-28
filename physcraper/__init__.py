@@ -206,7 +206,22 @@ def generate_ATT_from_files(seqaln,
     If no ingroup mrca ott_id is provided, will use all taxa in tree to calc mrca.
     otu_json should encode the taxon names for each tip"""
     # Note: has test -> owndata.py
-    aln = DnaCharacterMatrix.get(path=seqaln, schema=mattype)
+
+    # replace ? in seqaln with -:
+    # Read in the file
+    with open(seqaln, 'r') as file:
+        filedata = file.read()
+
+    # Replace the target string
+    filedata = filedata.replace('?', '-')
+
+    # Write the file out again
+    new_seq_file = "{}/replaced_inputaln.fasta".format(workdir)
+    with open("{}/replaced_inputaln.fasta".format(workdir), 'w') as file:
+        file.write(filedata)
+
+
+    aln = DnaCharacterMatrix.get(path=new_seq_file, schema=mattype)   
     assert aln.taxon_namespace
     for tax in aln.taxon_namespace:
         tax.label = tax.label.replace(" ", "_") #Forcing all spaces to underscore UGH

@@ -63,7 +63,7 @@ id_seq = ["TCGAAACCTGCATAGCAGAACGACCT-GTGAACATGTAAAAACAATTGGG-TGTTCTAAGTATCGGGCT
 print("start test")
 
 tmp_dict = dict((taxon.label, filteredScrape.data.aln[taxon].symbols_as_string()) for taxon in filteredScrape.data.aln)
-print(tmp_dict)
+# print(tmp_dict)
 old_seqs = tmp_dict.keys()
 #Adding seqs that are different, but needs to be maintained as diff than aln that the tree has been run on
 avg_seqlen = sum(filteredScrape.data.orig_seqlen)/len(filteredScrape.data.orig_seqlen) #HMMMMMMMM
@@ -73,7 +73,7 @@ seq_len_cutoff = avg_seqlen*filteredScrape.config.seq_len_perc
 count=1
 
 for item in id_seq:
-    print(item)
+    # print(item)
     gi =  1061375300
     if len(item.replace("-", "").replace("N", "")) > seq_len_cutoff:
         # otu_id = filteredScrape.data.add_otu(gi, filteredScrape.ids)
@@ -87,10 +87,10 @@ for item in id_seq:
         filteredScrape.data.otu_dict[otu_id]['^ncbi:gi'] = gi
         filteredScrape.data.otu_dict[otu_id]['^ncbi:accession'] =   "KX494441"
         filteredScrape.data.otu_dict[otu_id]['^ncbi:title'] = "some random title"
-        filteredScrape.data.otu_dict[otu_id]['^ncbi:taxon'] = "ncbi_id"
+        filteredScrape.data.otu_dict[otu_id]['^ncbi:taxon'] = 0101010101
         filteredScrape.data.otu_dict[otu_id]['^ot:ottId'] = ott
         filteredScrape.data.otu_dict[otu_id]['^physcraper:status'] = "query"
-        filteredScrape.data.otu_dict[otu_id]['^ot:ottTaxonName'] = "spn"
+        filteredScrape.data.otu_dict[otu_id]['^ot:ottTaxonName'] = "Senecio vulgaris"
         filteredScrape.data.otu_dict[otu_id]['^physcraper:last_blasted'] = "1800/01/01"
 
         # otu_id = "Senecio_doronicum"
@@ -101,7 +101,7 @@ for tax in old_seqs:
     except KeyError:
         pass
 
-print("end of seq dict build")
+# print("end of seq dict build")
 print(tmp_dict)
 filteredScrape.new_seqs_otu_id = tmp_dict
 
@@ -118,7 +118,7 @@ filteredScrape.new_seqs_otu_id = tmp_dict
 
 ##################3
 expected_add =1
-print(len(filteredScrape.new_seqs_otu_id))
+# print(len(filteredScrape.new_seqs_otu_id))
 
 try:
     assert expected_add == len(filteredScrape.new_seqs_otu_id)

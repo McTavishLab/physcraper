@@ -47,10 +47,10 @@ print("run loop which we want to test")
 for key in filteredScrape.sp_d:
     
     if len(filteredScrape.sp_d[key]) > treshold:
-        print("filter number of sequences")
-        print(key)
+        # print("filter number of sequences")
+        # print(key)
         count_dict = filteredScrape.count_num_seq(key)
-        print(count_dict)
+        # print(count_dict)
         if key in filteredScrape.sp_seq_d.keys():
             seq_present = count_dict["seq_present"]
             query_count = count_dict["query_count"]
@@ -83,19 +83,19 @@ for key in filteredScrape.sp_d:
                 count_int +=1
                 # db = True
 
-        print(key)    
+        # print(key)    
         folder = '{}/blast/'.format(filteredScrape.workdir)
         for the_file in os.listdir(folder):
             # print(the_file)
             spn = "_".join(the_file.split("_")[1:-1])
-            print("keys to compare")
+            # print("keys to compare")
             # print("_".join(key.split("_")[1:]))
             # print(spn)
             file_type = the_file.split("_")[-1]
             # print(file_type)
             # print("_".join(key.split("_")[1:]))
             if spn == "_".join(key.split("_")[1:]) and file_type == "db":
-                print("db: names are equal")
+                # print("db: names are equal")
                 db = True
                 f = open('{}/blast/{}'.format(filteredScrape.workdir, the_file))
                 for line in iter(f):
@@ -106,12 +106,12 @@ for key in filteredScrape.sp_d:
 
                 # go into the file and check for numbers of  >
             if spn == "_".join(key.split("_")[1:]) and file_type == "tobeblasted":
-                print("tobeblasted: names are equal")
+                # print("tobeblasted: names are equal")
                 blasted = True
 
                 # print("something")
                 count_str_file += 1
-        print(count, count_int, count_str_file, treshold)
+        # print(count, count_int, count_str_file, treshold)
         # print(blasted)
         
 

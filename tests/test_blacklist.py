@@ -95,7 +95,7 @@ src = "tests/data/precooked/fixed/tte_blast_files"
 src_files = os.listdir(src)
 for file_name in src_files:
     dest =  os.path.join(absworkdir, "current_blast_run/")
-    print(dest)
+    # print(dest)
     full_file_name = os.path.join(src, file_name)
     if (os.path.isfile(full_file_name)):
         shutil.copy(full_file_name, dest)

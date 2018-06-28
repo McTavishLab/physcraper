@@ -56,7 +56,7 @@ namespace_tre_before = len(filteredScrape.data.tre.taxon_namespace)
 #print(filteredScrape.data.aln.taxon_namespace)
 #print(filteredScrape.data.tre.taxon_namespace)
 
-print('remove from object')
+# print('remove from object')
 filteredScrape.data.remove_taxa_aln_tre(tax.label)
 #print(filteredScrape.data.aln.as_string('phylip'))	
 #print(filteredScrape.data.tre)	

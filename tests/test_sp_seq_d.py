@@ -67,7 +67,7 @@ try:
 
     for v in filteredScrape.sp_d.values():
         for v2 in v:
-            print(v2.keys())
+            # print(v2.keys())
             if '^physcraper:status' in v2 or u'^physcraper:status' in v2 :
                     not_added = ['deleted', 'subsequence,', 'not']
                     if v2['^physcraper:status'].split(' ')[0] not in not_added: 
@@ -85,7 +85,7 @@ try:
 
 
     filteredScrape.make_sp_seq_dict(treshold=treshold, selectby=selectby)
-    print(filteredScrape.sp_seq_d.values())
+    # print(filteredScrape.sp_seq_d.values())
 
     gi_sp_seq_d = []
     ott_sp_seq_d = []
@@ -97,7 +97,7 @@ try:
                 # print(k)
                 ott_sp_seq_d.append(k)
 
-    print(len(ott_sp_seq_d), len(user_sp_d), len(gi_sp_seq_d), len(gi_sp_d))
+    # print(len(ott_sp_seq_d), len(user_sp_d), len(gi_sp_seq_d), len(gi_sp_d))
     assert len(ott_sp_seq_d) == len(user_sp_d)
     assert len(gi_sp_seq_d) == len(gi_sp_d)
 
