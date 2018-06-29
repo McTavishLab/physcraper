@@ -1,0 +1,11 @@
+papara called as:
+papara -t random_resolve.tre -s aln_ott.phy -q 2018-06-22.fasta -n extended 
+references container instantiated as: papara::references<pvec_pgap, sequence_model::tag_dna>
+edges: 7
+scoring scheme: -3 -1 2 -3
+papara_core version 2.5
+start scoring, using 1 threads
+thread 0: 2.37211 gncup/s
+scoring finished: 0.00368404
+generating best scoring alignments
+SUCCESS 0.0171471
