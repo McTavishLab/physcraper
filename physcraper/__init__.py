@@ -632,6 +632,8 @@ class AlignTreeTax(object):
                 else:
                     new_label = "ncbi_{}_ottname_{}".format(self.otu_dict[taxon.label].get("^ncbi:taxon", "unk"), self.otu_dict[taxon.label].get('^ot:ottTaxonName', "unk"))
             new_label = str(new_label).replace(' ', '_')
+            if new_label in new_names and norepeats:
+                new_label = "_".join([new_label, taxon.label])
             if gi_id == True:
                 sp_counter = 2
                 if new_label in new_names and norepeats:
@@ -643,9 +645,9 @@ class AlignTreeTax(object):
                         sp_counter +=1
                     # debug(gi_id)
                     new_label = "_".join([new_label, str(gi_id)])
-            else:
-                if new_label in new_names and norepeats:
-                    new_label = "_".join([new_label, taxon.label])
+                    if new_label in new_names and norepeats:
+                        new_label = "_".join([new_label, taxon.label])
+            
             taxon.label = new_label
             new_names.add(new_label)
         tmp_tre.write(path=treepath,
