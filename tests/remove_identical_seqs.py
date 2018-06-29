@@ -79,6 +79,7 @@ m = len(scraper2.new_seqs_otu_id) == 37
 print(len(scraper2.new_seqs_otu_id))
 # print(scraper2.new_seqs)
 for seq in scraper2.new_seqs:
+  print(seq)
   print(len(scraper2.new_seqs[seq]))
 count = 0
 if a*b*c*d*e*f*g*h*i*j*k*l*m:

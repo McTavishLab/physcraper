@@ -2394,16 +2394,13 @@ class Concat():
         debug("load_single_genes: {}".format(genename))
         # debug("{}/{}".format(workdir, pickle_fn))  
         scrape = pickle.load(open("{}/{}".format(workdir, pickle_fn),'rb'))
-        
+        scrape = self.remove_aln_tre_leaf(scrape)
+        self.single_runs[genename] = deepcopy(scrape)
+        return 
 
-        treed_taxa = set()
-        debug(scrape.data.aln.taxon_namespace)
-        debug(scrape.data.tre.taxon_namespace)
-        for leaf in scrape.data.tre.leaf_nodes():
-            treed_taxa.add(leaf.taxon)
-        debug(treed_taxa)
-        
-
+    def remove_aln_tre_leaf(self,scrape):
+        """attempt to remove all occurences in aln and tre of otu!!
+        """
         aln_ids = set()
         for tax in scrape.data.aln:
             aln_ids.add(tax.label)
@@ -2423,79 +2420,37 @@ class Concat():
                 scrape.data.tre.prune_taxa_with_labels([leaf])
                 treed_taxa.remove(leaf.taxon)
         assert treed_taxa.issubset(aln_ids)
-
-            # for leaf in self.single_runs[gene].data.tre.leaf_nodes():
-            #         treed_taxa.add(leaf.taxon)
-            #     print(treed_taxa)
-
-        
-     
-        debug(treed_taxa)
-        self.single_runs[genename] = deepcopy(scrape)
-
-####################################################################3
-        self.single_runs[genename] = scrape
-        
-# ##############################################################
-#         aln_ids = set()
-#         for tax in self.single_runs[genename].data.aln:
-#             aln_ids.add(tax.label)
-
-#         # debug(len(self.otu_dict.keys()))
-#         # debug(len(aln_ids))
-#         # debug([item for item in self.otu_dict.keys() if item not in aln_ids])
-#         # debug([item for item in aln_ids if item not in self.otu_dict.keys()])
-
-#         assert aln_ids.issubset(self.single_runs[genename].data.otu_dict.keys())
-
-#         treed_taxa = set()
-#         for leaf in self.single_runs[genename].data.tre.leaf_nodes():
-#             treed_taxa.add(leaf.taxon)
-#         debug(treed_taxa)
-        
-#         for leaf in self.single_runs[genename].data.tre.leaf_nodes():
-#             if leaf.taxon not in aln_ids:
-#                 self.single_runs[genename].data.tre.prune_taxa([leaf])
-#                 self.single_runs[genename].data.tre.prune_taxa_with_labels([leaf.taxon])
-#                 self.single_runs[genename].data.tre.prune_taxa_with_labels([leaf])
-#                 treed_taxa.remove(leaf.taxon)
-#         assert treed_taxa.issubset(aln_ids)
-
-#             # for leaf in self.single_runs[gene].data.tre.leaf_nodes():
-#             #         treed_taxa.add(leaf.taxon)
-#             #     print(treed_taxa)
-
-        
-#         treed_taxa = set()
-#         for leaf in self.single_runs[genename].data.tre.leaf_nodes():
-#             treed_taxa.add(leaf.taxon)
-#         debug(treed_taxa)
-        return 
+        return scrape
    
-    def make_concat_id_dict(self, concat_id):
+    def make_concat_id_dict(self, otu, genename, concat_id):
         """make a concat_id entry with all information
         """
+        data = self.single_runs[genename].data.otu_dict[otu]
+        seq = str(self.single_runs[genename].data.aln[otu])
+        debug(data['^ot:ottTaxonName'])
+        if data['^ot:ottTaxonName'] not in self.sp_gi_comb:
+            self.sp_gi_comb[data['^ot:ottTaxonName']] = {}
+        if genename not in self.sp_gi_comb[data['^ot:ottTaxonName']]:
+            self.sp_gi_comb[data['^ot:ottTaxonName']][genename] = {}
         if concat_id not in self.sp_gi_comb[data['^ot:ottTaxonName']][genename]:
-            concat_id = {"gi_id": data['^ncbi:gi'], "seq": seq, "spn": data['^ot:ottTaxonName'] }
+            # debug("make concat_id")
+            if '^ncbi:gi' in data:
+                gi_id =  data['^ncbi:gi']
+            else:
+                gi_id = data['^ot:ottTaxonName']
+            concat_dict = {"gi_id": gi_id, "seq": seq, "spn": data['^ot:ottTaxonName'], "original_PS_id": otu, "concat:status": "single run"}
+            debug(concat_dict)
+        # if data['^ot:ottTaxonName'] not in self.sp_gi_comb:
+        #     # self.sp_gi_comb[data['^ot:ottTaxonName']] = {}
+        #     self.sp_gi_comb[data['^ot:ottTaxonName']] = {genename: concact_dict}
+        # else:   
+        self.sp_gi_comb[data['^ot:ottTaxonName']][genename][concat_id] = concat_dict
+        debug(self.sp_gi_comb[data['^ot:ottTaxonName']][genename])
+
 
     def combine(self, genelist):
-        """combine several Physcraper objects to make a concatenated run
+        """combine several Physcraper objects to make a concatenated run dict
         """
-        # debug(some)   
-
-
-
-        for gene in self.single_runs:
-            debug(gene)
-            treed_taxa = set()
-            for leaf in self.single_runs[gene].data.tre.leaf_nodes():
-                treed_taxa.add(leaf.taxon)
-            debug(treed_taxa)
-
-        # debug(some)
-        
-
-        #TODO: [data][spn] needs to be changes to unique id
         debug("combine")
         self.num_of_genes = len(self.single_runs)
         concat_id = 1
@@ -2503,44 +2458,12 @@ class Concat():
             self.genes_present.append(genename)
             # debug(genename)
             for otu in self.single_runs[genename].data.aln.taxon_namespace:
-                data = self.single_runs[genename].data.otu_dict[otu.label]
+                self.make_concat_id_dict(otu.label, genename, concat_id)
                 concat_id += 1
-                seq = str(self.single_runs[genename].data.aln[otu])
-                if data['^ot:ottTaxonName'] not in self.sp_gi_comb:
-                    if '^ncbi:gi' in data:
-                        self.sp_gi_comb[data['^ot:ottTaxonName']] = {genename: 
-                                                                    {concat_id: {"gi_id": data['^ncbi:gi'], "seq": seq, "spn": data['^ot:ottTaxonName'] }}}
-                    else:
-                        self.sp_gi_comb[data['^ot:ottTaxonName']] = {genename: {concat_id: {"gi_id": data[u'^user:TaxonName'], "seq": seq, "spn": data['^ot:ottTaxonName'] }}}
-                else:   
-                    if genename not in self.sp_gi_comb[data['^ot:ottTaxonName']]:
-                        if '^ncbi:gi' in data:
-                            self.sp_gi_comb[data['^ot:ottTaxonName']][genename] = {concat_id: 
-                                                                    {"gi_id": data['^ncbi:gi'], "seq":seq, "spn": data['^ot:ottTaxonName'] }}
-                        else:
-                            self.sp_gi_comb[data['^ot:ottTaxonName']][genename] = {concat_id: 
-                                                                    {"gi_id": data[u'^user:TaxonName'], "seq": seq, "spn": data['^ot:ottTaxonName'] }}
-                    else: ## seems like i don't need it?
-                        if '^ncbi:gi' in data:
-                            self.sp_gi_comb[data['^ot:ottTaxonName']][genename][data['^ncbi:gi']] = {concat_id: 
-                                                                    {"seq": seq, "spn": data['^ot:ottTaxonName']}}
-                        else:
-                            self.sp_gi_comb[data['^ot:ottTaxonName']][genename][data[u'^user:TaxonName']] = {concat_id: 
-                                                                    {"seq": seq, "spn": data['^ot:ottTaxonName']}}
-                concat_id += 1
-        debug(self.sp_gi_comb)
-        # debug(some)
+        # debug(self.sp_gi_comb)
+        
         return
 
-    def make_sp_gi_comb(self):
-        debug("do somthing")
-
-
-
-
-    def remove_aln_tre_leaf(self):
-        """attempt to remove all occurences in aln and tre of otu!!
-        """
 
     def sp_seq_counter(self):
         """counts how many seq per sp and gene there are
@@ -2579,30 +2502,114 @@ class Concat():
         keep_sp = False
         sp_to_keep = {}
         # debug(self.sp_counter)
-        
         for spn in self.sp_counter:
             seq_counter = True
-
-            # if len(self.sp_counter[spn]) <= 1:
-            #     debug("sp has only a single gene present")
-            #     print("do I really want it in the aln???")
-            #     seq_counter = False
             not_present = 0
             for gene in self.sp_counter[spn]:
                 if self.sp_counter[spn][gene] == 0:
                     # debug("sp has not all genes present")
                     seq_counter = False
                     not_present +=1
-            # else:
-            #     debug("sp has that particular gene")
-            # elif len(self.sp_counter[spn]) <= self.num_of_genes - 1:
-
-
-
             if seq_counter == False:
                 sp_to_keep[spn] = not_present
         # debug(sp_to_keep)
         return sp_to_keep
+
+
+    def make_sp_gene_dict(self, sp_to_keep):
+        """is the build around to make the dicts, that are used to make it into a dendropy aln
+        """
+        debug("make_sp_gene_dict")
+        count = 2
+        self.tmp_dict = deepcopy(self.sp_gi_comb)
+
+        while len(self.tmp_dict.keys()) >= 1:
+            del_gi = {}
+            for spn in self.tmp_dict.keys():
+                sp_to_keep_list = sp_to_keep.keys()
+                if spn.replace(" ", "_") in sp_to_keep_list:
+                    tmp_gene = deepcopy(self.genes_present)
+                    for gene in self.tmp_dict[spn]:
+                        tmp_gene.remove(gene)
+                        del_gi = self.select_rnd_seq(spn, gene, del_gi, count)
+                    for item in tmp_gene: 
+                        self.make_empty_seq(spn, item)
+                    self.rm_empty_spn_entries(del_gi) 
+                else:
+                    for gene in self.tmp_dict[spn]:
+                        del_gi = self.select_rnd_seq(spn, gene, del_gi, count)
+
+
+
+                       
+                self.rm_empty_spn_entries(del_gi)
+        debug(self.sp_gi_comb)    
+        # debug(some)
+  
+
+    def select_rnd_seq(self, spn, gene, del_gi, count):
+        """select random seq from spn and gene to combine it
+        with a random other one from another gene, but same spn
+        """
+        debug("select_rnd_seq")
+        random_otu_for_concat = random.choice(list(self.tmp_dict[spn][gene]))
+        # print("random_otu_for_concat")
+        print(random_otu_for_concat)
+        self.sp_gi_comb[spn][gene][random_otu_for_concat]["concat:status"] = "used in concat"
+
+        seq = str(self.tmp_dict[spn][gene][random_otu_for_concat])
+        # print(comb_seq.keys())
+        spn_ = spn.replace(" ", "_")
+        if gene in self.comb_seq.keys():
+            # print(spn_, gene)
+            # print(self.comb_seq[gene].keys())
+            if spn_ not in self.comb_seq[gene].keys():
+                # print("in if")
+                # self.rewrite_otu_to_spn(gene, count, random_otu_for_concat)
+                self.comb_seq[gene][spn_] = seq
+                if gene in self.comb_gi:
+                    self.comb_gi[gene][spn_] = random_otu_for_concat
+                else:
+                    self.comb_gi[gene] ={spn_: random_otu_for_concat}
+                    del_gi = self.add_to_del_gi(del_gi, gene, spn, random_otu_for_concat)
+                    debug(del_gi)
+                # if gene in del_gi.keys():
+                #     if spn_ not in del_gi[gene].keys():
+                #         del_gi[gene][spn] = random_otu_for_concat
+                #     else:
+                #         del_gi[gene][spn_new.format("_", " ")] = random_otu_for_concat
+                # else:
+                #     del_gi[gene] = {spn: random_otu_for_concat}
+            else:
+                # print("in else")
+                # self.rewrite_otu_to_spn(gene, count, random_otu_for_concat)
+                spn_new ="{}_{}".format(spn_, count)
+                while spn_new in self.comb_seq[gene].keys():
+                    spn_new ="{}_{}".format(spn_, count+1)
+                
+                self.comb_seq[gene][spn_new] = seq
+                self.comb_gi[gene][spn_new] = random_otu_for_concat
+
+                del_gi = self.add_to_del_gi(del_gi, gene, spn, random_otu_for_concat)
+        else:
+            self.comb_seq[gene] = {spn_: seq}
+            self.comb_gi[gene] = {spn_: random_otu_for_concat}
+            del_gi = self.add_to_del_gi(del_gi, gene, spn, random_otu_for_concat)
+        # for spn, gi_id in self.sp_gi_comb.items():
+        #     if random_otu_for_concat == gi_id:
+
+        #         for otu in concat.single_runs[gene].data.tre.taxon_namespace:
+        #             data = concat.single_runs[gene_max].data.otu_dict[otu.label]
+        #             if '^ncbi:gi' in data:
+        #                 gi_orig = [data['^ncbi:gi']] 
+        #             else:
+        #                 gi_orig = [data[u'^user:TaxonName']]
+        #             if gi_orig == random_otu_for_concat:
+        #                 otu.label = spn
+        debug("del_gi")
+        debug(del_gi)
+
+        return del_gi
 
     def add_to_del_gi(self, del_gi, gene, spn, random_gen):
         """add gi number to del_gi,
@@ -2620,6 +2627,140 @@ class Concat():
         return del_gi
 
 
+    def make_empty_seq(self, spn, gene):
+        """when there is no seq for one of the genes, 
+        make an empty seq. Dendropy needs same taxon_namespace and number otu's for concatenation
+        """
+        debug("make_empty_seq")
+        for tax, seq in self.single_runs[gene].data.aln.items():
+            len_gene_aln = len(seq)
+            break
+        empty_seq = "?"*len_gene_aln
+        if gene in self.comb_seq:
+            self.comb_seq[gene][spn.replace(" ", "_")] = empty_seq
+        else:
+            self.comb_seq[gene] = {spn.replace(" ", "_"): empty_seq}
+
+
+
+
+    def rm_empty_spn_entries(self, del_gi):
+        """removes keys from tmp dict, if the key/sp has no value anymore
+        """
+        debug("rm_empty_spn_entries")
+        del_list = []
+        debug(del_gi)
+        for spn2 in self.tmp_dict:
+            debug(spn2)
+            for gene2 in self.tmp_dict[spn2]:
+                # debug(gene2)
+                # for key in comb_gi[gene][spn]:
+                #     # debug(key)
+                #     # debug(self.tmp_dict[spn][gene])
+                spn2_ = spn2.replace(" ","_")
+                
+                if gene2 in del_gi:
+                    # debug(del_gi[gene2])
+                    if spn2 in del_gi[gene2]:
+                        key = del_gi[gene2][spn2]
+                        # debug(key)
+                        if key in self.tmp_dict[spn2][gene2]:
+                            # debug("del")
+                            del self.tmp_dict[spn2][gene2][key]
+                            del_list.append(spn2)
+        del_list = set(del_list)
+        debug(del_list)
+        for sp_to_del in del_list:
+            for item in self.sp_gi_comb[sp_to_del]:
+                debug(item)
+                if len(self.sp_gi_comb[sp_to_del][item]) != 0:
+                    # remove from tmp and and change status
+                    for otu in self.sp_gi_comb[sp_to_del][item]:
+                        if self.sp_gi_comb[sp_to_del][item][otu]["concat:status"] != "used in concat":
+                            debug("change status")
+                            debug(self.sp_gi_comb[sp_to_del])
+                            debug(self.sp_gi_comb[sp_to_del][item])
+                            debug(self.sp_gi_comb[sp_to_del][item][otu])
+                            self.sp_gi_comb[sp_to_del][item][otu]["concat:status"] = "deleted, because not enough seq are present"
+                            # debug(some)
+
+
+
+
+
+
+            # for otu in self.sp_gi_comb[spn2][gene2]:
+            #     # debug(del_gi[gene2][spn2])
+            #     # debug(otu)
+            #     debug(self.sp_gi_comb)
+            #     # print(spn2, gene2, otu)
+            #     # debug(self.sp_gi_comb[spn2])
+            #     # debug(self.sp_gi_comb[spn2][gene2])
+            #     # debug(self.sp_gi_comb[spn2][gene2][otu])
+                
+            #     # debug(del_gi)
+            #     # debug(del_gi[gene2])
+            #     # debug(otu["gi_id"])
+            #     # if spn2 in del_gi[gene2]:
+            #         # if self.sp_gi_comb[spn2][gene2][otu]["gi_id"] == del_gi[gene2][spn2]:
+                       
+            #         #     debug(self.sp_gi_comb[spn2][gene2][otu])
+            #         #     self.sp_gi_comb[spn2][gene2][otu]["concat:status"] = "used in concat"
+            #         # for otu in self.sp_gi_comb[spn2][gene2]:
+            #     print(sp_to_del, del_gi.keys()[0])
+            #     debug(self.sp_gi_comb[sp_to_del])
+            #     debug(self.sp_gi_comb[sp_to_del][del_gi.keys()[0]])
+
+
+            #     if self.sp_gi_comb[sp_to_del][del_gi.keys()[0]][otu]["concat:status"] != "used in concat":
+            #         debug("change status")
+            #         debug(self.sp_gi_comb[sp_to_del][del_gi.keys()][otu])
+            # self.sp_gi_comb[spn2][gene2]
+            del self.tmp_dict[sp_to_del] 
+        # debug(self.sp_gi_comb[spn2][gene2][otu])
+        # debug(some)
+
+
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
 
 
     def rewrite_otu_to_spn(self, gene, count, random_gen):
@@ -2665,135 +2806,9 @@ class Concat():
                 otu.label = spn
 
 
-    def select_rnd_seq(self, spn, gene, del_gi, count):
-        """select random seq from spn and gene to combine it
-        with a random other one from another gene, but same spn
-        """
-        debug("select_rnd_seq")
-        random_gen = random.choice(list(self.tmp_dict[spn][gene]))
-        # print("random_gen")
-        # print(random_gen)
-
-        seq = str(self.tmp_dict[spn][gene][random_gen])
-        # print(comb_seq.keys())
-        spn_ = spn.replace(" ", "_")
-        if gene in self.comb_seq.keys():
-            # print(spn_, gene)
-            # print(self.comb_seq[gene].keys())
-            if spn_ not in self.comb_seq[gene].keys():
-                # print("in if")
-                self.rewrite_otu_to_spn(gene, count, random_gen)
-                self.comb_seq[gene][spn_] = seq
-                if gene in self.comb_gi:
-                    self.comb_gi[gene][spn_] = random_gen
-                else:
-                    self.comb_gi[gene] ={spn_: random_gen}
-                    del_gi = self.add_to_del_gi(del_gi, gene, spn, random_gen)
-                # if gene in del_gi.keys():
-                #     if spn_ not in del_gi[gene].keys():
-                #         del_gi[gene][spn] = random_gen
-                #     else:
-                #         del_gi[gene][spn_new.format("_", " ")] = random_gen
-                # else:
-                #     del_gi[gene] = {spn: random_gen}
-            else:
-                # print("in else")
-                self.rewrite_otu_to_spn(gene, count, random_gen)
-                spn_new ="{}_{}".format(spn_, count)
-                while spn_new in self.comb_seq[gene].keys():
-                    spn_new ="{}_{}".format(spn_, count+1)
-                
-                self.comb_seq[gene][spn_new] = seq
-                self.comb_gi[gene][spn_new] = random_gen
-
-                del_gi = self.add_to_del_gi(del_gi, gene, spn, random_gen)
-        else:
-            self.comb_seq[gene] = {spn_: seq}
-            self.comb_gi[gene] = {spn_: random_gen}
-            del_gi = self.add_to_del_gi(del_gi, gene, spn, random_gen)
-        # for spn, gi_id in self.sp_gi_comb.items():
-        #     if random_gen == gi_id:
-
-        #         for otu in concat.single_runs[gene].data.tre.taxon_namespace:
-        #             data = concat.single_runs[gene_max].data.otu_dict[otu.label]
-        #             if '^ncbi:gi' in data:
-        #                 gi_orig = [data['^ncbi:gi']] 
-        #             else:
-        #                 gi_orig = [data[u'^user:TaxonName']]
-        #             if gi_orig == random_gen:
-        #                 otu.label = spn
-
-        return del_gi
-
-    def make_empty_seq(self, spn, gene):
-        """when there is no seq for one of the genes, 
-        make an empty seq. Dendropy needs same taxon_namespace and number otu's for concatenation
-        """
-        debug("make_empty_seq")
-        for tax, seq in self.single_runs[gene].data.aln.items():
-            len_gene_aln = len(seq)
-            break
-        empty_seq = "?"*len_gene_aln
-        if gene in self.comb_seq:
-            self.comb_seq[gene][spn.replace(" ", "_")] = empty_seq
-        else:
-            self.comb_seq[gene] = {spn.replace(" ", "_"): empty_seq}
-
-
-    def rm_empty_spn_entries(self, del_gi):
-        """removes keys from tmp dict, if the key/sp has no value anymore
-        """
-        # debug("rm_empty_spn_entries")
-        del_list = []
-        # debug(del_gi)
-        for spn2 in self.tmp_dict:
-            # print(spn2)
-            for gene2 in self.tmp_dict[spn2]:
-                # print(gene2)
-                # print()
-                # for key in comb_gi[gene][spn]:
-                #     # print(key)
-                #     # print(self.tmp_dict[spn][gene])
-                spn2_ = spn2.replace(" ","_")
-                
-                if gene2 in del_gi:
-                    # print(del_gi[gene2])
-                    if spn2 in del_gi[gene2]:
-                        key = del_gi[gene2][spn2]
-                        # print(key)
-                        if key in self.tmp_dict[spn2][gene2]:
-                            # print("del")
-                            del self.tmp_dict[spn2][gene2][key]
-                            del_list.append(spn2)
-        del_list = set(del_list)
-        for sp_to_del in del_list:
-            del self.tmp_dict[sp_to_del] 
 
 
 
-    def make_sp_gene_dict(self, sp_to_keep):
-        """is the build around to make the dicts, that are used to make it into a dendropy aln
-        """
-        debug("make_sp_gene_dict")
-        count = 2
-        self.tmp_dict = self.sp_gi_comb
-
-        while len(self.tmp_dict.keys()) >= 1:
-            del_gi = {}
-            for spn in self.tmp_dict.keys():
-                sp_to_keep_list = sp_to_keep.keys()
-                if spn.replace(" ", "_") in sp_to_keep_list:
-                    tmp_gene = deepcopy(self.genes_present)
-                    for gene in self.tmp_dict[spn]:
-                        tmp_gene.remove(gene)
-                        del_gi = self.select_rnd_seq(spn, gene, del_gi, count)
-                    for item in tmp_gene: 
-                        self.make_empty_seq(spn, item)
-                    self.rm_empty_spn_entries(del_gi) 
-                else:
-                    for gene in self.tmp_dict[spn]:
-                        del_gi = self.select_rnd_seq(spn, gene, del_gi, count)
-                self.rm_empty_spn_entries(del_gi)      
             
 
     def make_alns_dict(self):
