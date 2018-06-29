@@ -75,7 +75,7 @@ l = len(scraper2.new_seqs_otu_id) == 0
 
 scraper2.remove_identical_seqs()
 
-m = len(scraper2.new_seqs_otu_id) == 37
+m = len(scraper2.new_seqs_otu_id) == 36
 print(len(scraper2.new_seqs_otu_id))
 # print(scraper2.new_seqs)
 for seq in scraper2.new_seqs:
