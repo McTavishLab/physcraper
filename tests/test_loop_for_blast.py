@@ -72,7 +72,7 @@ for key in filteredScrape.sp_d:
     if len(filteredScrape.sp_d[key]) > treshold:
         # print(filteredScrape.sp_seq_d[key])
         for sp_keys in filteredScrape.sp_seq_d[key].keys():
-            print(type(sp_keys))
+            # print(type(sp_keys))
             if isinstance(sp_keys, str) == True:
                 count += 1
                 # blasted = True

@@ -12,3 +12,17 @@ standard-RAxML
 *.aux
 *.log
 build/
+Physcraper.egg-info/*
+standard-RAxML-master/*
+tests/output/*
+
+blast2genus/
+
+blast2genus_highhits_limitblast_simseq/
+
+blast2genus_may/
+
+blast2genus_nothresh/
+
+mean_test/
+Senecio_*
