@@ -41,8 +41,8 @@ from peyotl.api import APIWrapper
 import physcraper.AWSWWW as AWSWWW
 
 
-_DEBUG = 1
-_DEBUG_MK = 1
+_DEBUG = 0
+_DEBUG_MK = 0
 
 def debug(msg):
     """short debugging command
@@ -404,15 +404,10 @@ class AlignTreeTax(object):
         debug("prune short")
         prune = []
         for tax, seq in self.aln.items():
-            # debug(min_seqlen)
-            # debug(seq.symbols_as_string().translate(None, "-?"))
-            # debug(len(seq.symbols_as_string().translate(None, "-?")))
             if len(seq.symbols_as_string().translate(None, "-?")) <= min_seqlen:
                 prune.append(tax)
-        # debug("prune")
-        # debug(prune)
         if prune:
-            # debug(prune)
+            debug(prune)
             self.aln.remove_sequences(prune)
             self.tre.prune_taxa(prune)
             self.tre.prune_taxa_with_labels(prune)#sometimes it does not delete it with the statement before. Tried to figure out why, have no clue yet.
@@ -434,18 +429,17 @@ class AlignTreeTax(object):
         """all missing data seqs are sneaking in, but from where?!"""
         # not only used in the beginning...is used to remove sequences that are shorter than 75%
         #assert self.aln.taxon_namespace == self.tre.taxon_namespace
-        # debug("reconcile")
+        debug("reconcile")
         prune = []
-        # debug(self.orig_seqlen)
+        debug(self.orig_seqlen)
         avg_seqlen = sum(self.orig_seqlen)/len(self.orig_seqlen)
-        # debug(avg_seqlen)
+        debug(avg_seqlen)
         seq_len_cutoff = avg_seqlen*seq_len_perc
-        # debug(seq_len_cutoff)
+        debug(seq_len_cutoff)
         for tax, seq in self.aln.items():
             if len(seq.symbols_as_string().translate(None, "-?")) < seq_len_cutoff:
                 prune.append(tax)
         if prune:
-            # debug(prune)
             fi = open("{}/pruned_taxa".format(self.workdir), 'a')
             fi.write("Taxa pruned from tree and alignment in reconcilation step due to sequence shorter than {}\n".format(seq_len_cutoff))
             for tax in prune:
@@ -460,12 +454,6 @@ class AlignTreeTax(object):
         aln_ids = set()
         for tax in self.aln:
             aln_ids.add(tax.label)
-
-        debug(len(self.otu_dict.keys()))
-        debug(len(aln_ids))
-        debug([item for item in self.otu_dict.keys() if item not in aln_ids])
-        debug([item for item in aln_ids if item not in self.otu_dict.keys()])
-
         assert aln_ids.issubset(self.otu_dict.keys())
         treed_taxa = set()
         orphaned_leafs = set()
@@ -479,7 +467,6 @@ class AlignTreeTax(object):
                 orphaned_leafs.add(leaf)
                 #TODO fiure out why sometimes one of them works ano not the other and vice versa
                 self.tre.prune_taxa([leaf])
-                # self.tre.prune_taxa_with_labels([leaf.taxon.label])
                 self.tre.prune_taxa_with_labels([leaf.taxon.label])
                 self.tre.prune_taxa_with_labels([leaf])
                 treed_taxa.remove(leaf.taxon.label)
@@ -517,6 +504,7 @@ class AlignTreeTax(object):
         cutoff = len(self.aln) *  taxon_missingness
         for i in range(seqlen):
             counts = {'?':0, '-':0}
+            debug(counts)
             for tax in self.aln:
                 call = self.aln[tax][i].label
                 if call in ['?', '-']:
@@ -569,7 +557,6 @@ class AlignTreeTax(object):
             except:
                 ott = "OTT_{}".format(self.ps_otu)
                 self.ps_otu += 1
-
         self.otu_dict[otu_id] = {}
         self.otu_dict[otu_id]['^ncbi:gi'] = gi
         self.otu_dict[otu_id]['^ncbi:accession'] = self.gi_dict[gi]['accession']
@@ -636,7 +623,8 @@ class AlignTreeTax(object):
                                          taxon_namespace=tmp_tre.taxon_namespace)
         new_names = set()  
         for taxon in tmp_tre.taxon_namespace:
-            # debug(taxon)
+            debug(taxon)
+            ### here the double names of the labelled tre files are generated.
             new_label = self.otu_dict[taxon.label].get(label, None)
             if new_label == None:
                 if self.otu_dict[taxon.label].get("^ot:originalLabel"):
@@ -728,7 +716,6 @@ def get_mrca_ott(ott_ids):
     ott_ids_not_in_synth = []
     
     for ott in ott_ids:
-        # debug(ott)
         try:
             tree_of_life.mrca(ott_ids=[ott], wrap_response=False)
             synth_tree_ott_ids.append(ott)
@@ -738,8 +725,6 @@ def get_mrca_ott(ott_ids):
         sys.stderr.write('No sampled taxa were found in the current sysnthetic tree. Please find and input and approppriate OTT id as ingroup mrca in generate_ATT_from_files')
         sys.exit()
     mrca_node = tree_of_life.mrca(ott_ids=synth_tree_ott_ids, wrap_response=False)# need to fix wrap eventually
-    
-    # debug(mrca_node)
     if u'nearest_taxon' in mrca_node.keys():
         tax_id = mrca_node[u'nearest_taxon'].get(u'ott_id')
         sys.stdout.write('(v3) MRCA of sampled taxa is {}\n'.format(mrca_node[u'nearest_taxon'][u'name']))
@@ -798,10 +783,8 @@ class IdDicts(object):
         """
         # debug("get_rank_info")
         Entrez.email = self.config.email
-        # debug(gi_id)
         if gi_id != False:
-            # debug(gi_id)
-            # debug("gi_id to tax_name")
+            debug("gi_id to tax_name")
             tries = 5
             for i in range(tries):
                 try:
@@ -819,7 +802,7 @@ class IdDicts(object):
             # debug(tax_name)
         else:
             tax_name = str(taxon_name).replace("_", " ")
-        debug(tax_name)
+        # debug(tax_name)
         if tax_name not in self.otu_rank.keys():
             # debug("tax_name to rank")
             try:
@@ -926,7 +909,6 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
             otu_id = taxon.label
             #TODO temp until I fix delete
             if otu_id in self.data.otu_dict:
-                debug(otu_id)
                 last_blast = self.data.otu_dict[otu_id]['^physcraper:last_blasted']
                 today = str(datetime.date.today()).replace("-", "/")
                 if abs((datetime.datetime.strptime(today, "%Y/%m/%d") - datetime.datetime.strptime(last_blast, "%Y/%m/%d")).days) > 14: #TODO make configurable
@@ -1012,15 +994,9 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
         assert os.path.exists(self.blast_subdir)
         if self.config.blast_loc == 'local' and len(self.gi_list_mrca) == 0: #because local db doens't have taxon info, needed to limit to group of interest
             self.gi_list_mrca = self.get_all_gi_mrca()
-            # debug("ignore mrca gi for now")
         for taxon in self.data.aln:
-            # debug("add blast seq to new seqs")
-            # debug(taxon.label)
-            # blast_taxon = 'otu{}'.format(taxon.label)
+            debug("add blast seq to new seqs")
             xml_fi = "{}/{}.xml".format(self.blast_subdir, taxon.label)
-            # xml_fi = "{}/{}.xml".format(self.blast_subdir, blast_taxon)
-
-            debug(xml_fi)
             if os.path.isfile(xml_fi):
                 result_handle = open(xml_fi)
                 try:
@@ -1193,9 +1169,9 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
                         continue
                     return seq_dict
             else: # if seq is longer and identical
-                # debug("else")
+                debug("else")
                 if new_seq.find(inc_seq) != -1:
-                    # debug("seq longer")
+                    debug("seq longer")
                     if self.data.otu_dict[tax_lab].get('^physcraper:status') == "original":
                         sys.stdout.write("seq {} is supersequence of original seq {}, both kept in alignment\n".format(label, tax_lab))
 
@@ -1259,7 +1235,6 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
         the longer of two that are other wise identical, and puts them in a dict
         with new name as gi_ott_id.
         Does not test if they are identical to ones in the original alignment...."""
- 
         debug("remove identical seqs")
         tmp_dict = dict((taxon.label, self.data.aln[taxon].symbols_as_string()) for taxon in self.data.aln)
         old_seqs = tmp_dict.keys()
@@ -1267,9 +1242,6 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
         avg_seqlen = sum(self.data.orig_seqlen)/len(self.data.orig_seqlen) #HMMMMMMMM
         assert self.config.seq_len_perc <= 1
         seq_len_cutoff = avg_seqlen*self.config.seq_len_perc
-        print(self.config.seq_len_perc)
-        print("seq cutoff")
-        print(seq_len_cutoff)
         for gi, seq in self.new_seqs.items():
 
             if self.blacklist != None and gi in self.blacklist:
@@ -1289,15 +1261,9 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
             except KeyError:
                 pass
         self.new_seqs_otu_id = tmp_dict # renamed new seq to their otu_ids from GI's, but all info is in self.otu_dict
-        debug("len new seqs dict after remove identical")
-        debug(len(self.new_seqs_otu_id))
-        # debug(self.new_seqs)
-        # debug(some)
-
         with open(self.logfile, "a") as log:
             log.write("{} new sequences added from genbank after removing identical seq, of {} before filtering\n".format(len(self.new_seqs_otu_id), len(self.new_seqs)))
         self.data.dump()
-
 
 
     def dump(self, filename = None):
@@ -1503,7 +1469,7 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
             self.remove_blacklistitem()
 
         if len(self.new_seqs) > 0:
-            # self.remove_identical_seqs()
+            self.remove_identical_seqs()
             self.data.write_files() #should happen before aligning in case of pruning
             if len(self.new_seqs_otu_id) > 0:#TODO rename to something more intutitive
                 self.write_query_seqs()
@@ -1597,8 +1563,6 @@ class FilterBlast(PhyscraperScrape):
         # Note: has test, test_sp_d.py, runs
         self.downtorank = downtorank
         debug("make sp_dict")
-        # debug(self.data.otu_dict)
-        # debug(some)
         self.sp_d = {}
         for key in self.data.otu_dict:
             # debug(key)
@@ -1678,7 +1642,7 @@ class FilterBlast(PhyscraperScrape):
         for key in self.sp_d:
             #loop to populate dict. key1 = sp name, key2= gi number, value = seq,
             #number of items in key2 will be filtered according to threshold and already present seq
-            # debug(key)
+            debug(key)
             seq_d = {}
             tres_minimizer = 0
             for gi_id in self.sp_d[key]:
@@ -2080,8 +2044,6 @@ class FilterBlast(PhyscraperScrape):
         according to threshold into the filterdseq_dict
         """
         debug("how_many_sp_to_keep")
-        debug("length of sp_d")
-        debug(len(self.sp_d))
         for taxon_id in self.sp_d:
             if len(self.sp_d[taxon_id]) <= treshold:
                 ## add all stuff to self.filtered_seq[gi_n],
@@ -2091,8 +2053,10 @@ class FilterBlast(PhyscraperScrape):
             elif len(self.sp_d[taxon_id]) > treshold:
                 debug("filter number of sequences")
                 # debug(self.sp_seq_d[taxon_id].keys())
-                debug(taxon_id)
+
                 count_dict = self.count_num_seq(taxon_id)
+
+
                 if taxon_id in self.sp_seq_d.keys():
                     seq_present = count_dict["seq_present"]
                     query_count = count_dict["query_count"]
@@ -2129,9 +2093,7 @@ class FilterBlast(PhyscraperScrape):
                             debug("completely new taxon to blast")
                             #species is completely new in alignment, \
                             #make blast with random species
-                            # debug(count_dict)
-                            # debug(taxon_id)
-                            # debug(self.sp_seq_d)
+                            # debug(self.sp_seq_d[taxon_id])
                             for item in self.sp_d[taxon_id]:
                                 if '^ncbi:gi' in item:
                                     self.data.add_otu(item['^ncbi:gi'], self.ids)
@@ -2145,7 +2107,7 @@ class FilterBlast(PhyscraperScrape):
                             seq = self.sp_seq_d[taxon_id][blast_seq]
                             self.write_blast_files(str_db, seq) #blast qguy
                             debug("blast db new")
-                            # debug(blast_db)
+                            debug(blast_db)
                             for blast_key in blast_db:
                                 seq = self.sp_seq_d[taxon_id][blast_key]
                                 self.write_blast_files(blast_key, seq, db=True, fn=str_db) #local db
@@ -2164,7 +2126,6 @@ class FilterBlast(PhyscraperScrape):
         """write local blast files which will be read by run_local_blast
         """
         debug("writing files")
-        debug(user_name)
         if not os.path.exists("{}/blast".format(self.data.workdir)):
             os.makedirs("{}/blast/".format(self.data.workdir))
         if db:
@@ -2366,590 +2327,3 @@ class Settings(object):
         self.id_to_spn_addseq_json = id_to_spn_addseq_json
         self.configfi = configfi
         self.blacklist = blacklist
-
-
-class Concat():
-    """combine several physcraper runs of the same lineage with
-     different genes into one final concatenated aln and tre"""
-    def __init__(self, workdir_comb):
-        # super(PhyscraperScrape, self).__init__()
-        self.workdir = workdir_comb
-        # self.gene_comb = {}
-        self.sp_gi_comb = {}
-        self.single_runs = {}
-        self.sp_counter = {}
-        if not os.path.exists(self.workdir):
-            os.makedirs(self.workdir)
-        self.comb_seq = {}
-        self.comb_gi = {}
-        self.aln_all = {}
-        self.aln_all_len = {}
-        self.num_of_genes = 0
-        self.genes_present = []
-
-
-    def load_single_genes(self, workdir, pickle_fn, genename):
-        """load Physcraper class objects and make a single dict 
-        """
-        debug("load_single_genes: {}".format(genename))
-        # debug("{}/{}".format(workdir, pickle_fn))  
-        scrape = pickle.load(open("{}/{}".format(workdir, pickle_fn),'rb'))
-        
-
-        treed_taxa = set()
-        debug(scrape.data.aln.taxon_namespace)
-        debug(scrape.data.tre.taxon_namespace)
-        for leaf in scrape.data.tre.leaf_nodes():
-            treed_taxa.add(leaf.taxon)
-        debug(treed_taxa)
-        
-
-        aln_ids = set()
-        for tax in scrape.data.aln:
-            aln_ids.add(tax.label)
-        assert aln_ids.issubset(scrape.data.otu_dict.keys())
-
-        treed_taxa = set()
-        for leaf in scrape.data.tre.leaf_nodes():
-            treed_taxa.add(leaf.taxon)
-        debug(treed_taxa)
-        
-        for leaf in scrape.data.tre.leaf_nodes():
-            if leaf.taxon not in aln_ids:
-                debug("leaf.taxon not present in aln_ids")
-                debug(leaf.taxon)
-                scrape.data.tre.prune_taxa([leaf])
-                scrape.data.tre.prune_taxa_with_labels([leaf.taxon])
-                scrape.data.tre.prune_taxa_with_labels([leaf])
-                treed_taxa.remove(leaf.taxon)
-        assert treed_taxa.issubset(aln_ids)
-
-            # for leaf in self.single_runs[gene].data.tre.leaf_nodes():
-            #         treed_taxa.add(leaf.taxon)
-            #     print(treed_taxa)
-
-        
-     
-        debug(treed_taxa)
-        self.single_runs[genename] = deepcopy(scrape)
-
-####################################################################3
-        self.single_runs[genename] = scrape
-        
-# ##############################################################
-#         aln_ids = set()
-#         for tax in self.single_runs[genename].data.aln:
-#             aln_ids.add(tax.label)
-
-#         # debug(len(self.otu_dict.keys()))
-#         # debug(len(aln_ids))
-#         # debug([item for item in self.otu_dict.keys() if item not in aln_ids])
-#         # debug([item for item in aln_ids if item not in self.otu_dict.keys()])
-
-#         assert aln_ids.issubset(self.single_runs[genename].data.otu_dict.keys())
-
-#         treed_taxa = set()
-#         for leaf in self.single_runs[genename].data.tre.leaf_nodes():
-#             treed_taxa.add(leaf.taxon)
-#         debug(treed_taxa)
-        
-#         for leaf in self.single_runs[genename].data.tre.leaf_nodes():
-#             if leaf.taxon not in aln_ids:
-#                 self.single_runs[genename].data.tre.prune_taxa([leaf])
-#                 self.single_runs[genename].data.tre.prune_taxa_with_labels([leaf.taxon])
-#                 self.single_runs[genename].data.tre.prune_taxa_with_labels([leaf])
-#                 treed_taxa.remove(leaf.taxon)
-#         assert treed_taxa.issubset(aln_ids)
-
-#             # for leaf in self.single_runs[gene].data.tre.leaf_nodes():
-#             #         treed_taxa.add(leaf.taxon)
-#             #     print(treed_taxa)
-
-        
-#         treed_taxa = set()
-#         for leaf in self.single_runs[genename].data.tre.leaf_nodes():
-#             treed_taxa.add(leaf.taxon)
-#         debug(treed_taxa)
-        return 
-   
-    def make_concat_id_dict(self, concat_id):
-        """make a concat_id entry with all information
-        """
-        if concat_id not in self.sp_gi_comb[data['^ot:ottTaxonName']][genename]:
-            concat_id = {"gi_id": data['^ncbi:gi'], "seq": seq, "spn": data['^ot:ottTaxonName'] }
-
-    def combine(self, genelist):
-        """combine several Physcraper objects to make a concatenated run
-        """
-        # debug(some)   
-
-
-
-        for gene in self.single_runs:
-            debug(gene)
-            treed_taxa = set()
-            for leaf in self.single_runs[gene].data.tre.leaf_nodes():
-                treed_taxa.add(leaf.taxon)
-            debug(treed_taxa)
-
-        # debug(some)
-        
-
-        #TODO: [data][spn] needs to be changes to unique id
-        debug("combine")
-        self.num_of_genes = len(self.single_runs)
-        concat_id = 1
-        for genename in self.single_runs:
-            self.genes_present.append(genename)
-            # debug(genename)
-            for otu in self.single_runs[genename].data.aln.taxon_namespace:
-                data = self.single_runs[genename].data.otu_dict[otu.label]
-                concat_id += 1
-                seq = str(self.single_runs[genename].data.aln[otu])
-                if data['^ot:ottTaxonName'] not in self.sp_gi_comb:
-                    if '^ncbi:gi' in data:
-                        self.sp_gi_comb[data['^ot:ottTaxonName']] = {genename: 
-                                                                    {concat_id: {"gi_id": data['^ncbi:gi'], "seq": seq, "spn": data['^ot:ottTaxonName'] }}}
-                    else:
-                        self.sp_gi_comb[data['^ot:ottTaxonName']] = {genename: {concat_id: {"gi_id": data[u'^user:TaxonName'], "seq": seq, "spn": data['^ot:ottTaxonName'] }}}
-                else:   
-                    if genename not in self.sp_gi_comb[data['^ot:ottTaxonName']]:
-                        if '^ncbi:gi' in data:
-                            self.sp_gi_comb[data['^ot:ottTaxonName']][genename] = {concat_id: 
-                                                                    {"gi_id": data['^ncbi:gi'], "seq":seq, "spn": data['^ot:ottTaxonName'] }}
-                        else:
-                            self.sp_gi_comb[data['^ot:ottTaxonName']][genename] = {concat_id: 
-                                                                    {"gi_id": data[u'^user:TaxonName'], "seq": seq, "spn": data['^ot:ottTaxonName'] }}
-                    else: ## seems like i don't need it?
-                        if '^ncbi:gi' in data:
-                            self.sp_gi_comb[data['^ot:ottTaxonName']][genename][data['^ncbi:gi']] = {concat_id: 
-                                                                    {"seq": seq, "spn": data['^ot:ottTaxonName']}}
-                        else:
-                            self.sp_gi_comb[data['^ot:ottTaxonName']][genename][data[u'^user:TaxonName']] = {concat_id: 
-                                                                    {"seq": seq, "spn": data['^ot:ottTaxonName']}}
-                concat_id += 1
-        debug(self.sp_gi_comb)
-        # debug(some)
-        return
-
-    def make_sp_gi_comb(self):
-        debug("do somthing")
-
-
-
-
-    def remove_aln_tre_leaf(self):
-        """attempt to remove all occurences in aln and tre of otu!!
-        """
-
-    def sp_seq_counter(self):
-        """counts how many seq per sp and gene there are
-        """
-        debug("sp_seq_counter")
-        for spn in self.sp_gi_comb:
-            # debug("for spn in")
-            # debug(self.sp_gi_comb[spn])
-            tmp_gene = deepcopy(self.genes_present)
-            # debug(tmp_gene)
-            # debug(self.genes_present)
-            for gene in self.sp_gi_comb[spn]:
-                # debug("for gene in")
-                # debug(gene)
-                # debug(tmp_gene)
-                tmp_gene.remove(gene)
-                spn_new = spn.replace(" ", "_")
-                if spn_new in self.sp_counter:
-                    self.sp_counter[spn_new][gene] = len(self.sp_gi_comb[spn][gene])
-                else:
-                    self.sp_counter[spn_new] = {gene: len(self.sp_gi_comb[spn][gene])}
-            for item in tmp_gene:
-                if spn_new in self.sp_counter:
-                    self.sp_counter[spn_new][item] = 0
-                else:
-                    self.sp_counter[spn_new] = {item: 0}
-        print(self.sp_counter)
-        # debug(some)
-        # return
-
-    def sp_to_keep(self):
-        """uses the sp_counter to make a list of sp that should be kept in concatenated alignment,
-        because thez are the only representative of the sp"""
-        
-        debug("sp to keep")
-        keep_sp = False
-        sp_to_keep = {}
-        # debug(self.sp_counter)
-        
-        for spn in self.sp_counter:
-            seq_counter = True
-
-            # if len(self.sp_counter[spn]) <= 1:
-            #     debug("sp has only a single gene present")
-            #     print("do I really want it in the aln???")
-            #     seq_counter = False
-            not_present = 0
-            for gene in self.sp_counter[spn]:
-                if self.sp_counter[spn][gene] == 0:
-                    # debug("sp has not all genes present")
-                    seq_counter = False
-                    not_present +=1
-            # else:
-            #     debug("sp has that particular gene")
-            # elif len(self.sp_counter[spn]) <= self.num_of_genes - 1:
-
-
-
-            if seq_counter == False:
-                sp_to_keep[spn] = not_present
-        # debug(sp_to_keep)
-        return sp_to_keep
-
-    def add_to_del_gi(self, del_gi, gene, spn, random_gen):
-        """add gi number to del_gi,
-        del_gi is used to remove gi's from tmp_dict, so that they will
-        not be added to the concat dict twice.
-        """
-        spn_ = spn.replace(" ", "_")
-        if gene in del_gi.keys():
-            if spn_ not in del_gi[gene].keys():
-                del_gi[gene][spn] = random_gen
-            else:
-                del_gi[gene][spn_new.format("_", " ")] = random_gen
-        else:
-            del_gi[gene] = {spn: random_gen}
-        return del_gi
-
-
-
-
-    def rewrite_otu_to_spn(self, gene, count, random_gen):
-        """ function rewrites the otu_labels to the spn names
-        """
-
-        #TODO: don"t change the name in the single runs tree, but in a self.tre_to_place
-        debug("rewrite_otu_to_spn")
-        debug(random_gen)
-        treed_taxa = set()
-        print(self.single_runs[gene].data.tre)
-        for leaf in self.single_runs[gene].data.tre.leaf_nodes():
-            treed_taxa.add(leaf.taxon)
-        print(treed_taxa)
-
-
-        debug("again!!!!!")
-        debug(gene)
-        treed_taxa = set()
-        for leaf in self.single_runs[gene].data.tre.leaf_nodes():
-            treed_taxa.add(leaf.taxon)
-        debug(treed_taxa)
-
-
-
-        for otu in self.single_runs[gene].data.tre.taxon_namespace:
-            print(gene)
-            print(otu)
-            print(otu.label)
-            
-            print(self.single_runs[gene].data.otu_dict.keys())
-            data = self.single_runs[gene].data.otu_dict[otu.label.replace(" ", "_")]
-            if '^ncbi:gi' in data:
-                gi_id = data['^ncbi:gi']
-            else:
-                gi_id = data[u'^user:TaxonName']
-            spn = data['^ot:ottTaxonName']
-            debug("spn")
-            debug(spn)
-            if gi_id == random_gen:
-                while spn in self.single_runs[gene].data.tre.taxon_namespace:
-                    spn ="{}_{}".format(spn, count+1)
-                otu.label = spn
-
-
-    def select_rnd_seq(self, spn, gene, del_gi, count):
-        """select random seq from spn and gene to combine it
-        with a random other one from another gene, but same spn
-        """
-        debug("select_rnd_seq")
-        random_gen = random.choice(list(self.tmp_dict[spn][gene]))
-        # print("random_gen")
-        # print(random_gen)
-
-        seq = str(self.tmp_dict[spn][gene][random_gen])
-        # print(comb_seq.keys())
-        spn_ = spn.replace(" ", "_")
-        if gene in self.comb_seq.keys():
-            # print(spn_, gene)
-            # print(self.comb_seq[gene].keys())
-            if spn_ not in self.comb_seq[gene].keys():
-                # print("in if")
-                self.rewrite_otu_to_spn(gene, count, random_gen)
-                self.comb_seq[gene][spn_] = seq
-                if gene in self.comb_gi:
-                    self.comb_gi[gene][spn_] = random_gen
-                else:
-                    self.comb_gi[gene] ={spn_: random_gen}
-                    del_gi = self.add_to_del_gi(del_gi, gene, spn, random_gen)
-                # if gene in del_gi.keys():
-                #     if spn_ not in del_gi[gene].keys():
-                #         del_gi[gene][spn] = random_gen
-                #     else:
-                #         del_gi[gene][spn_new.format("_", " ")] = random_gen
-                # else:
-                #     del_gi[gene] = {spn: random_gen}
-            else:
-                # print("in else")
-                self.rewrite_otu_to_spn(gene, count, random_gen)
-                spn_new ="{}_{}".format(spn_, count)
-                while spn_new in self.comb_seq[gene].keys():
-                    spn_new ="{}_{}".format(spn_, count+1)
-                
-                self.comb_seq[gene][spn_new] = seq
-                self.comb_gi[gene][spn_new] = random_gen
-
-                del_gi = self.add_to_del_gi(del_gi, gene, spn, random_gen)
-        else:
-            self.comb_seq[gene] = {spn_: seq}
-            self.comb_gi[gene] = {spn_: random_gen}
-            del_gi = self.add_to_del_gi(del_gi, gene, spn, random_gen)
-        # for spn, gi_id in self.sp_gi_comb.items():
-        #     if random_gen == gi_id:
-
-        #         for otu in concat.single_runs[gene].data.tre.taxon_namespace:
-        #             data = concat.single_runs[gene_max].data.otu_dict[otu.label]
-        #             if '^ncbi:gi' in data:
-        #                 gi_orig = [data['^ncbi:gi']] 
-        #             else:
-        #                 gi_orig = [data[u'^user:TaxonName']]
-        #             if gi_orig == random_gen:
-        #                 otu.label = spn
-
-        return del_gi
-
-    def make_empty_seq(self, spn, gene):
-        """when there is no seq for one of the genes, 
-        make an empty seq. Dendropy needs same taxon_namespace and number otu's for concatenation
-        """
-        debug("make_empty_seq")
-        for tax, seq in self.single_runs[gene].data.aln.items():
-            len_gene_aln = len(seq)
-            break
-        empty_seq = "?"*len_gene_aln
-        if gene in self.comb_seq:
-            self.comb_seq[gene][spn.replace(" ", "_")] = empty_seq
-        else:
-            self.comb_seq[gene] = {spn.replace(" ", "_"): empty_seq}
-
-
-    def rm_empty_spn_entries(self, del_gi):
-        """removes keys from tmp dict, if the key/sp has no value anymore
-        """
-        # debug("rm_empty_spn_entries")
-        del_list = []
-        # debug(del_gi)
-        for spn2 in self.tmp_dict:
-            # print(spn2)
-            for gene2 in self.tmp_dict[spn2]:
-                # print(gene2)
-                # print()
-                # for key in comb_gi[gene][spn]:
-                #     # print(key)
-                #     # print(self.tmp_dict[spn][gene])
-                spn2_ = spn2.replace(" ","_")
-                
-                if gene2 in del_gi:
-                    # print(del_gi[gene2])
-                    if spn2 in del_gi[gene2]:
-                        key = del_gi[gene2][spn2]
-                        # print(key)
-                        if key in self.tmp_dict[spn2][gene2]:
-                            # print("del")
-                            del self.tmp_dict[spn2][gene2][key]
-                            del_list.append(spn2)
-        del_list = set(del_list)
-        for sp_to_del in del_list:
-            del self.tmp_dict[sp_to_del] 
-
-
-
-    def make_sp_gene_dict(self, sp_to_keep):
-        """is the build around to make the dicts, that are used to make it into a dendropy aln
-        """
-        debug("make_sp_gene_dict")
-        count = 2
-        self.tmp_dict = self.sp_gi_comb
-
-        while len(self.tmp_dict.keys()) >= 1:
-            del_gi = {}
-            for spn in self.tmp_dict.keys():
-                sp_to_keep_list = sp_to_keep.keys()
-                if spn.replace(" ", "_") in sp_to_keep_list:
-                    tmp_gene = deepcopy(self.genes_present)
-                    for gene in self.tmp_dict[spn]:
-                        tmp_gene.remove(gene)
-                        del_gi = self.select_rnd_seq(spn, gene, del_gi, count)
-                    for item in tmp_gene: 
-                        self.make_empty_seq(spn, item)
-                    self.rm_empty_spn_entries(del_gi) 
-                else:
-                    for gene in self.tmp_dict[spn]:
-                        del_gi = self.select_rnd_seq(spn, gene, del_gi, count)
-                self.rm_empty_spn_entries(del_gi)      
-            
-
-    def make_alns_dict(self):
-        """make dendropy aln out of dicts for all genes
-        """
-        debug("make_alns_dict")
-        count = 1
-        firstelement = False
-        count=0
-        for gene in self.comb_seq.keys():
-            if count == 0:
-                len1 = len(self.comb_seq[gene].keys())
-                item_of_gene1 = self.comb_seq[gene].keys()
-                item_of_gene2 = list()
-                len2 = len1
-                count = 1
-            else:
-                len2 = len(self.comb_seq[gene].keys())
-                item_of_gene2 = self.comb_seq[gene].keys()
-            # debug([item for item in item_of_gene1 if item not in item_of_gene2])
-            # debug([item for item in item_of_gene2 if item not in item_of_gene1])
-            assert len1 == len2
-        for gene in self.comb_seq.keys():
-            if firstelement == False:
-                aln1 = DnaCharacterMatrix.from_dict(self.comb_seq[gene])
-                firstelement = True
-                self.aln_all[count] = aln1
-                aln1.write(path="{}/aln_0.fas".format(self.workdir),
-                    schema="fasta")
-            else:
-                aln = DnaCharacterMatrix.from_dict(self.comb_seq[gene], taxon_namespace = aln1.taxon_namespace )
-                self.aln_all[count] = aln
-                aln.write(path="{}/aln_{}.fas".format(self.workdir, count),
-                    schema="fasta")
-            count +=1
-
-
-    def concatenate_alns(self):
-        """concatenate all alns into one aln
-        """
-        aln1_taxlist =[]
-        aln2_taxlist = []
-        count = 0
-        for gene in self.aln_all:
-            debug(gene)
-            if count == 0:
-                aln1 = self.aln_all[gene]
-                for tax, seq in aln1.items():
-                    self.aln_all_len[gene] = len(seq)
-                    break
-                self.write_partition(gene, count)
-                count = 1
-            else:
-                aln2 = self.aln_all[gene]
-                for tax, seq in aln2.items():
-                    self.aln_all_len[gene] = len(seq)
-                self.write_partition(gene, count)
-                
-                assert aln1.taxon_namespace == aln2.taxon_namespace
-                aln1 = DnaCharacterMatrix.concatenate([aln1, aln2])
-        aln1.write(path="{}/concat.fas".format(self.workdir), schema="fasta")
-        self.concatenated_aln = aln1
-
-    def get_short_seq_from_concat(self):
-        seq_len = {}
-        num_tax = 0
-        for tax, seq in self.concatenated_aln.items():
-            seq = seq.symbols_as_string().replace("-","").replace("?","")
-            seq_len[tax] = len(seq)
-            num_tax +=1
-
-        for tax, seq in self.concatenated_aln.items():
-            total_len = len(seq)
-            break
-
-        min_len = (total_len*0.37)
-
-        # print(total_len, min_len)
-        # print(seq_len)
-
-        prune_shortest = []
-        for tax, len_seq in seq_len.items():
-            if len_seq < min_len:
-                prune_shortest.append(tax)
-        self.short_concat_seq = prune_shortest
-
-    def get_largest_tre(self):
-        first = True
-        len_all_taxa = {}
-        for gene in self.single_runs:
-            len_aln_taxa = len(self.single_runs[gene].data.aln.taxon_namespace)
-            len_all_taxa[gene] = len_aln_taxa
-
-        for gene, len_item in len_all_taxa.items():
-            if first:
-                len_max = len_item
-                gene_max = gene
-                first = False
-            if len_item > len_max:
-                len_max = len_item
-                gene_max = gene
-        self.tre_as_start = self.single_runs[gene_max].data.tre
-
-
-    def dump(self, filename="concat_checkpoint.p"):
-        """ save a concat run as pickle
-        """
-        pickle.dump(self, open("{}/{}".format(self.workdir, filename), "wb"))
-
-    def write_partition(self, gene, count):
-        """write the partitioning file for RAxML
-        """
-        if count == 0:
-            partition = open("{}/partition".format(self.workdir), "w")
-            partition.close()
-            with open("{}/partition".format(self.workdir), "a") as partition:
-                partition.write("DNA, {} = 1-{}\n".format(gene, self.aln_all_len[gene]))
-            # print("len of 1. gnee")
-            # print(self.aln_all_len[gene])
-            self.part_len = self.aln_all_len[gene]
-        else:
-            start = self.part_len + 1
-            # print(self.part_len, gene)
-            # print(self.aln_all_len.keys())
-            end = self.part_len + self.aln_all_len[gene]
-            self.part_len = self.part_len + self.aln_all_len[gene]
-            with open("{}/partition".format(self.workdir), "a") as partition:
-                partition.write("DNA, {} = {}-{}\n".format(gene, start, end))
-
-       
-
-    def place_new_seqs(self):
-        """places the new seqs onto one of the single run trees
-        """
-        subprocess.call(["raxmlHPC", "-m", "GTRCAT",
-                                  "-f", "v", "-q", "partition",
-                                  "-s", "concat_red.fasta",
-                                  "-t", "starting.tre",
-                                  "-n", "PLACE"])
-        placetre = Tree.get(path="{}/starting.tre".format(self.workdir),
-                                schema="newick",
-                                preserve_underscores=True)
-
-         
-        placetre.resolve_polytomies()
-        placetre.write(path="{}/place_resolve.tre".format(self.workdir), schema="newick", unquoted_underscores=True)
-        self._query_seqs_placed = 1
-
-
-    def est_full_tree(self):
-        """Full raxml run from the placement tree as starting tree"""
-        subprocess.call(["raxmlHPC", "-m", "GTRCAT",
-                              "-s", "{}/concat_red.fasta".format(self.workdir),
-                              "-t", "{}/place_resolve.tre".format(self.workdir),
-                              "-p", "1",  "-q", "{}/partition".format(self.workdir),
-                              "-n", "concat"])
-
-
-       

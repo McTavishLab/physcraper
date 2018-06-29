@@ -7,7 +7,7 @@ import json
 import csv
 from ete2 import NCBITaxa
 from physcraper import generate_ATT_from_phylesystem, generate_ATT_from_files, ConfigObj, Settings, IdDicts, PhyscraperScrape 
-from physcraper import FilterBlast, debug, Concat
+from physcraper import FilterBlast, debug #, Concat
 from dendropy import DnaCharacterMatrix
 
 
@@ -187,32 +187,16 @@ def own_data_run(seqaln,
         scraper.generate_streamed_alignment()
     return 1 # what means the 1?
 
-def concat(genelistdict, workdir_comb, user_concat=None):
-    """genelistdict is a dict with gene names as key and the corresponding workdir
-    """
+def concat(genelist, workdir_comb, user_concat = None):
     if os.path.isfile("{}/concat_checkpoint.p".format(workdir_comb)): 
         sys.stdout.write("Reloading from pickled file: concat\n")
         concat = pickle.load(open("{}/concat_checkpoint.p".format(workdir_comb),'rb'))
     else:   
         concat = Concat(workdir_comb)
-        
-        # print(genelistdict)
-        for item in genelistdict.keys():
-            # print(item)
-            # print(genelistdict[item]["workdir"])
-            concat.load_single_genes(genelistdict[item]["workdir"], genelistdict[item]["pickle"], item)
-            # print("concat.single_runs")
-            # print(concat.single_runs)
+        concat.dump()
+    comb = concat.combine(genelist)
 
-        concat.combine(genelistdict)
-        concat.sp_seq_counter()
-        sp_to_keep = concat.sp_to_keep()
-        concat.make_sp_gene_dict(sp_to_keep)
-        concat.make_alns_dict()
-        concat.concatenate_alns()
-        concat.get_short_seq_from_concat()
-        concat.get_largest_tre()
-        
+
 
 def filter_data_run(seqaln,
                  mattype,
@@ -289,7 +273,6 @@ def filter_data_run(seqaln,
         ids = IdDicts(conf, workdir=workdir)
         # ids.dump()
 
-
         # if os.path.isfile("{}/scrape_checkpoint.p".format(workdir)): 
         #     sys.stdout.write("Reloading from pickled scrapefile: scrape\n")
         #     scraper = pickle.load(open("{}/scrape_checkpoint.p".format(workdir),'rb'))
@@ -338,16 +321,10 @@ def filter_data_run(seqaln,
             filteredScrape.make_sp_seq_dict(treshold=treshold, selectby=selectby)
             filteredScrape.how_many_sp_to_keep(treshold=treshold, selectby=selectby)
             filteredScrape.replace_new_seq()
-        filteredScrape.data.reconcile(seq_len_perc=0.75)
         filteredScrape.generate_streamed_alignment()
         filteredScrape.dump()
         filteredScrape.write_otu_info(downtorank)
 
-
-
-
-
-        return filteredScrape
         #debug_count+=1
         #filteredScrape.dump('{}/round{}.p'.format(workdir, debug_count))
 
@@ -360,8 +337,6 @@ def filter_data_run(seqaln,
 def make_settings_class(seqaln, mattype, trfn, schema_trf, workdir, 
                         treshold=None, selectby=None, downtorank=None, spInfoDict=None, add_local_seq=None, 
                         id_to_spn_addseq_json=None, configfi=None, blacklist=None):
-    """all the settings are set here and can then be fed to the FilterClass
-    """
     settings = Settings(seqaln=seqaln, mattype=mattype, trfn=trfn, schema_trf=schema_trf, workdir=workdir, 
                         treshold=treshold, selectby=selectby, downtorank=downtorank, spInfoDict=spInfoDict, 
                         add_local_seq=add_local_seq, id_to_spn_addseq_json=id_to_spn_addseq_json, configfi=configfi, blacklist=blacklist)
