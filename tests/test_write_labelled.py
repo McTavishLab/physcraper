@@ -1,9 +1,7 @@
 import os
 import sys
-import json
 import pickle
 import filecmp
-from physcraper import FilterBlast, wrappers, ConfigObj, generate_ATT_from_files, IdDicts
 
 # tests if I can write proper labelled files
 
