@@ -1,8 +1,7 @@
-import sys
 import os
 import json
 import pickle
-from physcraper import OtuJsonDict, generate_ATT_from_files, AlignTreeTax, ConfigObj, IdDicts, PhyscraperScrape, FilterBlast
+from physcraper import OtuJsonDict, generate_ATT_from_files, ConfigObj, IdDicts, PhyscraperScrape
 #
 
 
@@ -47,4 +46,5 @@ scraper.read_blast(blast_dir="tests/data/precooked/fixed/tte_blast_files")
 scraper.remove_identical_seqs()
 
 pickle.dump(ids.gi_ncbi_dict, open("tests/data/precooked/tiny_gi_map.p", "wb" ))
+pickle.dump(filteredScrape.gi_list_mrca, open("tests/data/precooked/gi_list_mrca.p", "wb"))
 
