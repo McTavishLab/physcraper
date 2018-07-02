@@ -30,36 +30,25 @@ except:
 scraper =  PhyscraperScrape(data_obj, ids)
 scraper._blasted = 1
 blast_dir = "tests/data/precooked/fixed/tte_blast_files"
+filteredScrape.gi_list_mrca = pickle.load(open("tests/data/precooked/gi_list_mrca.p", 'rb'))
 scraper.read_blast(blast_dir=blast_dir)
 
 a = len(scraper.new_seqs) == 40
 b = len(scraper.data.aln) == 5
-print(len(scraper.data.aln))
 c =  len(scraper.new_seqs_otu_id) == 0
-print(len(scraper.new_seqs_otu_id))
 
 scraper.remove_identical_seqs()
 
 d = len(scraper.new_seqs) == 40
 e = len(scraper.data.aln) == 5
 f = len(scraper.new_seqs_otu_id) == 38
-print(len(scraper.new_seqs))
-print(len(scraper.data.aln))
-print(len(scraper.new_seqs_otu_id))
-
 g = 1
 for taxon in scraper.data.tre.taxon_namespace:
     h = taxon.label in scraper.data.otu_dict
-    print(h)
-    print(g)
     g = g*h
-    print(g)
     status =  scraper.data.otu_dict[taxon.label].get(u'^physcraper:status')
-    print(status)
     i = status in ('original', 'query')
-    print(i)
     g = g*i
-    print(g)
 
 #Second test checks that seq len prec is affecting results
 data_obj = pickle.load(open("tests/data/precooked/tiny_dataobj.p", 'rb')) #reload bc data object is mutable
@@ -76,11 +65,6 @@ l = len(scraper2.new_seqs_otu_id) == 0
 scraper2.remove_identical_seqs()
 
 m = len(scraper2.new_seqs_otu_id) == 36
-print(len(scraper2.new_seqs_otu_id))
-# print(scraper2.new_seqs)
-for seq in scraper2.new_seqs:
-  print(seq)
-  print(len(scraper2.new_seqs[seq]))
 count = 0
 if a*b*c*d*e*f*g*h*i*j*k*l*m:
     sys.stdout.write("\n\nTest `remove_identical_seqs' passed\n\n")
