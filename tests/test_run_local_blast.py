@@ -20,13 +20,17 @@ try:
 except:
     sys.stdout.write("\n\nTest FAILED\n\n")
     sys.exit()
+
+
 filteredScrape =  FilterBlast(data_obj, ids)
 
 blast_db = "otuSlagascanus"
 blast_seq = "otuSlagascanus"
 
+
 if not os.path.exists("{}/blast".format(filteredScrape.data.workdir)):
     os.makedirs("{}/blast/".format(filteredScrape.data.workdir))
+
 path1 = './tests/data/precooked/fixed/select-blast/*'
 path2 = "{}/blast/".format(filteredScrape.data.workdir)
 cmd = 'cp -r ' + path1 + ' ' + path2
@@ -39,4 +43,4 @@ if os.path.exists(blast_out):
     open(blast_out)
     sys.stdout.write("\ntest passed\n")
 else:
-    sys.stderr.write("\ntest failed\n")
+    sys.stderr.write("\ntest failed -- need to add ncbi blalst tools to dependencies?\n")

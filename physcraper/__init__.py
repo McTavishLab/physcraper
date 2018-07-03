@@ -1712,6 +1712,7 @@ class FilterBlast(PhyscraperScrape):
 
     def run_local_blast(self, blast_seq, blast_db, output=None):
         """run local blast to select number of sequences to be kept
+        When several sequences are found per taxon, blasts each seq against all other ones found for that taxon.
         """
         # Note: has test, runs -> test_run_local_blast.py
         general_wd = os.getcwd()
@@ -1748,8 +1749,9 @@ class FilterBlast(PhyscraperScrape):
 
     def read_local_blast(self, seq_d, fn):
         """reads the files of the local blast run
-        and return sequenced below a threshold (0.003) and
-        which are within the std of the mean scores at the moment
+        and return sequences below a threshold and
+        which are within the std of the mean scores at the moment.
+        (this is to make sure seqs chosen are representative of the taxon)
         """
         # Note: has test, runs: test_read_local_blast.py
         general_wd = os.getcwd()
