@@ -44,6 +44,8 @@ import physcraper.AWSWWW as AWSWWW
 _DEBUG = 0
 _DEBUG_MK = 0
 
+_VERBOSE = 0
+
 def debug(msg):
     """short debugging command
     """
@@ -523,7 +525,8 @@ class AlignTreeTax(object):
                 break
         for taxon in self.aln:
             self.aln[taxon] = self.aln[taxon][start:stop]
-        sys.stdout.write("trimmed alignement ends to < {} missing taxa, start {}, stop {}\n".format(taxon_missingness, start, stop))
+        if _VERBOSE:
+            sys.stdout.write("trimmed alignement ends to < {} missing taxa, start {}, stop {}\n".format(taxon_missingness, start, stop))
         return
 
 
@@ -729,10 +732,12 @@ def get_mrca_ott(ott_ids):
     mrca_node = tree_of_life.mrca(ott_ids=synth_tree_ott_ids, wrap_response=False)# need to fix wrap eventually
     if u'nearest_taxon' in mrca_node.keys():
         tax_id = mrca_node[u'nearest_taxon'].get(u'ott_id')
-        sys.stdout.write('(v3) MRCA of sampled taxa is {}\n'.format(mrca_node[u'nearest_taxon'][u'name']))
+        if _VERBOSE:
+            sys.stdout.write('(v3) MRCA of sampled taxa is {}\n'.format(mrca_node[u'nearest_taxon'][u'name']))
     elif u'taxon' in mrca_node['mrca'].keys():
         tax_id = mrca_node['mrca'][u'taxon'][u'ott_id']
-        sys.stdout.write('(v3) MRCA of sampled taxa is {}\n'.format(mrca_node['mrca'][u'taxon'][u'name']))
+        if _VERBOSE:
+            sys.stdout.write('(v3) MRCA of sampled taxa is {}\n'.format(mrca_node['mrca'][u'taxon'][u'name']))
     else:
         print mrca_node.keys()
         sys.stderr.write('(v3) MRCA of sampled taxa not found. Please find and input and approppriate OTT id as ingroup mrca in generate_ATT_from_files')
@@ -920,7 +925,8 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
                     query = seq.symbols_as_string().replace("-", "").replace("?", "")
                     xml_fi = "{}/{}.xml".format(self.blast_subdir, taxon.label)
                     if not os.path.isfile(xml_fi):
-                        sys.stdout.write("blasting seq {}\n".format(taxon.label))
+                        if _VERBOSE:
+                            sys.stdout.write("blasting seq {}\n".format(taxon.label))
                         if self.config.blast_loc == 'local':
                             fi_old = open("{}/tmp.fas".format(self.blast_subdir), 'w')
                             fi_old.write(">{}\n".format(taxon.label))
@@ -985,10 +991,12 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
         debug("read blast")
         # debug(blast_dir)
         if blast_dir:
-            sys.stdout.write("blast dir is {}\n".format(blast_dir))
+            if _VERBOSE:
+                sys.stdout.write("blast dir is {}\n".format(blast_dir))
             self.blast_subdir = os.path.abspath(blast_dir)
         else:
-            sys.stdout.write("blast dir is {}\n".format(self.blast_subdir))
+            if _VERBOSE:
+                sys.stdout.write("blast dir is {}\n".format(self.blast_subdir))
             if not os.path.exists(self.blast_subdir):
                 os.mkdir(self.blast_subdir)
         if not self._blasted:
@@ -1002,7 +1010,8 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
             if os.path.isfile(xml_fi):
                 result_handle = open(xml_fi)
                 try:
-                    sys.stdout.write(".")
+                    if _VERBOSE:
+                        sys.stdout.write(".")
                     blast_records = NCBIXML.parse(result_handle)
                     for blast_record in blast_records:
                         for alignment in blast_record.alignments:
@@ -1154,7 +1163,8 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
                         # debug(x in added_taxon for x in exists)
 
                     # if spn_of_label not in exists: # if sp. concepts are different
-                        sys.stdout.write("seq {} is subsequence of {}, but different species concept\n".format(label, tax_lab))
+                        if _VERBOSE:
+                            sys.stdout.write("seq {} is subsequence of {}, but different species concept\n".format(label, tax_lab))
                         
                         self.data.otu_dict[label]['^physcraper:status'] = "new seq added; subsequence, but different species"
                         seq_dict[label] = seq
@@ -1163,7 +1173,8 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
                         continue_search = True
                         continue
                     else: #subseq of same sp.
-                        sys.stdout.write("seq {} is subsequence of {}, not added\n".format(label, tax_lab))
+                        if _VERBOSE:
+                            sys.stdout.write("seq {} is subsequence of {}, not added\n".format(label, tax_lab))
                         self.data.otu_dict[label]['^physcraper:status'] = "subsequence, not added"
                         if _DEBUG_MK == 1:
                             print(id_of_label, " not added, subseq of ", existing_id)
@@ -1175,7 +1186,8 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
                 if new_seq.find(inc_seq) != -1:
                     debug("seq longer")
                     if self.data.otu_dict[tax_lab].get('^physcraper:status') == "original":
-                        sys.stdout.write("seq {} is supersequence of original seq {}, both kept in alignment\n".format(label, tax_lab))
+                        if _VERBOSE:
+                            sys.stdout.write("seq {} is supersequence of original seq {}, both kept in alignment\n".format(label, tax_lab))
 
                         self.data.otu_dict[label]['^physcraper:status'] = "new seq added"
                         seq_dict[label] = seq
@@ -1186,7 +1198,8 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
                     elif type(existing_id) == int and existing_id != id_of_label:
 
                     # elif spn_of_label not in exists:
-                        sys.stdout.write("seq {} is supersequence of {}, but different species concept\n".format(label, tax_lab))
+                        if _VERBOSE:
+                            sys.stdout.write("seq {} is supersequence of {}, but different species concept\n".format(label, tax_lab))
                         self.data.otu_dict[label]['^physcraper:status'] = "new seq added; supersequence, but different species"
                         seq_dict[label] = seq
                         if _DEBUG_MK == 1:
@@ -1197,7 +1210,8 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
                         del seq_dict[tax_lab]
                         seq_dict[label] = seq
                         self.data.remove_taxa_aln_tre(tax_lab)
-                        sys.stdout.write("seq {} is supersequence of {}, {} added and {} removed\n".format(label, tax_lab, label, tax_lab))
+                        if _VERBOSE:
+                            sys.stdout.write("seq {} is supersequence of {}, {} added and {} removed\n".format(label, tax_lab, label, tax_lab))
                         self.data.otu_dict[label]['^physcraper:status'] = "new seq added in place of {}".format(tax_lab)
                         if _DEBUG_MK == 1:
                             print(id_of_label, "added, instead of ", existing_id)
@@ -1217,9 +1231,10 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
                     debug("label was never added to aln or tre")
                 self.data.otu_dict[label]['^physcraper:status'] = "removed in seq dict build"  # should not be deleted, as this is in self.seq_filter
                 return seq_dict
-        sys.stdout.write(".")
-        if i%50 == 0:
-            sys.stdout.write("\n")
+        if _VERBOSE:
+            sys.stdout.write(".")
+            if i%50 == 0:
+                sys.stdout.write("\n")
         seq_dict[label] = seq
         # try:
         #     debug("end of func")
@@ -1283,7 +1298,8 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
             self.read_blast()
         self.newseqs_file = "{}.fasta".format(self.date)
         fi = open("{}/{}".format(self.workdir, self.newseqs_file), 'w')
-        sys.stdout.write("writing out sequences\n")
+        if _VERBOSE:
+            sys.stdout.write("writing out sequences\n")
         for otu_id in self.new_seqs_otu_id.keys():
             if otu_id not in self.data.aln: #new seqs only
                 fi.write(">{}\n".format(otu_id))
@@ -1297,7 +1313,8 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
             self.write_query_seqs()
         for filename in glob.glob('{}/papara*'.format(self.workdir)):
             os.rename(filename, "{}/{}_tmp".format(self.workdir, filename.split("/")[1]))
-        sys.stdout.write("aligning query sequences \n")
+        if _VERBOSE:
+            sys.stdout.write("aligning query sequences \n")
         ## hack around stupid characters for phylogen. tools
         ### note: sometimes there are still sp in any of the aln/tre and I still have not found out why sometimes the label is needed
         for tax_lab in self.data.aln.taxon_namespace:
@@ -1330,7 +1347,8 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
                              "-s", "aln_ott.phy",
                              "-q", self.newseqs_file,
                              "-n", papara_runname]) #FIx directory ugliness
-            sys.stdout.write("Papara done")
+            if _VERBOSE:
+                sys.stdout.write("Papara done")
             # self.data.rewrite_files(inputfn="papara_alignment.extended")
         except OSError as e:
             if e.errno == os.errno.ENOENT:
@@ -1346,7 +1364,8 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
         self.data.aln = DnaCharacterMatrix.get(path="{}/papara_alignment.{}".format(self.workdir, papara_runname), schema="phylip")
         debug(self.data.aln.taxon_namespace)
         self.data.aln.taxon_namespace.is_mutable = True #Was too strict...
-        sys.stdout.write("Papara done")
+        if _VERBOSE:
+            sys.stdout.write("Papara done")
         lfd = "{}/logfile".format(self.workdir)
         with open(lfd, "a") as log:
             log.write("Following papara alignment, aln has {} seqs \n".format(len(self.data.aln)))
@@ -1358,7 +1377,8 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
         Just for placement, to use as starting tree."""
         if os.path.exists("RAxML_labelledTree.PLACE"):
             os.rename("RAxML_labelledTree.PLACE", "RAxML_labelledTreePLACE.tmp")
-        sys.stdout.write("placing query sequences \n")
+        if _VERBOSE:
+            sys.stdout.write("placing query sequences \n")
         cwd = (os.getcwd())
         os.chdir(self.workdir)
         try:
@@ -1508,10 +1528,12 @@ class PhyscraperScrape(object): #TODO do I wantto be able to instantiate this in
                 self.new_seqs_otu_id = {}
                 self.repeat = 1
             else:
-                sys.stdout.write("No new sequences after filtering.\n")
+                if _VERBOSE:
+                    sys.stdout.write("No new sequences after filtering.\n")
                 self.repeat = 0
         else:
-            sys.stdout.write("No new sequences found.\n")
+            if _VERBOSE:
+                sys.stdout.write("No new sequences found.\n")
             self.repeat = 0
             self.calculate_bootstrap()
         self.reset_markers()
@@ -2258,7 +2280,8 @@ class FilterBlast(PhyscraperScrape):
                 query = seq.replace("-", "").replace("?", "")
                 xml_fi = "{}/{}.xml".format(self.blast_subdir, key)
                 if not os.path.isfile(xml_fi):
-                    sys.stdout.write("blasting seq {}\n".format(key))
+                    if _VERBOSE:
+                        sys.stdout.write("blasting seq {}\n".format(key))
                     try:
                         ###try to make a list of blast queries
                         debug(datetime.datetime.now())
