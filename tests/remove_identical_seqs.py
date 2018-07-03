@@ -21,6 +21,7 @@ try:
    data_obj.workdir = absworkdir
    ids = IdDicts(conf, workdir=data_obj.workdir)
    ids.gi_ncbi_dict = pickle.load(open("tests/data/precooked/tiny_gi_map.p", "rb" ))
+   assert os.path.isfile("tests/data/precooked/gi_list_mrca.p")
 except:
    sys.stderr.write("run 'python tests/testfilesetup.py' to setup data files for tests. EXITING")
    sys.stdout.write("\n\nTest `remove_identical_seqs' FAILED\n\n")
@@ -30,7 +31,9 @@ except:
 scraper =  PhyscraperScrape(data_obj, ids)
 scraper._blasted = 1
 blast_dir = "tests/data/precooked/fixed/tte_blast_files"
+
 scraper.gi_list_mrca = pickle.load(open("tests/data/precooked/gi_list_mrca.p", 'rb'))
+
 scraper.read_blast(blast_dir=blast_dir)
 
 a = len(scraper.new_seqs) == 40
