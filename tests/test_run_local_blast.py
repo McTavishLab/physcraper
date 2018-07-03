@@ -27,7 +27,7 @@ blast_seq = "otuSlagascanus"
 
 if not os.path.exists("{}/blast".format(filteredScrape.data.workdir)):
     os.makedirs("{}/blast/".format(filteredScrape.data.workdir))
-path1 = '/home/blubb/Documents/gitdata/physcraper/tests/data/precooked/fixed/select-blast/*'
+path1 = './tests/data/precooked/fixed/select-blast/*'
 path2 = "{}/blast/".format(filteredScrape.data.workdir)
 cmd = 'cp -r ' + path1 + ' ' + path2
 os.system(cmd)

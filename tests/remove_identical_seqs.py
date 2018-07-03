@@ -30,7 +30,7 @@ except:
 scraper =  PhyscraperScrape(data_obj, ids)
 scraper._blasted = 1
 blast_dir = "tests/data/precooked/fixed/tte_blast_files"
-filteredScrape.gi_list_mrca = pickle.load(open("tests/data/precooked/gi_list_mrca.p", 'rb'))
+scraper.gi_list_mrca = pickle.load(open("tests/data/precooked/gi_list_mrca.p", 'rb'))
 scraper.read_blast(blast_dir=blast_dir)
 
 a = len(scraper.new_seqs) == 40

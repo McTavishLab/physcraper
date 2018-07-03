@@ -12,7 +12,7 @@ python tests/test_remove_taxa_aln_tre.py
 python tests/test_run_local_blast.py
 python tests/test_sp_d.py
 python tests/test_sp_seq_d.py
-python tests/test_select_seq_by_local_blast.py
+# python tests/test_select_seq_by_local_blast.py
 python tests/test_calc_mean_sd.py
 python tests/test_read_local_blast.py
 python tests/tests_write_blast.py

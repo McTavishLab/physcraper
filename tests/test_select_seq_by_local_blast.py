@@ -34,7 +34,6 @@ filteredScrape.read_blast(blast_dir=blast_dir)
 filteredScrape.remove_identical_seqs()
 filteredScrape.sp_dict(downtorank)
 filteredScrape.make_sp_seq_dict(treshold=treshold, selectby=selectby)
-filteredScrape.dump("{}/select_seq_local_blast_test.p".format(workdir))
 
 ##this is the code of the first part of how many seq to keep. if threshold is bigger than number of seq for sp, just add all
 # print("start test")
@@ -57,24 +56,24 @@ for giID in filteredScrape.sp_d:
             # print(giID in filteredScrape.sp_seq_d.keys())
             seq_present = count_dict["seq_present"]
             query_count = count_dict["query_count"]
-            for item in filteredScrape.sp_d[giID]:
-                if seq_present >= 1 and seq_present < treshold and count_dict["new_taxon"] == False and query_count != 0:
-                    if query_count + seq_present > treshold:
-                        taxonfn = filteredScrape.loop_for_write_blast_files(giID, selectby)
-                        for element in filteredScrape.sp_d[giID]:
-                            if '^ot:ottTaxonName' in element:
-                                blast_seq = "{}".format(element['^ot:ottTaxonName'])
-                                blast_seq = blast_seq.replace(" ", "_")
-                                blast_db = "{}".format(element['^ot:ottTaxonName'])
-                                blast_db = blast_db.replace(" ", "_")
-                        if filteredScrape.downtorank != None:
-                            taxonfn = giID
-                        filteredScrape.run_local_blast(taxonfn, taxonfn)
-                        filteredScrape.select_seq_by_local_blast(filteredScrape.sp_seq_d[giID], taxonfn, treshold, seq_present)
+            # for item in filteredScrape.sp_d[giID]:
+            if seq_present >= 1 and seq_present < treshold and count_dict["new_taxon"] == False and query_count != 0:
+                if query_count + seq_present > treshold:
+                    taxonfn = filteredScrape.loop_for_write_blast_files(giID, selectby)
+                    for element in filteredScrape.sp_d[giID]:
+                        if '^ot:ottTaxonName' in element:
+                            blast_seq = "{}".format(element['^ot:ottTaxonName'])
+                            blast_seq = blast_seq.replace(" ", "_")
+                            blast_db = "{}".format(element['^ot:ottTaxonName'])
+                            blast_db = blast_db.replace(" ", "_")
+                    if filteredScrape.downtorank != None:
+                        taxonfn = giID
+                    filteredScrape.run_local_blast(taxonfn, taxonfn)
+                    filteredScrape.select_seq_by_local_blast(filteredScrape.sp_seq_d[giID], taxonfn, treshold, seq_present)
 
 
 try:
     assert count == len(filteredScrape.filtered_seq) and count>0
-    sys.stdout.write("\ntest \n")
+    sys.stdout.write("\ntest pass \n")
 except:
     sys.stderr.write("\ntest failed\n")
