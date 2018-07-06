@@ -848,7 +848,6 @@ class IdDicts(object):
         else:
             ofi = open("{}/id_pickle.p".format(self.workdir, filename), "wb")
         pickle.dump(self, ofi)
-        
 
 
 class PhyscraperScrape(object):  # TODO do I wantto be able to instantiate this in a different way?!
@@ -1395,7 +1394,6 @@ class PhyscraperScrape(object):  # TODO do I wantto be able to instantiate this 
         os.chdir(cwd)
         self._query_seqs_placed = 1
 
-
     def est_full_tree(self):
         """Full raxml run from the placement tree as starting tree"""
         cwd = os.getcwd()
@@ -1935,21 +1933,27 @@ class FilterBlast(PhyscraperScrape):
         for gi_id in self.sp_d[key]:
             if '^physcraper:status' in gi_id:
                 if gi_id['^physcraper:status'].split(' ')[0] not in self.seq_filter:
-                    if gi_id['^physcraper:last_blasted'] != '1800/01/01':
-                        if '^user:TaxonName' in gi_id:
-                            user_name = gi_id['^user:TaxonName']
-                            for user_name_aln, seq in self.data.aln.items():
-                                if '^user:TaxonName' in self.data.otu_dict[user_name_aln.label]:
-                                    if user_name == self.data.otu_dict[user_name_aln.label]['^user:TaxonName']:
-                                        nametoreturn = user_name_aln.label
-                        elif '^ot:ottTaxonName' in gi_id:
-                            user_name = gi_id['^ot:ottTaxonName']
-                            for user_name_aln, seq in self.data.aln.items():
-                                if '^ot:ottTaxonName' in self.data.otu_dict[user_name_aln.label]:
-                                    if user_name == self.data.otu_dict[user_name_aln.label]['^ot:ottTaxonName']:
-                                        nametoreturn = user_name_aln.label
-                                        
+                    # if gi_id['^physcraper:last_blasted'] != '1800/01/01':
+                    if '^user:TaxonName' in gi_id:
+                        user_name = gi_id['^user:TaxonName']
+                        for user_name_aln, seq in self.data.aln.items():
+                            if '^user:TaxonName' in self.data.otu_dict[user_name_aln.label]:
+                                if user_name == self.data.otu_dict[user_name_aln.label]['^user:TaxonName']:
+                                    nametoreturn = user_name_aln.label
+                    elif '^ot:ottTaxonName' in gi_id:
+                        user_name = gi_id['^ot:ottTaxonName']
+                        for user_name_aln, seq in self.data.aln.items():
+                            if '^ot:ottTaxonName' in self.data.otu_dict[user_name_aln.label]:
+                                if user_name == self.data.otu_dict[user_name_aln.label]['^ot:ottTaxonName']:
+                                    nametoreturn = user_name_aln.label
 
+                    debug("make name to return!!!!")
+                    debug(nametoreturn)
+            ##the next lines where added because the test was breaking, need thourough testing if it not breaks something else now.
+            if nametoreturn is not None:
+                break
+            else:
+                nametoreturn = user_name.replace(" ", "_")
 
         for gi_id in self.sp_d[key]:
             debug("in writing file for-loop")
@@ -2192,8 +2196,8 @@ class FilterBlast(PhyscraperScrape):
 
         # debug(reduced_new_seqs_dic)
         with open(self.logfile, "a") as log:
-            log.write("{} sequences added after filtering, of {} before filtering\n".format(len(reduced_new_seqs_dic), len(self.new_seqs_otu_id)))
-        
+            log.write("{} sequences added after filtering, of {} before filtering\n".format(len(reduced_new_seqs_dic),
+                                                                                            len(self.new_seqs_otu_id)))
         self.new_seqs = deepcopy(reduced_new_seqs)
         ### !!! key is not exactly same format as before in new_seqs_otu_id
         self.new_seqs_otu_id = deepcopy(reduced_new_seqs_dic)

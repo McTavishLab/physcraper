@@ -19,7 +19,7 @@ data_obj.prune_short(min_seqlen)
 len_after = len(data_obj.tre.taxon_namespace)
 
 try:
-	assert len_before < len_after
+	assert len_before > len_after
 	sys.stdout.write("\nTEST passed: number of taxa in tre is shorter after pruning\n")
 except:
     sys.stderr.write("\ntest failed\n")

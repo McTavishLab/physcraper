@@ -70,10 +70,38 @@ for giID in filteredScrape.sp_d:
                         taxonfn = giID
                     filteredScrape.run_local_blast(taxonfn, taxonfn)
                     filteredScrape.select_seq_by_local_blast(filteredScrape.sp_seq_d[giID], taxonfn, treshold, seq_present)
+            elif seq_present == 0 and count_dict["new_taxon"] == True and query_count>=1:
+
+                for item in filteredScrape.sp_d[giID]:
+                    if '^ncbi:gi' in item:
+                        filteredScrape.data.add_otu(item['^ncbi:gi'], filteredScrape.ids)
+                blast_seq = filteredScrape.sp_seq_d[giID].keys()[0]
+                if type(blast_seq) == int:
+                    str_db = str(giID)
+                else:
+                    str_db = str(blast_seq)
+                blast_db = filteredScrape.sp_seq_d[giID].keys()[1:]
+                # write files for local blast first:
+                seq = filteredScrape.sp_seq_d[giID][blast_seq]
+                filteredScrape.write_blast_files(str_db, seq) #blast qguy
+                # print(blast_db)
+                for blast_key in blast_db:
+                    seq = filteredScrape.sp_seq_d[giID][blast_key]
+                    filteredScrape.write_blast_files(blast_key, seq, db=True, fn=str_db) #local db
+                # make local blast of sequences
+                if filteredScrape.downtorank != None:
+                    str_db = giID
+                filteredScrape.run_local_blast(str_db, str_db)
+                if len(filteredScrape.sp_seq_d[giID]) + seq_present >= treshold:
+                    filteredScrape.select_seq_by_local_blast(filteredScrape.sp_seq_d[giID], str_db, treshold, seq_present)
+                elif len(filteredScrape.sp_seq_d[giID]) + seq_present < treshold:
+                    filteredScrape.add_all(giID)
+# print(count, len(filteredScrape.filtered_seq) )
+# print(filteredScrape.filtered_seq.keys())
 
 
 try:
     assert count == len(filteredScrape.filtered_seq) and count>0
-    sys.stdout.write("\ntest pass \n")
+    sys.stdout.write("\ntest passed\n")
 except:
     sys.stderr.write("\ntest failed\n")
