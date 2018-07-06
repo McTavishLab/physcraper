@@ -7,8 +7,9 @@ import json
 import csv
 from ete2 import NCBITaxa
 from physcraper import generate_ATT_from_phylesystem, generate_ATT_from_files, ConfigObj, Settings, IdDicts, PhyscraperScrape 
-from physcraper import FilterBlast, debug, Concat
+from physcraper import FilterBlast, debug # Concat
 from dendropy import DnaCharacterMatrix
+from concat import Concat
 
 
 def sync_ncbi(configfi):
@@ -190,28 +191,31 @@ def own_data_run(seqaln,
 def concat(genelistdict, workdir_comb, user_concat=None):
     """genelistdict is a dict with gene names as key and the corresponding workdir
     """
-    if os.path.isfile("{}/concat_checkpoint.p".format(workdir_comb)): 
-        sys.stdout.write("Reloading from pickled file: concat\n")
-        concat = pickle.load(open("{}/concat_checkpoint.p".format(workdir_comb),'rb'))
-    else:   
-        concat = Concat(workdir_comb)
-        
-        # print(genelistdict)
-        for item in genelistdict.keys():
-            # print(item)
-            # print(genelistdict[item]["workdir"])
-            concat.load_single_genes(genelistdict[item]["workdir"], genelistdict[item]["pickle"], item)
-            # print("concat.single_runs")
-            # print(concat.single_runs)
+    # if os.path.isfile("{}/concat_checkpoint.p".format(workdir_comb)): 
+    #     sys.stdout.write("Reloading from pickled file: concat\n")
+    #     concat = pickle.load(open("{}/concat_checkpoint.p".format(workdir_comb),'rb'))
+    # else:   
+    concat = Concat(workdir_comb)
+    
+    # print(genelistdict)
+    for item in genelistdict.keys():
+        # print(item)
+        # print(genelistdict[item]["workdir"])
+        concat.load_single_genes(genelistdict[item]["workdir"], genelistdict[item]["pickle"], item)
+        # print("concat.single_runs")
+        # print(concat.single_runs)
 
-        concat.combine(genelistdict)
-        concat.sp_seq_counter()
-        sp_to_keep = concat.sp_to_keep()
-        concat.make_sp_gene_dict(sp_to_keep)
-        concat.make_alns_dict()
-        concat.concatenate_alns()
-        concat.get_short_seq_from_concat()
-        concat.get_largest_tre()
+    concat.combine(genelistdict)
+    concat.sp_seq_counter()
+    sp_to_keep = concat.sp_to_keep()
+    concat.get_largest_tre()
+    concat.make_sp_gene_dict(sp_to_keep)
+    concat.make_alns_dict()
+    concat.concatenate_alns()
+    concat.get_short_seq_from_concat()
+    concat.remove_short_seq()
+    return concat
+
         
 
 def filter_data_run(seqaln,
