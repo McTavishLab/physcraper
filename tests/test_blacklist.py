@@ -11,6 +11,7 @@ workdir="tests/output/test_blacklist"
 configfi = "tests/data/test.config"
 
 ## make one run without blacklist
+print("run without blacklist")
 blacklist = None
 noblack = os.path.join(workdir, "noblacklist")
 absworkdir = os.path.abspath(noblack)
@@ -40,6 +41,8 @@ noblackScrape.remove_identical_seqs()
 noblackScrape.generate_streamed_alignment()
 
 ## one run with blacklist
+print("run with blacklist")
+
 blacklist = [429489230]
 absworkdir = os.path.abspath(workdir)
 try:
@@ -52,6 +55,7 @@ except:
     sys.stdout.write("\n\nTest FAILED\n\n")
     sys.exit()
 filteredScrape =  FilterBlast(data_obj, ids)
+filteredScrape.blacklist = blacklist
 filteredScrape._blasted = 1
 if not os.path.exists(os.path.join(absworkdir, "current_blast_run/")):
     os.makedirs(os.path.join(absworkdir, "current_blast_run/"))
@@ -67,32 +71,37 @@ filteredScrape.read_blast()
 filteredScrape.remove_identical_seqs()
 filteredScrape.generate_streamed_alignment()
 
+gi_l = []
+gi_l_2 = []
+
 for item in blacklist:
     for tax in filteredScrape.data.tre.taxon_namespace:
         gi_id = filteredScrape.data.otu_dict[tax.label].get("^ncbi:gi")
-        try:
-            assert item != gi_id
-        except:
-            sys.stderr.write("test failed")
+        gi_l. append(gi_id)
+
+        # if item == gi_id:
+
+    try:
+        assert item not in gi_l
+    except:
+        sys.stderr.write("test failed")
+
+
     for tax in noblackScrape.data.tre.taxon_namespace:
         # print(filteredScrape.data.otu_dict[tax.label])
         gi_id = noblackScrape.data.otu_dict[tax.label].get("^ncbi:gi")
-        # print(tax, gi_id)
-        if item != gi_id:
-            # print("inbetween test failed")
-            sys.stderr.write("test failed")
+        gi_l. append(gi_id)
+    try:
+        assert item  in gi_l
+    except:
+        sys.stderr.write("test failed_subtest2")
         # else:
         #     # print("seq was not added in blacklist run")
         #     print("inbetween step works")
 # test if it removes blacklist gi from already added aln:
-for item in blacklist:
-    for tax in noblackScrape.data.tre.taxon_namespace:
-        # print(filteredScrape.data.otu_dict[tax.label])
-        gi_id = noblackScrape.data.otu_dict[tax.label].get("^ncbi:gi")
-        # print(tax, gi_id)
-        if item != gi_id:
-            # print("inbetween step failed")
-            sys.stderr.write("test failed")
+print("run with later blacklist")
+
+
         # else:
         #     print("blacklist gi was added in previous run")
 # print("now we want to remove it.")
