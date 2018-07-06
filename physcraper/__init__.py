@@ -1332,6 +1332,8 @@ class PhyscraperScrape(object):  # TODO do I wantto be able to instantiate this 
             self.write_query_seqs()
         for filename in glob.glob('{}/papara*'.format(self.workdir)):
             # debug("{}/{}_tmp".format(self.workdir, filename.split("/")[-1]))
+            # debug(filename)
+            os.rename(filename, "{}/{}_tmp".format(self.workdir, filename.split("/")[-1]))
         sys.stdout.write("aligning query sequences \n")
         ## hack around stupid characters for phylogen. tools
         ### note: sometimes there are still sp in any of the aln/tre and I still have not found out why sometimes the label is needed
@@ -1360,6 +1362,7 @@ class PhyscraperScrape(object):  # TODO do I wantto be able to instantiate this 
         try:
             debug("I call papara")
             assert self.data.aln.taxon_namespace == self.data.tre.taxon_namespace
+            # debug(self.newseqs_file)
             subprocess.call(["papara",
                              "-t", "random_resolve.tre",
                              "-s", "aln_ott.phy",
@@ -1422,13 +1425,13 @@ class PhyscraperScrape(object):  # TODO do I wantto be able to instantiate this 
         os.chdir(cwd)
         self._query_seqs_placed = 1
 
-
     def est_full_tree(self):
         """Full raxml run from the placement tree as starting tree"""
         cwd = os.getcwd()
         os.chdir(self.workdir)
         for filename in glob.glob('{}/RAxML*'.format(self.workdir)):
             # debug("{}/{}_tmp".format(self.workdir, filename.split("/")[-1]))
+            # debug(filename)
             os.rename(filename, "{}/{}_tmp".format(self.workdir, filename.split("/")[-1]))
         subprocess.call(["raxmlHPC", "-m", "GTRCAT",
                          "-s", "papara_alignment.extended",
@@ -1448,10 +1451,12 @@ class PhyscraperScrape(object):  # TODO do I wantto be able to instantiate this 
         -b: bootstrap random seed
         -#: bottstrap stopping criteria
         """
+        # debug("1")
         os.chdir(self.workdir)
         # for filename in glob.glob('{}/RAxML*'.format(self.workdir)):
         #     os.rename(filename, "{}/{}_tmp".format(self.workdir, filename.split("/")[1]))
         # run bootstrap
+        # debug("2")
         subprocess.call(["raxmlHPC", "-m", "GTRCAT",
                          "-s", "papara_alignment.extended",
                          # "-t", "place_resolve.tre",
@@ -1460,32 +1465,39 @@ class PhyscraperScrape(object):  # TODO do I wantto be able to instantiate this 
         # make bipartition tree
         # is the -f b command
         # -z specifies file with multiple trees
+
+        # debug("2b")
         subprocess.call(["raxmlHPC", "-m", "GTRCAT",
                          "-s", "previous_run/papara_alignment.extended",
                          "-p", "1", "-f", "a", "-x", "1", "-#", "autoMRE",
                          "-n", "all{}".format(self.date)])
+        # debug("3")
         # subprocess.call(["raxmlHPC", "-m", "GTRCAT",
         #                  "-s", "previous_run/papara_alignment.extended",
         #                  "-t", "{}/RAxML_bestTree.all{}".format(self.workdir, self.date),
         #                  "-p", "1", "-f", "b", "-z", "RAxML_bootstrap.all{}".format(self.date),
         #                  "-n", "bipart_{}".format(self.date)])
         # strict consensus:
+        # debug("4")
         subprocess.call(["raxmlHPC", "-m", "GTRCAT",
                          "-J", "STRICT",
                          "-z", "RAxML_bootstrap.all{}".format(self.date),
                          "-n", "StrictCon{}".format(self.date)])
         # majority rule:
+        # debug("5")
         subprocess.call(["raxmlHPC", "-m", "GTRCAT",
                          "-J", "MR",
                          "-z", "RAxML_bootstrap.all{}".format(self.date),
                          "-n", "MR_{}".format(self.date)])
         # extended majority rule:
+        # debug("6")
         subprocess.call(["raxmlHPC", "-m", "GTRCAT",
                          "-J", "MRE",
                          "-z", "RAxML_bootstrap.all{}".format(self.date),
                          "-n", "EMR{}".format(self.date)])
         # rapid bootstrapping
         # -f a: is the command to do that
+        # debug("7")
         # subprocess.call(["raxmlHPC", "-m", "GTRCAT",
         #                  "-f", "a",
         #                  "-p", "1", "-x", "1", "-#", "autoMRE", "-s", "aln_ott.phy",
@@ -1533,12 +1545,18 @@ class PhyscraperScrape(object):  # TODO do I wantto be able to instantiate this 
                     os.rename("{}/previous_run".format(self.workdir), prev_dir)
                 os.rename(self.blast_subdir, "{}/previous_run".format(self.workdir))
                 if os.path.exists("{}/last_completed_update".format(self.workdir)):
+                    # debug(self.tmpfi)
                     os.rename(self.tmpfi, "{}/last_completed_update".format(self.workdir))
                 for filename in glob.glob('{}/RAxML*'.format(self.workdir)):
-                    os.rename(filename, "{}/previous_run/{}".format(self.workdir, filename.split("/")[1]))
+                    # debug("{}/previous_run/{}".format(self.workdir, filename.split("/")[-1]))
+                    os.rename(filename, "{}/previous_run/{}".format(self.workdir, filename.split("/")[-1]))
                 for filename in glob.glob('{}/papara*'.format(self.workdir)):
-                    os.rename(filename, "{}/previous_run/{}".format(self.workdir, filename.split("/")[1]))
-                os.rename("{}/{}".format(self.workdir, self.newseqs_file), "{}/previous_run/newseqs.fasta".format(self.workdir))
+                    # debug("{}/previous_run/{}".format(self.workdir, filename.split("/")[-1]))
+                    # debug(filename)
+                    os.rename(filename, "{}/previous_run/{}".format(self.workdir, filename.split("/")[-1]))
+                # debug("{}/previous_run/newseqs.fasta".format(self.workdir))
+                os.rename("{}/{}".format(self.workdir, self.newseqs_file),
+                          "{}/previous_run/newseqs.fasta".format(self.workdir))
                 try:
                     self.data.write_labelled(label='^ot:ottTaxonName')
                 except:
@@ -1927,9 +1945,8 @@ class FilterBlast(PhyscraperScrape):
                         gi_num = gi_id['^ncbi:gi']
                         debug(gi_num)
 
-
-                        tmp_dict = dict((taxon.label, self.data.aln[taxon].symbols_as_string()) for taxon in self.data.aln)
-
+                        # tmp_dict = dict(
+                        #     (taxon.label, self.data.aln[taxon].symbols_as_string()) for taxon in self.data.aln)
 
                         avg_seqlen = sum(self.data.orig_seqlen) / len(self.data.orig_seqlen)  # HMMMMMMMM
                         assert self.config.seq_len_perc <= 1
@@ -2113,7 +2130,8 @@ class FilterBlast(PhyscraperScrape):
                         # debug(len(self.sp_seq_d[taxon_id]))
                         # debug("query_count")
                         # debug(query_count)
-                        if seq_present >= 1 and seq_present < treshold and count_dict["new_taxon"] == False and query_count != 0:
+                        # if seq_present >= 1 and seq_present < treshold and count_dict["new_taxon"] == False and query_count != 0:
+                        if 1 <= seq_present < treshold and count_dict["new_taxon"] == False and query_count != 0:
                             debug("seq_present>0")
                             if query_count + seq_present > treshold:
                                 taxonfn = self.loop_for_write_blast_files(taxon_id, selectby)
@@ -2209,7 +2227,7 @@ class FilterBlast(PhyscraperScrape):
             for key in self.data.otu_dict.keys():
                 # debug(self.data.otu_dict[key])
                 if '^ncbi:gi' in self.data.otu_dict[key]:
-                    if  self.data.otu_dict[key]['^ncbi:gi'] == gi_num:
+                    if self.data.otu_dict[key]['^ncbi:gi'] == gi_num:
                         reduced_new_seqs_dic[key] = self.filtered_seq[gi_num]
                         # if self.data.otu_dict[key]['^physcraper:last_blasted'] == "1800/01/01":
                         self.data.otu_dict[key]['^physcraper:last_blasted'] = "1900/01/01"
@@ -2227,8 +2245,8 @@ class FilterBlast(PhyscraperScrape):
 
         # debug(reduced_new_seqs_dic)
         with open(self.logfile, "a") as log:
-            log.write("{} sequences added after filtering, of {} before filtering\n".format(len(reduced_new_seqs_dic), len(self.new_seqs_otu_id)))
-        
+            log.write("{} sequences added after filtering, of {} before filtering\n".format(len(reduced_new_seqs_dic),
+                                                                                            len(self.new_seqs_otu_id)))
         self.new_seqs = deepcopy(reduced_new_seqs)
         ### !!! key is not exactly same format as before in new_seqs_otu_id
         self.new_seqs_otu_id = deepcopy(reduced_new_seqs_dic)
