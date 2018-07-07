@@ -626,8 +626,6 @@ class AlignTreeTax(object):
                 else:
                     new_label = "ncbi_{}_ottname_{}".format(self.otu_dict[taxon.label].get("^ncbi:taxon", "unk"), self.otu_dict[taxon.label].get('^ot:ottTaxonName', "unk"))
             new_label = str(new_label).replace(' ', '_')
-            if new_label in new_names and norepeats:
-                new_label = "_".join([new_label, taxon.label])
             if gi_id:
                 sp_counter = 2
                 if new_label in new_names and norepeats:
@@ -639,9 +637,9 @@ class AlignTreeTax(object):
                         sp_counter += 1
                     # debug(gi_id)
                     new_label = "_".join([new_label, str(gi_id)])
-                    if new_label in new_names and norepeats:
-                        new_label = "_".join([new_label, taxon.label])
-
+            else:
+                if new_label in new_names and norepeats:
+                    new_label = "_".join([new_label, taxon.label])
             taxon.label = new_label
             new_names.add(new_label)
         tmp_tre.write(path=treepath,
@@ -1218,7 +1216,7 @@ class PhyscraperScrape(object):  # TODO do I wantto be able to instantiate this 
                 except:
                     debug("label was never added to aln or tre")
                 self.data.otu_dict[label]['^physcraper:status'] = "removed in seq dict build"  # should not be the word 'deleted', as this is used in self.seq_filter
-                # return seq_dict
+                return seq_dict
         if _VERBOSE:
             sys.stdout.write(".")
             if i % 50 == 0:
@@ -1307,7 +1305,7 @@ class PhyscraperScrape(object):  # TODO do I wantto be able to instantiate this 
         if not self._query_seqs_written:
             self.write_query_seqs()
         for filename in glob.glob('{}/papara*'.format(self.workdir)):
-            os.rename(filename, "{}/{}_tmp".format(self.workdir, filename.split("/")[1]))
+            os.rename(filename, "{}/{}_tmp".format(self.workdir, filename.split("/")[-1]))
         if _VERBOSE:
             sys.stdout.write("aligning query sequences \n")
         # hack around stupid characters for phylogen. tools
@@ -1918,7 +1916,8 @@ class FilterBlast(PhyscraperScrape):
 
                         avg_seqlen = sum(self.data.orig_seqlen) / len(self.data.orig_seqlen)  # HMMMMMMMM
                         assert self.config.seq_len_perc <= 1
-                        # seq_len_cutoff = avg_seqlen * self.config.seq_len_perc
+                        seq_len_cutoff = avg_seqlen*self.config.seq_len_perc
+
                         seq = self.new_seqs[gi_num]
                         # for gi, seq in self.new_seqs.items():
                         #     if len(seq.replace("-", "").replace("N", "")) > seq_len_cutoff:
