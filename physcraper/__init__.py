@@ -563,7 +563,7 @@ class AlignTreeTax(object):
         self.otu_dict[otu_id]['^ot:ottId'] = ids_obj.ncbi_to_ott.get(ncbi_id)
         self.otu_dict[otu_id]['^physcraper:status'] = "query"
         self.otu_dict[otu_id]['^ot:ottTaxonName'] = ids_obj.ott_to_name.get(self.otu_dict[otu_id]['^ot:ottId'])
-        self.otu_dict[otu_id]['^physcraper:last_blasted'] = "1800/01/01" #1800 = never blasted; 1900 = blasted 1x, not added, this century = blasted and added
+        self.otu_dict[otu_id]['^physcraper:last_blasted'] = "1800/01/01"  # 1800 = never blasted; 1900 = blasted 1x, not added; this century = blasted and added
         if _DEBUG >= 2:
             sys.stderr.write("gi:{} assigned new otu: {}\n".format(gi, otu_id))
         return otu_id
@@ -1911,8 +1911,11 @@ class FilterBlast(PhyscraperScrape):
                     if gi_id['^physcraper:last_blasted'] == '1800/01/01':
                         gi_num = gi_id['^ncbi:gi']
                         debug(gi_num)
-                        # tmp_dict = dict(
-                        #     (taxon.label, self.data.aln[taxon].symbols_as_string()) for taxon in self.data.aln)
+
+
+                        tmp_dict = dict((taxon.label, self.data.aln[taxon].symbols_as_string()) for taxon in self.data.aln)
+
+
                         avg_seqlen = sum(self.data.orig_seqlen) / len(self.data.orig_seqlen)  # HMMMMMMMM
                         assert self.config.seq_len_perc <= 1
                         # seq_len_cutoff = avg_seqlen * self.config.seq_len_perc
