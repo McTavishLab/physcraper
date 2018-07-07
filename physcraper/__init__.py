@@ -1194,8 +1194,8 @@ class PhyscraperScrape(object):  # TODO do I wantto be able to instantiate this 
                 if new_seq.find(inc_seq) != -1:
                     # debug("seq longer")
                     if self.data.otu_dict[tax_lab].get('^physcraper:status') == "original":
-                        sys.stdout.write("seq {} is supersequence of original seq {}, both kept in alignment\n".format(label, tax_lab))
-
+                        if _VERBOSE:
+                            sys.stdout.write("seq {} is supersequence of original seq {}, both kept in alignment\n".format(label, tax_lab))
                         self.data.otu_dict[label]['^physcraper:status'] = "new seq added"
                         seq_dict[label] = seq
                         if _DEBUG_MK == 1:
@@ -1256,8 +1256,8 @@ class PhyscraperScrape(object):  # TODO do I wantto be able to instantiate this 
         shorter than LENGTH_THRESH percent of the orig seq lengths, and chooses
         the longer of two that are other wise identical, and puts them in a dict
         with new name as gi_ott_id.
-        Does not test if they are identical to ones in the original alignment...."""
-
+        Does not test if they are identical to ones in the original alignment....
+        """
         debug("remove identical seqs")
         tmp_dict = dict((taxon.label, self.data.aln[taxon].symbols_as_string()) for taxon in self.data.aln)
         old_seqs = tmp_dict.keys()
@@ -1377,7 +1377,6 @@ class PhyscraperScrape(object):  # TODO do I wantto be able to instantiate this 
                 raise
         os.chdir(cwd)
         assert os.path.exists(path="{}/papara_alignment.{}".format(self.workdir, papara_runname))
-        
         self.data.aln = DnaCharacterMatrix.get(path="{}/papara_alignment.{}".format(self.workdir, papara_runname), schema="phylip")
         debug(self.data.aln.taxon_namespace)
         self.data.aln.taxon_namespace.is_mutable = True  # Was too strict...
@@ -1996,7 +1995,7 @@ class FilterBlast(PhyscraperScrape):
                     debug("make name to return!!!!")
                     debug(nametoreturn)
             # the next lines where added because the test was breaking, need thourough testing if it not breaks something else now.
-            if nametoreturn is None:
+            if nametoreturn is not None:
                 break
             else:
                 nametoreturn = user_name.replace(" ", "_")
@@ -2007,7 +2006,7 @@ class FilterBlast(PhyscraperScrape):
                 if gi_id['^physcraper:status'].split(' ')[0] not in self.seq_filter:
                     # debug("giId not in not_to_add")
                     debug("genrate files used for blast")
-                    if gi_id['^physcraper:last_blasted'] != '1800/01/01':
+                    if gi_id['^physcraper:last_blasted'] != '1800/01/01': # old seq
                         if '^user:TaxonName' in gi_id:
                             user_name = gi_id['^user:TaxonName']
                             for user_name_aln, seq in self.data.aln.items():
@@ -2189,21 +2188,21 @@ class FilterBlast(PhyscraperScrape):
                                 self.add_all(taxon_id)
         return
 
-    def write_blast_files(self, user_name, seq, db=False, fn=None):
+    def write_blast_files(self, file_name, seq, db=False, fn=None):
         """write local blast files which will be read by run_local_blast
         """
         debug("writing files")
-        debug(user_name)
+        print(file_name)
         if not os.path.exists("{}/blast".format(self.data.workdir)):
             os.makedirs("{}/blast/".format(self.data.workdir))
         if db:
             fnw = "{}/blast/{}_db".format(self.workdir, fn)
             fi_o = open(fnw, 'a')
         else:
-            fnw = "{}/blast/{}_tobeblasted".format(self.workdir, user_name)
+            fnw = "{}/blast/{}_tobeblasted".format(self.workdir, file_name)
             fi_o = open(fnw, 'w')
         # debug(fnw)
-        fi_o.write(">{}\n".format(user_name))
+        fi_o.write(">{}\n".format(file_name))
         fi_o.write("{}\n".format(seq))
         fi_o.close()
 
