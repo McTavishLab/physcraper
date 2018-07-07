@@ -40,10 +40,10 @@ from peyotl.nexson_syntax import extract_tree, \
 from peyotl.api import APIWrapper
 import physcraper.AWSWWW as AWSWWW
 
-_DEBUG = 1
-_DEBUG_MK = 1
+_DEBUG = 0
+_DEBUG_MK = 0
 
-_VERBOSE = 1
+_VERBOSE = 0
 
 
 def debug(msg):
