@@ -44,7 +44,7 @@ import concat
 _DEBUG = 1
 _DEBUG_MK = 1
 
-_VERBOSE = 0
+_VERBOSE = 1
 
 
 def debug(msg):
@@ -565,7 +565,6 @@ class AlignTreeTax(object):
             except:
                 ott = "OTT_{}".format(self.ps_otu)
                 self.ps_otu += 1
-
         self.otu_dict[otu_id] = {}
         self.otu_dict[otu_id]['^ncbi:gi'] = gi
         self.otu_dict[otu_id]['^ncbi:accession'] = self.gi_dict[gi]['accession']
@@ -1989,7 +1988,7 @@ class FilterBlast(PhyscraperScrape):
                     debug("make name to return!!!!")
                     debug(nametoreturn)
             ##the next lines where added because the test was breaking, need thourough testing if it not breaks something else now.
-            if nametoreturn is not None:
+            if nametoreturn is None:
                 break
             else:
                 nametoreturn = user_name.replace(" ", "_")
