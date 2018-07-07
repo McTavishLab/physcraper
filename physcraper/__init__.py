@@ -44,6 +44,8 @@ import concat
 _DEBUG = 1
 _DEBUG_MK = 1
 
+_VERBOSE = 0
+
 
 def debug(msg):
     """short debugging command
@@ -123,7 +125,7 @@ def get_dataset_from_treebase(study_id,
     else:
         tb_id = treebase_url.split(':S')[1]
         url = "https://treebase.org/treebase-web/search/downloadAStudy.html?id={}&format=nexus".format(tb_id)
-#        url = "http://treebase.org/treebase-web/phylows/study/TB2:S{}?format=nexml".format(tb_id)
+        # url = "http://treebase.org/treebase-web/phylows/study/TB2:S{}?format=nexml".format(tb_id)
         if _DEBUG:
             sys.stderr.write(url + "\n")
         dna = DataSet.get(url=url,
@@ -177,8 +179,9 @@ def generate_ATT_from_phylesystem(aln,
         try:
             tax.label = orig_lab_to_otu[tax.label].encode('ascii')
         except KeyError:
-            sys.stderr.write("{} doesn't have an otu id. It is being removed from the alignement. This may indicate a mismatch between tree and alignement\n".format(tax.label))
-   #need to prune tree to seqs and seqs to tree...
+            sys.stderr.write("{} doesn't have an otu id. It is being removed from the alignement. "
+                             "This may indicate a mismatch between tree and alignement\n".format(tax.label))
+    # need to prune tree to seqs and seqs to tree...
     otu_newick = tre.as_string(schema="newick")
     workdir = os.path.abspath(workdir)
     return AlignTreeTax(otu_newick, otu_dict, aln, ingroup_mrca=ott_mrca, workdir=workdir)
@@ -235,8 +238,8 @@ def generate_ATT_from_files(seqaln,
     if ingroup_mrca:
         ott_mrca = int(ingroup_mrca)
     else:
-        otu_dict = json.load(open(otu_json,"r"))
-        ott_ids = [otu_dict[otu].get(u'^ot:ottId',) for otu in otu_dict]
+        otu_dict = json.load(open(otu_json, "r"))
+        ott_ids = [otu_dict[otu].get(u'^ot:ottId', ) for otu in otu_dict]
         ott_ids = filter(None, ott_ids)
         ott_ids = set(ott_ids)
         ott_mrca = get_mrca_ott(ott_ids)
@@ -309,7 +312,8 @@ def OtuJsonDict(id_to_spn, id_dict):
                     ottid = id_dict.ncbi_to_ott[ncbiid]
                     ottname = id_dict.ott_to_name[ott]
                 else:
-                    sys.stderr.write("match to taxon {} not found in open tree taxonomy or NCBI. Proceeding without taxon info\n".format(spn))
+                    sys.stderr.write("match to taxon {} not found in open tree taxonomy or NCBI. "
+                                     "Proceeding without taxon info\n".format(spn))
                     ottid, ottname, ncbiid = None, None, None
             spInfoDict[otu_id] = {'^ncbi:taxon': ncbiid, '^ot:ottTaxonName': ottname, '^ot:ottId': ottid,
                                   '^ot:originalLabel': tipname, '^user:TaxonName': species,
@@ -343,8 +347,8 @@ class AlignTreeTax(object):
                             taxon_namespace=self.aln.taxon_namespace)
         assert isinstance(otu_dict, dict)
         self.otu_dict = otu_dict
-        self.ps_otu = 1 #iterator for new otu IDs
-#        self.otu_taxonlabel_problem = otu_tiplabel(alignment) #Check back - original labels are not stored?
+        self.ps_otu = 1  # iterator for new otu IDs
+        # self.otu_taxonlabel_problem = otu_tiplabel(alignment) #Check back - original labels are not stored?
         self._reconcile_names()
         self.workdir = os.path.abspath(workdir)  # TODO - is this where the workdir should live?
         if not os.path.exists(self.workdir):
@@ -377,7 +381,7 @@ class AlignTreeTax(object):
                 self.otu_dict[tax.label]['^physcraper:status'] = "deleted in name reconciliation"
             except:
                 sys.stderr.write("lost taxon {} in name reconcilliation".format(tax.label))
-            #     self.otu_dict[self.otu_taxonlabel_problem[tax.label]]['^physcraper:status'] = "deleted in name reconciliation" #ejm look
+                # self.otu_dict[self.otu_taxonlabel_problem[tax.label]]['^physcraper:status'] = "deleted in name reconciliation" #ejm look
             self.aln.taxon_namespace.remove_taxon(tax)
         assert (self.aln.taxon_namespace == self.tre.taxon_namespace)
         reverse_otu_dict = {}
@@ -392,14 +396,14 @@ class AlignTreeTax(object):
                     newname = tax.label[2:]
                     newname = newname[:-1]
                 for otu in self.otu_dict:
-                    if self.otu_dict[otu].get('^ot:originalLabel') == tax.label or self.otu_dict[otu].get('^ot:originalLabel') == newname:
+                    if self.otu_dict[otu].get('^ot:originalLabel') == tax.label \
+                            or self.otu_dict[otu].get('^ot:originalLabel') == newname:
                         tax.label = otu
                         found_label = 1
                 if found_label == 0:
                     sys.stderr.write("could not match tiplabel {} or {} to an OTU\n".format(tax.label, newname))
-#            assert tax.label in self.otu_dict
-        #TODO - make sure all taxon labels are unique OTU ids.
-
+                # assert tax.label in self.otu_dict
+    # TODO - make sure all taxon labels are unique OTU ids.
 
     def prune_short(self, min_seqlen=0):
         """Sometimes in the de-concatenating of the original alignment
@@ -410,13 +414,8 @@ class AlignTreeTax(object):
         debug("prune short")
         prune = []
         for tax, seq in self.aln.items():
-            # debug(min_seqlen)
-            # debug(seq.symbols_as_string().translate(None, "-?"))
-            # debug(len(seq.symbols_as_string().translate(None, "-?")))
             if len(seq.symbols_as_string().translate(None, "-?")) <= min_seqlen:
                 prune.append(tax)
-        # debug("prune")
-        # debug(prune)
         if prune:
             # debug(prune)
             self.aln.remove_sequences(prune)
@@ -460,7 +459,7 @@ class AlignTreeTax(object):
             # debug(tax)
             # debug(tax.label)
             # debug(self.otu_dict[tax.label])
-            self.otu_dict[tax.label]['^physcraper:status'] = "deleted in reconcile" # unnecessary? gehts overwriten in next line
+            self.otu_dict[tax.label]['^physcraper:status'] = "deleted in reconcile"  # unnecessary? get's overwritten in next line
             self.remove_taxa_aln_tre(tax.label)
         aln_ids = set()
         for tax in self.aln:
@@ -475,11 +474,11 @@ class AlignTreeTax(object):
         treed_taxa = set()
         orphaned_leafs = set()
         # assert self.aln.taxon_namespace == self.tre.taxon_namespace
-        ## here leaf_nodes have taxa that were dropped before. Why do we have this anyways?  
+        # here leaf_nodes have taxa that were dropped before. Why do we have this anyways?
         for leaf in self.tre.leaf_nodes():
             treed_taxa.add(leaf.taxon.label)
             if leaf.taxon.label not in aln_ids:
-                self.otu_dict[leaf.taxon.label]['^physcraper:status'] = "deleted due to presence in tree but not aln. ?!"
+                self.otu_dict[leaf.taxon.label]['^physcraper:status'] = "deleted due to presence in tree but not aln ?!"
                 orphaned_leafs.add(leaf)
                 # TODO fiure out why sometimes one of them works ano not the other and vice versa
                 self.tre.prune_taxa([leaf])
@@ -526,10 +525,10 @@ class AlignTreeTax(object):
             if counts['?'] + counts['-'] <= cutoff:  # first ok column
                 start = i
                 break
-        for i in range(seqlen, 0, -1):  ### seqlen-1 cuts off last character of aln, I changed it.
+        for i in range(seqlen, 0, -1):  # seqlen-1 cuts off last character of aln, I changed it.
             counts = {'?': 0, '-': 0}
             for tax in self.aln:
-                call = self.aln[tax][i - 1].label  ## changing seqlen-1 to seqlen requires that we have here i-1
+                call = self.aln[tax][i - 1].label  # changing seqlen-1 to seqlen requires that we have here i-1
                 if call in ['?', '-']:
                     counts[call] += 1
             if counts['?'] + counts['-'] <= cutoff:
@@ -537,7 +536,9 @@ class AlignTreeTax(object):
                 break
         for taxon in self.aln:
             self.aln[taxon] = self.aln[taxon][start:stop]
-        sys.stdout.write("trimmed alignement ends to < {} missing taxa, start {}, stop {}\n".format(taxon_missingness, start, stop))
+        if _VERBOSE:
+            sys.stdout.write("trimmed alignement ends to < {} missing taxa, start {}, stop {}\n"
+                             .format(taxon_missingness, start, stop))
         return
 
     def add_otu(self, gi, ids_obj):
@@ -549,7 +550,7 @@ class AlignTreeTax(object):
         ncbi_id = ids_obj.map_gi_ncbi(gi)  # check that try/execpt is working here
         # TODO do we need rank info here?
 
-        ##seems like without the try and except we are missing tons of information
+        # seems like without the try and except we are missing tons of information
         try:
             # ncbi_id = int(ids_obj.map_gi_ncbi(gi))
             # try:
@@ -579,7 +580,7 @@ class AlignTreeTax(object):
         self.otu_dict[otu_id]['^ot:ottId'] = ids_obj.ncbi_to_ott.get(ncbi_id)
         self.otu_dict[otu_id]['^physcraper:status'] = "query"
         self.otu_dict[otu_id]['^ot:ottTaxonName'] = ids_obj.ott_to_name.get(self.otu_dict[otu_id]['^ot:ottId'])
-        self.otu_dict[otu_id]['^physcraper:last_blasted'] = "1800/01/01" #1800 = never blasted; 1900 = blasted 1x, not added, this century = blasted and added 
+        self.otu_dict[otu_id]['^physcraper:last_blasted'] = "1800/01/01"  # 1800 = never blasted; 1900 = blasted 1x, not added; this century = blasted and added
         if _DEBUG >= 2:
             sys.stderr.write("gi:{} assigned new otu: {}\n".format(gi, otu_id))
         return otu_id
@@ -640,7 +641,8 @@ class AlignTreeTax(object):
                 if self.otu_dict[taxon.label].get("^ot:originalLabel"):
                     new_label = "orig_{}".format(self.otu_dict[taxon.label]["^ot:originalLabel"])
                 else:
-                    new_label = "ncbi_{}_ottname_{}".format(self.otu_dict[taxon.label].get("^ncbi:taxon", "unk"), self.otu_dict[taxon.label].get('^ot:ottTaxonName', "unk"))
+                    new_label = "ncbi_{}_ottname_{}".format(self.otu_dict[taxon.label].get("^ncbi:taxon", "unk"),
+                                                            self.otu_dict[taxon.label].get('^ot:ottTaxonName', "unk"))
             new_label = str(new_label).replace(' ', '_')
             if gi_id:
                 sp_counter = 2
@@ -692,7 +694,8 @@ class AlignTreeTax(object):
             self.tre.prune_taxa([tax2])
             self.tre.prune_taxa_with_labels([taxon_label])
             self.tre.prune_taxa_with_labels([tax2])
-            # self.tre.taxon_namespace.remove_taxon_label(taxon_label) # cannot happen here, as then the seq_dict_build_ crashes, if taxon was just added?
+            # next line cannot happen here, as then the seq_dict_build_ crashes, if taxon was just added?
+            # self.tre.taxon_namespace.remove_taxon_label(taxon_label)
             # debug(len(self.tre.taxon_namespace))
             self.otu_dict[tax.label]['^physcraper:status'] = "deleted"
         else:
@@ -726,27 +729,29 @@ def get_mrca_ott(ott_ids):
     ott_ids_not_in_synth = []
 
     for ott in ott_ids:
-        # debug(ott)
         try:
             tree_of_life.mrca(ott_ids=[ott], wrap_response=False)
             synth_tree_ott_ids.append(ott)
         except:
             ott_ids_not_in_synth.append(ott)
     if len(synth_tree_ott_ids) == 0:
-        sys.stderr.write('No sampled taxa were found in the current sysnthetic tree. Please find and input and approppriate OTT id as ingroup mrca in generate_ATT_from_files')
+        sys.stderr.write('No sampled taxa were found in the current sysnthetic tree. '
+                         'Please find and input and approppriate OTT id as ingroup mrca in generate_ATT_from_files')
         sys.exit()
     mrca_node = tree_of_life.mrca(ott_ids=synth_tree_ott_ids, wrap_response=False)  # need to fix wrap eventually
-
     # debug(mrca_node)
     if u'nearest_taxon' in mrca_node.keys():
         tax_id = mrca_node[u'nearest_taxon'].get(u'ott_id')
-        sys.stdout.write('(v3) MRCA of sampled taxa is {}\n'.format(mrca_node[u'nearest_taxon'][u'name']))
+        if _VERBOSE:
+            sys.stdout.write('(v3) MRCA of sampled taxa is {}\n'.format(mrca_node[u'nearest_taxon'][u'name']))
     elif u'taxon' in mrca_node['mrca'].keys():
         tax_id = mrca_node['mrca'][u'taxon'][u'ott_id']
-        sys.stdout.write('(v3) MRCA of sampled taxa is {}\n'.format(mrca_node['mrca'][u'taxon'][u'name']))
+        if _VERBOSE:
+            sys.stdout.write('(v3) MRCA of sampled taxa is {}\n'.format(mrca_node['mrca'][u'taxon'][u'name']))
     else:
         print mrca_node.keys()
-        sys.stderr.write('(v3) MRCA of sampled taxa not found. Please find and input and approppriate OTT id as ingroup mrca in generate_ATT_from_files')
+        sys.stderr.write('(v3) MRCA of sampled taxa not found. '
+                         'Please find and input and approppriate OTT id as ingroup mrca in generate_ATT_from_files')
         sys.exit()
     return tax_id
 
@@ -764,8 +769,9 @@ def get_ott_ids_from_otu_dict(otu_dict):  # TODO put into data obj?
 #####################################
 
 class IdDicts(object):
-    """Wraps up the annoying conversions"""  # TODO - could - should be shared acrosss runs?! .... nooo.
-
+    """Wraps up the annoying conversions
+    """
+    # TODO - could - should be shared acrosss runs?! .... nooo.
     def __init__(self, config_obj, workdir):
         """Generates a series of name disambiguation dicts"""
         self.workdir = workdir
@@ -833,7 +839,7 @@ class IdDicts(object):
                 tax_info = ncbi.get_name_translator([tax_name])
                 # debug(tax_info)
                 if tax_info == {}:
-                    print("Taxon name does not match any species name in ncbi. Check that the name is written correctly!")
+                    print("Taxon name does not match any species name in ncbi. Check that name is written correctly!")
                 tax_id = int(tax_info.items()[0][1][0])
                 # print("get rank info")
                 # print(tax_id)
@@ -902,7 +908,7 @@ class PhyscraperScrape(object):  # TODO do I wantto be able to instantiate this 
         self.seq_filter = ['deleted', 'subsequence,', 'not', "removed", "deleted,"]
         self.reset_markers()
 
- #TODO is this the right place for this?
+    # TODO is this the right place for this?
     def reset_markers(self):
         self._blasted = 0
         self._blast_read = 0
@@ -927,14 +933,16 @@ class PhyscraperScrape(object):  # TODO do I wantto be able to instantiate this 
                 debug(otu_id)
                 last_blast = self.data.otu_dict[otu_id]['^physcraper:last_blasted']
                 today = str(datetime.date.today()).replace("-", "/")
-                if abs((datetime.datetime.strptime(today, "%Y/%m/%d") - datetime.datetime.strptime(last_blast, "%Y/%m/%d")).days) > 14: #TODO make configurable
+                time_passed = abs((datetime.datetime.strptime(today, "%Y/%m/%d") - datetime.datetime.strptime(last_blast, "%Y/%m/%d")).days)
+                if time_passed > 14:  # TODO make configurable
                     equery = "txid{}[orgn] AND {}:{}[mdat]".format(self.mrca_ncbi,
                                                                    last_blast,
                                                                    today)
                     query = seq.symbols_as_string().replace("-", "").replace("?", "")
                     xml_fi = "{}/{}.xml".format(self.blast_subdir, taxon.label)
                     if not os.path.isfile(xml_fi):
-                        sys.stdout.write("blasting seq {}\n".format(taxon.label))
+                        if _VERBOSE:
+                            sys.stdout.write("blasting seq {}\n".format(taxon.label))
                         if self.config.blast_loc == 'local':
                             fi_old = open("{}/tmp.fas".format(self.blast_subdir), 'w')
                             fi_old.write(">{}\n".format(taxon.label))
@@ -945,8 +953,9 @@ class PhyscraperScrape(object):  # TODO do I wantto be able to instantiate this 
                                        " -db {}nt -out ".format(self.config.blastdb) + \
                                        xml_fi + \
                                        " -outfmt 5 -num_threads {}".format(self.config.num_threads) + \
-                                       " -max_target_seqs  {} -max_hsps {}".format(self.config.hitlist_size, self.config.hitlist_size) #TODO query via stdin
-                            #debug(blastcmd)
+                                       " -max_target_seqs  {} -max_hsps {}".format(self.config.hitlist_size,
+                                                                                   self.config.hitlist_size)  # TODO query via stdin
+                            # debug(blastcmd)
                             os.system(blastcmd)
                             self.data.otu_dict[otu_id]['^physcraper:last_blasted'] = today
                         if self.config.blast_loc == 'remote':
@@ -971,8 +980,8 @@ class PhyscraperScrape(object):  # TODO do I wantto be able to instantiate this 
                             result_handle.close()
                             save_file.close()
                             self.data.otu_dict[otu_id]['^physcraper:last_blasted'] = today
-                       # except (ValueError, URLError): TODO what to do when NCBI down?! how to handle error
-                       #     sys.stderr.write("NCBIWWW error. Carrying on, but skipped {}\n".format(otu_id))
+                    # except (ValueError, URLError): TODO what to do when NCBI down?! how to handle error
+                    #     sys.stderr.write("NCBIWWW error. Carrying on, but skipped {}\n".format(otu_id))
                     else:
                         # changes date of blasted accordingly, if file is already present in the folder
                         if _DEBUG_MK == 1:
@@ -983,7 +992,7 @@ class PhyscraperScrape(object):  # TODO do I wantto be able to instantiate this 
         """get all available gi numbers from Genbank for mrca.
         The list will be used to filter out sequences from the local Blast search,
         that do not belong to ingroup."""
-        ## gi list limited to 100000000, for huge trees that is a problem
+        # gi list limited to 100000000, for huge trees that is a problem
         debug("get_all_gi_mrca")
         Entrez.email = self.config.email
         handle = Entrez.esearch(db="nucleotide", term="txid{}[Orgn]".format(self.mrca_ncbi),
@@ -998,16 +1007,19 @@ class PhyscraperScrape(object):  # TODO do I wantto be able to instantiate this 
         debug("read blast")
         # debug(blast_dir)
         if blast_dir:
-            sys.stdout.write("blast dir is {}\n".format(blast_dir))
+            if _VERBOSE:
+                sys.stdout.write("blast dir is {}\n".format(blast_dir))
             self.blast_subdir = os.path.abspath(blast_dir)
         else:
-            sys.stdout.write("blast dir is {}\n".format(self.blast_subdir))
+            if _VERBOSE:
+                sys.stdout.write("blast dir is {}\n".format(self.blast_subdir))
             if not os.path.exists(self.blast_subdir):
                 os.mkdir(self.blast_subdir)
         if not self._blasted:
             self.run_blast()
         assert os.path.exists(self.blast_subdir)
-        if self.config.blast_loc == 'local' and len(self.gi_list_mrca) == 0: #because local db doens't have taxon info, needed to limit to group of interest
+        # because local db has no taxon info, needed to limit to group of interest
+        if self.config.blast_loc == 'local' and len(self.gi_list_mrca) == 0:
             self.gi_list_mrca = self.get_all_gi_mrca()
             # debug("ignore mrca gi for now")
         for taxon in self.data.aln:
