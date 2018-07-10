@@ -1,7 +1,7 @@
 import sys
 import os
 from physcraper import ConfigObj, IdDicts, FilterBlast
-import pickle#
+import pickle
 
 # tests 
 sys.stdout.write("\ntests loop_for_write_blast_files\n")
@@ -23,14 +23,14 @@ try:
 except:
     sys.stdout.write("\n\nTest FAILED\n\n")
     sys.exit()
-filteredScrape =  FilterBlast(data_obj, ids)
+filteredScrape = FilterBlast(data_obj, ids)
 filteredScrape.gi_list_mrca = pickle.load(open("tests/data/precooked/gi_list_mrca.p", 'rb'))
 filteredScrape.read_blast(blast_dir="tests/data/precooked/fixed/tte_blast_files")
 filteredScrape.remove_identical_seqs()
 filteredScrape.sp_dict(downtorank)
 filteredScrape.make_sp_seq_dict(treshold=treshold, selectby=selectby)
 
-##this is the code of the first part of how many seq to keep. if threshold is bigger than number of seq for sp, just add all
+# this is the code of the first part of how many seq to keep. if threshold is bigger than number of seq for sp, just add all
 # print("run loop which we want to test")
 for key in filteredScrape.sp_d:
     if len(filteredScrape.sp_d[key]) > treshold:
@@ -38,11 +38,11 @@ for key in filteredScrape.sp_d:
         if key in filteredScrape.sp_seq_d.keys():
             seq_present = count_dict["seq_present"]
             query_count = count_dict["query_count"]
-            if seq_present >= 1 and seq_present < treshold and count_dict["new_taxon"] == False and query_count != 0:
+            if seq_present >= 1 and seq_present < treshold and count_dict["new_taxon"] is False and query_count != 0:
                 if query_count + seq_present > treshold:
                     taxonfn = filteredScrape.loop_for_write_blast_files(key, selectby)
                                 
-####MAKE TEST FOR loop_for_write_blast_files
+# MAKE TEST FOR loop_for_write_blast_files
 try:
     for key in filteredScrape.sp_d:
         count = 0
@@ -53,12 +53,12 @@ try:
         blasted = False
         if len(filteredScrape.sp_d[key]) > treshold:
             for sp_keys in filteredScrape.sp_seq_d[key].keys():
-                if isinstance(sp_keys, str) == True:
+                if isinstance(sp_keys, str):
                     count += 1
-                if isinstance(sp_keys, unicode) == True:
+                if isinstance(sp_keys, unicode):
                     count += 1
                 else:
-                    count_int +=1
+                    count_int += 1
             folder = '{}/blast/'.format(filteredScrape.workdir)
             for the_file in os.listdir(folder):
                 spn = "_".join(the_file.split("_")[1:-1])

@@ -1,6 +1,6 @@
 import sys
 import os
-import pickle#
+import pickle  #
 from physcraper import ConfigObj, IdDicts, FilterBlast
 
 sys.stdout.write("\ntests add_all\n")

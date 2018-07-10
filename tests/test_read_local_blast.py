@@ -3,9 +3,7 @@ import sys
 import pickle
 from physcraper import FilterBlast, ConfigObj, IdDicts
 
-
 sys.stdout.write("\ntests read_local_blast\n")
-
 
 # tests if I can read a local blast output file
 
@@ -25,7 +23,7 @@ try:
 except:
     sys.stdout.write("\n\nTest FAILED\n\n")
     sys.exit()
-filteredScrape =  FilterBlast(data_obj, ids)
+filteredScrape = FilterBlast(data_obj, ids)
 filteredScrape._blasted = 1
 blast_dir = "tests/data/precooked/fixed/tte_blast_files"
 filteredScrape.gi_list_mrca = pickle.load(open("tests/data/precooked/gi_list_mrca.p", 'rb'))
@@ -36,15 +34,15 @@ filteredScrape.make_sp_seq_dict(treshold=treshold, selectby=selectby)
 
 # print("prepare test")
 for taxonID in filteredScrape.sp_d:
-	if len(filteredScrape.sp_seq_d[taxonID]) > treshold:
-	    # print(taxonID)
-	    blast_seq = filteredScrape.sp_seq_d[taxonID].keys()[0]
-	    seq = filteredScrape.sp_seq_d[taxonID][blast_seq]
-	    filteredScrape.write_blast_files(taxonID, seq)
+    if len(filteredScrape.sp_seq_d[taxonID]) > treshold:
+        # print(taxonID)
+        blast_seq = filteredScrape.sp_seq_d[taxonID].keys()[0]
+        seq = filteredScrape.sp_seq_d[taxonID][blast_seq]
+        filteredScrape.write_blast_files(taxonID, seq)
         blast_db = [item for item in filteredScrape.sp_seq_d[taxonID].keys()[1:] if type(item) == int]
         for blast_key in blast_db:
-	    	seq = filteredScrape.sp_seq_d[taxonID][blast_key]
-	    	filteredScrape.write_blast_files(blast_key, seq, db=True, fn=str(taxonID))
+            seq = filteredScrape.sp_seq_d[taxonID][blast_key]
+            filteredScrape.write_blast_files(blast_key, seq, db=True, fn=str(taxonID))
         break
 
 # test starts here:
@@ -63,7 +61,7 @@ if os.path.exists(blast_out):
         try:
             assert len(first_line.strip()) != 0
             sys.stdout.write("\nTest passed!\n")
-            # print("output file exists and is not empty, method can read the blast files and make an output file")
+        # print("output file exists and is not empty, method can read the blast files and make an output file")
         except:
             sys.stderr.write("\ntest failed\n")
-			# print(" output file of read_local_blast does not exist or is empty, method works not correctly")
+        # print(" output file of read_local_blast does not exist or is empty, method works not correctly")
