@@ -55,7 +55,7 @@ try:
                                 user_sp_d.append(v2['^user:TaxonName'])
                             elif '^ot:ottTaxonName' in v2:
                                 user_sp_d.append(v2['^ot:ottTaxonName'])
-    filteredScrape.make_sp_seq_dict(treshold=treshold, selectby=selectby)
+    filteredScrape.make_sp_seq_dict()
     gi_sp_seq_d = []
     ott_sp_seq_d = []
     for v in filteredScrape.sp_seq_d.values():
