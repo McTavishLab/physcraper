@@ -28,12 +28,17 @@ filteredScrape =  FilterBlast(data_obj, ids)
 fn = 'Senecio_scopolii_subsp._scopolii'
 # partly copy of read_local_blast
 general_wd = os.getcwd()
+# print(general_wd)
 if not os.path.exists(os.path.join(filteredScrape.workdir, "blast")):
     os.makedirs(os.path.join(filteredScrape.workdir, "blast"))
 os.chdir(os.path.join(filteredScrape.workdir, "blast"))
-fn_path = './tests/data/precooked/fixed/local-blast/{}'.format(fn)
-filteredScrape.run_local_blast(fn_path, fn_path, output=os.path.join(filteredScrape.workdir, "blast/output_{}.xml".format(fn)))
+# print(os.getcwd())
+fn_path = '{}/tests/data/precooked/fixed/local-blast/{}'.format(general_wd, fn)
+# print(fn_path)
+filteredScrape.run_local_blast(fn_path, fn_path, output=os.path.join(filteredScrape.workdir, "blast/output_{}_tobeblasted.xml".format(fn)))
 output_blast = os.path.join(filteredScrape.workdir, "blast/output_{}.xml".format(fn))
+# print("output_blast")
+# print(output_blast)
 xml_file = open(output_blast)
 os.chdir(general_wd)
 blast_out = NCBIXML.parse(xml_file)
@@ -45,6 +50,7 @@ for record in blast_out:
             gi = int(alignment.title.split(" ")[1])
             hsp_scores[gi] = {"hsp.bits" : hsp.bits, "hsp.score" : hsp.score, "alignment.length" : alignment.length, "hsp.expect" : hsp.expect}
             add_hsp = add_hsp + float(hsp.bits)
+# print("calc mean")
 # make values to select for blast search, calculate standard deviation, mean
 mean_sed = filteredScrape.calculate_mean_sd(hsp_scores)
 sum_hsp = len(hsp_scores)
