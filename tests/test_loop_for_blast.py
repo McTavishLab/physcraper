@@ -2,6 +2,7 @@ import sys
 import os
 from physcraper import ConfigObj, IdDicts, FilterBlast
 import pickle
+import shutil
 
 # tests 
 sys.stdout.write("\ntests loop_for_write_blast_files\n")
@@ -28,7 +29,7 @@ filteredScrape.gi_list_mrca = pickle.load(open("tests/data/precooked/gi_list_mrc
 filteredScrape.read_blast(blast_dir="tests/data/precooked/fixed/tte_blast_files")
 filteredScrape.remove_identical_seqs()
 filteredScrape.sp_dict(downtorank)
-filteredScrape.make_sp_seq_dict(treshold=treshold, selectby=selectby)
+filteredScrape.make_sp_seq_dict()
 
 # this is the code of the first part of how many seq to keep. if threshold is bigger than number of seq for sp, just add all
 # print("run loop which we want to test")
@@ -40,9 +41,10 @@ for key in filteredScrape.sp_d:
             query_count = count_dict["query_count"]
             if seq_present >= 1 and seq_present < treshold and count_dict["new_taxon"] is False and query_count != 0:
                 if query_count + seq_present > treshold:
-                    taxonfn = filteredScrape.loop_for_write_blast_files(key, selectby)
+                    taxonfn = filteredScrape.loop_for_write_blast_files(key)
                                 
 # MAKE TEST FOR loop_for_write_blast_files
+
 try:
     for key in filteredScrape.sp_d:
         count = 0
@@ -81,3 +83,5 @@ try:
     sys.stdout.write("\ntest passed\n")
 except:
     sys.stderr.write("\ntest failed\n")
+
+shutil.rmtree('{}/blast'.format(filteredScrape.workdir))

@@ -30,7 +30,7 @@ filteredScrape.gi_list_mrca = pickle.load(open("tests/data/precooked/gi_list_mrc
 filteredScrape.read_blast(blast_dir=blast_dir)
 filteredScrape.remove_identical_seqs()
 filteredScrape.sp_dict(downtorank)
-filteredScrape.make_sp_seq_dict(treshold=treshold, selectby=selectby)
+filteredScrape.make_sp_seq_dict()
 
 # print("prepare test")
 for taxonID in filteredScrape.sp_d:
