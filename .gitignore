@@ -12,3 +12,4 @@ standard-RAxML
 *.aux
 *.log
 build/
+*.nin
