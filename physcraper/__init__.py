@@ -1481,6 +1481,7 @@ class PhyscraperScrape(object):  # TODO do I wantto be able to instantiate this 
                 self.data.write_otus("otu_info", schema='table')
                 self.new_seqs = {}  # Wipe for next run
                 self.new_seqs_otu_id = {}
+                self.newseqsgi = []
                 self.repeat = 1
             else:
                 if _VERBOSE:
