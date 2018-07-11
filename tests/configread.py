@@ -2,7 +2,7 @@
 import sys
 from physcraper import ConfigObj
 
-expected_keys = ['seq_len_perc', 'num_threads', 'phylesystem_loc', 'blast_loc', 'get_ncbi_taxonomy', 'hitlist_size', 'id_pickle', 'ott_ncbi', 'url_base', 'ncbi_dmp', 'email', 'e_value_thresh', 'blastdb']
+expected_keys = ['seq_len_perc', 'num_threads', 'phylesystem_loc', 'blast_loc', 'gifilename', 'get_ncbi_taxonomy', 'hitlist_size', 'id_pickle', 'ott_ncbi', 'url_base', 'ncbi_dmp', 'email', 'e_value_thresh', 'blastdb']
 
 sys.stdout.write("\nTesting configuration object contents\n")
 try:

@@ -101,6 +101,7 @@ class ConfigObj(object):
             self.url_base = None
         if self.blast_loc == 'remote':
             self.url_base = config['blast'].get('url_base')
+        self.gifilename = config['blast'].get('gifilename', False)
         if _DEBUG:
             sys.stdout.write("{}\n".format(self.email))
             if self.blast_loc == 'remote':
@@ -852,6 +853,10 @@ class PhyscraperScrape(object):  # TODO do I wantto be able to instantiate this 
                                                                    last_blast,
                                                                    today)
                     query = seq.symbols_as_string().replace("-", "").replace("?", "")
+                    if self.config.gifilename == True:
+                        xml_fi = "{}/{}.xml".format(self.blast_subdir, self.data.otu_dict[taxon.label].get('^ncbi:gi', taxon.label))
+                    else:
+                        xml_fi = "{}/{}.xml".format(self.blast_subdir, taxon.label)
                     xml_fi = "{}/{}.xml".format(self.blast_subdir, taxon.label)
                     if not os.path.isfile(xml_fi):
                         if _VERBOSE:
@@ -931,7 +936,10 @@ class PhyscraperScrape(object):  # TODO do I wantto be able to instantiate this 
         if self.config.blast_loc == 'local' and len(self.gi_list_mrca) == 0:
             self.gi_list_mrca = self.get_all_gi_mrca()
         for taxon in self.data.aln:
-            xml_fi = "{}/{}.xml".format(self.blast_subdir, taxon.label)
+            if self.config.gifilename == True:
+                xml_fi = "{}/{}.xml".format(self.blast_subdir,self.data.otu_dict[taxon.label].get('^ncbi:gi', taxon.label))
+            else:
+                xml_fi = "{}/{}.xml".format(self.blast_subdir, taxon.label)
             if os.path.isfile(xml_fi):
                 result_handle = open(xml_fi)
                 try:
@@ -1445,6 +1453,7 @@ class FilterBlast(PhyscraperScrape):
         selects how many sequences per species to keep in the alignment.
         """
         # Note: has test, test_sp_seq_d.py, runs
+        #TODO - point to sequence in alignment
         debug("in make_sp_seq_dict")
         for key in self.sp_d:
             # loop to populate dict. key1 = sp name, key2= gi number, value = seq,
