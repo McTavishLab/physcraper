@@ -666,7 +666,6 @@ def get_mrca_ott(ott_ids):
         ott_ids.remove(None)
     synth_tree_ott_ids = []
     ott_ids_not_in_synth = []
-
     for ott in ott_ids:
         try:
             tree_of_life.mrca(ott_ids=[ott], wrap_response=False)
@@ -834,7 +833,7 @@ class PhyscraperScrape(object):  # TODO do I wantto be able to instantiate this 
         self._reconciled = 0
         self._full_tree_est = 0
 
-    def run_blast(self):  # TODO Should this be happening elsewhere?
+    def run_blast(self, delay = 14):  # TODO Should this be happening elsewhere?
         """generates the blast queries and saves them to xml"""
         debug("run_blast")
         if not os.path.exists(self.blast_subdir):
@@ -845,10 +844,12 @@ class PhyscraperScrape(object):  # TODO do I wantto be able to instantiate this 
             otu_id = taxon.label
             # TODO temp until I fix delete
             if otu_id in self.data.otu_dict:
+                if _VERBOSE:
+                    sys.stdout.write("blasting {}\n".format(otu_id))
                 last_blast = self.data.otu_dict[otu_id]['^physcraper:last_blasted']
                 today = str(datetime.date.today()).replace("-", "/")
                 time_passed = abs((datetime.datetime.strptime(today, "%Y/%m/%d") - datetime.datetime.strptime(last_blast, "%Y/%m/%d")).days)
-                if time_passed > 14:  # TODO make configurable
+                if time_passed > delay:  # TODO make configurable
                     equery = "txid{}[orgn] AND {}:{}[mdat]".format(self.mrca_ncbi,
                                                                    last_blast,
                                                                    today)
@@ -857,7 +858,7 @@ class PhyscraperScrape(object):  # TODO do I wantto be able to instantiate this 
                         xml_fi = "{}/{}.xml".format(self.blast_subdir, self.data.otu_dict[taxon.label].get('^ncbi:gi', taxon.label))
                     else:
                         xml_fi = "{}/{}.xml".format(self.blast_subdir, taxon.label)
-                    xml_fi = "{}/{}.xml".format(self.blast_subdir, taxon.label)
+                    debug("attempting to write {}".format(xml_fi))
                     if not os.path.isfile(xml_fi):
                         if _VERBOSE:
                             sys.stdout.write("blasting seq {}\n".format(taxon.label))
@@ -940,6 +941,7 @@ class PhyscraperScrape(object):  # TODO do I wantto be able to instantiate this 
                 xml_fi = "{}/{}.xml".format(self.blast_subdir,self.data.otu_dict[taxon.label].get('^ncbi:gi', taxon.label))
             else:
                 xml_fi = "{}/{}.xml".format(self.blast_subdir, taxon.label)
+            debug("attempting to read {}".format(xml_fi))
             if os.path.isfile(xml_fi):
                 result_handle = open(xml_fi)
                 try:
