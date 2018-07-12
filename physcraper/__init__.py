@@ -99,6 +99,7 @@ class ConfigObj(object):
             self.url_base = None
         if self.blast_loc == 'remote':
             self.url_base = config['blast'].get('url_base')
+        self.gifilename = config['blast'].get('gifilename', False)
         if _DEBUG:
             sys.stdout.write("{}\n".format(self.email))
             if self.blast_loc == 'remote':
@@ -922,7 +923,10 @@ class PhyscraperScrape(object):  # TODO do I wantto be able to instantiate this 
                                                                    last_blast,
                                                                    today)
                     query = seq.symbols_as_string().replace("-", "").replace("?", "")
-                    xml_fi = "{}/{}.xml".format(self.blast_subdir, taxon.label)
+                    if self.config.gifilename == True:
+                        xml_fi = "{}/{}.xml".format(self.blast_subdir, self.data.otu_dict[taxon.label].get('^ncbi:gi', taxon.label))
+                    else:
+                        xml_fi = "{}/{}.xml".format(self.blast_subdir, taxon.label)
                     if not os.path.isfile(xml_fi):
                         if _VERBOSE:
                             sys.stdout.write("blasting seq {}\n".format(taxon.label))
@@ -1006,11 +1010,10 @@ class PhyscraperScrape(object):  # TODO do I wantto be able to instantiate this 
             # debug("ignore mrca gi for now")
         for taxon in self.data.aln:
             # debug("add blast seq to new seqs")
-            # debug(taxon.label)
-            # blast_taxon = 'otu{}'.format(taxon.label)
-            xml_fi = "{}/{}.xml".format(self.blast_subdir, taxon.label)
-            # xml_fi = "{}/{}.xml".format(self.blast_subdir, blast_taxon)
-
+            if self.config.gifilename == True:
+                xml_fi = "{}/{}.xml".format(self.blast_subdir,self.data.otu_dict[taxon.label].get('^ncbi:gi', taxon.label))
+            else:
+                xml_fi = "{}/{}.xml".format(self.blast_subdir, taxon.label)
             debug(xml_fi)
             if os.path.isfile(xml_fi):
                 result_handle = open(xml_fi)
