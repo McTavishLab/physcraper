@@ -816,7 +816,7 @@ class PhyscraperScrape(object):  # TODO do I wantto be able to instantiate this 
         self.newseqs_file = "tmp.fasta"
         self.date = str(datetime.date.today())  # Date of the run - may lag behind real date!
         self.repeat = 1
-        self.newseqsgi = []
+        self.newseqsgi = set()
         self.blacklist = []
         self.gi_list_mrca = []
         self.seq_filter = ['deleted', 'subsequence,', 'not', "removed", "deleted,"]
@@ -858,7 +858,8 @@ class PhyscraperScrape(object):  # TODO do I wantto be able to instantiate this 
                         xml_fi = "{}/{}.xml".format(self.blast_subdir, self.data.otu_dict[taxon.label].get('^ncbi:gi', taxon.label))
                     else:
                         xml_fi = "{}/{}.xml".format(self.blast_subdir, taxon.label)
-                    debug("attempting to write {}".format(xml_fi))
+                    if _DEBUG:
+                        sys.stdout.write("attempting to write {}\n".format(xml_fi))
                     if not os.path.isfile(xml_fi):
                         if _VERBOSE:
                             sys.stdout.write("blasting seq {}\n".format(taxon.label))
@@ -900,8 +901,14 @@ class PhyscraperScrape(object):  # TODO do I wantto be able to instantiate this 
                     #     sys.stderr.write("NCBIWWW error. Carrying on, but skipped {}\n".format(otu_id))
                     else:
                         # changes date of blasted accordingly, if file is already present in the folder
+                        if _DEBUG:
+                            sys.stdout.write("file {} exists in current blast run. Will not blast. delete file to force\n".format(xml_fi))
                         if _DEBUG_MK == 1:
                             self.data.otu_dict[otu_id]['^physcraper:last_blasted'] = today
+                else:
+                    if _VERBOSE:
+                        sys.stdout.write("otu {} was last blasted {} days ago and is not being re-blasted."
+                                          "Use run_blast(delay = 0) to force a search.\n".format(otu_id, last_blast))
         self._blasted = 1
 
     def get_all_gi_mrca(self):
@@ -941,7 +948,8 @@ class PhyscraperScrape(object):  # TODO do I wantto be able to instantiate this 
                 xml_fi = "{}/{}.xml".format(self.blast_subdir,self.data.otu_dict[taxon.label].get('^ncbi:gi', taxon.label))
             else:
                 xml_fi = "{}/{}.xml".format(self.blast_subdir, taxon.label)
-            debug("attempting to read {}".format(xml_fi))
+            if _DEBUG:
+                sys.stdout.write("attempting to read {}\n".format(xml_fi))
             if os.path.isfile(xml_fi):
                 result_handle = open(xml_fi)
                 try:
@@ -972,6 +980,7 @@ class PhyscraperScrape(object):  # TODO do I wantto be able to instantiate this 
     def get_sp_id_of_otulabel(self, label):
         """gets the species name and the corresponding ncbi id of the otu
         """
+        spn_of_label = None
         if '^ot:ottTaxonName' in self.data.otu_dict[label].keys():
             spn_of_label = self.data.otu_dict[label]['^ot:ottTaxonName']
         elif '^user:TaxonName' in self.data.otu_dict[label].keys():
@@ -996,6 +1005,8 @@ class PhyscraperScrape(object):  # TODO do I wantto be able to instantiate this 
         """
         # TODO unify spp name somehow?
         id_of_label = self.get_sp_id_of_otulabel(label)
+        if _DEBUG:
+            sys.stdout.write("taxon is ott{}\n".format(id_of_label))
         new_seq = seq.replace("-", "")
         tax_list = deepcopy(seq_dict.keys())
         i = 0
@@ -1011,7 +1022,7 @@ class PhyscraperScrape(object):  # TODO do I wantto be able to instantiate this 
                     # if (existing_taxa != spn_of_label and existing_taxa is not  None) or 
                     if type(existing_id) == int and existing_id != id_of_label:
                         if _VERBOSE:
-                            sys.stdout.write("seq {} is subsequence of {}, but different species concept\n".format(label, tax_lab))
+                            sys.stdout.write("seq {} is subsequence of {}, but different species name\n".format(label, tax_lab))
                         self.data.otu_dict[label]['^physcraper:status'] = "new seq added; subsequence, but different species"
                         seq_dict[label] = seq
                         if _DEBUG_MK == 1:
@@ -1088,6 +1099,11 @@ class PhyscraperScrape(object):  # TODO do I wantto be able to instantiate this 
         Does not test if they are identical to ones in the original alignment....
         """
         debug("remove identical seqs")
+        if len(self.new_seqs_otu_id) > 0:
+            if _DEBUG:
+                sys.stdout.write("running remove identical twice in a row"
+                                "without generating new alignment will cause errors. skipping\n")
+            return
         tmp_dict = dict((taxon.label, self.data.aln[taxon].symbols_as_string()) for taxon in self.data.aln)
         old_seqs = tmp_dict.keys()
         # Adding seqs that are different, but needs to be maintained as diff than aln that the tree has been run on
@@ -1097,18 +1113,22 @@ class PhyscraperScrape(object):  # TODO do I wantto be able to instantiate this 
         for gi, seq in self.new_seqs.items():
             if self.blacklist is not None and gi in self.blacklist:
                 pass
+                if _DEBUG:
+                    sys.stdout.write("should not be hitting blacklist, not implemented\n")
             elif gi in self.newseqsgi:  # added to increase speed. often seq was found in another blast file
                 pass
             else:
-                self.newseqsgi.append(gi)
+                self.newseqsgi.add(gi)
                 if len(seq.replace("-", "").replace("N", "")) > seq_len_cutoff:
+                    if _DEBUG:
+                        sys.stdout.write("checking gi {} for similarity\n".format(gi))
                     otu_id = self.data.add_otu(gi, self.ids)
                     self.seq_dict_build(seq, otu_id, tmp_dict)
         for tax in old_seqs:
-            try:
+           # try:
                 del tmp_dict[tax]
-            except KeyError:
-                pass
+           # except KeyError:
+           #     pass
         self.new_seqs_otu_id = tmp_dict  # renamed new seq to their otu_ids from GI's, but all info is in self.otu_dict
         with open(self.logfile, "a") as log:
             log.write("{} new sequences added from genbank after removing identical seq, of {} before filtering\n".format(len(self.new_seqs_otu_id), len(self.new_seqs)))
@@ -1307,7 +1327,7 @@ class PhyscraperScrape(object):  # TODO do I wantto be able to instantiate this 
         if self.blacklist:
             self.remove_blacklistitem()
         if len(self.new_seqs) > 0:
-            self.remove_identical_seqs()
+            self.remove_identical_seqs() #Running this twice in a reow removes all seqs before adding to alignment...
             self.data.write_files()  # should happen before aligning in case of pruning
             if len(self.new_seqs_otu_id) > 0:  # TODO rename to something more intutitive
                 self.write_query_seqs()
@@ -1770,7 +1790,7 @@ class FilterBlast(PhyscraperScrape):
 
     def count_num_seq(self, taxon_id):
         """make some calculation of how many species are already present
-        and how many seq have been found by blast for same sp. taxon concept.
+        and how many seq have been found by blast for same sp. taxon name.
         This will be used for how_many_sp_to_keep.
         """
         # this is used to exclude stuff, that has more info in sp_d,
