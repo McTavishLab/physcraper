@@ -327,8 +327,9 @@ def filter_data_run(seqaln,
             filteredScrape.generate_streamed_alignment()
         #run the ananlyses
         sys.stdout.write("BLASTing input sequences\n")
-        # filteredScrape.blast_subdir = "/home/martha/physcraper-git/physcraper/phyruns/blast_runs/"
-        filteredScrape.run_blast()
+        filteredScrape.blast_subdir = "/home/martha/physcraper-git/physcraper/phyruns/blast_runs/"
+        filteredScrape.gifilename = True
+	filteredScrape.run_blast()
         filteredScrape.read_blast()
         sys.stdout.write("remove idential sequences\n")
         filteredScrape.remove_identical_seqs()
