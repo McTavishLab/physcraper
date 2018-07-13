@@ -126,7 +126,7 @@ def own_data_run(seqaln,
         # This is particularly important when using loci that have been de-concatenated, as some are 0 length which causes problems.
         data_obj.prune_short()
         data_obj.write_files()
-        data_obj.write_labelled( label='^user:TaxonName')
+        data_obj.write_labelled( label='^ot:ottTaxonName')
         data_obj.write_otus("otu_info", schema='table')
         data_obj.dump()
 
@@ -147,38 +147,116 @@ def own_data_run(seqaln,
         scraper.read_blast()
         scraper.remove_identical_seqs()
         scraper.generate_streamed_alignment()
-    return 1 # what means the 1?
+    return 1 
 
-def concat(genelistdict, workdir_comb, user_concat=None):
-    """genelistdict is a dict with gene names as key and the corresponding workdir
-    """
-    # if os.path.isfile("{}/concat_checkpoint.p".format(workdir_comb)): 
-    #     sys.stdout.write("Reloading from pickled file: concat\n")
-    #     concat = pickle.load(open("{}/concat_checkpoint.p".format(workdir_comb),'rb'))
-    # else:   
-    concat = Concat(workdir_comb)
-    
-    # print(genelistdict)
-    for item in genelistdict.keys():
-        # print(item)
-        # print(genelistdict[item]["workdir"])
-        concat.load_single_genes(genelistdict[item]["workdir"], genelistdict[item]["pickle"], item)
-        # print("concat.single_runs")
-        # print(concat.single_runs)
 
-    concat.combine()
-    concat.sp_seq_counter()
-    sp_to_keep = concat.sp_to_keep()
-    concat.get_largest_tre()
-    concat.make_sp_gene_dict(sp_to_keep)
-    concat.make_alns_dict()
-    concat.concatenate_alns()
-    concat.get_short_seq_from_concat()
-    concat.remove_short_seq()
-    concat.write_partition()
-    concat.place_new_seqs()
-    concat.est_full_tree()
-    return concat
+def filter_OTOL(study_id,
+                 tree_id,
+                 seqaln,
+                 mattype,
+                 workdir,
+                 configfi,
+                 treshold,
+                 selectby,
+                 downtorank,
+                 spInfoDict,
+                 add_local_seq,
+                 id_to_spn_addseq_json,
+                 blacklist):
+    '''looks for pickeled file to continue run, or builds and runs 
+    new analysis for as long as new seqs are found. 
+    This uses the FilterBlast subclass to be able to filter the blast output.'''
+    debug('Debugging mode is on')
+
+    # if _DEBUG_MK == 1:
+    #     random.seed(3269235691)
+    print(workdir)
+    if os.path.isfile("{}/scrape_checkpoint.p".format(workdir)): 
+        sys.stdout.write("Reloading from pickled scrapefile: scrape\n")
+        filteredScrape = pickle.load(open("{}/scrape_checkpoint.p".format(workdir),'rb'))
+        filteredScrape.repeat = 1   
+    else:   
+#            sync_names()
+        sys.stdout.write("setting up Data Object\n")
+        sys.stdout.flush()
+        #read the config file into a configuration object
+        conf = ConfigObj(configfi)
+        # print("config")
+        debug(dir(conf))
+        debug(conf.email)
+
+        #Generate an linked Alignment-Tree-Taxa object
+        data_obj = generate_ATT_from_files(seqaln=seqaln, 
+                             mattype=mattype, 
+                             workdir=workdir,
+                             treefile=trfn,
+                             schema_trf=schema_trf,
+                             otu_json=spInfoDict,
+                             #email=conf.email,
+                             ingroup_mrca=None)
+
+        #Prune sequnces below a certain length threshold
+        #This is particularly important when using loci that have been de-concatenated, as some are 0 length which causes problems.
+        data_obj.prune_short()
+        data_obj.write_files()
+        data_obj.write_labelled( label='^ot:ottTaxonName', gi_id=True)
+        data_obj.write_otus("otu_info", schema='table')
+        data_obj.dump()
+
+        sys.stdout.write("setting up id dictionaries\n")
+        sys.stdout.flush()
+
+        ids = IdDicts(conf, workdir=workdir)
+
+        #Now combine the data, the ids, and the configuration into a single physcraper scrape object
+        filteredScrape =  FilterBlast(data_obj, ids)
+        # filteredScrape.write_otu_info(downtorank)
+        if add_local_seq is not None:
+            debug("will add local sequences now")
+            filteredScrape.add_local_seq(add_local_seq, id_to_spn_addseq_json)
+            # scraper.replace_new_seq()
+            filteredScrape.remove_identical_seqs()
+            filteredScrape.generate_streamed_alignment()
+        #run the ananlyses
+        sys.stdout.write("BLASTing input sequences\n")
+        filteredScrape.run_blast()
+        filteredScrape.read_blast()
+        sys.stdout.write("remove idential sequences\n")
+        filteredScrape.remove_identical_seqs()
+        filteredScrape.dump()
+        debug(treshold)
+        sys.stdout.write("Filter the sequences\n")
+        if treshold is not None:
+            filteredScrape.sp_dict(downtorank)
+            filteredScrape.make_sp_seq_dict()
+            filteredScrape.how_many_sp_to_keep(treshold=treshold, selectby=selectby)
+            filteredScrape.replace_new_seq()
+        debug("from replace to streamed aln")
+        sys.stdout.write("calculate the phylogeny\n")
+        filteredScrape.generate_streamed_alignment()
+        filteredScrape.dump()
+    while filteredScrape.repeat == 1:
+        # number_rounds += 1
+        filteredScrape.data.write_labelled(label='^ot:ottTaxonName', gi_id=True)
+        filteredScrape.data.write_otus("otu_info", schema='table')
+        sys.stdout.write("BLASTing input sequences\n")
+        filteredScrape.run_blast()
+        filteredScrape.read_blast()
+        filteredScrape.remove_identical_seqs()
+        sys.stdout.write("Filter the sequences\n")
+        if treshold is not None:
+            filteredScrape.sp_dict(downtorank)
+            filteredScrape.make_sp_seq_dict()
+            filteredScrape.how_many_sp_to_keep(treshold=treshold, selectby=selectby)
+            filteredScrape.replace_new_seq()
+        filteredScrape.data.reconcile(seq_len_perc=0.75)
+        sys.stdout.write("calculate the phylogeny\n")
+        filteredScrape.generate_streamed_alignment()
+        filteredScrape.dump()
+        filteredScrape.write_otu_info(downtorank)
+        return filteredScrape
+
+
 
 def filter_data_run(seqaln,
                  mattype,
@@ -229,14 +307,12 @@ def filter_data_run(seqaln,
         #This is particularly important when using loci that have been de-concatenated, as some are 0 length which causes problems.
         data_obj.prune_short()
         data_obj.write_files()
-
         data_obj.write_labelled( label='^ot:ottTaxonName', gi_id=True)
         data_obj.write_otus("otu_info", schema='table')
         data_obj.dump()
 
         sys.stdout.write("setting up id dictionaries\n")
         sys.stdout.flush()
-
 
         ids = IdDicts(conf, workdir=workdir)
 
@@ -250,43 +326,45 @@ def filter_data_run(seqaln,
             filteredScrape.remove_identical_seqs()
             filteredScrape.generate_streamed_alignment()
         #run the ananlyses
+        sys.stdout.write("BLASTing input sequences\n")
+        # filteredScrape.blast_subdir = "/home/martha/physcraper-git/physcraper/phyruns/blast_runs/"
         filteredScrape.run_blast()
         filteredScrape.read_blast()
+        sys.stdout.write("remove idential sequences\n")
         filteredScrape.remove_identical_seqs()
         filteredScrape.dump()
         debug(treshold)
+        sys.stdout.write("Filter the sequences\n")
         if treshold is not None:
             filteredScrape.sp_dict(downtorank)
             filteredScrape.make_sp_seq_dict()
             filteredScrape.how_many_sp_to_keep(treshold=treshold, selectby=selectby)
             filteredScrape.replace_new_seq()
         debug("from replace to streamed aln")
+        sys.stdout.write("calculate the phylogeny\n")
         filteredScrape.generate_streamed_alignment()
         filteredScrape.dump()
     while filteredScrape.repeat == 1:
         # number_rounds += 1
-        filteredScrape.data.write_labelled(label='^user:TaxonName', gi_id=True)
+        filteredScrape.data.write_labelled(label='^ot:ottTaxonName', gi_id=True)
         filteredScrape.data.write_otus("otu_info", schema='table')
+        sys.stdout.write("BLASTing input sequences\n")
         filteredScrape.run_blast()
         filteredScrape.read_blast()
         filteredScrape.remove_identical_seqs()
-
-        # folder = '{}/blast/'.format(filteredScrape.workdir)
-        # for the_file in os.listdir(folder):
-        #     file_path = os.path.join(folder, the_file)
-        #     if os.path.isfile(file_path):
-        #         os.unlink(file_path)
-        debug("make sp_dict")    
+        sys.stdout.write("Filter the sequences\n")
         if treshold is not None:
             filteredScrape.sp_dict(downtorank)
             filteredScrape.make_sp_seq_dict()
             filteredScrape.how_many_sp_to_keep(treshold=treshold, selectby=selectby)
             filteredScrape.replace_new_seq()
         filteredScrape.data.reconcile(seq_len_perc=0.75)
+        sys.stdout.write("calculate the phylogeny\n")
         filteredScrape.generate_streamed_alignment()
         filteredScrape.dump()
         filteredScrape.write_otu_info(downtorank)
         return filteredScrape
+
 
 
 #######################3
@@ -364,7 +442,7 @@ def run_with_settings(settings):
         filteredScrape.dump()
     while filteredScrape.repeat == 1:
         # number_rounds += 1
-        filteredScrape.data.write_labelled(label='^user:TaxonName', gi_id=True)
+        filteredScrape.data.write_labelled(label='^ot:ottTaxonName', gi_id=True)
         filteredScrape.data.write_otus("otu_info", schema='table')
         filteredScrape.run_blast()
         filteredScrape.read_blast()
@@ -380,3 +458,28 @@ def run_with_settings(settings):
         filteredScrape.dump()
         filteredScrape.write_otu_info(settings.downtorank)
         return filteredScrape
+
+
+def concat(genelistdict, workdir_comb, user_concat=None):
+    """genelistdict is a dict with gene names as key and the corresponding workdir
+    """
+   
+    concat = Concat(workdir_comb)
+    
+    # print(genelistdict)
+    for item in genelistdict.keys():
+        concat.load_single_genes(genelistdict[item]["workdir"], genelistdict[item]["pickle"], item)
+
+    concat.combine()
+    concat.sp_seq_counter()
+    sp_to_keep = concat.sp_to_keep()
+    concat.get_largest_tre()
+    concat.make_sp_gene_dict(sp_to_keep)
+    concat.make_alns_dict()
+    concat.concatenate_alns()
+    concat.get_short_seq_from_concat()
+    concat.remove_short_seq()
+    concat.write_partition()
+    concat.place_new_seqs()
+    concat.est_full_tree()
+    return concat
