@@ -76,6 +76,9 @@ def standard_run(study_id,
     # Now combine the data, the ids, and the configuration into a single physcraper scrape object
     scraper = PhyscraperScrape(data_obj, conf)
     # run the ananlyses
+    # uncomment next line if you want to have a shared blast folder and change the path to something meaningful. Remember to change the gifilename setting in the config file to true.
+    # scraper.blast_subdir = "/home/martha/physcraper/phyruns/blast_runs/"
+
     scraper.run_blast()
     scraper.read_blast()
     scraper.remove_identical_seqs()
@@ -138,6 +141,9 @@ def own_data_run(seqaln,
         print(scraper.data.tre.taxon_namespace)
 
         # run the ananlyses
+        # uncomment next line if you want to have a shared blast folder and change the path to something meaningful. Remember to change the gifilename setting in the config file to true.
+        # scraper.blast_subdir = "/home/martha/physcraper/phyruns/blast_runs/"
+
         scraper.run_blast()
         scraper.read_blast()
         scraper.remove_identical_seqs()
@@ -214,11 +220,13 @@ def filter_OTOL(study_id,
         if add_local_seq is not None:
             debug("will add local sequences now")
             filteredScrape.add_local_seq(add_local_seq, id_to_spn_addseq_json)
-            # scraper.replace_new_seq()
             filteredScrape.remove_identical_seqs()
             filteredScrape.generate_streamed_alignment()
         #run the ananlyses
         sys.stdout.write("BLASTing input sequences\n")
+        # uncomment next line if you want to have a shared blast folder and change the path to something meaningful. Remember to change the gifilename setting in the config file to true.
+        # filteredScrape.blast_subdir = "/home/martha/physcraper/phyruns/blast_runs/"
+
         filteredScrape.run_blast()
         filteredScrape.read_blast()
         sys.stdout.write("remove idential sequences\n")
@@ -327,7 +335,8 @@ def filter_data_run(seqaln,
             filteredScrape.generate_streamed_alignment()
         #run the ananlyses
         sys.stdout.write("BLASTing input sequences\n")
-        # filteredScrape.blast_subdir = "/home/martha/physcraper-git/physcraper/phyruns/blast_runs/"
+        # uncomment next line if you want to have a shared blast folder and change the path to something meaningful. Remember to change the gifilename setting in the config file to true.
+        # filteredScrape.blast_subdir = "/home/martha/physcraper/phyruns/blast_runs/"
         filteredScrape.run_blast()
         filteredScrape.read_blast()
         sys.stdout.write("remove idential sequences\n")
@@ -428,6 +437,9 @@ def run_with_settings(settings):
             filteredScrape.remove_identical_seqs()
             filteredScrape.generate_streamed_alignment()
         #run the ananlyses
+        # uncomment next line if you want to have a shared blast folder and change the path to something meaningful. Remember to change the gifilename setting in the config file to true.
+        # filteredScrape.blast_subdir = "/home/martha/physcraper/phyruns/blast_runs/"
+
         filteredScrape.run_blast()
         filteredScrape.read_blast()
         filteredScrape.remove_identical_seqs()
