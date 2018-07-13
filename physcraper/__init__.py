@@ -38,10 +38,10 @@ from peyotl.nexson_syntax import extract_tree, \
 # from peyotl.api import APIWrapper
 import concat  # is the local concat class
 
-_DEBUG = 0
-_DEBUG_MK = 0
+_DEBUG = 1
+_DEBUG_MK = 1
 
-_VERBOSE = 0
+_VERBOSE = 1
 
 
 def debug(msg):
