@@ -1470,7 +1470,8 @@ class PhyscraperScrape(object):  # TODO do I wantto be able to instantiate this 
                         i += 1
                         prev_dir = "{}/previous_run{}".format(self.workdir, self.date) + str(i)
                     os.rename("{}/previous_run".format(self.workdir), prev_dir)
-                os.rename(self.blast_subdir, "{}/previous_run".format(self.workdir))
+                if self.config.gifilename is not True:
+                    os.rename(self.blast_subdir, "{}/previous_run".format(self.workdir))
                 if os.path.exists("{}/last_completed_update".format(self.workdir)):
                     # debug(self.tmpfi)
                     os.rename(self.tmpfi, "{}/last_completed_update".format(self.workdir))
