@@ -177,7 +177,8 @@ def generate_ATT_from_phylesystem(aln,
         try:
             tax.label = orig_lab_to_otu[tax.label].encode('ascii')
         except KeyError:
-            sys.stderr.write("{} doesn't have an otu id. It is being removed from the alignement. This may indicate a mismatch between tree and alignement\n".format(tax.label))
+            sys.stderr.write("{} doesn't have an otu id. It is being removed from the alignement. "
+                             "This may indicate a mismatch between tree and alignement\n".format(tax.label))
    #need to prune tree to seqs and seqs to tree...
     otu_newick = tre.as_string(schema="newick")
     workdir = os.path.abspath(workdir)
@@ -307,9 +308,10 @@ def OtuJsonDict(id_to_spn, id_dict):
                         sys.stdout.write("found taxon {} in ncbi".format(spn))
                     ncbiid = name2taxid.items()[0][1][0]
                     ottid = id_dict.ncbi_to_ott[ncbiid]
-                    ottname = id_dict.ott_to_name[ott]
+                    ottname = id_dict.ott_to_name[ottid]
                 else:
-                    sys.stderr.write("match to taxon {} not found in open tree taxonomy or NCBI. Proceeding without taxon info\n".format(spn))
+                    sys.stderr.write("match to taxon {} not found in open tree taxonomy or NCBI. "
+                                     "Proceeding without taxon info\n".format(spn))
                     ottid, ottname, ncbiid = None, None, None
             spInfoDict[otu_id] = {'^ncbi:taxon': ncbiid, '^ot:ottTaxonName': ottname, '^ot:ottId': ottid, '^ot:originalLabel': tipname, '^user:TaxonName': species, '^physcraper:status': 'original','^physcraper:last_blasted': "1900/01/01"}
     return  spInfoDict
@@ -554,7 +556,6 @@ class AlignTreeTax(object):
             # spn = ids_obj.get_rank_info(gi, taxon_name = False).replace(" ", "_")
             # debug(gi)
             spn = ids_obj.get_rank_info(gi_id=gi)
-
             ncbi_id = ids_obj.otu_rank[spn]["taxon id"]
             # following try except seems to be unused
             # try:
@@ -591,7 +592,6 @@ class AlignTreeTax(object):
         fi.write(tmptre)
         fi.close()
         self.aln.write(path="{}/{}".format(self.workdir, alnfilename), schema="phylip")
-
 
     def write_files(self, treepath="physcraper.tre", treeschema="newick", alnpath="physcraper.fas", alnschema="fasta"):
         """Outputs both the streaming files and a ditechecked"""
@@ -721,7 +721,8 @@ def get_mrca_ott(ott_ids):
         except:
             ott_ids_not_in_synth.append(ott)
     if len(synth_tree_ott_ids) == 0:
-        sys.stderr.write('No sampled taxa were found in the current sysnthetic tree. Please find and input and approppriate OTT id as ingroup mrca in generate_ATT_from_files')
+        sys.stderr.write('No sampled taxa were found in the current sysnthetic tree. '
+                         'Please find and input and approppriate OTT id as ingroup mrca in generate_ATT_from_files')
         sys.exit()
     mrca_node = tree_of_life.mrca(ott_ids=synth_tree_ott_ids, wrap_response=False)  # need to fix wrap eventually
     # debug(mrca_node)
@@ -734,8 +735,9 @@ def get_mrca_ott(ott_ids):
         if _VERBOSE:
             sys.stdout.write('(v3) MRCA of sampled taxa is {}\n'.format(mrca_node['mrca'][u'taxon'][u'name']))
     else:
-        print mrca_node.keys()
-        sys.stderr.write('(v3) MRCA of sampled taxa not found. Please find and input and approppriate OTT id as ingroup mrca in generate_ATT_from_files')
+        print(mrca_node.keys())
+        sys.stderr.write('(v3) MRCA of sampled taxa not found. Please find and input and '
+                         'approppriate OTT id as ingroup mrca in generate_ATT_from_files')
         sys.exit()
     return tax_id
 
@@ -1256,7 +1258,8 @@ class PhyscraperScrape(object):  # TODO do I wantto be able to instantiate this 
         if _VERBOSE:
             sys.stdout.write("aligning query sequences \n")
         # hack around stupid characters for phylogen. tools
-        # note: sometimes there are still sp in any of the aln/tre and I still have not found out why sometimes the label is needed
+        # note: sometimes there are still sp in any of the aln/tre
+        # I still have not found out why sometimes the label is needed
         for tax_lab in self.data.aln.taxon_namespace:
             if tax_lab not in self.data.tre.taxon_namespace:
                 debug("tax not in tre ")
@@ -1509,7 +1512,15 @@ class PhyscraperScrape(object):  # TODO do I wantto be able to instantiate this 
 ###############################
 
 class FilterBlast(PhyscraperScrape):
-    """takes the Physcraper Superclass and filters the ncbi blast results."""
+    """Takes the Physcraper Superclass and filters the ncbi blast results to only include a subset of the sequences.
+
+    They can be filtered by number or by rank and number. This can be useful for non-population-level studies,
+    e.g. analyses which require a single representative per taxon (threshold = 1)
+    or to check the monophyly of taxa without having to deal with over-representation of few taxa (e.g. threshold = 4,
+    which allows to get a good overview of what is available without having some taxa being represented by high numbers of sequences).
+    The second option (downtorank) allows to filter according to taxonomic levels, e.g. getting a number of representative
+    sequences for a genus or lineage. This can also be used to not have to deal with subspecies.
+    """
 
     def __init__(self, data_obj, ids_obj, settings=None):
         super(FilterBlast, self).__init__(data_obj, ids_obj)
@@ -1546,11 +1557,14 @@ class FilterBlast(PhyscraperScrape):
             self.blacklist = []
         self.seq_filter = ['deleted', 'subsequence,', 'not', "removed", "deleted,"]
 
-    def sp_dict(self, downtorank=None):
-        """makes dict with species name as key and the corresponding seq
-        information from aln and blast seq.
 
-        :returns self.sp_d
+    def sp_dict(self, downtorank=None):
+        """Takes the information from the Physcraper otu_dict and makes a dict with species name as key and
+        the corresponding seq information from aln and blast seq, it returns self.sp_d.
+
+        This is generated to make information for the filtering class more easily available. self.sp_d sums up which
+        information are available per taxonomic concept and which have not already been removed during either
+        the remove_identical_seq steps or during a filtering run of an earlier cycle.
         """
         # Note: has test, test_sp_d.py, runs
         self.downtorank = downtorank
@@ -1600,9 +1614,11 @@ class FilterBlast(PhyscraperScrape):
         return self.sp_d
 
     def make_sp_seq_dict(self):
-        """makes dict with spname as key1, key2 is gi and value is seq.
-        This is used to select for the filtering step, where it
-        selects how many sequences per species to keep in the alignment.
+        """Uses the sp_d to make a dict with species names as key1, key2 is gi/sp.name and value is seq: return sp_seq_d.
+
+        This is used to select representatives during the filtering step, where it
+        selects how many sequences per species to keep in the alignment. It will only contain sp that were not removed
+        in an earlier cycle of the program.
         """
         # Note: has test, test_sp_seq_d.py, runs
         debug("in make_sp_seq_dict")
@@ -1613,8 +1629,11 @@ class FilterBlast(PhyscraperScrape):
             seq_d = {}
             # tres_minimizer = 0
             for gi_id in self.sp_d[key]:
+                # if statement should not be necessary as it is already filtered in the step before, I leave it in for now.
                 if '^physcraper:status' in gi_id and gi_id['^physcraper:status'].split(' ')[0] not in self.seq_filter:
-                    # if gi_id['^physcraper:status'].split(' ')[0] not in self.seq_filter:  # already implemented in sp_d
+                    # I am using the next if to delimit which seq where already present from an earlier run,
+                    # they will get a sp name (str), in order to distinguish them from newly found seq,
+                    # which will have the gi (int). This differentiation is needed in the filtering blast step.
                     if gi_id['^physcraper:last_blasted'] != '1800/01/01':
                         if '^user:TaxonName' in gi_id:
                             user_name = gi_id['^user:TaxonName']
@@ -1663,8 +1682,14 @@ class FilterBlast(PhyscraperScrape):
         return
 
     def run_local_blast(self, blast_seq, blast_db, output=None):
-        """run local blast to select number of sequences to be kept
+        """Runs  a local blast to get a measurement of differentiation between available sequences for the same taxon concept.
+
+        The blast run will only be run if there are more sequences found than specified by the threshold value.
         When several sequences are found per taxon, blasts each seq against all other ones found for that taxon.
+        The measure of differentiation will then be used to be able to select a random representative from the taxon concept,
+        but allows to exclude potential mis-identifications.
+        In a later step (select_seq_by_local_blast) sequences will be selected based on the blast results generated here.
+
         """
         # Note: has test, runs -> test_run_local_blast.py
         general_wd = os.getcwd()
@@ -1680,8 +1705,10 @@ class FilterBlast(PhyscraperScrape):
         os.chdir(general_wd)
 
     def calculate_mean_sd(self, hsp_scores):
-        """calculates standard deviation, mean of scores which are
-        used to select which sequences are selected from in the localblast
+        """Calculates standard deviation, mean of scores which are used as a measure of sequence differentiation
+        for a given taxonomic concept.
+
+        This is being used to select a random representative of a taxonomic concept later.
         """
         # Note: has test, runs: test_calculate_mean_sd.py
         debug('calculate_mean_sd')
@@ -1698,9 +1725,9 @@ class FilterBlast(PhyscraperScrape):
         return mean_sd
 
     def read_local_blast(self, seq_d, fn):
-        """reads the files of the local blast run
-        and return sequences below a threshold and
-        which are within the std of the mean scores at the moment.
+        """Reads the files of the local blast run and returns sequences below a value
+        (within the std of the mean scores of the hsp.bit scores at the moment).
+
         (this is to make sure seqs chosen are representative of the taxon)
         """
         # Note: has test, runs: test_read_local_blast.py
@@ -1734,10 +1761,10 @@ class FilterBlast(PhyscraperScrape):
         return seq_blast_score
 
     def select_seq_by_local_blast(self, seq_d, fn, treshold, count):
-        """select number of sequences from local blast
-        to fill up to the threshold.
-        only species included which have a blast score of mean plus/minus sd.
-        Is used after read_local_blast
+        """Selects number of sequences from local_blast to fill up to the threshold. It returns a filtered_seq dictionary.
+
+        It will only include species which have a blast score of mean plus/minus sd.
+        Is used after read_local_blast.
         """
         # Note: has test,test_select_seq_by_local_blast.py, runs
         debug("select_seq_by_local_blast")
@@ -1759,7 +1786,8 @@ class FilterBlast(PhyscraperScrape):
         return self.filtered_seq
 
     def select_seq_by_length(self, taxon_id, treshold, count):
-        """select new sequences by length"""
+        """Select new sequences by length instead of by score values"""
+        # TODO: under development
         debug("select_seq_by_length")
 
         max_len = max(self.sp_seq_d[taxon_id].values())
@@ -1843,7 +1871,7 @@ class FilterBlast(PhyscraperScrape):
         # # print(self.filtered_seq)
 
     def add_all(self, key):
-        """add all seq to filtered_dict as the number of seq < threshold
+        """Add all seq to filtered_dict as the number of sequences is smaller than the threshold value.
         """
         # Note: has test, test_add_all.py: runs
         debug('add_all')
@@ -1853,27 +1881,21 @@ class FilterBlast(PhyscraperScrape):
                     if gi_id['^physcraper:last_blasted'] == '1800/01/01':
                         gi_num = gi_id['^ncbi:gi']
                         debug(gi_num)
-                        # tmp_dict = dict((taxon.label, self.data.aln[taxon].symbols_as_string()) for taxon in self.data.aln)
-                        # avg_seqlen = sum(self.data.orig_seqlen) / len(self.data.orig_seqlen)  # HMMMMMMMM
-                        # assert self.config.seq_len_perc <= 1
                         seq = self.new_seqs[gi_num]
-                        # for gi, seq in self.new_seqs.items():
-                        #     if len(seq.replace("-", "").replace("N", "")) > seq_len_cutoff:
-                        #         otu_id = self.data.add_otu(gi, self.ids)
-                        #         self.seq_dict_build(seq, otu_id, tmp_dict)
-
-                        #         for gi_num, seq in tmp_dict.items():
                         self.filtered_seq[gi_num] = seq
         return self.filtered_seq
 
     def get_name_for_blastfiles(self, key):
-        """
-        gets the name which is needed to write the blast files in 'loop_for_write_blast files'.
-        name needs to be retrieved before the actual loop starts
+        """ Gets the name which is needed to write the blast files in 'loop_for_write_blast files'.
+
+        The name needs to be retrieved before the actual loop starts.
+        I use the taxonomic names here, as this is the measure of which information goes into which local filter blast database.
+        The function is only used within 'loop_for_write_blast_files' to generate the filenames.
         """
         nametoreturn = None
         # loop needs to happen before the other one, as we need nametoreturn in second:
         for gi_id in self.sp_d[key]:
+            # this if should not be necessary
             if '^physcraper:status' in gi_id and gi_id['^physcraper:status'].split(' ')[0] not in self.seq_filter:
                 # if gi_id['^physcraper:status'].split(' ')[0] not in self.seq_filter:
                 # if gi_id['^physcraper:last_blasted'] != '1800/01/01':
@@ -1904,9 +1926,9 @@ class FilterBlast(PhyscraperScrape):
 
 
     def loop_for_write_blast_files(self, key):
-        """this loop is needed to be able to write the local blast files correctly
-            function return a filename for the blast filenames, which were generated with
-            'get_name_for_blastfiles'.
+        """This loop is needed to be able to write the local blast files for the filtering step correctly.
+
+        Function returns a filename for the filter blast, which were generated with 'get_name_for_blastfiles'.
         """
         # Note: has test,test_loop_for_blast.py: runs
         debug("length of sp_d key")
@@ -1914,6 +1936,7 @@ class FilterBlast(PhyscraperScrape):
         nametoreturn = self.get_name_for_blastfiles(key)
         for gi_id in self.sp_d[key]:
             debug("in writing file for-loop")
+            # this if should not be necessary
             if '^physcraper:status' in gi_id and gi_id['^physcraper:status'].split(' ')[0] not in self.seq_filter:
                 debug("generate files used for blast")
                 if gi_id['^physcraper:last_blasted'] != '1800/01/01':  # old seq
@@ -1986,12 +2009,12 @@ class FilterBlast(PhyscraperScrape):
         return nametoreturn
 
     def count_num_seq(self, taxon_id):
-        """make some calculation of how many species are already present
-        and how many seq have been found by blast for same sp. taxon concept.
+        """Counts how many sequences there are for a taxonomic concept,
+        excluding sequences that have not been added during earlier cycles.
+
         This will be used for how_many_sp_to_keep.
         """
-        # this is used to exclude stuff, that has more info in sp_d,
-        # but has no new seq in sp_seq_dic
+        # this counts the number of seq already added per taxonomic concept
         seq_present = 0
         if taxon_id in self.sp_seq_d.keys():
             for sp_keys in self.sp_seq_d[taxon_id].keys():
@@ -1999,24 +2022,22 @@ class FilterBlast(PhyscraperScrape):
                     seq_present += 1
                 if isinstance(sp_keys, unicode):
                     seq_present += 1
-        # this calculates how many seq of species have already
-        # been present in the aln
+        # this determines if a taxonomic concept  is already present in the aln and how many new seq. were found
         new_taxon = True
         query_count = 0
         for item in self.sp_d[taxon_id]:
-            if '^physcraper:status' in item:
-                if item['^physcraper:status'].split(' ')[0] not in self.seq_filter:
-                    if item['^physcraper:last_blasted'] != '1800/01/01':
-                        new_taxon = False
+            if '^physcraper:status' in item and item['^physcraper:status'].split(' ')[0] not in self.seq_filter:
+                if item['^physcraper:last_blasted'] != '1800/01/01':
+                    new_taxon = False
                 if item['^physcraper:status'] == "query":
                     query_count += 1
         count_dict = {'seq_present': seq_present, 'query_count': query_count, 'new_taxon': new_taxon}
         return count_dict
 
     def how_many_sp_to_keep(self, treshold, selectby):
-        """uses the sp_seq_d and places the number of sequences
-        according to threshold into the filterdseq_dict
-        This is essentially the key function of the Filter-class, wraps up everything
+        """Uses the sp_seq_d and places the number of sequences according to threshold into the filterdseq_dict.
+
+        This is essentially the key function of the Filter-class, it wraps up everything
         """
         debug("how_many_sp_to_keep")
         debug("length of sp_d")
@@ -2026,10 +2047,9 @@ class FilterBlast(PhyscraperScrape):
             count_dict = self.count_num_seq(taxon_id)
             seq_present = count_dict["seq_present"]
             query_count = count_dict["query_count"]
-
             if len(self.sp_d[taxon_id]) <= treshold:  # add all stuff to self.filtered_seq[gi_n]
                 self.add_all(taxon_id)
-            elif len(self.sp_d[taxon_id]) > treshold:
+            elif len(self.sp_d[taxon_id]) > treshold:  # filter number of sequences
                 debug("filter number of sequences")
                 # debug(self.sp_seq_d[taxon_id].keys())
                 if taxon_id in self.sp_seq_d.keys():
@@ -2039,9 +2059,8 @@ class FilterBlast(PhyscraperScrape):
                         # if seq_present >= 1 and seq_present < treshold and count_dict["new_taxon"] == False and query_count != 0:
                         if 1 <= seq_present < treshold and count_dict["new_taxon"] is False and query_count != 0:
                             debug("seq_present>0")
-                            if query_count + seq_present > treshold:
+                            if query_count + seq_present > treshold:  # species is not new in alignment, make blast with existing seq
                                 taxonfn = self.loop_for_write_blast_files(taxon_id)
-                                # species is not new in alignment, make blast with existing seq
                                 # # next loop does not seem to be used
                                 # for element in self.sp_d[taxon_id]:
                                 #     if '^ot:ottTaxonName' in element:
@@ -2053,9 +2072,7 @@ class FilterBlast(PhyscraperScrape):
                                 self.select_seq_by_local_blast(self.sp_seq_d[taxon_id], taxonfn, treshold, seq_present)
                             elif query_count + seq_present <= treshold:
                                 self.add_all(taxon_id)
-                        elif seq_present == 0 and count_dict["new_taxon"] is True and query_count >= 1:
-                            # species is completely new in alignment, \
-                            # make blast with random species
+                        elif seq_present == 0 and count_dict["new_taxon"] is True and query_count >= 1:  # species is completely new in alignment
                             debug("completely new taxon to blast")
                             # debug(count_dict)
                             # debug(taxon_id)
@@ -2089,7 +2106,7 @@ class FilterBlast(PhyscraperScrape):
         return
 
     def write_blast_files(self, file_name, seq, db=False, fn=None):
-        """write local blast files which will be read by run_local_blast
+        """Writes local blast files which will be read by run_local_blast.
         """
         debug("writing files")
         # debug(file_name)
@@ -2107,7 +2124,7 @@ class FilterBlast(PhyscraperScrape):
         fi_o.close()
 
     def replace_new_seq(self):
-        """replaces the self.new_seqs with the filtered_seq information
+        """Replaces the self.new_seqs with the filtered_seq information.
         """
         debug("replace new seq")
         # debug(self.filtered_seq)
@@ -2141,33 +2158,36 @@ class FilterBlast(PhyscraperScrape):
         # self.data.gi_dict.clear()
         # self.data.gi_dict = reduced_gi_dict # data.gi_dict seems to only have newly blasted stuff
         reduced_new_seqs = {k: self.filtered_seq[k] for k in keylist}
-
         # debug(reduced_new_seqs_dic)
         with open(self.logfile, "a") as log:
             log.write("{} sequences added after filtering, of {} before filtering\n".format(len(reduced_new_seqs_dic),
                                                                                             len(self.new_seqs_otu_id)))
         self.new_seqs = deepcopy(reduced_new_seqs)
-        # !!! key is not exactly same format as before in new_seqs_otu_id
-        self.new_seqs_otu_id = deepcopy(reduced_new_seqs_dic)
+        self.new_seqs_otu_id = deepcopy(reduced_new_seqs_dic) # ! key is not exactly same format as before in new_seqs_otu_id
+        # the dict does not seem to be used for something...
         # set back to empty dict
         self.sp_d.clear()
         self.filtered_seq.clear()
         return self.new_seqs
 
     def write_otu_info(self, downtorank):
-        """writes table to file with taxon names and number of representatives
+        """Writes a table to file with taxon names and number of representatives.
         """
         sp_d = self.sp_dict(downtorank)
         sp_info = {}
         for k in sp_d:
             sp_info[k] = len(sp_d[k])
-        fh = open('taxon_sampling.csv', 'w')
-        fh.write(str(sp_info) + "\n")
-        fh.close()
+        with open('taxon_sampling.csv', 'w') as csv_file:
+            writer = csv.writer(csv_file)
+            for key, value in sp_info.items():
+                writer.writerow([key, value])
+        # fh = open('taxon_sampling.csv', 'w')
+        # fh.write(str(sp_info) + "\n")
+        # fh.close()
 
 
 class Settings(object):
-    """A class to store all settings for PhyScraper
+    """A class to store all settings for PhyScraper.
     """
 
     def __init__(self, seqaln, mattype, trfn, schema_trf, workdir, treshold=None,
