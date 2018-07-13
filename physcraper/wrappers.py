@@ -336,7 +336,7 @@ def filter_data_run(seqaln,
         #run the ananlyses
         sys.stdout.write("BLASTing input sequences\n")
         # uncomment next line if you want to have a shared blast folder and change the path to something meaningful. Remember to change the gifilename setting in the config file to true.
-        # filteredScrape.blast_subdir = "/home/martha/physcraper/phyruns/blast_runs/"
+        filteredScrape.blast_subdir = "/home/martha/physcraper-git/physcraper/phyruns/blast_runs/"
         filteredScrape.run_blast()
         filteredScrape.read_blast()
         sys.stdout.write("remove idential sequences\n")
