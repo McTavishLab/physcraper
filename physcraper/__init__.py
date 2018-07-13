@@ -1888,11 +1888,13 @@ class FilterBlast(PhyscraperScrape):
                     #         if spn_name == self.data.otu_dict[spn_name_aln.label]['^ot:ottTaxonName']:
                     #             nametoreturn = spn_name_aln.label
             # the next lines where added because the test was breaking,
-            # needs thourough testing if it not breaks something else now.
+            # needs thorough testing if it not breaks something else now.
             if nametoreturn is not None:
-                break
-            else:
                 nametoreturn = spn_name.replace(" ", "_")
+                
+            else:
+                break
+                
         return nametoreturn
 
 
