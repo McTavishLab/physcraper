@@ -923,7 +923,7 @@ class PhyscraperScrape(object):  # TODO do I wantto be able to instantiate this 
                                                                    last_blast,
                                                                    today)
                     query = seq.symbols_as_string().replace("-", "").replace("?", "")
-                    if self.config.gifilename == True:
+                    if self.gifilename == True:
                         xml_fi = "{}/{}.xml".format(self.blast_subdir, self.data.otu_dict[taxon.label].get('^ncbi:gi', taxon.label))
                     else:
                         xml_fi = "{}/{}.xml".format(self.blast_subdir, taxon.label)
@@ -1010,7 +1010,7 @@ class PhyscraperScrape(object):  # TODO do I wantto be able to instantiate this 
             # debug("ignore mrca gi for now")
         for taxon in self.data.aln:
             # debug("add blast seq to new seqs")
-            if self.config.gifilename == True:
+            if self.gifilename == True:
                 xml_fi = "{}/{}.xml".format(self.blast_subdir,self.data.otu_dict[taxon.label].get('^ncbi:gi', taxon.label))
             else:
                 xml_fi = "{}/{}.xml".format(self.blast_subdir, taxon.label)
