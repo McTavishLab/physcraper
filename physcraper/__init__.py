@@ -1917,7 +1917,10 @@ class FilterBlast(PhyscraperScrape):
             # the next lines where added because the test was breaking,
             # needs thorough testing if it not breaks something else now.
             if nametoreturn is not None:
-                nametoreturn = spn_name.replace(" ", "_")
+                try:
+                    nametoreturn = spn_name.replace(" ", "_")
+                except:
+                    debug("do something?")
                 
             else:
                 break
