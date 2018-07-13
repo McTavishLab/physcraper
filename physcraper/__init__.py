@@ -891,6 +891,8 @@ class PhyscraperScrape(object):  # TODO do I wantto be able to instantiate this 
         self.gi_list_mrca = []
         self.seq_filter = ['deleted', 'subsequence,', 'not', "removed", "deleted,"]
         self.reset_markers()
+        if self.config.blast_loc == 'local' and len(self.gi_list_mrca) == 0:
+            self.gi_list_mrca = self.get_all_gi_mrca()
 
     # TODO is this the right place for this?
     def reset_markers(self):
@@ -1005,8 +1007,9 @@ class PhyscraperScrape(object):  # TODO do I wantto be able to instantiate this 
             self.run_blast()
         assert os.path.exists(self.blast_subdir)
         # because local db has no taxon info, needed to limit to group of interest
-        if self.config.blast_loc == 'local' and len(self.gi_list_mrca) == 0:
-            self.gi_list_mrca = self.get_all_gi_mrca()
+        # has been moved
+        # if self.config.blast_loc == 'local' and len(self.gi_list_mrca) == 0:
+        #     self.gi_list_mrca = self.get_all_gi_mrca()
             # debug("ignore mrca gi for now")
         for taxon in self.data.aln:
             # debug("add blast seq to new seqs")
@@ -1528,7 +1531,9 @@ class FilterBlast(PhyscraperScrape):
         self.date = str(datetime.date.today())
         self.repeat = 1
         self.reset_markers()
-
+        if self.config.blast_loc == 'local' and len(self.gi_list_mrca) == 0:
+            self.gi_list_mrca = self.get_all_gi_mrca()
+        # additional things that are needed for the filtering process
         self.sp_d = {}
         self.sp_seq_d = {}
         self.filtered_seq = {}
