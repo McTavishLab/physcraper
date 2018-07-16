@@ -663,7 +663,7 @@ class AlignTreeTax(object):
             json.dump(self.otu_dict, outfile)
 
     def remove_taxa_aln_tre(self, taxon_label):
-        """removes taxa from aln, tre and otu_dict,
+        """Removes taxa from aln, tre and otu_dict,
         takes a single taxon_label as input.
         """
         # note: has test, test_remove_taxa_aln_tre.py, runs, passes
@@ -674,7 +674,6 @@ class AlignTreeTax(object):
         tax2 = self.tre.taxon_namespace.get_taxon(taxon_label)
         # debug(tax)
         # debug(tax2)
-        # #assert tax==tax2
         # debug(len(self.tre.taxon_namespace))
         if tax:
             self.aln.remove_sequences([tax])
@@ -787,23 +786,19 @@ class IdDicts(object):
                 self.gi_ncbi_dict[int(lin.split(",")[0])] = lin.split(",")[1]
 
     def get_rank_info(self, gi_id=False, taxon_name=False):
-        """collect rank and linegae information from ncbi,
+        """Collects rank and linegae information from ncbi,
         used to delimit the sequences from blast,
         when you have a local blast database or a Filter Blast run
         """
         # debug("get_rank_info")
         Entrez.email = self.config.email
-        # debug(gi_id)
         if gi_id:
-            # debug(gi_id)
             # debug("gi_id to tax_name")
             tries = 5
             for i in range(tries):
                 try:
                     handle = Entrez.efetch(db="nucleotide", id=gi_id, retmode="xml")
                 except:
-                    # print(i)
-                    # debug(gi_id)
                     if i < tries - 1:  # i is zero indexed
                         continue
                     else:
@@ -811,12 +806,12 @@ class IdDicts(object):
                 break
             read_handle = Entrez.read(handle)[0]
             tax_name = read_handle['GBSeq_feature-table'][0]['GBFeature_quals'][0]['GBQualifier_value']
-            # debug(tax_name)
         else:
             tax_name = str(taxon_name).replace("_", " ")
         debug(tax_name)
         if tax_name not in self.otu_rank.keys():
             # debug("tax_name to rank")
+            ncbi = NCBITaxa()
             try:
                 # debug("try")
                 tax_id = int(Entrez.read(Entrez.esearch(db="taxonomy", term=tax_name, RetMax=100))['IdList'][0])
@@ -824,7 +819,6 @@ class IdDicts(object):
                 # print(type(tax_id))
             except:
                 # debug("except")
-                ncbi = NCBITaxa()
                 tax_info = ncbi.get_name_translator([tax_name])
                 # debug(tax_info)
                 if tax_info == {}:
@@ -833,8 +827,6 @@ class IdDicts(object):
                 # print("get rank info")
                 # print(tax_id)
                 # print(type(tax_id))
-                # print(some)
-            ncbi = NCBITaxa()
             lineage = ncbi.get_lineage(tax_id)
             lineage2ranks = ncbi.get_rank(lineage)
             tax_name = str(tax_name).replace(" ", "_")
@@ -842,8 +834,6 @@ class IdDicts(object):
             # print(type(tax_id))
             assert type(tax_id) == int
             self.otu_rank[tax_name] = {"taxon id": tax_id, "lineage": lineage, "rank": lineage2ranks}
-
-        # print(some)
         return tax_name
 
     def map_gi_ncbi(self, gi):
