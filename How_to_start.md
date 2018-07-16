@@ -137,8 +137,7 @@
 
         2. in an own data run: within the function `generate_ATT_from_files()` in the field for `ingroup_mrca`
 
-        Another aspect which needs to be considered, if your group of interest is not monophyletic and you limit the mrca of the group to something, closely related sequences, that belong for example to a different genus will not be added.
-
+        Another aspect which needs to be considered, if your group of interest is not monophyletic and you limit the search to the mrca of the group, closely related sequences that belong for example to a different genus will not be added.
     * sharing blast result files across runs: to do that you need to specify a shared blast folder for the specific runs and change the gifilename config setting to True. To provide a shared name go to the corresponding wrapper function and uncomment the line above `.run_blast()`. Remember to comment it again if you do not want to share blast results across runs.
     
 
