@@ -102,7 +102,10 @@ class ConfigObj(object):
             self.url_base = config['blast'].get('url_base')
         self.gifilename = config['blast'].get('gifilename', False)
         if self.gifilename is not False:
-            self.gifilename = True
+            if self.gifilename == "True" or self.gifilename == "true":
+                self.gifilename = True
+            else:
+                self.gifilename = False
         if _DEBUG:
             sys.stdout.write("{}\n".format(self.email))
             if self.blast_loc == 'remote':
@@ -827,6 +830,7 @@ class IdDicts(object):
                 # print("get rank info")
                 # print(tax_id)
                 # print(type(tax_id))
+            ncbi = NCBITaxa()
             lineage = ncbi.get_lineage(tax_id)
             lineage2ranks = ncbi.get_rank(lineage)
             tax_name = str(tax_name).replace(" ", "_")
@@ -911,6 +915,8 @@ class PhyscraperScrape(object):  # TODO do I wantto be able to instantiate this 
             otu_id = taxon.label
             # TODO temp until I fix delete
             if otu_id in self.data.otu_dict:
+                if _VERBOSE:
+                    sys.stdout.write("blasting {}\n".format(otu_id))
                 last_blast = self.data.otu_dict[otu_id]['^physcraper:last_blasted']
                 today = str(datetime.date.today()).replace("-", "/")
                 time_passed = abs((datetime.datetime.strptime(today, "%Y/%m/%d") - datetime.datetime.strptime(last_blast, "%Y/%m/%d")).days)
@@ -923,6 +929,8 @@ class PhyscraperScrape(object):  # TODO do I wantto be able to instantiate this 
                         xml_fi = "{}/{}.xml".format(self.blast_subdir, self.data.otu_dict[taxon.label].get('^ncbi:gi', taxon.label))
                     else:
                         xml_fi = "{}/{}.xml".format(self.blast_subdir, taxon.label)
+                    if _DEBUG:
+                        sys.stdout.write("attempting to write {}\n".format(xml_fi))
                     if not os.path.isfile(xml_fi):
                         if _VERBOSE:
                             sys.stdout.write("blasting seq {}\n".format(taxon.label))
@@ -1011,6 +1019,8 @@ class PhyscraperScrape(object):  # TODO do I wantto be able to instantiate this 
                 xml_fi = "{}/{}.xml".format(self.blast_subdir,self.data.otu_dict[taxon.label].get('^ncbi:gi', taxon.label))
             else:
                 xml_fi = "{}/{}.xml".format(self.blast_subdir, taxon.label)
+            if _DEBUG:
+                sys.stdout.write("attempting to read {}\n".format(xml_fi))
             if os.path.isfile(xml_fi):
                 result_handle = open(xml_fi)
                 try:
@@ -1074,6 +1084,8 @@ class PhyscraperScrape(object):  # TODO do I wantto be able to instantiate this 
         """
         # TODO unify spp name somehow?
         id_of_label = self.get_sp_id_of_otulabel(label)
+        if _DEBUG:
+            sys.stdout.write("taxon is ott{}\n".format(id_of_label))
         new_seq = seq.replace("-", "")
         tax_list = deepcopy(seq_dict.keys())
         i = 0

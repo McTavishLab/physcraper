@@ -159,16 +159,14 @@ def own_data_run(seqaln,
 def filter_OTOL(study_id,
                  tree_id,
                  seqaln,
-                 mattype,
                  workdir,
                  configfi,
                  treshold,
                  selectby,
                  downtorank,
-                 spInfoDict,
+                 blacklist,
                  add_local_seq,
-                 id_to_spn_addseq_json,
-                 blacklist):
+                 id_to_spn_addseq_json):
     '''looks for pickeled file to continue run, or builds and runs 
     new analysis for as long as new seqs are found. 
     This uses the FilterBlast subclass to be able to filter the blast output.'''
@@ -192,14 +190,11 @@ def filter_OTOL(study_id,
         debug(conf.email)
 
         #Generate an linked Alignment-Tree-Taxa object
-        data_obj = generate_ATT_from_files(seqaln=seqaln, 
-                             mattype=mattype, 
-                             workdir=workdir,
-                             treefile=trfn,
-                             schema_trf=schema_trf,
-                             otu_json=spInfoDict,
-                             #email=conf.email,
-                             ingroup_mrca=None)
+        data_obj = generate_ATT_from_phylesystem(seqaln,
+                                  workdir,
+                                  study_id,
+                                  tree_id,
+                                  phylesystem_loc='api')
 
         #Prune sequnces below a certain length threshold
         #This is particularly important when using loci that have been de-concatenated, as some are 0 length which causes problems.
@@ -216,7 +211,11 @@ def filter_OTOL(study_id,
 
         #Now combine the data, the ids, and the configuration into a single physcraper scrape object
         filteredScrape =  FilterBlast(data_obj, ids)
-        # filteredScrape.write_otu_info(downtorank)
+
+
+        filteredScrape.blacklist = blacklist
+
+# filteredScrape.write_otu_info(downtorank)
         if add_local_seq is not None:
             debug("will add local sequences now")
             filteredScrape.add_local_seq(add_local_seq, id_to_spn_addseq_json)
@@ -275,10 +274,10 @@ def filter_data_run(seqaln,
                  selectby,
                  downtorank,
                  spInfoDict,
+                 blacklist,
                  add_local_seq,
                  id_to_spn_addseq_json,
-                 configfi,
-                 blacklist = None):
+                 configfi):
     '''looks for pickeled file to continue run, or builds and runs 
     new analysis for as long as new seqs are found. 
     This uses the FilterBlast subclass to be able to filter the blast output.'''
@@ -326,6 +325,8 @@ def filter_data_run(seqaln,
 
         #Now combine the data, the ids, and the configuration into a single physcraper scrape object
         filteredScrape =  FilterBlast(data_obj, ids)
+        filteredScrape.blacklist = blacklist
+
         # filteredScrape.write_otu_info(downtorank)
         if add_local_seq is not None:
             debug("will add local sequences now")
