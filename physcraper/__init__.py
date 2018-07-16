@@ -101,6 +101,8 @@ class ConfigObj(object):
         if self.blast_loc == 'remote':
             self.url_base = config['blast'].get('url_base')
         self.gifilename = config['blast'].get('gifilename', False)
+        if self.gifilename is not False:
+            self.gifilename = True
         if _DEBUG:
             sys.stdout.write("{}\n".format(self.email))
             if self.blast_loc == 'remote':
@@ -928,7 +930,7 @@ class PhyscraperScrape(object):  # TODO do I wantto be able to instantiate this 
                                                                    last_blast,
                                                                    today)
                     query = seq.symbols_as_string().replace("-", "").replace("?", "")
-                    if self.config.gifilename == True:
+                    if self.config.gifilename is True:
                         xml_fi = "{}/{}.xml".format(self.blast_subdir, self.data.otu_dict[taxon.label].get('^ncbi:gi', taxon.label))
                     else:
                         xml_fi = "{}/{}.xml".format(self.blast_subdir, taxon.label)
@@ -1016,7 +1018,7 @@ class PhyscraperScrape(object):  # TODO do I wantto be able to instantiate this 
             # debug("ignore mrca gi for now")
         for taxon in self.data.aln:
             # debug("add blast seq to new seqs")
-            if self.config.gifilename == True:
+            if self.config.gifilename is True:
                 xml_fi = "{}/{}.xml".format(self.blast_subdir,self.data.otu_dict[taxon.label].get('^ncbi:gi', taxon.label))
             else:
                 xml_fi = "{}/{}.xml".format(self.blast_subdir, taxon.label)
@@ -1450,7 +1452,7 @@ class PhyscraperScrape(object):  # TODO do I wantto be able to instantiate this 
             self.remove_blacklistitem()
 
         if len(self.new_seqs) > 0:
-            # self.remove_identical_seqs()
+            # self.remove_identical_seqs()  # speed up
             self.data.write_files()  # should happen before aligning in case of pruning
             if len(self.new_seqs_otu_id) > 0:  # TODO rename to something more intutitive
                 self.write_query_seqs()
@@ -1473,16 +1475,14 @@ class PhyscraperScrape(object):  # TODO do I wantto be able to instantiate this 
                 if self.config.gifilename is not True:
                     os.rename(self.blast_subdir, "{}/previous_run".format(self.workdir))
                 if os.path.exists("{}/last_completed_update".format(self.workdir)):
-                    # debug(self.tmpfi)
                     os.rename(self.tmpfi, "{}/last_completed_update".format(self.workdir))
                 for filename in glob.glob('{}/RAxML*'.format(self.workdir)):
-                    # debug("{}/previous_run/{}".format(self.workdir, filename.split("/")[-1]))
+                    # debug(filename.split("/")[-1])
+                    if not os.path.exists("{}/previous_run".format(self.workdir)):
+                        os.makedirs('{}/previous_run/'.format(self.workdir))
                     os.rename(filename, "{}/previous_run/{}".format(self.workdir, filename.split("/")[-1]))
                 for filename in glob.glob('{}/papara*'.format(self.workdir)):
-                    # debug("{}/previous_run/{}".format(self.workdir, filename.split("/")[-1]))
-                    # debug(filename)
-                    os.rename(filename, "{}/previous_run/{}".format(self.workdir, filename.split("/")[-1]))
-                # debug("{}/previous_run/newseqs.fasta".format(self.workdir))
+                      os.rename(filename, "{}/previous_run/{}".format(self.workdir, filename.split("/")[-1]))
                 os.rename("{}/{}".format(self.workdir, self.newseqs_file),
                           "{}/previous_run/newseqs.fasta".format(self.workdir))
                 try:
