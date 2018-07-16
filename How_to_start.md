@@ -28,12 +28,11 @@
 
     Depending on the size of your tree to be updated, there are things to consider.
 
-      * **web BLAST service**: If the tree is not too large and/or you have enough time, you can run the tool with the main settings, that uses the web BLAST service. The web blast service is limited to 100? blast searches a day, for users who are above this, the searches are not terminated, but are being slowed down. Advantage is that it is the most up to date database to blast against.
-      * **local blast database**: If the trees are bigger and/or you have a relatively fast computer, this might be the best option. ncbi regularly publish the database, it can be easily downloaded and inititated (see below).
+      * **web BLAST service**: If the tree is not too large and/or you have enough time, you can run the tool with the main settings, that uses the web BLAST service. The web service is limited to 100? searches a day, for users who are above this, the searches are not terminated, but are being slowed down. Advantage is that it is the most up to date database to blast against.
       * **Amazon cloud service**: If you do not have a fast computer, there are options to pay for a pre-installed cloud service using [amazon](https://aws.amazon.com/marketplace/pp/B00N44P7L6/ref=mkt_wir_ncbi_blast).
+      * **local blast database**: If the trees are bigger and/or you have a relatively fast computer, this might be the best option. ncbi regularly publishes the databases, that can easily be downloaded and initiated.
 
-
-    1. Initiating a local Blast database:
+        Initiating a local Blast database:
 
         General information about the BLAST database can be found [here](ftp://ftp.ncbi.nlm.nih.gov/blast/documents/blastdb.html)
 
@@ -107,7 +106,7 @@
     * **downtorank**: this defines the rank which is used to determine the maximum number per taxonomic concept. It can be set to None and then for all taxonomic concepts, there will be the maximum number of threshold species be retrieved. If it is set to species, there will no more than the maximum number of sequences randomly choosen from all sequences available for the subspecies. It can be set to any ranks defined in the ncbi taxonomy browser.
     * **selectby**: this defines how to select the selected sequences. For the moment only "blast" is supported, "length" is under development.
         * **blast**: All sequences belonging to a taxonomic concept will be used for a filtering blast search. Sequences will be randomly selected from a pool of sequences, that met the criteria of being within the mean +/- standard deviation of sequence  similarity in relation to the queried sequence (a sequence of the same taxonomic concept which is already part of the phylogeny). If the taxonomic concept is likely monophyletic the distances will be similar and thus all sequences will fall within the mean and standard deviation of sequence similarity. If there are a few outlier sequences only, this seems to be likely a misidentification or mis-labeling in GenBank, outlier sequences will not be added, as they are most likely outside the allowed range of mean +/- SD. If the taxon is likely not monophyletic and sequences diverge a lot from each other, the mean and sd value will be larger and allows to randomly pick sequences, that represent the divergence.
-        * **length** (under development): instead of randomly choosing between sequences that are within the criteria of the blast search using sequence divergence as a criterium, here the longest sequences will be selected.
+        * **length** (under development): instead of randomly choosing between sequences that are within the criteria of the blast search using sequence divergence as a criteria, here the longest sequences will be selected.
     * **blacklist**: a list of sequences, that shall not be added or were identified to be removed later. This needs to be formatted as a python list containing the GenBank identifiers (e.g. `[gi number, gi number]`). Please not, that it must be the Genbank identifiers and not the accession numbers.
 
     1. using OpenTreeofLife study ID:
@@ -131,7 +130,7 @@
     There are some more features that can be changed if you know where, we will change the code hopefully soon, to make that easier adjustable.
 
     * time lapse for blasting: at the moment this is hard coded to be 14 days. If you want to adjust the timing look for this line of code:  `if time_passed > 14:`
-    * trim method: by default species will be trimmed from the alignment if it has not at least 75% of the total sequence length. This can be changed in `./physcraper/__init__.py`. Change within the function trim() the value for `taxon_missingness`. 
+    * trim method: by default sequences will be trimmed from the alignment if it has not at least 75% of the total sequence length. This can be changed in `./physcraper/__init__.py`, in the function `trim()` the value for `taxon_missingness`. 
     * change the most recent common ancestor (mrca): often phylogenies include outgroups, and someone might not be interested in updating that part of the tree. This can be avoided by defining the most recent common ancestor. It requires the OpenTreeOfLife identifier for the group of interest. You can get that by going to [Open Tree of Life](https://ot14.opentreeoflife.org/opentree/argus/opentree9.1@ott93302) and type in the name of the lineage and get the OTT ID at the right side of the page. That number needs to be provided in the corresponding wrapper function, as following:
 
         1. in an OToL run: within the function  `generate_ATT_from_files()` in the field for `ingroup_mrca`
@@ -146,7 +145,7 @@
 
 ## Short introduction into what the tool actually does
 
-PhyScraper is a command-line tool written in python to automatically update phylogenies. As input it needs a phylogeny, the corresponding alignment and the information about the tipnames and the corresponding species names. This can either be a file provided by the user or if you have uploaded your tree to Open Tree of Life the corresponding study ID.
+PhyScraper is a command-line tool written in python to automatically update phylogenies. As input it needs a phylogeny, the corresponding alignment and the information about the tip names and the corresponding species names. This can either be a file provided by the user or if you have uploaded your tree to Open Tree of Life the corresponding study ID.
 PhyScraper will take every input sequence and blasts it against the ncbi GenBank database. Sequences that are similar to the input sequence will be added to the alignment, if they are a different species concept and/or they are longer than existing sequences or differ in at least one point mutation.
 Then it will place the newly found sequences onto the tree, which is then used as a starting tree for a full RAxML run. In the next round, every newly added sequence will be blasted and this continues until no new sequence were found.
 After a certain time threshold (currently 14 days), the existing sequences will be blasted again to check if new sequences can be found.
