@@ -36,7 +36,7 @@
 
         General information about the BLAST database can be found [here](ftp://ftp.ncbi.nlm.nih.gov/blast/documents/blastdb.html)
 
-        In Linux do the following in the folder of your future blast database run: (for Windows and MAC please use google to figure it out, there should be plenty of information.)
+        In Linux do the following in the folder of your future blast database: (for Windows and MAC please use google to figure it out, there should be plenty of information.)
 
           * `sudo apt-get install ncbi-blast+`
           * `wget 'ftp://ftp.ncbi.nlm.nih.gov/blast/db/nt.*'`  # this downloads all nt-compressed files
@@ -67,7 +67,7 @@
 
     This is explaining how to set up a "standard run", which will add all sequences, that are similar and long enough to the alignment, as long as they are no subsequences of an already existing sequence. Optional arguments are explained in the following section.
 
-    Depending if you have uploaded your tree prior to analysis to the OpenTreeofLife website, there are two main options:
+    Depending if you have uploaded your tree prior to analysis to the [OpenTreeofLife website (OToL)](https://ot14.opentreeoflife.org/opentree/argus/opentree9.1@ott93302), there are two main options:
 
     Specified paths have to start either from your root directory, or can be relative from within the physcraper main folder.
 
@@ -85,7 +85,7 @@
 
     2. using your own files:
 
-        There is an example file in `tests/tiny_standard_ownfile.py`. The corresponding function to use in your file setup is `own_data_run()`.
+        There is an example file in `tests/tiny_standard_ownfile.py`, it comes with a tiny sample dataset in `tests/data/tiny_example`. The corresponding wrapper function to use in your file setup is `own_data_run()`.
 
         * **seqaln**: give the path to your alignment file, must be a single gene alignment
         * **mattype**: file format of your alignment - currently supported: “fasta”, “newick”, “nexus”, “nexml”, “phylip”
