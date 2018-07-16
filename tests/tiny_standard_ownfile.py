@@ -10,7 +10,8 @@ trfn = "tests/data/tiny_test_example/test.tre"
 schema_trf = "newick"
 id_to_spn = r"tests/data/tiny_test_example/test_nicespl.csv"
 workdir="tiny_run_july"
-configfi = "tests/data/blubb_localblast_highhits.config"
+configfi = "tests/data/blubb_localblast.config"
+otu_jsonfi = "{}/otu_dict.json".format(workdir)
 
 
 # setup the run
@@ -29,7 +30,5 @@ wrappers.own_data_run(seqaln,
                      trfn,
                      schema_trf,
                      workdir,
-                     downtorank,
                      otu_jsonfi,
                      configfi)
-

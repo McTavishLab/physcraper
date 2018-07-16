@@ -140,7 +140,7 @@ def own_data_run(seqaln,
         print(scraper.data.aln.taxon_namespace)
         print(scraper.data.tre.taxon_namespace)
 
-        # run the ananlyses
+        # run the analyses
         # uncomment next line if you want to have a shared blast folder and change the path to something meaningful. Remember to change the gifilename setting in the config file to true.
         # scraper.blast_subdir = "/home/martha/physcraper/phyruns/blast_runs/"
 

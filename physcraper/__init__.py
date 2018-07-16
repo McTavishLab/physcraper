@@ -921,7 +921,6 @@ class PhyscraperScrape(object):  # TODO do I wantto be able to instantiate this 
             otu_id = taxon.label
             # TODO temp until I fix delete
             if otu_id in self.data.otu_dict:
-                debug(otu_id)
                 last_blast = self.data.otu_dict[otu_id]['^physcraper:last_blasted']
                 today = str(datetime.date.today()).replace("-", "/")
                 time_passed = abs((datetime.datetime.strptime(today, "%Y/%m/%d") - datetime.datetime.strptime(last_blast, "%Y/%m/%d")).days)
@@ -1022,7 +1021,6 @@ class PhyscraperScrape(object):  # TODO do I wantto be able to instantiate this 
                 xml_fi = "{}/{}.xml".format(self.blast_subdir,self.data.otu_dict[taxon.label].get('^ncbi:gi', taxon.label))
             else:
                 xml_fi = "{}/{}.xml".format(self.blast_subdir, taxon.label)
-            debug(xml_fi)
             if os.path.isfile(xml_fi):
                 result_handle = open(xml_fi)
                 try:
@@ -1073,18 +1071,8 @@ class PhyscraperScrape(object):  # TODO do I wantto be able to instantiate this 
         elif spn_of_label in self.ids.otu_rank.keys():
             id_of_label = int(self.ids.otu_rank[spn_of_label]["taxon id"])
         else:
-            # debug("else")
-            # debug(spn_of_label)
-
-            # debug(label)
             tax_name = self.ids.get_rank_info(taxon_name=spn_of_label)
-            # debug(tax_name)
-            # spn_of_label = str(tax_name)
             id_of_label = int(self.ids.otu_rank[tax_name]["taxon id"])
-            # debug(self.ids.otu_rank[tax_name]["taxon id"] )
-        # debug(id_of_label)
-        # debug(type(id_of_label))
-        # debug(some)
         return id_of_label
 
     def seq_dict_build(self, seq, label, seq_dict):  # Sequence needs to be passed in as string.

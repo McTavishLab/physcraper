@@ -1,9 +1,10 @@
 ## Short tutorial:
 
 ### Before you can start
-1. install the dependecies:
-     * PaPaRa (http://sco.h-its.org/exelixis/web/software/papara/index.html)
-     * RAxML (http://sco.h-its.org/exelixis/web/software/raxml/index.html)
+1. install the dependencies:
+     * [PaPaRa](http://sco.h-its.org/exelixis/web/software/papara/index.html) - alignment tool
+     * [RAxML](http://sco.h-its.org/exelixis/web/software/raxml/index.html) - tree estimation program
+     * [BLAST+](https://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Web&PAGE_TYPE=BlastDocs&DOC_TYPE=Download) - local BLAST is needed for filtering, but no local database needs to be installed if you decide for another general BLAST method (see step 5).
 
 2. make sure they are accessible from everywhere, thus add them to your PATH using the command line:
      * UNIX: `export PATH=$PATH:/path/to/my/program`
@@ -47,12 +48,12 @@
         The last command shows you if it worked correctly. 'nt' means, we are making the nucleotide database.
         The database needs to be update regularly, go back to step 1 as soon as there is a database update to get the most recent sequences from GenBank.
 
-### Setting up a run:
+### Set up a run
 1. edit major settings in the config file
 
     There is an example config file in `tests/data/localblast.config`
 
-      * **email**: please specify your email adress, this is recommended/required by ncbi
+      * **email**: please specify your email address, this is recommended/required by ncbi
       * **evalue threshold**: depending on your dataset and what you want to do, it might be worse checking if the e-value threshold is how you want it.
         This is the e-value that can be retrieved from BLAST searches and is used to limit the BLAST results to sequences that are similar to the search input sequence.
       * **hitlist_size**: this is the amount of sequences being returned from a BLAST research. If your phylogeny does not contain a lot of nodes, it can be a low value. If the sampled lineage contains many sequences with low sequence divergence it is better to increase it to be able to retrieve all similar sequences.
@@ -63,13 +64,13 @@
       * **seq_len_perc**: here you can specify the minimum percentage length of newly found sequences to be added in comparison to the original alignment.
 
 
-2. write your analysis file - standard run:
+2. write your analysis file - standard run 
 
     This is explaining how to set up a "standard run", which will add all sequences, that are similar and long enough to the alignment, as long as they are no subsequences of an already existing sequence. Optional arguments are explained in the following section.
 
     Depending if you have uploaded your tree prior to analysis to the OpenTreeofLife website, there are two main options:
 
-    Specified pathes have to start either from your root directory, or can be relative from within the physcraper main folder.
+    Specified paths have to start either from your root directory, or can be relative from within the physcraper main folder.
 
     1. using OpenTreeOfLife study ID:
 
@@ -91,7 +92,7 @@
         * **mattype**: file format of your alignment - currently supported: “fasta”, “newick”, “nexus”, “nexml”, “phylip”
         * **trfn**: give the path to the file containing the corresponding phylogeny, all tips must be represented in the alignment file as well.
         * **schema_trf**: file format of your phylogeny file - currently supported: “fasta”, “newick”, “nexus”, “nexml”, “phylip”
-        * **id_to_spn**: path to a comma-delimited file where tip labels correspond to species names**: example file can be found in tests/data/tiny_test_example/test_nicespl.csv
+        * **id_to_spn**: path to a comma-delimited file where tip labels correspond to species names: example file can be found in `tests/data/tiny_test_example/test_nicespl.csv`
         * **workdir**: path to your working directory, the folder where intermediate and result files shall be stored.
         * **configfi**: path to your config-file, which was edited in step 1.
         * **otu_jsonfi**: path to the otu json file, this will contain all the information of the sequences retrieved during the run. Usually, does not need to be edited.
@@ -130,7 +131,8 @@
     There are some more features that can be changed if you know where, we will change the code hopefully soon, to make that easier adjustable.
 
     * time lapse for blasting: at the moment this is hard coded to be 14 days. If you want to adjust the timing look for this line of code:  `if time_passed > 14:`
-    * change the most recent common ancestor: often phylogenies include outgroups, and someone might not be interested in updating that part of the tree. This can be avoided by defining the most recent common ancestor. It requires the OpenTreeOfLife identifier for the group of interest. You can get that by going to [Open Tree of Life](https://ot14.opentreeoflife.org/opentree/argus/opentree9.1@ott93302) and type in the name of the lineage and get the OTT ID at the right side of the page. That number needs to be provided in the corresponding wrapper function, as following:
+    * trim method: by default species will be trimmed from the alignment if it has not at least 75% of the total sequence length. This can be changed in `./physcraper/__init__.py`. Change within the function trim() the value for `taxon_missingness`. 
+    * change the most recent common ancestor (mrca): often phylogenies include outgroups, and someone might not be interested in updating that part of the tree. This can be avoided by defining the most recent common ancestor. It requires the OpenTreeOfLife identifier for the group of interest. You can get that by going to [Open Tree of Life](https://ot14.opentreeoflife.org/opentree/argus/opentree9.1@ott93302) and type in the name of the lineage and get the OTT ID at the right side of the page. That number needs to be provided in the corresponding wrapper function, as following:
 
         1. in an OToL run: within the function  `generate_ATT_from_files()` in the field for `ingroup_mrca`
 
@@ -139,7 +141,7 @@
         Another aspect which needs to be considered, if your group of interest is not monophyletic and you limit the mrca of the group to something, closely related sequences, that belong for example to a different genus will not be added.
 
     * sharing blast result files across runs: to do that you need to specify a shared blast folder for the specific runs and change the gifilename config setting to True. To provide a shared name go to the corresponding wrapper function and uncomment the line above `.run_blast()`. Remember to comment it again if you do not want to share blast results across runs.
-
+    
 
 
 ## Short introduction into what the tool actually does
