@@ -26,3 +26,6 @@ blast2genus_nothresh/
 
 mean_test/
 Senecio_*
+tests/data/precooked/fixed/local-blast/Senecio_scopolii_subsp._scopolii_db.nhr
+tests/data/precooked/fixed/local-blast/Senecio_scopolii_subsp._scopolii_db.nsq
+
