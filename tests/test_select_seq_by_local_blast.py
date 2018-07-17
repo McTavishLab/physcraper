@@ -59,7 +59,7 @@ for giID in filteredScrape.sp_d:
             # for item in filteredScrape.sp_d[giID]:
             if seq_present >= 1 and seq_present < treshold and count_dict["new_taxon"] == False and query_count != 0:
                 if query_count + seq_present > treshold:
-                    taxonfn = filteredScrape.loop_for_write_blast_files(giID, selectby)
+                    taxonfn = filteredScrape.loop_for_write_blast_files(giID)
                     for element in filteredScrape.sp_d[giID]:
                         if '^ot:ottTaxonName' in element:
                             blast_seq = "{}".format(element['^ot:ottTaxonName'])
