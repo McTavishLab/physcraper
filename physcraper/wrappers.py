@@ -3,11 +3,8 @@ import pickle
 import sys
 import os
 import subprocess
-import json
-import csv
-from ete2 import NCBITaxa
-from physcraper import generate_ATT_from_phylesystem, generate_ATT_from_files, ConfigObj, Settings, IdDicts, PhyscraperScrape 
-from physcraper import FilterBlast, debug #, Concat
+from physcraper import generate_ATT_from_phylesystem, generate_ATT_from_files, ConfigObj,  IdDicts, PhyscraperScrape
+from physcraper import FilterBlast, Settings, debug  # Concat
 from dendropy import DnaCharacterMatrix
 
 
@@ -65,13 +62,12 @@ def standard_run(study_id,
         data_obj.write_labelled(label='^ot:ottTaxonName')
         data_obj.write_otus('otu_info', schema='table')
         data_obj.dump()
-        #Mapping identifiers between OpenTree and NCBI requires and identifier dict object
+        # Mapping identifiers between OpenTree and NCBI requires and identifier dict object
     if os.path.isfile(conf.id_pickle):
         sys.stdout.write("Reloading id dicts from {}\n".format(conf.id_pickle))
-#        thawed_id = open(conf.id_json, 'r').readlines()
-#        ids = jsonpickle.decode(thawed_id)
-#        scraper.repeat = 1
-        ids = pickle.load(open(conf.id_pickle, "rb" ))
+#       ids = jsonpickle.decode(thawed_id)
+#       scraper.repeat = 1
+        ids = pickle.load(open(conf.id_pickle, "rb"))
     else:
         sys.stdout.write("setting up id dictionaries\n")
         sys.stdout.flush()
@@ -96,38 +92,6 @@ def standard_run(study_id,
         scraper.generate_streamed_alignment()
     return
 
-# def OtuJsonDict(id_to_spn, configfi):
-#     """Make otu json dict, which is also produced within the openTreeLife-query"""
-#     cwd = os.getcwd()  
-#     ## reads input file into the var spInfo
-#     with open(id_to_spn, mode='r') as idtospn:
-#         reader = csv.reader(idtospn)
-#         spInfo = dict((rows[0], rows[1]) for rows in reader)
-#     #print(spInfoDict) 
- 
-#     ###generate spinfodict
-    
-#     ottdic = get_ottid(configfi, cwd) 
-#     # print(ottdic)
-#     ncbi = NCBITaxa()    
-    
-#     spInfoDict = {}
-#     for item in spInfo:
-#         spn = spInfo[item].replace("_", " ")
-#         name2taxid = ncbi.get_name_translator([spn])
-#         otuid = "otu{}".format(spn)
-#         if len(name2taxid.items())>=1:
-#             ncbiid = name2taxid.items()[0][1][0]
-#             ott = ottdic.ncbi_to_ott[ncbiid]
-#             spn = ottdic.ott_to_name[ott]
-#             get_info = {'^ncbiID': ncbiid, '^ot:ottTaxonName': spn, '^ot:ottId': ott, '^user:TaxonName': spInfo[item],  '^physcraper:status': 'original','^physcraper:last_blasted' : "1900/01/01" }  
-#             spInfoDict[item] = get_info
-#         else:
-            
-#             spInfoDict[item] = {'^user:TaxonName': spInfo[item],  '^physcraper:status': 'original','^physcraper:last_blasted' : "1900/01/01"}
-#     return  spInfoDict 
-
-
 
 def own_data_run(seqaln,
                  mattype,
@@ -149,17 +113,17 @@ def own_data_run(seqaln,
 #            sync_names()
         sys.stdout.write("setting up Data Object\n")
         sys.stdout.flush()
-        #read the config file into a configuration object
+        # read the config file into a configuration object
         conf = ConfigObj(configfi)
 
-        #Generate an linked Alignment-Tree-Taxa object
+        # Generate an linked Alignment-Tree-Taxa object
         data_obj = generate_ATT_from_files(seqaln=seqaln, 
-                             mattype=mattype, 
-                             workdir=workdir,
-                             treefile=trfn,
-                             schema_trf = schema_trf,
-                             otu_json=sp_info_jsonfi,
-                             ingroup_mrca=None)
+                                             mattype=mattype,
+                                             workdir=workdir,
+                                             treefile=trfn,
+                                             schema_trf = schema_trf,
+                                             otu_json=sp_info_jsonfi,
+                                             ingroup_mrca=None)
 
         # Prune sequnces below a certain length threshold
         # This is particularly important when using loci that have been de-concatenated, as some are 0 length which causes problems.
@@ -302,17 +266,18 @@ def filter_OTOL(study_id,
 
 
 def filter_data_run(seqaln,
-                 mattype,
-                 trfn,
-                 schema_trf,
-                 workdir,
-                 treshold,
-                 selectby,
-                 downtorank,
-                 spInfoDict,
-                 add_local_seq,
-                 id_to_spn_addseq_json,
-                 configfi):
+                     mattype,
+                     trfn,
+                     schema_trf,
+                     workdir,
+                     treshold,
+                     selectby,
+                     downtorank,
+                     spInfoDict,
+                     blacklist,
+                     add_local_seq,
+                     id_to_spn_addseq_json,
+                     configfi):
     '''looks for pickeled file to continue run, or builds and runs 
     new analysis for as long as new seqs are found. 
     This uses the FilterBlast subclass to be able to filter the blast output.'''
@@ -370,24 +335,30 @@ def filter_data_run(seqaln,
             filteredScrape.remove_identical_seqs()
             filteredScrape.generate_streamed_alignment()
         #run the ananlyses
+        sys.stdout.write("BLASTing input sequences\n")
+        # uncomment next line if you want to have a shared blast folder and change the path to something meaningful. Remember to change the gifilename setting in the config file to true.
+        filteredScrape.blast_subdir = "/home/martha/physcraper-git/physcraper/phyruns/blast_runs/"
         filteredScrape.run_blast()
         filteredScrape.read_blast()
+        sys.stdout.write("remove idential sequences\n")
         filteredScrape.remove_identical_seqs()
         filteredScrape.dump()
         debug(treshold)
+        sys.stdout.write("Filter the sequences\n")
         if treshold is not None:
             filteredScrape.sp_dict(downtorank)
-            filteredScrape.make_sp_seq_dict(treshold=treshold, selectby=selectby)
+            filteredScrape.make_sp_seq_dict()
             filteredScrape.how_many_sp_to_keep(treshold=treshold, selectby=selectby)
             filteredScrape.replace_new_seq()
         debug("from replace to streamed aln")
+        sys.stdout.write("calculate the phylogeny\n")
         filteredScrape.generate_streamed_alignment()
         filteredScrape.dump()
-    while filteredScrape.repeat == 1: 
-
+    while filteredScrape.repeat == 1:
         # number_rounds += 1
-        filteredScrape.data.write_labelled(label='^user:TaxonName', gi_id=True)
+        filteredScrape.data.write_labelled(label='^ot:ottTaxonName', gi_id=True)
         filteredScrape.data.write_otus("otu_info", schema='table')
+        sys.stdout.write("BLASTing input sequences\n")
         filteredScrape.run_blast()
         filteredScrape.read_blast()
         filteredScrape.remove_identical_seqs()
@@ -397,6 +368,8 @@ def filter_data_run(seqaln,
             filteredScrape.make_sp_seq_dict()
             filteredScrape.how_many_sp_to_keep(treshold=treshold, selectby=selectby)
             filteredScrape.replace_new_seq()
+        filteredScrape.data.reconcile(seq_len_perc=0.75)
+        sys.stdout.write("calculate the phylogeny\n")
         filteredScrape.generate_streamed_alignment()
         filteredScrape.dump()
         filteredScrape.write_otu_info(downtorank)
@@ -474,7 +447,7 @@ def run_with_settings(settings):
         filteredScrape.dump()
         if settings.treshold is not None:
             filteredScrape.sp_dict(settings.downtorank)
-            filteredScrape.make_sp_seq_dict(treshold=settings.treshold, selectby=settings.selectby)
+            filteredScrape.make_sp_seq_dict()
             filteredScrape.how_many_sp_to_keep(treshold=settings.treshold, selectby=settings.selectby)
             filteredScrape.replace_new_seq()
         debug("from replace to streamed aln")
@@ -491,7 +464,7 @@ def run_with_settings(settings):
         debug("make sp_dict")    
         if settings.treshold is not None:
             filteredScrape.sp_dict(settings.downtorank)
-            filteredScrape.make_sp_seq_dict(treshold=settings.treshold, selectby=settings.selectby)
+            filteredScrape.make_sp_seq_dict()
             filteredScrape.how_many_sp_to_keep(treshold=settings.treshold, selectby=settings.selectby)
             filteredScrape.replace_new_seq()
         filteredScrape.generate_streamed_alignment()
