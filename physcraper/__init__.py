@@ -313,7 +313,7 @@ def OtuJsonDict(id_to_spn, id_dict):
                         sys.stdout.write("found taxon {} in ncbi".format(spn))
                     ncbiid = name2taxid.items()[0][1][0]
                     ottid = id_dict.ncbi_to_ott[ncbiid]
-                    ottname = id_dict.ott_to_name[ott]
+                    ottname = id_dict.ott_to_name[ottid]
                 else:
                     sys.stderr.write("match to taxon {} not found in open tree taxonomy or NCBI. Proceeding without taxon info\n".format(spn))
                     ottid, ottname, ncbiid = None, None, None
@@ -690,7 +690,7 @@ def get_mrca_ott(ott_ids):
         if _VERBOSE:
             sys.stdout.write('(v3) MRCA of sampled taxa is {}\n'.format(mrca_node['mrca'][u'taxon'][u'name']))
     else:
-        print mrca_node.keys()
+        print(mrca_node.keys())
         sys.stderr.write('(v3) MRCA of sampled taxa not found. Please find and input and approppriate OTT id as ingroup mrca in generate_ATT_from_files')
         sys.exit()
     return tax_id
@@ -738,7 +738,7 @@ class IdDicts(object):
                 self.gi_ncbi_dict[int(lin.split(",")[0])] = lin.split(",")[1]
 
     def get_rank_info(self, gi_id=False, taxon_name=False):
-        """collect rank and linegae information from ncbi,
+        """Collects rank and lineage information from ncbi,
         used to delimit the sequences from blast,
         when you have a local blast database or a Filter Blast run
         """
@@ -761,10 +761,12 @@ class IdDicts(object):
         else:
             tax_name = str(taxon_name).replace("_", " ")
         if tax_name not in self.otu_rank.keys():
+            # debug("tax_name to rank")
+            ncbi = NCBITaxa()
             try:
                 tax_id = int(Entrez.read(Entrez.esearch(db="taxonomy", term=tax_name, RetMax=100))['IdList'][0])
             except:
-                ncbi = NCBITaxa()
+                # debug("except")
                 tax_info = ncbi.get_name_translator([tax_name])
                 if tax_info == {}:
                     print("Taxon name does not match any species name in ncbi. Check that name is written correctly!")
@@ -802,6 +804,7 @@ class PhyscraperScrape(object):  # TODO do I wantto be able to instantiate this 
     # set up needed variables as nones here?!
     # TODO better enforce ordering
     """This is the class that does the perpetual updating"""
+
     def __init__(self, data_obj, ids_obj):
         # todo check input types assert()
         self.workdir = data_obj.workdir
@@ -953,7 +956,8 @@ class PhyscraperScrape(object):  # TODO do I wantto be able to instantiate this 
         #     self.gi_list_mrca = self.get_all_gi_mrca()
             # debug("ignore mrca gi for now")
         for taxon in self.data.aln:
-            if self.config.gifilename == True:
+            # debug("add blast seq to new seqs")
+            if self.config.gifilename is True:
                 xml_fi = "{}/{}.xml".format(self.blast_subdir,self.data.otu_dict[taxon.label].get('^ncbi:gi', taxon.label))
             else:
                 xml_fi = "{}/{}.xml".format(self.blast_subdir, taxon.label)
@@ -1331,11 +1335,11 @@ class PhyscraperScrape(object):  # TODO do I wantto be able to instantiate this 
 
     def generate_streamed_alignment(self):
         """runs the key steps and then replaces the tree and alignment with the expanded ones"""
-        # first if should not be necessary, as this is in the wrapper
+
         if self.blacklist:
             self.remove_blacklistitem()
         if len(self.new_seqs) > 0:
-            self.remove_identical_seqs() #Running this twice in a reow removes all seqs before adding to alignment...
+            self.remove_identical_seqs()  # Running this twice in a reow removes all seqs before adding to alignment...
             self.data.write_files()  # should happen before aligning in case of pruning
             if len(self.new_seqs_otu_id) > 0:  # TODO rename to something more intutitive
                 self.write_query_seqs()
@@ -1360,9 +1364,15 @@ class PhyscraperScrape(object):  # TODO do I wantto be able to instantiate this 
                 if os.path.exists("{}/last_completed_update".format(self.workdir)):
                     os.rename(self.tmpfi, "{}/last_completed_update".format(self.workdir))
                 for filename in glob.glob('{}/RAxML*'.format(self.workdir)):
-                    if not os.path.exists("{}/previous_run".format(self.workdir)):
-                        os.makedirs('{}/previous_run/'.format(self.workdir))
-                    os.rename(filename, "{}/previous_run/{}".format(self.workdir, filename.split("/")[-1]))
+                    # debug(filename.split("/")[-1])
+                    if self.config.gifilename is not True:
+                        if not os.path.exists("{}/previous_run".format(self.workdir)):
+                            os.makedirs('{}/previous_run/'.format(self.workdir))
+                        os.rename(filename, "{}/previous_run/{}".format(self.workdir, filename.split("/")[-1]))
+                    else:
+                        if not os.path.exists("{}/previous_run".format(self.workdir)):
+                            os.makedirs('{}/previous_run/'.format(self.workdir))
+                        os.rename(filename, "{}/{}".format(self.blast_subdir, filename.split("/")[-1]))
                 for filename in glob.glob('{}/papara*'.format(self.workdir)):
                     os.rename(filename, "{}/previous_run/{}".format(self.workdir, filename.split("/")[-1]))
                 os.rename("{}/{}".format(self.workdir, self.newseqs_file),
@@ -1632,8 +1642,8 @@ class FilterBlast(PhyscraperScrape):
         mean_sd = self.calculate_mean_sd(hsp_scores)
         # select which sequences to use
         seq_blast_score = {}
-        for gi_id in hsp_scores: # use only seq that are similar to mean plus minus sd
-            if (hsp_scores[gi_id]["hsp.bits"] >= mean_sd["mean"]-mean_sd["sd"]) & (hsp_scores[gi_id]["hsp.bits"] <= mean_sd["mean"]+mean_sd["sd"]):
+        for gi_id in hsp_scores:  # use only seq that are similar to mean plus minus sd
+            if (hsp_scores[gi_id]['hsp.bits'] >= mean_sd['mean'] - mean_sd['sd']) & (hsp_scores[gi_id]['hsp.bits'] <= mean_sd['mean'] + mean_sd['sd']):
                 if gi_id in seq_d:
                     seq_blast_score[gi_id] = seq_d[gi_id]
         return seq_blast_score
@@ -1771,8 +1781,6 @@ class FilterBlast(PhyscraperScrape):
         # Note: has test,test_loop_for_blast.py: runs
         debug("length of sp_d key")
         nametoreturn = None
-        blastfile_taxon_names = {}
-
         # loop needs to happen before the other one, as we need nametoreturn in second:
         for gi_id in self.sp_d[key]:
             # this if should not be necessary
@@ -1889,7 +1897,6 @@ class FilterBlast(PhyscraperScrape):
             nametoreturn = key
         if nametoreturn is None:
             nametoreturn = namegi
-
         return nametoreturn
 
     def count_num_seq(self, taxon_id):
@@ -1948,7 +1955,6 @@ class FilterBlast(PhyscraperScrape):
                                 if self.downtorank is not None:
                                     taxonfn = taxon_id
                                 self.run_local_blast(taxonfn, taxonfn)
-                                # blast_seq = str(blast_seq.replace(" ", "_"))
                                 self.select_seq_by_local_blast(self.sp_seq_d[taxon_id], taxonfn, treshold, seq_present)
                             elif query_count + seq_present <= treshold:
                                 self.add_all(taxon_id)
@@ -2013,7 +2019,6 @@ class FilterBlast(PhyscraperScrape):
             for key in self.data.otu_dict.keys():
                 if '^ncbi:gi' in self.data.otu_dict[key]:
                     if self.data.otu_dict[key]['^ncbi:gi'] == gi_num:
-                        # if self.data.otu_dict[key]['^physcraper:last_blasted'] == "1800/01/01":
                         self.data.otu_dict[key]['^physcraper:last_blasted'] = "1900/01/01"
                         self.data.otu_dict[key]['^physcraper:status'] = 'not added, there are enough seq per sp in tre'
         for gi_num in keylist:
