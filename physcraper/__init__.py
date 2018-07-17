@@ -718,7 +718,6 @@ def get_mrca_ott(ott_ids):
         ott_ids.remove(None)
     synth_tree_ott_ids = []
     ott_ids_not_in_synth = []
-
     for ott in ott_ids:
         try:
             tree_of_life.mrca(ott_ids=[ott], wrap_response=False)
@@ -827,15 +826,10 @@ class IdDicts(object):
                 if tax_info == {}:
                     print("Taxon name does not match any species name in ncbi. Check that name is written correctly!")
                 tax_id = int(tax_info.items()[0][1][0])
-                # print("get rank info")
-                # print(tax_id)
-                # print(type(tax_id))
             ncbi = NCBITaxa()
             lineage = ncbi.get_lineage(tax_id)
             lineage2ranks = ncbi.get_rank(lineage)
             tax_name = str(tax_name).replace(" ", "_")
-            # print(tax_id)
-            # print(type(tax_id))
             assert type(tax_id) == int
             self.otu_rank[tax_name] = {"taxon id": tax_id, "lineage": lineage, "rank": lineage2ranks}
         return tax_name
@@ -1436,8 +1430,7 @@ class PhyscraperScrape(object):  # TODO do I wantto be able to instantiate this 
 
     def generate_streamed_alignment(self):
         """runs the key steps and then replaces the tree and alignment with the expanded ones"""
-        # first if should not be necessary, as this is in the wrapper
-
+  
         if self.blacklist:
             self.remove_blacklistitem()
 
@@ -1468,11 +1461,18 @@ class PhyscraperScrape(object):  # TODO do I wantto be able to instantiate this 
                     os.rename(self.tmpfi, "{}/last_completed_update".format(self.workdir))
                 for filename in glob.glob('{}/RAxML*'.format(self.workdir)):
                     # debug(filename.split("/")[-1])
-                    if not os.path.exists("{}/previous_run".format(self.workdir)):
-                        os.makedirs('{}/previous_run/'.format(self.workdir))
-                    os.rename(filename, "{}/previous_run/{}".format(self.workdir, filename.split("/")[-1]))
+                    if self.config.gifilename is not True:
+                        if not os.path.exists("{}/previous_run".format(self.workdir)):
+                            os.makedirs('{}/previous_run/'.format(self.workdir))
+                        os.rename(filename, "{}/previous_run/{}".format(self.workdir, filename.split("/")[-1]))
+                    else:
+                        debug(filename.split("/")[-1])
+                        debug(self.blast_subdir)
+                        if not os.path.exists("{}/previous_run".format(self.workdir)):
+                            os.makedirs('{}/previous_run/'.format(self.workdir))
+                        os.rename(filename, "{}/{}".format(self.blast_subdir, filename.split("/")[-1]))
                 for filename in glob.glob('{}/papara*'.format(self.workdir)):
-                      os.rename(filename, "{}/previous_run/{}".format(self.workdir, filename.split("/")[-1]))
+                    os.rename(filename, "{}/previous_run/{}".format(self.workdir, filename.split("/")[-1]))
                 os.rename("{}/{}".format(self.workdir, self.newseqs_file),
                           "{}/previous_run/newseqs.fasta".format(self.workdir))
                 try:
