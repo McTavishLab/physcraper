@@ -225,6 +225,8 @@ def generate_ATT_from_files(seqaln,
     filedata = filedata.replace('?', '-')
 
     # Write the file out again
+    if not os.path.exists(workdir):
+        os.makedirs(workdir)
     new_seq_file = "{}/replaced_inputaln.fasta".format(workdir)
     with open("{}/replaced_inputaln.fasta".format(workdir), 'w') as file:
         file.write(filedata)
