@@ -83,8 +83,8 @@ class ConfigObj(object):
         assert os.path.isfile(self.get_ncbi_taxonomy)
         self.ncbi_dmp = config['taxonomy']['ncbi_dmp']
         if not os.path.isfile(self.ncbi_dmp):
-            os.system("rsync -av ftp.ncbi.nih.gov::pub/taxonomy/gi_taxid_nucl.dmp.gz {}.gz".format(self.config.ncbi_dmp))
-            os.system("tar -xzvf taxonomy/gi_taxid_nucl.dmp.gz")
+            os.system("rsync -av ftp.ncbi.nih.gov::pub/taxonomy/gi_taxid_nucl.dmp.gz {}.gz".format(self.ncbi_dmp))
+            os.system("gunzip taxonomy/gi_taxid_nucl.dmp.gz")
             self.ncbi_dmp = "taxonomy/gi_taxid_nucl.dmp.gz"
         self.phylesystem_loc = config['phylesystem']['location']
         assert (self.phylesystem_loc in ['local', 'api'])
