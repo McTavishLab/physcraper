@@ -1788,9 +1788,9 @@ class FilterBlast(PhyscraperScrape):
                 # if gi_id['^physcraper:status'].split(' ')[0] not in self.seq_filter:
                 # if gi_id['^physcraper:last_blasted'] != '1800/01/01':
                 if '^user:TaxonName' in gi_id:
-                    spn_name = gi_id['^user:TaxonName']
+                    spn_name = gi_id['^user:TaxonName'].replace(" ", "_")
                 elif '^ot:ottTaxonName' in gi_id:
-                    spn_name = gi_id['^ot:ottTaxonName']
+                    spn_name = gi_id['^ot:ottTaxonName'].replace(" ", "_")
                 for spn_name_aln, seq in self.data.aln.items():
                     if '^user:TaxonName' in self.data.otu_dict[spn_name_aln.label]:
                         otu_dict_name = self.data.otu_dict[spn_name_aln.label]['^user:TaxonName']
@@ -1845,7 +1845,7 @@ class FilterBlast(PhyscraperScrape):
                             filename = spn_name_aln.label
                             if self.downtorank is not None:
                                 filename = key
-                            self.write_blast_files(filename, seq)
+                            self.write_blast_files(nametoreturn, seq)
                     # if '^user:TaxonName' in gi_id:
                     #     spn_name = gi_id['^user:TaxonName']
                     #     for spn_name_aln, seq in self.data.aln.items():
@@ -1883,13 +1883,10 @@ class FilterBlast(PhyscraperScrape):
                             if '^physcraper:status' in gi_id and gi_id['^physcraper:status'].split(' ')[0] not in self.seq_filter:
                                 # if gi_id['^physcraper:status'].split(' ')[0] not in self.seq_filter:
                                 filename = gi_num
-                                debug("write seq to db")
-                                debug(nametoreturn)
                                 seq = self.sp_seq_d[key][gi_num]
                                 if self.downtorank is not None:
                                     filename = key
                                     nametoreturn = key
-                                debug(filename)
                                 self.write_blast_files(filename, seq, db=True, fn=nametoreturn)
                                 # blastfile_taxon_names[gi_num] = gi_num
                     namegi = key
@@ -1954,6 +1951,7 @@ class FilterBlast(PhyscraperScrape):
                                 #         blast_db = "{}".format(element['^ot:ottTaxonName']).replace(" ", "_")
                                 if self.downtorank is not None:
                                     taxonfn = taxon_id
+
                                 self.run_local_blast(taxonfn, taxonfn)
                                 self.select_seq_by_local_blast(self.sp_seq_d[taxon_id], taxonfn, treshold, seq_present)
                             elif query_count + seq_present <= treshold:
@@ -1978,7 +1976,7 @@ class FilterBlast(PhyscraperScrape):
                             self.write_blast_files(str_db, seq)  # blast qguy
                             debug("blast db new")
                             blast_db = self.sp_seq_d[taxon_id].keys()[1:]
-                            # debug(blast_db)
+
                             for blast_key in blast_db:
                                 seq = self.sp_seq_d[taxon_id][blast_key]
                                 self.write_blast_files(blast_key, seq, db=True, fn=str_db)  # local db
