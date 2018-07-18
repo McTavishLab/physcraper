@@ -83,8 +83,8 @@ class ConfigObj(object):
         assert os.path.isfile(self.get_ncbi_taxonomy)
         self.ncbi_dmp = config['taxonomy']['ncbi_dmp']
         if not os.path.isfile(self.ncbi_dmp):
-            os.system("rsync -av ftp.ncbi.nih.gov::pub/taxonomy/gi_taxid_nucl.dmp.gz {}.gz".format(self.config.ncbi_dmp))
-            os.system("tar -xzvf taxonomy/gi_taxid_nucl.dmp.gz")
+            os.system("rsync -av ftp.ncbi.nih.gov::pub/taxonomy/gi_taxid_nucl.dmp.gz {}.gz".format(self.ncbi_dmp))
+            os.system("gunzip taxonomy/gi_taxid_nucl.dmp.gz")
             self.ncbi_dmp = "taxonomy/gi_taxid_nucl.dmp.gz"
         self.phylesystem_loc = config['phylesystem']['location']
         assert (self.phylesystem_loc in ['local', 'api'])
@@ -225,6 +225,8 @@ def generate_ATT_from_files(seqaln,
     filedata = filedata.replace('?', '-')
 
     # Write the file out again
+    if not os.path.exists(workdir):
+        os.makedirs(workdir)
     new_seq_file = "{}/replaced_inputaln.fasta".format(workdir)
     with open("{}/replaced_inputaln.fasta".format(workdir), 'w') as file:
         file.write(filedata)

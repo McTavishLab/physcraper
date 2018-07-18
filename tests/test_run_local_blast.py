@@ -5,6 +5,7 @@ from physcraper import FilterBlast, ConfigObj, IdDicts
 
 sys.stdout.write("\ntests run_local_blast\n")
 
+wd = os.getcwd()
 
 # tests if I can run a local blast query
 workdir = "tests/output/test_run_local_blast"
@@ -27,7 +28,7 @@ blast_seq = "otuSlagascanus"
 
 if not os.path.exists("{}/blast".format(filteredScrape.data.workdir)):
     os.makedirs("{}/blast/".format(filteredScrape.data.workdir))
-path1 = '/home/blubb/Documents/gitdata/physcraper/tests/data/precooked/fixed/select-blast/*'
+path1 = '{}/tests/data/precooked/fixed/select-blast/*'.format(wd)
 path2 = "{}/blast/".format(filteredScrape.data.workdir)
 cmd = 'cp -r ' + path1 + ' ' + path2
 os.system(cmd)

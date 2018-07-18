@@ -7,6 +7,8 @@ from physcraper import ConfigObj, IdDicts, FilterBlast
 
 sys.stdout.write("\ntests calculate_mean_sd\n")
 
+wd = os.getcwd()
+
 workdir = "tests/output/mean_sd_test"
 configfi = "tests/data/test.config"
 absworkdir = os.path.abspath(workdir)
@@ -29,7 +31,7 @@ general_wd = os.getcwd()
 if not os.path.exists(os.path.join(filteredScrape.workdir, "blast")):
     os.makedirs(os.path.join(filteredScrape.workdir, "blast"))
 os.chdir(os.path.join(filteredScrape.workdir, "blast"))
-fn_path = '/home/blubb/Documents/gitdata/physcraper/tests/data/precooked/fixed/local-blast/{}'.format(fn)
+fn_path = '{}/tests/data/precooked/fixed/local-blast/{}'.format(wd, fn)
 filteredScrape.run_local_blast(fn_path, fn_path,
                                output=os.path.join(filteredScrape.workdir, "blast/output_{}.xml".format(fn)))
 output_blast = os.path.join(filteredScrape.workdir, "blast/output_{}.xml".format(fn))
