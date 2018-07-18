@@ -6,7 +6,7 @@ Uses a tree from Open tree of Life and an alignment to search for and add homolo
 
 Still work in progress (documentation in particular), please contact ejmctavish, gmail if you need any help!
 ## There is a full example python script with comments in docs/example.py 
-(it takes a ehile long time though)
+(it takes a while long time though)
 
 ###Dependencies (need to be in path): 
 - PaPaRa http://sco.h-its.org/exelixis/web/software/papara/index.html 
@@ -16,7 +16,7 @@ Still work in progress (documentation in particular), please contact ejmctavish,
 These will all be installed if you install physcraper using 
     python setup.py install
 
-(but note, if you are using vritualenv there are some weird interactions with setuptools and python 2.7.6)
+(but note, if you are using virtualenv there are some weird interactions with setuptools and python 2.7.6)
 
 - Dendropy https://pythonhosted.org/DendroPy/ 
 - Peyotl https://github.com/OpenTreeOfLife/peyotl (currently needs to be on physcraper branch)
@@ -36,7 +36,7 @@ Go to https://tree.opentreeoflife.org/curator to find a tree, or upload it!
 You can get the tree ID by clicking on your tree of interest, and looking at the URL.
 
 ###Taxon infomation from ncbi
-It is easist if you keep the taxon information in the included taxonomy folder. (the file is too big for github)
+It is easiest if you keep the taxon information in the included taxonomy folder. (the file is too big for github)
 To get it from the NCBI ftp site
 
     rsync -av ftp.ncbi.nih.gov::pub/taxonomy/gi_taxid_nucl.dmp.gz taxonomy/gi_taxid_nucl.dmp.gz  
@@ -46,19 +46,19 @@ To get it from the NCBI ftp site
 
 
 Physcraper generates an ATT (alignment, taxonomy, tree) object.
-This is important because it tracks the shared namespaces across these three data objects, whcih can otherwise get a bit seperated.
+This is important because it tracks the shared namespaces across these three data objects, which can otherwise get a bit separated.
 
 
 #### local blast databases
 To initiate a local Blast db run the following commands:
-sudo apt-get insatll ncbi-blast+
+sudo apt-get install ncbi-blast+
 
 in the folder of your future blast database run:
 1. update_blastdb nt
 2. cat *.tar.gz | tar -xvzf - -i
 3. blastdbcmd -db nt -info
 
-The last command shows you if it worked correclty. 'nt' means, we are making the nucleotide database.
+The last command shows you if it worked correctly. 'nt' means, we are making the nucleotide database.
 The database needs to be update regularly.
 
 

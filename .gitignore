@@ -12,4 +12,4 @@ standard-RAxML
 *.aux
 *.log
 build/
-
+tests/data/precooked/fixed/local-blast/*.nin
