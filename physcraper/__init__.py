@@ -82,8 +82,8 @@ class ConfigObj(object):
         assert os.path.isfile(self.get_ncbi_taxonomy)
         self.ncbi_dmp = config['taxonomy']['ncbi_dmp']
         if not os.path.isfile(self.ncbi_dmp):
-            os.system("rsync -av ftp.ncbi.nih.gov::pub/taxonomy/gi_taxid_nucl.dmp.gz {}.gz".format(self.config.ncbi_dmp))
-            os.system("tar -xzvf taxonomy/gi_taxid_nucl.dmp.gz")
+            os.system("rsync -av ftp.ncbi.nih.gov::pub/taxonomy/gi_taxid_nucl.dmp.gz {}.gz".format(self.ncbi_dmp))
+            os.system("gunzip taxonomy/gi_taxid_nucl.dmp.gz")
             self.ncbi_dmp = "taxonomy/gi_taxid_nucl.dmp.gz"
         self.phylesystem_loc = config['phylesystem']['location']
         assert (self.phylesystem_loc in ['local', 'api'])
@@ -225,6 +225,8 @@ def generate_ATT_from_files(seqaln,
     filedata = filedata.replace('?', '-')
 
     # Write the file out again
+    if not os.path.exists(workdir):
+        os.makedirs(workdir)
     new_seq_file = "{}/replaced_inputaln.fasta".format(workdir)
     with open("{}/replaced_inputaln.fasta".format(workdir), 'w') as file:
         file.write(filedata)
@@ -247,7 +249,6 @@ def generate_ATT_from_files(seqaln,
         ott_ids = filter(None, ott_ids)
         ott_ids = set(ott_ids)
         ott_mrca = get_mrca_ott(ott_ids)
-        debug(ott_mrca)
     return AlignTreeTax(otu_newick, otu_dict, aln, ingroup_mrca=ott_mrca, workdir=workdir, schema=schema_trf)
 
 
@@ -788,7 +789,7 @@ class IdDicts(object):
                 self.gi_ncbi_dict[int(lin.split(",")[0])] = lin.split(",")[1]
 
     def get_rank_info(self, gi_id=False, taxon_name=False):
-        """Collects rank and linegae information from ncbi,
+        """Collects rank and lineage information from ncbi,
         used to delimit the sequences from blast,
         when you have a local blast database or a Filter Blast run
         """
@@ -1244,7 +1245,6 @@ class PhyscraperScrape(object):  # TODO do I wantto be able to instantiate this 
             os.rename(filename, "{}/{}_tmp".format(self.workdir, filename.split("/")[-1]))
         if _VERBOSE:
             sys.stdout.write("aligning query sequences \n")
-        # hack around stupid characters for phylogen. tools
         # note: sometimes there are still sp in any of the aln/tre
         # I still have not found out why sometimes the label is needed
         for tax_lab in self.data.aln.taxon_namespace:
@@ -1892,9 +1892,9 @@ class FilterBlast(PhyscraperScrape):
                 # if gi_id['^physcraper:status'].split(' ')[0] not in self.seq_filter:
                 # if gi_id['^physcraper:last_blasted'] != '1800/01/01':
                 if '^user:TaxonName' in gi_id:
-                    spn_name = gi_id['^user:TaxonName']
+                    spn_name = gi_id['^user:TaxonName'].replace(" ", "_")
                 elif '^ot:ottTaxonName' in gi_id:
-                    spn_name = gi_id['^ot:ottTaxonName']
+                    spn_name = gi_id['^ot:ottTaxonName'].replace(" ", "_")
                 for spn_name_aln, seq in self.data.aln.items():
                     if '^user:TaxonName' in self.data.otu_dict[spn_name_aln.label]:
                         otu_dict_name = self.data.otu_dict[spn_name_aln.label]['^user:TaxonName']
@@ -1913,10 +1913,8 @@ class FilterBlast(PhyscraperScrape):
                     nametoreturn = spn_name.replace(" ", "_")
                 except:
                     debug("do something?")
-                
             else:
                 break
-                
         return nametoreturn
 
 
@@ -1946,7 +1944,8 @@ class FilterBlast(PhyscraperScrape):
                             otu_dict_name = self.data.otu_dict[spn_name_aln.label]['^ot:ottTaxonName']
                         if spn_name == otu_dict_name:
                             # if selectby == "blast":
-                            filename = spn_name_aln.label
+                            filename = nametoreturn
+                            # filename = spn_name_aln.label
                             if self.downtorank is not None:
                                 filename = key
                             self.write_blast_files(filename, seq)
@@ -1987,13 +1986,13 @@ class FilterBlast(PhyscraperScrape):
                             if '^physcraper:status' in gi_id and gi_id['^physcraper:status'].split(' ')[0] not in self.seq_filter:
                                 # if gi_id['^physcraper:status'].split(' ')[0] not in self.seq_filter:
                                 filename = gi_num
-                                debug("write seq to db")
-                                debug(nametoreturn)
+                                # debug("write seq to db")
+                                # debug(nametoreturn)
                                 seq = self.sp_seq_d[key][gi_num]
                                 if self.downtorank is not None:
                                     filename = key
                                     nametoreturn = key
-                                debug(filename)
+                                # debug(filename)
                                 self.write_blast_files(filename, seq, db=True, fn=nametoreturn)
                                 # blastfile_taxon_names[gi_num] = gi_num
                     namegi = key
@@ -2072,6 +2071,8 @@ class FilterBlast(PhyscraperScrape):
                             # debug(count_dict)
                             # debug(taxon_id)
                             # debug(self.sp_seq_d)
+                            # species is completely new in alignment, \
+                            # make blast with random species
                             for item in self.sp_d[taxon_id]:
                                 if '^ncbi:gi' in item:
                                     self.data.add_otu(item['^ncbi:gi'], self.ids)
