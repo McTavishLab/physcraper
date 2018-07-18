@@ -19,7 +19,7 @@ selectby = "blast"
 downtorank = "species"
 add_local_seq = None  # under development
 id_to_spn_addseq_json = None  # under development
-
+blacklist = None
 # setup the run
 if os.path.exists(otu_jsonfi):
     otu_json = json.load(open(otu_jsonfi))
@@ -40,7 +40,8 @@ wrappers.filter_data_run(seqaln,
                          selectby,
                          downtorank,
                          otu_jsonfi,
-                         add_local_seq,
+                         blacklist,
+			 add_local_seq,
                          id_to_spn_addseq_json,
                          configfi)
 
