@@ -81,20 +81,39 @@ class Concat(object):
         data = self.single_runs[genename].data.otu_dict[otu]
         seq = str(self.single_runs[genename].data.aln[otu])
         # debug(data['^ot:ottTaxonName'])
-        if data['^ot:ottTaxonName'] not in self.sp_gi_comb:
-            self.sp_gi_comb[data['^ot:ottTaxonName']] = {}
-        if genename not in self.sp_gi_comb[data['^ot:ottTaxonName']]:
-            self.sp_gi_comb[data['^ot:ottTaxonName']][genename] = {}
-        if concat_id not in self.sp_gi_comb[data['^ot:ottTaxonName']][genename]:
-            # debug("make concat_id")
-            if '^ncbi:gi' in data:
-                gi_id = data['^ncbi:gi']
-            else:
-                gi_id = data['^ot:ottTaxonName']
-            concat_dict = {"gi_id": gi_id, "seq": seq, "spn": str(data['^ot:ottTaxonName']), "original_PS_id": otu,
-                           "concat:status": "single run"}
-            # debug(concat_dict)
-            self.sp_gi_comb[data['^ot:ottTaxonName']][genename][concat_id] = concat_dict
+        if '^ot:ottTaxonName' in data:
+            if data['^ot:ottTaxonName'] not in self.sp_gi_comb:
+                self.sp_gi_comb[data['^ot:ottTaxonName']] = {}
+            if genename not in self.sp_gi_comb[data['^ot:ottTaxonName']]:
+                self.sp_gi_comb[data['^ot:ottTaxonName']][genename] = {}
+            if concat_id not in self.sp_gi_comb[data['^ot:ottTaxonName']][genename]:
+                # debug("make concat_id")
+                if '^ncbi:gi' in data:
+                    gi_id = data['^ncbi:gi']
+                else:
+                    gi_id = data['^ot:ottTaxonName']
+                concat_dict = {"gi_id": gi_id, "seq": seq, "spn": str(data['^ot:ottTaxonName']), "original_PS_id": otu,
+                               "concat:status": "single run"}
+                # debug(concat_dict)
+                self.sp_gi_comb[data['^ot:ottTaxonName']][genename][concat_id] = concat_dict
+        elif '^user:TaxonName' in data:
+            if data['^user:TaxonName'] not in self.sp_gi_comb:
+                self.sp_gi_comb[data['^user:TaxonName']] = {}
+            if genename not in self.sp_gi_comb[data['^user:TaxonName']]:
+                self.sp_gi_comb[data['^user:TaxonName']][genename] = {}
+            if concat_id not in self.sp_gi_comb[data['^user:TaxonName']][genename]:
+                # debug("make concat_id")
+                if '^ncbi:gi' in data:
+                    gi_id = data['^ncbi:gi']
+                else:
+                    gi_id = data['^user:TaxonName']
+                concat_dict = {"gi_id": gi_id, "seq": seq, "spn": str(data['^user:TaxonName']), "original_PS_id": otu,
+                               "concat:status": "single run"}
+                # debug(concat_dict)
+                self.sp_gi_comb[data['^user:TaxonName']][genename][concat_id] = concat_dict
+        else:
+            print("THERE IS A SERIOUS PROBLEM....")
+
 
     def combine(self):
         """combine several PhyScraper objects to make a concatenated run dict
@@ -116,7 +135,10 @@ class Concat(object):
         """counts how many seq per sp and genes there are
         """
         debug("sp_seq_counter")
+        debug(self.sp_gi_comb)
+
         for spn in self.sp_gi_comb:
+            debug(spn)
             tmp_gene = deepcopy(self.genes_present)
             for gene in self.sp_gi_comb[spn]:
                 tmp_gene.remove(gene)
