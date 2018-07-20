@@ -988,7 +988,7 @@ class PhyscraperScrape(object):  # TODO do I wantto be able to instantiate this 
         return id_list
 
     def read_blast(self, blast_dir=None):
-        """reads in and prcesses the blast xml files"""
+        """reads in and processes the blast xml files"""
         debug("read blast")
         # debug(blast_dir)
         if blast_dir:
@@ -1416,8 +1416,8 @@ class PhyscraperScrape(object):  # TODO do I wantto be able to instantiate this 
         #                  "-n", "rapidBS_{}".format(self.date)])
 
     def remove_blacklistitem(self):
-        """note, this removes items from aln, and tree, if they were added to the blacklist.
-        seq that were not added because they were similar to the item, are being lost
+        """This removes items from aln, and tree, if they were added to the blacklist.
+        seq that were not added because they were similar to the one being removed here, are being lost
         """
         # that should not be a major issue though.
         for tax in self.data.aln.taxon_namespace:

@@ -495,4 +495,5 @@ def concat(genelistdict, workdir_comb, user_concat=None):
     concat.write_partition()
     concat.place_new_seqs()
     concat.est_full_tree()
+    concat.calculate_bootstrap()
     return concat

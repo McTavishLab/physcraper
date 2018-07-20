@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import os
 import subprocess
-
+import csv
 import pickle
 import random
 
@@ -9,8 +9,11 @@ from copy import deepcopy
 
 from dendropy import Tree, \
     DnaCharacterMatrix
+from Bio import Entrez 
 
 from __init__ import debug
+from __init__ import IdDicts
+
 
 
 class Concat(object):
@@ -75,45 +78,100 @@ class Concat(object):
         assert treed_taxa.issubset(aln_ids)
         return scrape
 
+    def get_taxon_info(self, key, data, email):
+        """
+        If there are no taxon information (for what ever reason) try again to obtain sp names.
+        """
+        # debug("get_rank_info")
+        if key in data:
+            if data[key] == None:
+
+                if '^ncbi:gi' in data:
+                    gi_id = data['^ncbi:gi']
+
+                Entrez.email = email
+                
+                tries = 5
+                for i in range(tries):
+                    try:
+                        handle = Entrez.efetch(db="nucleotide", id=gi_id, retmode="xml")
+                    except:
+                        if i < tries - 1:  # i is zero indexed
+                            continue
+                        else:
+                            raise
+                    break
+                read_handle = Entrez.read(handle)[0]
+                tax_name = read_handle['GBSeq_feature-table'][0]['GBFeature_quals'][0]['GBQualifier_value']
+
+            else:
+                tax_name = data[key]
+        tax_name = tax_name.replace("_", " ")
+        tax_name = tax_name.replace(".", "").replace("'", "")
+
+        tax_name = tax_name.encode('ascii')
+        # print(tax_name)
+        return tax_name
+
     def make_concat_id_dict(self, otu, genename, concat_id):
         """make a concat_id entry with all information
         """
         data = self.single_runs[genename].data.otu_dict[otu]
         seq = str(self.single_runs[genename].data.aln[otu])
         # debug(data['^ot:ottTaxonName'])
+
+
         if '^ot:ottTaxonName' in data:
-            if data['^ot:ottTaxonName'] not in self.sp_gi_comb:
-                self.sp_gi_comb[data['^ot:ottTaxonName']] = {}
-            if genename not in self.sp_gi_comb[data['^ot:ottTaxonName']]:
-                self.sp_gi_comb[data['^ot:ottTaxonName']][genename] = {}
-            if concat_id not in self.sp_gi_comb[data['^ot:ottTaxonName']][genename]:
+            spn = self.get_taxon_info('^ot:ottTaxonName', data, "martha.kandziora@yahoo.com")
+
+
+            if spn not in self.sp_gi_comb:
+                self.sp_gi_comb[spn] = {}
+            if genename not in self.sp_gi_comb[spn]:
+                self.sp_gi_comb[spn][genename] = {}
+            if concat_id not in self.sp_gi_comb[spn][genename]:
                 # debug("make concat_id")
                 if '^ncbi:gi' in data:
                     gi_id = data['^ncbi:gi']
                 else:
-                    gi_id = data['^ot:ottTaxonName']
-                concat_dict = {"gi_id": gi_id, "seq": seq, "spn": str(data['^ot:ottTaxonName']), "original_PS_id": otu,
+                    gi_id = spn
+
+              
+
+                concat_dict = {"gi_id": gi_id, "seq": seq, "spn": spn, "original_PS_id": otu,
                                "concat:status": "single run"}
                 # debug(concat_dict)
-                self.sp_gi_comb[data['^ot:ottTaxonName']][genename][concat_id] = concat_dict
+                self.sp_gi_comb[spn][genename][concat_id] = concat_dict
         elif '^user:TaxonName' in data:
-            if data['^user:TaxonName'] not in self.sp_gi_comb:
-                self.sp_gi_comb[data['^user:TaxonName']] = {}
-            if genename not in self.sp_gi_comb[data['^user:TaxonName']]:
-                self.sp_gi_comb[data['^user:TaxonName']][genename] = {}
-            if concat_id not in self.sp_gi_comb[data['^user:TaxonName']][genename]:
+            spn = self.get_taxon_info('^user:TaxonName', data, "martha.kandziora@yahoo.com")
+
+
+            if spn not in self.sp_gi_comb:
+                self.sp_gi_comb[spn] = {}
+            if genename not in self.sp_gi_comb[spn]:
+                self.sp_gi_comb[spn][genename] = {}
+            if concat_id not in self.sp_gi_comb[spn][genename]:
                 # debug("make concat_id")
                 if '^ncbi:gi' in data:
                     gi_id = data['^ncbi:gi']
                 else:
-                    gi_id = data['^user:TaxonName']
-                concat_dict = {"gi_id": gi_id, "seq": seq, "spn": str(data['^user:TaxonName']), "original_PS_id": otu,
+                    gi_id = spn
+                
+                concat_dict = {"gi_id": gi_id, "seq": seq, "spn": spn, "original_PS_id": otu,
                                "concat:status": "single run"}
                 # debug(concat_dict)
-                self.sp_gi_comb[data['^user:TaxonName']][genename][concat_id] = concat_dict
+                self.sp_gi_comb[spn][genename][concat_id] = concat_dict
         else:
             print("THERE IS A SERIOUS PROBLEM....")
+        # debug(concat_dict['spn'])    
+        if concat_dict['spn'] == None:
+            print("spn is none")
+            spn = self.get_taxon_info(gi_id, "martha.kandziora@yahoo.com")
 
+            self.sp_gi_comb[gi_id] 
+            self.sp_gi_comb[spn] =  self.sp_gi_comb[gi_id] 
+            del  self.sp_gi_comb[gi_id] 
+            print(some)
 
     def combine(self):
         """combine several PhyScraper objects to make a concatenated run dict
@@ -128,17 +186,17 @@ class Concat(object):
                 concat_id = "concat_{}".format(concat_id_counter)
                 self.make_concat_id_dict(otu.label, genename, concat_id)
                 concat_id_counter += 1
-        debug(self.sp_gi_comb)
+        # debug(self.sp_gi_comb)
         return
 
     def sp_seq_counter(self):
         """counts how many seq per sp and genes there are
         """
         debug("sp_seq_counter")
-        debug(self.sp_gi_comb)
+        # debug(self.sp_gi_comb)
 
         for spn in self.sp_gi_comb:
-            debug(spn)
+            # debug(spn)
             tmp_gene = deepcopy(self.genes_present)
             for gene in self.sp_gi_comb[spn]:
                 tmp_gene.remove(gene)
@@ -203,6 +261,7 @@ class Concat(object):
                         #     if len(self.tmp_dict[spn][gene]) >= 1:
                         # debug("if gene has seq...")
                         # debug(gene)
+                        # print(spn, gene, del_gi, count)
                         del_gi = self.select_rnd_seq(spn, gene, del_gi, count)
                     for item in tmp_gene:
                         # debug('tmp_gene')
@@ -220,7 +279,7 @@ class Concat(object):
                         del_gi = self.select_rnd_seq(spn, gene, del_gi, count)
                     self.rm_rnd_sp(del_gi)
                 self.rm_empty_spn_entries(del_gi)
-                debug("end of while loop")
+                # debug("end of while loop")
         # debug(self.comb_seq)
         self.rename_drop_tips()
         # debug(some)
@@ -230,15 +289,16 @@ class Concat(object):
         """select random seq from spn and gene to combine it with a random other one from another gene,
         but same spn
         """
-        debug("select_rnd_seq")
+        # debug("select_rnd_seq")
         random_gen = random.choice(list(self.tmp_dict[spn][gene]))
         # debug("random_gen")
         # debug(random_gen)
         self.sp_gi_comb[spn][gene][random_gen]["concat:status"] = "used in concat"
 
         seq = str(self.tmp_dict[spn][gene][random_gen]["seq"])
-        debug(self.comb_seq.keys())
+        # debug(self.comb_seq.keys())
         spn_ = spn.replace(" ", "_")
+        spn_ = spn_.replace(".", "").replace("'", "")
         if gene in self.comb_seq.keys():
             # debug("gene in comb_seq")
             # debug(self.comb_seq[gene].keys())
@@ -301,12 +361,15 @@ class Concat(object):
         :param random_gen: the corresponding otu
         :return: self.concat_tips
         """
-        debug("otu_to_spn")
+        # debug("otu_to_spn")
         # debug(spn_, gene)
 
         if self.tre_start_gene == gene:
             # debug(self.tre_as_start.taxon_namespace)
             spn = spn_.replace("_", " ")
+            # print(spn, gene, random_gen)
+            # debug(self.sp_gi_comb.keys())
+            # debug(self.sp_gi_comb[spn])
             former_otu = self.sp_gi_comb[spn][gene][random_gen]['original_PS_id']
             # debug("former_otu")
             # debug(former_otu)
@@ -381,7 +444,7 @@ class Concat(object):
         # self.tre_as_start.prune_taxa_with_labels(remove_l)
         # self.tre_as_start.prune_taxa_with_labels([otu.label])
 
-        debug(self.tre_as_start.taxon_namespace)
+        # debug(self.tre_as_start.taxon_namespace)
         # debug(self.tre_as_start.leaf_nodes())
         #
         # debug(seom)
@@ -405,7 +468,7 @@ class Concat(object):
         """when there is no seq for one of the genes,
         make an empty seq. Dendropy needs same taxon_namespace and number otu's for concatenation
         """
-        debug("make_empty_seq")
+        # debug("make_empty_seq")
         for tax, seq in self.single_runs[gene].data.aln.items():
             len_gene_aln = len(seq)
             break
@@ -418,7 +481,7 @@ class Concat(object):
     def rm_rnd_sp(self, del_gi):
         """removes the random selected seq from the tmp_dict
         """
-        debug("rm_rnd sp")
+        # debug("rm_rnd sp")
         # debug(del_gi)
         for spn2 in self.tmp_dict:
             for gene2 in self.tmp_dict[spn2]:
@@ -436,7 +499,7 @@ class Concat(object):
     def rm_empty_spn_entries(self, del_gi):
         """removes keys from tmp dict, if the key/sp has no value anymore
         """
-        debug("rm_empty_spn_entries")
+        # debug("rm_empty_spn_entries")
         # debug(del_gi)
         del_sp = None
         for spn2 in self.tmp_dict:
@@ -459,7 +522,7 @@ class Concat(object):
                 for otu in self.sp_gi_comb[del_sp][item]:
                     if self.sp_gi_comb[del_sp][item][otu]["concat:status"] != "used in concat":
                         # debug("change status")
-                        debug(self.sp_gi_comb[del_sp][item][otu])
+                        # debug(self.sp_gi_comb[del_sp][item][otu])
                         self.sp_gi_comb[del_sp][item][otu][
                             "concat:status"] = "deleted, because not enough seq are present"
             del self.tmp_dict[del_sp]
@@ -472,7 +535,7 @@ class Concat(object):
         """
         debug("make_alns_dict")
         count = 1
-        firstelement = False
+        firstelement = True
         count = 0
         for gene in self.comb_seq.keys():
             if count == 0:
@@ -488,9 +551,9 @@ class Concat(object):
             # debug([item for item in item_of_gene2 if item not in item_of_gene1])
             assert len1 == len2
         for gene in self.comb_seq.keys():
-            if not firstelement:
+            if firstelement:
                 aln1 = DnaCharacterMatrix.from_dict(self.comb_seq[gene])
-                firstelement = True
+                firstelement = False
                 self.aln_all[count] = aln1
                 aln1.write(path="{}/aln_0.fas".format(self.workdir),
                            schema="fasta")
@@ -502,8 +565,34 @@ class Concat(object):
                           schema="fasta")
 
                 # aln_all[i+1] = concat_aln
-                debug(aln.as_string(schema="fasta"))
+                # debug(aln.as_string(schema="fasta"))
             count += 1
+
+    def make_concat_table(self):
+        """ Make a table that shows which gi numbers were combined
+        """
+        genel = []
+        spn_l = {}
+        for gene in self.comb_gi:
+            genel.append(gene)
+            for spn in self.comb_gi[gene]:
+                concat_id = self.comb_gi[gene][spn]
+                gi_id = self.sp_gi_comb[spn][genename][concat_id]["gi_id"]
+                if spn in spn_l.keys():
+                    # debug(spn_l[spn])
+                    # debug(self.comb_gi[gene][spn])
+
+                   
+
+                    spn_l[spn].append(gi_id)
+                else:
+                    spn_l[spn] = [gi_id]
+
+        with open('{}/concatenation.csv'.format(self.workdir), 'w') as csv_file:
+            writer = csv.writer(csv_file)
+            writer.writerow(genel)
+            for key, value in spn_l.items():
+                writer.writerow([key, value])
 
     def get_short_seq_from_concat(self):
         """find short sequences, all below a certain threshold will be removed,
@@ -628,9 +717,17 @@ class Concat(object):
             # debug(gene)
             if count == 0:
                 aln1 = self.aln_all[gene]
+                # print(len(aln1))
+                aln1.write(path="{}/aln1.fas".format(self.workdir),
+                   schema="fasta")
                 count = 1
             else:
                 aln2 = self.aln_all[gene]
+                count +=1
+                aln2.write(path="{}/aln{}.fas".format(self.workdir, count),
+                   schema="fasta")
+                # print(len(aln2))
+                # print(aln1.taxon_namespace)
                 assert aln1.taxon_namespace == aln2.taxon_namespace
                 # for tax in aln1.taxon_namespace:
                 #     aln1_taxlist.append(tax.label)
@@ -654,13 +751,13 @@ class Concat(object):
         debug("write_partition")
         count = 0
         for gene in self.single_runs:
-            debug(gene)
+            # debug(gene)
             for tax, seq in self.single_runs[gene].data.aln.items():
                 len_gene = len(seq.symbols_as_string())
                 break
 
             if count == 0:
-                debug("new file created")
+                # debug("new file created")
                 with open("{}/partition".format(self.workdir), "w") as partition:
                     partition.write("DNA, {} = 1-{}\n".format(gene, len_gene))
                 # debug("len of 1. gnee")
@@ -668,7 +765,7 @@ class Concat(object):
                 self.part_len = len_gene
                 count = 1
             else:
-                debug("append to file")
+                # debug("append to file")
                 start = self.part_len + 1
                 # debug(self.part_len, gene)
                 # debug(self.aln_all_len.keys())
@@ -719,9 +816,62 @@ class Concat(object):
             starting_fn = 'place_resolve.tre'
         else:
             starting_fn = "starting_red.tre"
+        if os.path.exists("concat_red.fasta.reduced"):
+            aln = "concat_red.fasta.reduced"
+        else:
+            aln = "concat_red.fasta"
         subprocess.call(["raxmlHPC", "-m", "GTRCAT",
-                         "-s", "concat_red.fasta",
+                         "-s", "{}".format(aln), "--print-identical-sequences",
                          "-t", "{}".format(starting_fn),
                          "-p", "1", "-q", "partition",
                          "-n", "concat"])
         os.chdir(cwd)
+
+    def calculate_bootstrap(self):
+        """calculate bootstrap and consensus trees
+        -p: random seed
+        -s: aln file
+        -n: output fn
+        -t: starting tree
+        -b: bootstrap random seed
+        -#: bootstrap stopping criteria
+        """
+
+        if os.path.exists("place_resolve.tre"):
+            starting_fn = 'place_resolve.tre'
+        else:
+            starting_fn = "starting_red.tre"
+        if os.path.exists("concat_red.fasta.reduced"):
+            aln = "concat_red.fasta.reduced"
+        else:
+            aln = "concat_red.fasta"
+
+        # debug("1")
+        os.chdir(self.workdir)
+        # for filename in glob.glob('{}/RAxML*'.format(self.workdir)):
+        #     os.rename(filename, "{}/{}_tmp".format(self.workdir, filename.split("/")[1]))
+        # run bootstrap
+     
+        # make bipartition tree
+        # is the -f b command
+        # -z specifies file with multiple trees
+
+        # debug("2b")
+        subprocess.call(["raxmlHPC", "-m", "GTRCAT",
+                         "-s", aln,
+                         "-p", "1", "-f", "a", "-x", "1", "-#", "autoMRE",
+                         "-n", "autoMRE"])
+
+        # strict consensus:
+        # debug("4")
+        subprocess.call(["raxmlHPC", "-m", "GTRCAT",
+                         "-J", "STRICT",
+                         "-z", "RAxML_bootstrap.autoMRE",
+                         "-n", "StrictCon"])
+        # majority rule:
+        # debug("5")
+        subprocess.call(["raxmlHPC", "-m", "GTRCAT",
+                         "-J", "MR",
+                         "-z", "RAxML_bootstrap.all",
+                         "-n", "MR"])
+      
