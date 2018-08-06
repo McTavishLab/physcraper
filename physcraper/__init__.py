@@ -797,7 +797,7 @@ class IdDicts(object):
         Entrez.email = self.config.email
         if gi_id:
             # debug("gi_id to tax_name")
-            tries = 5
+            tries = 10
             for i in range(tries):
                 try:
                     handle = Entrez.efetch(db="nucleotide", id=gi_id, retmode="xml")

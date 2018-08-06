@@ -12,7 +12,8 @@ from copy import deepcopy#
 workdir_its = "./tiny_comb_its"
 workdir_ets = "./tiny_comb_ets"
 workdir_3 = "./tiny_comb_ets"
-
+email = "martha.kandziora@yahoo.com"
+percentage = 0.4
 
 pickle_fn = "scrape_checkpoint.p"
 
@@ -32,8 +33,8 @@ genelist = {"its": {"workdir": workdir_its, "pickle": pickle_fn},
 
 # print(workdir_comb)
 
-conc = wrappers.concat(genelistdict=genelist, workdir_comb=workdir_comb,
-						user_concat=None)
+conc = wrappers.concat(genelistdict=genelist, workdir_comb=workdir_comb, 
+						email=email, percentage = percentage, user_concat=None)
 
 print(type(conc))
 
