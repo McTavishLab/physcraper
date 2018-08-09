@@ -811,8 +811,9 @@ class IdDicts(object):
     	    try:
                 read_handle = Entrez.read(handle)[0]
     	    except:
-    		  read_handle = Entrez.read(handle) 
-	    tax_name = read_handle['GBSeq_feature-table'][0]['GBFeature_quals'][0]['GBQualifier_value']
+                read_handle = Entrez.read(handle)
+                debug(read_handle)
+	        tax_name = read_handle['GBSeq_feature-table'][0]['GBFeature_quals'][0]['GBQualifier_value']
         else:
             tax_name = str(taxon_name).replace("_", " ")
         debug(tax_name)
@@ -1898,10 +1899,10 @@ class FilterBlast(PhyscraperScrape):
                 if '^user:TaxonName' in gi_id:
                     spn_name = gi_id['^user:TaxonName'].replace(" ", "_")
                 elif '^ot:ottTaxonName' in gi_id:
-                    spn_name = gi_id['^ot:ottTaxonName'].replace(" ", "_")
+                    spn_name = gi_id['^ot:ottTaxonName']
                     if spn_name == None:
                         spn_name = self.ids.get_rank_info(self, taxon_name=key)
-
+                    spn_name = gi_id['^ot:ottTaxonName'].replace(" ", "_")
                                            
                 for spn_name_aln, seq in self.data.aln.items():
                     if '^user:TaxonName' in self.data.otu_dict[spn_name_aln.label]:
