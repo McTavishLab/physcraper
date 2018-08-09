@@ -740,7 +740,7 @@ def get_mrca_ott(ott_ids):
         if _VERBOSE:
             sys.stdout.write('(v3) MRCA of sampled taxa is {}\n'.format(mrca_node['mrca'][u'taxon'][u'name']))
     else:
-        print(mrca_node.keys())
+        debug(mrca_node.keys())
         sys.stderr.write('(v3) MRCA of sampled taxa not found. Please find and input and '
                          'approppriate OTT id as ingroup mrca in generate_ATT_from_files')
         sys.exit()
@@ -818,8 +818,8 @@ class IdDicts(object):
             try:
                 # debug("try")
                 tax_id = int(Entrez.read(Entrez.esearch(db="taxonomy", term=tax_name, RetMax=100))['IdList'][0])
-                # print(tax_id)
-                # print(type(tax_id))
+                # debug(tax_id)
+                # debug(type(tax_id))
             except:
                 # debug("except")
                 tax_info = ncbi.get_name_translator([tax_name])
@@ -908,6 +908,7 @@ class PhyscraperScrape(object):  # TODO do I wantto be able to instantiate this 
             log.write("Blast run {} \n".format(datetime.date.today()))
         for taxon, seq in self.data.aln.items():
             otu_id = taxon.label
+            # print(taxon, seq)
             # TODO temp until I fix delete
             if otu_id in self.data.otu_dict:
                 if _VERBOSE:
@@ -1430,10 +1431,10 @@ class PhyscraperScrape(object):  # TODO do I wantto be able to instantiate this 
 
     def generate_streamed_alignment(self):
         """runs the key steps and then replaces the tree and alignment with the expanded ones"""
-  
+        debug("gneerate streamed aln")
         if self.blacklist:
             self.remove_blacklistitem()
-
+        debug(len(self.new_seqs))
         if len(self.new_seqs) > 0:
             # self.remove_identical_seqs()  # speed up
             self.data.write_files()  # should happen before aligning in case of pruning
@@ -1684,10 +1685,13 @@ class FilterBlast(PhyscraperScrape):
 
         """
         # Note: has test, runs -> test_run_local_blast.py
+        debug("run_local_blast")
+        debug(blast_seq)
         general_wd = os.getcwd()
         os.chdir(os.path.join(self.workdir, "blast"))
         out_fn = "{}_tobeblasted".format(str(blast_seq))
         cmd1 = "makeblastdb -in {}_db -dbtype nucl".format(blast_seq)
+        debug("make local db")
         os.system(cmd1)
         if output is None:
             cmd2 = "blastn -query {} -db {}_db -out output_{}.xml -outfmt 5".format(out_fn, blast_db, out_fn)
@@ -1746,6 +1750,7 @@ class FilterBlast(PhyscraperScrape):
         # select which sequences to use
         seq_blast_score = {}
         for gi_id in hsp_scores:  # use only seq that are similar to mean plus minus sd
+            # print(gi_id, hsp_scores[gi_id]['hsp.bits'])
             if (hsp_scores[gi_id]['hsp.bits'] >= mean_sd['mean'] - mean_sd['sd']) & \
                     (hsp_scores[gi_id]['hsp.bits'] <= mean_sd['mean'] + mean_sd['sd']):
                 if gi_id in seq_d:
@@ -1817,13 +1822,13 @@ class FilterBlast(PhyscraperScrape):
             for key in random_seq_ofsp.keys():
                 # debug(key)
                 self.filtered_seq[key] = random_seq_ofsp[key]
-        # print(self.filtered_seq)
+        # debug(self.filtered_seq)
         # """select new sequences by length"""
-        # print("do something")
+        # debug("do something")
         # for key in self.sp_seq_d:
         #     count = 0
         #     if len(self.sp_seq_d[key]) > treshold:
-        #         print(key)
+        #         debug(key)
         #         for sp_keys in self.sp_seq_d[key].keys():
         #             if isinstance(sp_keys, str) == True:
         #                 count += 1
@@ -1837,7 +1842,7 @@ class FilterBlast(PhyscraperScrape):
         #             if len(v) == len(max_len):
         #                 seq_w_maxlen[k] = v
         #         if (treshold - count) <= 0:
-        #             print("already to many samples of sp in aln, skip adding more.")
+        #             debug("already to many samples of sp in aln, skip adding more.")
         #             random_seq_ofsp = None
         #         elif len(seq_w_maxlen) == (treshold - count):
         #             random_seq_ofsp = seq_w_maxlen
@@ -1858,9 +1863,9 @@ class FilterBlast(PhyscraperScrape):
         #             random_seq_ofsp.update(seq_w_maxlen)
         #         if random_seq_ofsp != None:
         #             for key in random_seq_ofsp.keys():
-        #                 # print(key)
+        #                 # debug(key)
         #                 self.filtered_seq[key] = random_seq_ofsp[key]
-        # # print(self.filtered_seq)
+        # # debug(self.filtered_seq)
 
     def add_all(self, key):
         """Add all seq to filtered_dict as the number of sequences is smaller than the threshold value.

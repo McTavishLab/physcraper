@@ -12,7 +12,6 @@ from dendropy import Tree, \
 from Bio import Entrez 
 
 from __init__ import debug
-from __init__ import IdDicts
 
 
 
