@@ -334,49 +334,49 @@ def filter_data_run(seqaln,
         # filteredScrape.write_otu_info(downtorank)
         debug(add_local_seq)
         debug(add_local_seq != None)
-        if add_local_seq is not None:
-            filteredScrape.localblast = True
-            debug(filteredScrape.localblast)
-        if filteredScrape.localblast == True:
+#         if add_local_seq is not None:
+#             filteredScrape.localblast = True
+#             debug(filteredScrape.localblast)
+#         if filteredScrape.localblast == True:
 
-            debug("will add local sequences now")
-            filteredScrape.localblast = True
-            filteredScrape.write_unpl_lblastdb(add_local_seq)
-            #filteredScrape.run_local_blast()
-            filteredScrape.run_blast()
-            print(id_to_spn_addseq_json)
-            filteredScrape.local_otu_json = id_to_spn_addseq_json
+#             debug("will add local sequences now")
+#             filteredScrape.localblast = True
+#             filteredScrape.write_unpl_lblastdb(add_local_seq)
+#             #filteredScrape.run_local_blast()
+#             filteredScrape.run_blast()
+#             print(id_to_spn_addseq_json)
+#             filteredScrape.local_otu_json = id_to_spn_addseq_json
 
-            filteredScrape.read_blast()
-            sys.stdout.write("remove idential sequences\n")
-            filteredScrape.remove_identical_seqs()
+#             filteredScrape.read_blast()
+#             sys.stdout.write("remove idential sequences\n")
+#             filteredScrape.remove_identical_seqs()
 
-            filteredScrape.generate_streamed_alignment()
-            # print(some)
-            filteredScrape.localblast = False
+#             filteredScrape.generate_streamed_alignment()
+#             # print(some)
+#             filteredScrape.localblast = False
 
-        else:
-            #run the ananlyses
-            sys.stdout.write("BLASTing input sequences\n")
-            # uncomment next line if you want to have a shared blast folder and change the path to something meaningful. Remember to change the gifilename setting in the config file to true.
-            if shared_blast_folder:
-                filteredScrape.blast_subdir = shared_blast_folder
-            filteredScrape.run_blast()
-            filteredScrape.read_blast()
-            sys.stdout.write("remove idential sequences\n")
-            filteredScrape.remove_identical_seqs()
-            filteredScrape.dump()
-            debug(treshold)
-            sys.stdout.write("Filter the sequences\n")
-            if treshold is not None:
-                filteredScrape.sp_dict(downtorank)
-                filteredScrape.make_sp_seq_dict()
-                filteredScrape.how_many_sp_to_keep(treshold=treshold, selectby=selectby)
-                filteredScrape.replace_new_seq()
-            debug("from replace to streamed aln")
-            sys.stdout.write("calculate the phylogeny\n")
-            filteredScrape.generate_streamed_alignment()
-            filteredScrape.dump()
+#         else:
+        #run the ananlyses
+        sys.stdout.write("BLASTing input sequences\n")
+        # uncomment next line if you want to have a shared blast folder and change the path to something meaningful. Remember to change the gifilename setting in the config file to true.
+        if shared_blast_folder:
+            filteredScrape.blast_subdir = shared_blast_folder
+        filteredScrape.run_blast()
+        filteredScrape.read_blast()
+        sys.stdout.write("remove idential sequences\n")
+        filteredScrape.remove_identical_seqs()
+        filteredScrape.dump()
+        debug(treshold)
+        sys.stdout.write("Filter the sequences\n")
+        if treshold is not None:
+            filteredScrape.sp_dict(downtorank)
+            filteredScrape.make_sp_seq_dict()
+            filteredScrape.how_many_sp_to_keep(treshold=treshold, selectby=selectby)
+            filteredScrape.replace_new_seq()
+        debug("from replace to streamed aln")
+        sys.stdout.write("calculate the phylogeny\n")
+        filteredScrape.generate_streamed_alignment()
+        filteredScrape.dump()
     while filteredScrape.repeat == 1:
         # number_rounds += 1
         filteredScrape.data.write_labelled(label='^ot:ottTaxonName', gi_id=True)
