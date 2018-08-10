@@ -1,7 +1,7 @@
 # package import
 import os
 import json
-from physcraper import wrappers, OtuJsonDict, ConfigObj, IdDicts
+from physcraper import wrappers, OtuJsonDict
 
 # define here your files
 seqaln = "tests/data/tiny_test_example/test.fas"

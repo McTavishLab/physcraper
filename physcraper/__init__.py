@@ -823,7 +823,7 @@ class IdDicts(object):
 
                 read_handle = Entrez.read(handle)
                 debug(read_handle)
-		debug("are you printing this line")
+		        debug("are you printing this line")
             debug(read_handle)
             tax_name = read_handle['GBSeq_feature-table'][0]['GBFeature_quals'][0]['GBQualifier_value']
         else:
