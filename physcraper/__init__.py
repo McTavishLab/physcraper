@@ -793,30 +793,39 @@ class IdDicts(object):
         used to delimit the sequences from blast,
         when you have a local blast database or a Filter Blast run
         """
-        # debug("get_rank_info")
+        debug("get_rank_info")
         Entrez.email = self.config.email
         if gi_id:
             # debug("gi_id to tax_name")
+            debug(gi_id)
             tries = 10
             for i in range(tries):
                 try:
                     handle = Entrez.efetch(db="nucleotide", id=gi_id, retmode="xml")
+                
                 except:
+                    debug("except")
                     if i < tries - 1:  # i is zero indexed
                         continue
                     else:
+                        debug("im going to raise")
                         raise
                 break
 #            debug(Entrez.read(handle))
+            debug("try and except")
     	    try:
                 read_handle = Entrez.read(handle)[0]
     	    except:
+                debug(handle)
+
                 read_handle = Entrez.read(handle)
                 debug(read_handle)
-	        tax_name = read_handle['GBSeq_feature-table'][0]['GBFeature_quals'][0]['GBQualifier_value']
+		debug("are you printing this line")
+            debug(read_handle)
+            tax_name = read_handle['GBSeq_feature-table'][0]['GBFeature_quals'][0]['GBQualifier_value']
         else:
             tax_name = str(taxon_name).replace("_", " ")
-        debug(tax_name)
+        # debug(tax_name)
         if tax_name not in self.otu_rank.keys():
             # debug("tax_name to rank")
             ncbi = NCBITaxa()
