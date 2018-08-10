@@ -816,14 +816,19 @@ class IdDicts(object):
                 break
 #            debug(Entrez.read(handle))
             debug("try and except")
+            # debug()
     	    try:
+                debug("try")
+                debug(Entrez.read(handle)[0])
                 read_handle = Entrez.read(handle)[0]
+                debug(read_handle)
     	    except:
-                # debug(handle)
-
+                debug("except")
+                debug(handle)
+                debug(Entrez.read(handle))
                 read_handle = Entrez.read(handle)
-                # debug(read_handle)
-                # debug("are you printing this line")
+                debug(read_handle)
+                debug("are you printing this line")
             # debug(read_handle)
             tax_name = read_handle['GBSeq_feature-table'][0]['GBFeature_quals'][0]['GBQualifier_value']
         else:
