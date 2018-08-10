@@ -81,8 +81,10 @@ def standard_run(study_id,
     # scraper.blast_subdir = "/home/martha/physcraper/phyruns/blast_runs/"
     if shared_blast_folder:
         scraper.blast_subdir = shared_blast_folder
+    else:
+        shared_blast_folder = None
     scraper.run_blast()
-    scraper.read_blast()
+    scraper.read_blast(blast_dir= shared_blast_folder)
     scraper.remove_identical_seqs()
     scraper.generate_streamed_alignment()
     while scraper.repeat == 1:
@@ -90,8 +92,10 @@ def standard_run(study_id,
         scraper.data.write_otus("otu_info", schema='table')
         if shared_blast_folder:
             scraper.blast_subdir = shared_blast_folder
+        else:
+            shared_blast_folder = None
         scraper.run_blast()
-        scraper.read_blast()
+        scraper.read_blast(blast_dir= shared_blast_folder)
         scraper.remove_identical_seqs()
         scraper.generate_streamed_alignment()
     return
@@ -152,15 +156,19 @@ def own_data_run(seqaln,
         # scraper.blast_subdir = "/home/mkandziora/shared_runs/"
         if shared_blast_folder:
             scraper.blast_subdir = shared_blast_folder
+        else:
+            shared_blast_folder = None
         scraper.run_blast()
-        scraper.read_blast()
+        scraper.read_blast(blast_dir= shared_blast_folder)
         scraper.remove_identical_seqs()
         scraper.generate_streamed_alignment()
     while scraper.repeat == 1: 
         scraper.run_blast()
         if shared_blast_folder:
             scraper.blast_subdir = shared_blast_folder
-        scraper.read_blast()
+        else:
+            shared_blast_folder = None
+        scraper.read_blast(blast_dir= shared_blast_folder)
         scraper.remove_identical_seqs()
         scraper.generate_streamed_alignment()
     return 1 
@@ -237,7 +245,7 @@ def filter_OTOL(study_id,
         #filteredScrape.blast_subdir = "/home/martha/physcraper/phyruns/blast_runs/"
 
         filteredScrape.run_blast()
-        filteredScrape.read_blast()
+        filteredScrape.read_blast(blast_dir= shared_blast_folder)
         sys.stdout.write("remove idential sequences\n")
         filteredScrape.remove_identical_seqs()
         filteredScrape.dump()
@@ -258,7 +266,7 @@ def filter_OTOL(study_id,
         filteredScrape.data.write_otus("otu_info", schema='table')
         sys.stdout.write("BLASTing input sequences\n")
         filteredScrape.run_blast()
-        filteredScrape.read_blast()
+        filteredScrape.read_blast(blast_dir= shared_blast_folder)
         filteredScrape.remove_identical_seqs()
         sys.stdout.write("Filter the sequences\n")
         if treshold is not None:
@@ -369,8 +377,10 @@ def filter_data_run(seqaln,
         # uncomment next line if you want to have a shared blast folder and change the path to something meaningful. Remember to change the gifilename setting in the config file to true.
         if shared_blast_folder:
             filteredScrape.blast_subdir = shared_blast_folder
+        else:
+            shared_blast_folder = None
         filteredScrape.run_blast()
-        filteredScrape.read_blast()
+        filteredScrape.read_blast(blast_dir= shared_blast_folder)
         sys.stdout.write("remove idential sequences\n")
         filteredScrape.remove_identical_seqs()
         filteredScrape.dump()
@@ -392,8 +402,10 @@ def filter_data_run(seqaln,
         sys.stdout.write("BLASTing input sequences\n")
         if shared_blast_folder:
             filteredScrape.blast_subdir = shared_blast_folder
+        else:
+            shared_blast_folder = None
         filteredScrape.run_blast()
-        filteredScrape.read_blast()
+        filteredScrape.read_blast(blast_dir= shared_blast_folder)
         filteredScrape.remove_identical_seqs()
         sys.stdout.write("Filter the sequences\n")
         if treshold is not None:
@@ -475,7 +487,7 @@ def run_with_settings(settings):
         # filteredScrape.blast_subdir = "/home/martha/physcraper/phyruns/blast_runs/"
 
         filteredScrape.run_blast()
-        filteredScrape.read_blast()
+        filteredScrape.read_blast(blast_dir= shared_blast_folder)
         filteredScrape.remove_identical_seqs()
         filteredScrape.dump()
         if settings.treshold is not None:
@@ -491,7 +503,7 @@ def run_with_settings(settings):
         filteredScrape.data.write_labelled(label='^ot:ottTaxonName', gi_id=True)
         filteredScrape.data.write_otus("otu_info", schema='table')
         filteredScrape.run_blast()
-        filteredScrape.read_blast()
+        filteredScrape.read_blast(blast_dir= shared_blast_folder)
         filteredScrape.remove_identical_seqs()
 
         debug("make sp_dict")    
