@@ -279,8 +279,9 @@ def filter_data_run(seqaln,
                  blacklist,
                  add_local_seq,
                  id_to_spn_addseq_json,
-                 configfi
-                 ingroup_mrca):
+                 configfi,
+                 ingroup_mrca=None,
+                 shared_blast_folder=None):
     '''looks for pickeled file to continue run, or builds and runs 
     new analysis for as long as new seqs are found. 
     This uses the FilterBlast subclass to be able to filter the blast output.'''
@@ -358,7 +359,8 @@ def filter_data_run(seqaln,
             #run the ananlyses
             sys.stdout.write("BLASTing input sequences\n")
             # uncomment next line if you want to have a shared blast folder and change the path to something meaningful. Remember to change the gifilename setting in the config file to true.
-            filteredScrape.blast_subdir = "/home/mkandziora/shared_runs/"
+            if shared_blast_folder:
+                filteredScrape.blast_subdir = shared_blast_folder
             filteredScrape.run_blast()
             filteredScrape.read_blast()
             sys.stdout.write("remove idential sequences\n")
@@ -380,8 +382,8 @@ def filter_data_run(seqaln,
         filteredScrape.data.write_labelled(label='^ot:ottTaxonName', gi_id=True)
         filteredScrape.data.write_otus("otu_info", schema='table')
         sys.stdout.write("BLASTing input sequences\n")
-        filteredScrape.blast_subdir = "/home/mkandziora/shared_runs/"
-
+        if shared_blast_folder:
+            filteredScrape.blast_subdir = shared_blast_folder
         filteredScrape.run_blast()
         filteredScrape.read_blast()
         filteredScrape.remove_identical_seqs()

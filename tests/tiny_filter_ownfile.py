@@ -20,6 +20,7 @@ downtorank = "species"
 add_local_seq = None  # under development
 id_to_spn_addseq_json = None  # under development
 blacklist = None
+shared_blast_folder = "/home/blubb/physcraper/shared_runs/"
 
 # setup the run
 if not os.path.exists("{}".format(workdir)):
@@ -50,5 +51,6 @@ wrappers.filter_data_run(seqaln,
                          blacklist,
 			             add_local_seq,
                          id_to_spn_addseq_json,
-                         configfi)
+                         configfi,
+                         shared_blast_folder=shared_blast_folder)
 
