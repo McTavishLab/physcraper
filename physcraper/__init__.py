@@ -1786,7 +1786,9 @@ class FilterBlast(PhyscraperScrape):
         """Select new sequences by length instead of by score values"""
         # TODO: under development
         debug("select_seq_by_length")
-
+        debug(taxon_id)
+        debug(self.sp_seq_d[taxon_id])
+        debug(self.sp_seq_d[taxon_id].values())
         max_len = max(self.sp_seq_d[taxon_id].values())
         # !!! sometimes the only seq in seq_w_maxlen is the original seq,
         # then this is the one to be added, but it will be removed,
@@ -1889,6 +1891,8 @@ class FilterBlast(PhyscraperScrape):
         I use the taxonomic names here, as this is the measure of which information goes into which local filter blast database.
         The function is only used within 'loop_for_write_blast_files' to generate the filenames.
         """
+        debug("get_name_for_blastfiles")
+        debug(key)
         nametoreturn = None
         # loop needs to happen before the other one, as we need nametoreturn in second:
         for gi_id in self.sp_d[key]:
@@ -1953,6 +1957,7 @@ class FilterBlast(PhyscraperScrape):
                             # filename = spn_name_aln.label
                             if self.downtorank is not None:
                                 filename = key
+                            print(filename, seq)
                             self.write_blast_files(filename, seq)
                     # if '^user:TaxonName' in gi_id:
                     #     spn_name = gi_id['^user:TaxonName']
@@ -1997,7 +2002,7 @@ class FilterBlast(PhyscraperScrape):
                                 if self.downtorank is not None:
                                     filename = key
                                     nametoreturn = key
-                                # debug(filename)
+                                debug(filename)
                                 self.write_blast_files(filename, seq, db=True, fn=nametoreturn)
                                 # blastfile_taxon_names[gi_num] = gi_num
                     namegi = key
@@ -2053,6 +2058,7 @@ class FilterBlast(PhyscraperScrape):
                 # debug(self.sp_seq_d[taxon_id].keys())
                 if taxon_id in self.sp_seq_d.keys():
                     if selectby == "length":
+                        print(self.sp_seq_d[taxon_id], treshold, seq_present)
                         self.select_seq_by_length(self.sp_seq_d[taxon_id], treshold, seq_present)
                     elif selectby == "blast":
                         # if seq_present >= 1 and seq_present < treshold and count_dict["new_taxon"] == False and query_count != 0:
