@@ -105,7 +105,7 @@ def own_data_run(seqaln,
                  sp_info_jsonfi,
                  configfi,
                  ingroup_mrca = None,
-                 shared_blast_folder = None):
+		 shared_blast_folder=None):
     '''looks for pickeled file to continue run, or builds and runs 
     new analysis for as long as new seqs are found'''
 
