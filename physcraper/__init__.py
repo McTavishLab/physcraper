@@ -1928,7 +1928,7 @@ class FilterBlast(PhyscraperScrape):
                     spn_name = gi_id['^ot:ottTaxonName']
                     if spn_name == None:
                         debug(key)
-                        spn_name = self.ids.get_rank_info(self, taxon_name=key)
+                        spn_name = self.ids.get_rank_info(taxon_name=key)
                     spn_name = gi_id['^ot:ottTaxonName'].replace(" ", "_")
                                            
                 for spn_name_aln, seq in self.data.aln.items():
