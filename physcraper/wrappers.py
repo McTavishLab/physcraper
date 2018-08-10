@@ -31,7 +31,8 @@ def standard_run(study_id,
                  seqaln,
                  mattype,
                  workdir,
-                 configfi):
+                 configfi,
+                 shared_blast_folder):
     '''looks for a json file to continue run, or builds and runs
     new analysis for as long as new seqs are found'''
     debug('Debugging mode is on')
@@ -78,7 +79,8 @@ def standard_run(study_id,
     # run the ananlyses
     # uncomment next line if you want to have a shared blast folder and change the path to something meaningful. Remember to change the gifilename setting in the config file to true.
     # scraper.blast_subdir = "/home/martha/physcraper/phyruns/blast_runs/"
-
+    if shared_blast_folder:
+        scraper.blast_subdir = shared_blast_folder
     scraper.run_blast()
     scraper.read_blast()
     scraper.remove_identical_seqs()
@@ -86,6 +88,8 @@ def standard_run(study_id,
     while scraper.repeat == 1:
         scraper.data.write_labelled(label='^ot:ottTaxonName')
         scraper.data.write_otus("otu_info", schema='table')
+        if shared_blast_folder:
+            scraper.blast_subdir = shared_blast_folder
         scraper.run_blast()
         scraper.read_blast()
         scraper.remove_identical_seqs()
@@ -100,7 +104,8 @@ def own_data_run(seqaln,
                  workdir,
                  sp_info_jsonfi,
                  configfi,
-                 ingroup_mrca = None):
+                 ingroup_mrca = None,
+                 shared_blast_folder):
     '''looks for pickeled file to continue run, or builds and runs 
     new analysis for as long as new seqs are found'''
 
@@ -144,14 +149,17 @@ def own_data_run(seqaln,
         # run the analyses
         # uncomment next line if you want to have a shared blast folder and change the path to something meaningful. Remember to change the gifilename setting in the config file to true.
         # scraper.blast_subdir = "/home/martha/physcraper/phyruns/blast_runs/"
-        scraper.blast_subdir = "/home/mkandziora/shared_runs/"
-
+        # scraper.blast_subdir = "/home/mkandziora/shared_runs/"
+        if shared_blast_folder:
+            scraper.blast_subdir = shared_blast_folder
         scraper.run_blast()
         scraper.read_blast()
         scraper.remove_identical_seqs()
         scraper.generate_streamed_alignment()
     while scraper.repeat == 1: 
         scraper.run_blast()
+        if shared_blast_folder:
+            scraper.blast_subdir = shared_blast_folder
         scraper.read_blast()
         scraper.remove_identical_seqs()
         scraper.generate_streamed_alignment()
