@@ -544,6 +544,8 @@ class AlignTreeTax(object):
     def add_otu(self, gi, ids_obj):
         """generates an otu_id for new sequences and adds them into the otu_dict.
         Needs to be passed an IdDict to do the mapping"""
+        
+        debug("add_otu")
         otu_id = "otuPS{}".format(self.ps_otu)
         self.ps_otu += 1
         ncbi_id = ids_obj.map_gi_ncbi(gi)  # check that try/except is working here
@@ -561,7 +563,7 @@ class AlignTreeTax(object):
             # spn = str(ids_obj.ott_to_name[ott]).replace(" ", "_")  # seems to be unused
         except:
             # spn = ids_obj.get_rank_info(gi, taxon_name = False).replace(" ", "_")
-            # debug(gi)
+            debug(gi)
             spn = ids_obj.get_rank_info(gi_id=gi)
             ncbi_id = ids_obj.otu_rank[spn]["taxon id"]
             # following try except seems to be unused
@@ -794,6 +796,7 @@ class IdDicts(object):
         when you have a local blast database or a Filter Blast run
         """
         debug("get_rank_info")
+        print(gi_id, taxon_name)
         Entrez.email = self.config.email
         if gi_id:
             # debug("gi_id to tax_name")
@@ -851,12 +854,14 @@ class IdDicts(object):
 
     def map_gi_ncbi(self, gi):
         """get the ncbi taxon id's for a gi input"""
+        debug("map_gi_ncbi")
         if _DEBUG == 2:
             sys.stderr.write("mapping gi {}\n".format(gi))
         tax_id = None
         if gi in self.gi_ncbi_dict:
             tax_id = int(self.gi_ncbi_dict[gi])
         else:
+            debug(gi)
             tax_name = self.get_rank_info(gi_id=gi)
             tax_id = self.otu_rank[tax_name]["taxon id"]
             self.gi_ncbi_dict[gi] = tax_id
@@ -1064,7 +1069,7 @@ class PhyscraperScrape(object):  # TODO do I wantto be able to instantiate this 
     def get_sp_id_of_otulabel(self, label):
         """gets the species name and the corresponding ncbi id of the otu
         """
-        # debug("get_spn_id_of_otulabel")
+        debug("get_spn_id_of_otulabel")
         # debug(label)
         if '^ot:ottTaxonName' in self.data.otu_dict[label].keys():
             spn_of_label = self.data.otu_dict[label]['^ot:ottTaxonName']
@@ -1081,6 +1086,7 @@ class PhyscraperScrape(object):  # TODO do I wantto be able to instantiate this 
         elif spn_of_label in self.ids.otu_rank.keys():
             id_of_label = int(self.ids.otu_rank[spn_of_label]["taxon id"])
         else:
+            debug(spn_of_label)
             tax_name = self.ids.get_rank_info(taxon_name=spn_of_label)
             id_of_label = int(self.ids.otu_rank[tax_name]["taxon id"])
         return id_of_label
@@ -1093,6 +1099,7 @@ class PhyscraperScrape(object):  # TODO do I wantto be able to instantiate this 
         removes that sequence and replaces it
         """
         # TODO unify spp name somehow?
+        # debug(label)
         id_of_label = self.get_sp_id_of_otulabel(label)
         if _DEBUG:
             sys.stdout.write("taxon is ott{}\n".format(id_of_label))
@@ -1590,7 +1597,7 @@ class FilterBlast(PhyscraperScrape):
                 if spn is None:
                     # debug("value is None")
                     gi_id = self.data.otu_dict[key]['^ncbi:gi']
-                    # debug(gi_id)
+                    debug(gi_id)
                     # debug(type(gi_id))
                     spn = self.ids.get_rank_info(gi_id=gi_id)
                     if spn is None:
@@ -1598,6 +1605,7 @@ class FilterBlast(PhyscraperScrape):
                 if self.downtorank is not None:
                     spn = str(spn).replace(" ", "_")
                     if spn not in self.ids.otu_rank.keys():
+                        debug(spn)
                         self.ids.get_rank_info(taxon_name=spn)
                         spn = str(spn).replace(" ", "_")
                     # if spn in self.ids.otu_rank.keys():
@@ -1919,6 +1927,7 @@ class FilterBlast(PhyscraperScrape):
                 elif '^ot:ottTaxonName' in gi_id:
                     spn_name = gi_id['^ot:ottTaxonName']
                     if spn_name == None:
+                        debug(key)
                         spn_name = self.ids.get_rank_info(self, taxon_name=key)
                     spn_name = gi_id['^ot:ottTaxonName'].replace(" ", "_")
                                            
