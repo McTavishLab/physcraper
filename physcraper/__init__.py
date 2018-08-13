@@ -817,19 +817,21 @@ class IdDicts(object):
             debug(handle)
             debug("try and except")
             # debug()
+            read_handle = Entrez.read(handle)
     	    try:
                 debug("try")
                 # debug(Entrez.read(handle)[0])
-                read_handle = Entrez.read(handle)[0]
+                read_handle =read_handle[0]
                 # debug(read_handle)
     	    except:
                 debug("except read")
                 # debug(handle)
                 # debug(Entrez.read(handle))
-                read_handle = Entrez.read(handle)
+                read_handle = read_handle
                 # debug(read_handle)
                 debug("are you printing this line")
             # debug(read_handle)
+            debug(read_handle)
             tax_name = read_handle['GBSeq_feature-table'][0]['GBFeature_quals'][0]['GBQualifier_value']
         else:
             tax_name = str(taxon_name).replace("_", " ")
@@ -1232,8 +1234,6 @@ class PhyscraperScrape(object):  # TODO do I wantto be able to instantiate this 
         debug("len new seqs dict after remove identical")
         debug(len(self.new_seqs_otu_id))
         # debug(self.new_seqs)
-        # debug(some)
-
         with open(self.logfile, "a") as log:
             log.write("{} new sequences added from genbank after removing identical seq, "
                       "of {} before filtering\n".format(len(self.new_seqs_otu_id), len(self.new_seqs)))
@@ -1394,7 +1394,6 @@ class PhyscraperScrape(object):  # TODO do I wantto be able to instantiate this 
         # for filename in glob.glob('{}/RAxML*'.format(self.workdir)):
         #     os.rename(filename, "{}/{}_tmp".format(self.workdir, filename.split("/")[1]))
         # run bootstrap
-        # debug("2")
         subprocess.call(["raxmlHPC", "-m", "GTRCAT",
                          "-s", "papara_alignment.extended",
                          # "-t", "place_resolve.tre",
@@ -1403,40 +1402,32 @@ class PhyscraperScrape(object):  # TODO do I wantto be able to instantiate this 
         # make bipartition tree
         # is the -f b command
         # -z specifies file with multiple trees
-
-        # debug("2b")
         subprocess.call(["raxmlHPC", "-m", "GTRCAT",
                          "-s", "previous_run/papara_alignment.extended",
                          "-p", "1", "-f", "a", "-x", "1", "-#", "autoMRE",
                          "-n", "all{}".format(self.date)])
-        # debug("3")
         # subprocess.call(["raxmlHPC", "-m", "GTRCAT",
         #                  "-s", "previous_run/papara_alignment.extended",
         #                  "-t", "{}/RAxML_bestTree.all{}".format(self.workdir, self.date),
         #                  "-p", "1", "-f", "b", "-z", "RAxML_bootstrap.all{}".format(self.date),
         #                  "-n", "bipart_{}".format(self.date)])
         # strict consensus:
-        # debug("4")
         subprocess.call(["raxmlHPC", "-m", "GTRCAT",
                          "-J", "STRICT",
                          "-z", "RAxML_bootstrap.all{}".format(self.date),
                          "-n", "StrictCon{}".format(self.date)])
         # majority rule:
-        # debug("5")
         subprocess.call(["raxmlHPC", "-m", "GTRCAT",
                          "-J", "MR",
                          "-z", "RAxML_bootstrap.all{}".format(self.date),
                          "-n", "MR_{}".format(self.date)])
         # extended majority rule:
-        # debug("6")
         subprocess.call(["raxmlHPC", "-m", "GTRCAT",
                          "-J", "MRE",
                          "-z", "RAxML_bootstrap.all{}".format(self.date),
                          "-n", "EMR{}".format(self.date)])
-
         # rapid bootstrapping
         # -f a: is the command to do that
-        # debug("7")
         # subprocess.call(["raxmlHPC", "-m", "GTRCAT",
         #                  "-f", "a",
         #                  "-p", "1", "-x", "1", "-#", "autoMRE", "-s", "aln_ott.phy",
