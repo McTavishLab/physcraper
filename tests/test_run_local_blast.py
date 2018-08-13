@@ -1,7 +1,8 @@
 import os
 import sys
 import pickle
-from physcraper import FilterBlast, ConfigObj, IdDicts
+#from physcraper import FilterBlast, ConfigObj, IdDicts
+import physcraper
 
 sys.stdout.write("\ntests run_local_blast\n")
 
@@ -12,27 +13,28 @@ configfi = "tests/data/test.config"
 absworkdir = os.path.abspath(workdir)
 
 try:
-    conf = ConfigObj(configfi)
+    conf = physcraper.ConfigObj(configfi)
     data_obj = pickle.load(open("tests/data/precooked/tiny_dataobj.p", 'rb'))
     data_obj.workdir = absworkdir
-    ids = IdDicts(conf, workdir=data_obj.workdir)
+    ids = physcraper.IdDicts(conf, workdir=data_obj.workdir)
     ids.gi_ncbi_dict = pickle.load(open("tests/data/precooked/tiny_gi_map.p", "rb"))
 except:
     sys.stdout.write("\n\nTest FAILED\n\n")
     sys.exit()
-filteredScrape =  FilterBlast(data_obj, ids)
+filteredScrape =  physcraper.FilterBlast(data_obj, ids)
 
 blast_db = "otuSlagascanus"
 blast_seq = "otuSlagascanus"
 
 if not os.path.exists("{}/blast".format(filteredScrape.data.workdir)):
     os.makedirs("{}/blast/".format(filteredScrape.data.workdir))
-path1 = '/home/blubb/Documents/gitdata/physcraper/tests/data/precooked/fixed/select-blast/*'
+print(os.getcwd())    
+path1 = '{}/tests/data/precooked/fixed/select-blast/*'.format(os.getcwd())
 path2 = "{}/blast/".format(filteredScrape.data.workdir)
 cmd = 'cp -r ' + path1 + ' ' + path2
 os.system(cmd)
 
-filteredScrape.run_local_blast(blast_seq, blast_db)
+physcraper.run_local_blast(filteredScrape.data.workdir, blast_seq, blast_db)
 blast_out = "{}/blast/output_otuSlagascanus_tobeblasted.xml".format(workdir)
 
 if os.path.exists(blast_out):

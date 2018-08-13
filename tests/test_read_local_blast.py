@@ -1,8 +1,8 @@
 import os
 import sys
 import pickle
-from physcraper import FilterBlast, ConfigObj, IdDicts
-
+#from physcraper import FilterBlast, ConfigObj, IdDicts
+import physcraper
 sys.stdout.write("\ntests read_local_blast\n")
 
 # tests if I can read a local blast output file
@@ -15,15 +15,15 @@ downtorank = None
 absworkdir = os.path.abspath(workdir)
 
 try:
-    conf = ConfigObj(configfi)
+    conf = physcraper.ConfigObj(configfi)
     data_obj = pickle.load(open("tests/data/precooked/tiny_dataobj.p", 'rb'))
     data_obj.workdir = absworkdir
-    ids = IdDicts(conf, workdir=data_obj.workdir)
+    ids = physcraper.IdDicts(conf, workdir=data_obj.workdir)
     ids.gi_ncbi_dict = pickle.load(open("tests/data/precooked/tiny_gi_map.p", "rb"))
 except:
     sys.stdout.write("\n\nTest FAILED\n\n")
     sys.exit()
-filteredScrape = FilterBlast(data_obj, ids)
+filteredScrape = physcraper.FilterBlast(data_obj, ids)
 filteredScrape._blasted = 1
 blast_dir = "tests/data/precooked/fixed/tte_blast_files"
 filteredScrape.gi_list_mrca = pickle.load(open("tests/data/precooked/gi_list_mrca.p", 'rb'))
@@ -38,11 +38,11 @@ for taxonID in filteredScrape.sp_d:
         # print(taxonID)
         blast_seq = filteredScrape.sp_seq_d[taxonID].keys()[0]
         seq = filteredScrape.sp_seq_d[taxonID][blast_seq]
-        filteredScrape.write_blast_files(taxonID, seq)
+        physcraper.write_blast_files(filteredScrape.workdir, taxonID, seq)
         blast_db = [item for item in filteredScrape.sp_seq_d[taxonID].keys()[1:] if type(item) == int]
         for blast_key in blast_db:
             seq = filteredScrape.sp_seq_d[taxonID][blast_key]
-            filteredScrape.write_blast_files(blast_key, seq, db=True, fn=str(taxonID))
+            physcraper.write_blast_files(filteredScrape.workdir, blast_key, seq, db=True, fn=str(taxonID))
         break
 
 # test starts here:
@@ -50,8 +50,8 @@ blast_db = "Senecio_lagascanus"
 blast_seq = "Senecio_lagascanus"
 key = 'Senecio_lagascanus'
 
-filteredScrape.run_local_blast(blast_seq, blast_db)
-filteredScrape.read_local_blast(filteredScrape.sp_seq_d[key], blast_db)
+physcraper.run_local_blast(filteredScrape.workdir, blast_seq, blast_db)
+physcraper.read_local_blast(filteredScrape.workdir, filteredScrape.sp_seq_d[key], blast_db)
 
 blast_out = "{}/blast/output_{}_tobeblasted.xml".format(workdir, key)
 
