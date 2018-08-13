@@ -802,38 +802,46 @@ class IdDicts(object):
             debug("gi_id to tax_name")
             debug(gi_id)  # 1273855514
             tries = 10
-            for i in range(tries):
-                try:
-                    handle = Entrez.efetch(db="nucleotide", id=gi_id, retmode="xml")
-                
-                except:
-                    debug("except efetch")
-                    if i < tries - 1:  # i is zero indexed
-                        continue
-                    else:
-                        debug("im going to raise")
-                        raise
-                break
-            debug(handle)
-            debug("try and except")
-            # debug()
-            read_handle = Entrez.read(handle)
-            debug(read_handle)
 
-    	    try:
-                debug("try")
-                # debug(Entrez.read(handle)[0])
-                read_handle =read_handle[0]
+            handle = Entrez.esummary(db="nucleotide", id="663681406", retmode="xml")
+            records = Entrez.read(handle)
+            handle.close()
+            len_seq = records[0]["Length"]
+
+            if len_seq < 10000:  ## exclude chromosomes
+                for i in range(tries):
+                    try:
+                        handle = Entrez.efetch(db="nucleotide", id=gi_id, retmode="xml")
+                    
+                    except:
+                        debug("except efetch")
+                        if i < tries - 1:  # i is zero indexed
+                            continue
+                        else:
+                            debug("im going to raise")
+                            raise
+                    break
+                debug(handle)
+                debug("try and except")
+                # debug()
+                read_handle = Entrez.read(handle)
+                handle.close()
+                debug(read_handle)
+
+        	    try:
+                    debug("try")
+                    # debug(Entrez.read(handle)[0])
+                    read_handle =read_handle[0]
+                    # debug(read_handle)
+        	    except:
+                    debug("except read")
+                    # debug(handle)
+                    # debug(Entrez.read(handle))
+                    read_handle = read_handle
+                    # debug(read_handle)
+                    debug("are you printing this line")
                 # debug(read_handle)
-    	    except:
-                debug("except read")
-                # debug(handle)
-                # debug(Entrez.read(handle))
-                read_handle = read_handle
-                # debug(read_handle)
-                debug("are you printing this line")
-            # debug(read_handle)
-            tax_name = read_handle['GBSeq_feature-table'][0]['GBFeature_quals'][0]['GBQualifier_value']
+                tax_name = read_handle['GBSeq_feature-table'][0]['GBFeature_quals'][0]['GBQualifier_value']
         else:
             tax_name = str(taxon_name).replace("_", " ")
         # debug(tax_name)
