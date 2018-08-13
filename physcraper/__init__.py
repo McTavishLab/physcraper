@@ -799,8 +799,8 @@ class IdDicts(object):
         print(gi_id, taxon_name)
         Entrez.email = self.config.email
         if gi_id:
-            # debug("gi_id to tax_name")
-            # debug(gi_id)
+            debug("gi_id to tax_name")
+            debug(gi_id)  # 1273855514
             tries = 10
             for i in range(tries):
                 try:
