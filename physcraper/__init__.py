@@ -814,7 +814,7 @@ class IdDicts(object):
                         debug("im going to raise")
                         raise
                 break
-#            debug(Entrez.read(handle))
+            debug(handle)
             debug("try and except")
             # debug()
     	    try:
