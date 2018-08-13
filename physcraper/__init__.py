@@ -796,7 +796,7 @@ class IdDicts(object):
         when you have a local blast database or a Filter Blast run
         """
         # debug("get_rank_info")
-        # print(gi_id, taxon_name)
+        print(gi_id, taxon_name)
         Entrez.email = self.config.email
         if gi_id:
             # debug("gi_id to tax_name")
@@ -807,7 +807,7 @@ class IdDicts(object):
                     handle = Entrez.efetch(db="nucleotide", id=gi_id, retmode="xml")
                 
                 except:
-                    # debug("except")
+                    debug("except efetch")
                     if i < tries - 1:  # i is zero indexed
                         continue
                     else:
@@ -821,15 +821,15 @@ class IdDicts(object):
                 debug("try")
                 # debug(Entrez.read(handle)[0])
                 read_handle = Entrez.read(handle)[0]
-                debug(read_handle)
+                # debug(read_handle)
     	    except:
-                debug("except")
+                debug("except read")
                 # debug(handle)
                 # debug(Entrez.read(handle))
                 read_handle = Entrez.read(handle)
-                debug(read_handle)
+                # debug(read_handle)
                 debug("are you printing this line")
-            debug(read_handle)
+            # debug(read_handle)
             tax_name = read_handle['GBSeq_feature-table'][0]['GBFeature_quals'][0]['GBQualifier_value']
         else:
             tax_name = str(taxon_name).replace("_", " ")
@@ -1725,6 +1725,7 @@ class FilterBlast(PhyscraperScrape):
         else:
             cmd2 = "blastn -query {} -db {}_db -out {} -outfmt 5".format(out_fn, blast_db, output)
         os.system(cmd2)
+        debug(cmd2)
         os.chdir(general_wd)
 
     def calculate_mean_sd(self, hsp_scores):
