@@ -818,6 +818,8 @@ class IdDicts(object):
             debug("try and except")
             # debug()
             read_handle = Entrez.read(handle)
+            debug(read_handle)
+
     	    try:
                 debug("try")
                 # debug(Entrez.read(handle)[0])
@@ -831,7 +833,6 @@ class IdDicts(object):
                 # debug(read_handle)
                 debug("are you printing this line")
             # debug(read_handle)
-            debug(read_handle)
             tax_name = read_handle['GBSeq_feature-table'][0]['GBFeature_quals'][0]['GBQualifier_value']
         else:
             tax_name = str(taxon_name).replace("_", " ")
