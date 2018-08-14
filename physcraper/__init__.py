@@ -659,7 +659,6 @@ class AlignTreeTax(object):
                 sp_counter = 2
                 if new_label in new_names and norepeats:
                     # debug(self.otu_dict[taxon.label])
-
                     gi_id = self.otu_dict[taxon.label].get('^ncbi:gi')
                     if gi_id is None:
                         gi_id = sp_counter
@@ -870,49 +869,48 @@ class IdDicts(object):
                     debug("are you printing this line")
                 # debug(read_handle)
                 debug("get tax_name next from gi_id")
-        
+                debug(read_handle['GBSeq_feature-table'][0]['GBFeature_quals'][0]['GBQualifier_value'])
+                debug(read_handle['GBSeq_feature-table'][0]['GBFeature_quals'][0])
+                debug(read_handle['GBSeq_feature-table'][0]['GBFeature_quals'])
+                debug(read_handle['GBSeq_feature-table'][0])
+                debug(read_handle['GBSeq_feature-table'])
                 tax_name = read_handle['GBSeq_feature-table'][0]['GBFeature_quals'][0]['GBQualifier_value']
-        
-            else:
-
-
-        else:
-            if tax_name != None:
-
-
-                tax_name = str(taxon_name).replace("_", " ")
+                tax_name = str(tax_name).replace("_", " ")
                 debug(tax_name)
-
-                if tax_name in rankedlineages.keys():
-                    print(self.rankedlineages[tax_name])
-
-
-                elif tax_name not in self.otu_rank.keys():
-                    # debug("tax_name to rank")
-                    ncbi = NCBITaxa()
-                    try:
-                        # debug("try")
-                        tax_id = int(Entrez.read(Entrez.esearch(db="taxonomy", term=tax_name, RetMax=100))['IdList'][0])
-                        # debug(tax_id)
-                        # debug(type(tax_id))
-                    except:
-                        # debug("except")
-                        tax_info = ncbi.get_name_translator([tax_name])
-                        # debug(tax_info)
-                        if tax_info == {}:
-                            print("Taxon name does not match any species name in ncbi. Check that name is written correctly!")
-                        tax_id = int(tax_info.items()[0][1][0])
+        else:
+            tax_name = str(taxon_name).replace("_", " ")   
+        if tax_name != None:
 
 
+            
+            debug(tax_name)
 
-                    ncbi = NCBITaxa()
-                    lineage = ncbi.get_lineage(tax_id)
-                    lineage2ranks = ncbi.get_rank(lineage)
-                    tax_name = str(tax_name).replace(" ", "_")
-                    assert type(tax_id) == int
-                    self.otu_rank[tax_name] = {"taxon id": tax_id, "lineage": lineage, "rank": lineage2ranks}
-                else:
-                    print("unknown alternative!")
+            if tax_name not in self.otu_rank.keys():
+                # debug("tax_name to rank")
+                ncbi = NCBITaxa()
+                try:
+                    # debug("try")
+                    tax_id = int(Entrez.read(Entrez.esearch(db="taxonomy", term=tax_name, RetMax=100))['IdList'][0])
+                    # debug(tax_id)
+                    # debug(type(tax_id))
+                except:
+                    # debug("except")
+                    tax_info = ncbi.get_name_translator([tax_name])
+                    # debug(tax_info)
+                    if tax_info == {}:
+                        print("Taxon name does not match any species name in ncbi. Check that name is written correctly!")
+                    tax_id = int(tax_info.items()[0][1][0])
+
+
+
+                ncbi = NCBITaxa()
+                lineage = ncbi.get_lineage(tax_id)
+                lineage2ranks = ncbi.get_rank(lineage)
+                tax_name = str(tax_name).replace(" ", "_")
+                assert type(tax_id) == int
+                self.otu_rank[tax_name] = {"taxon id": tax_id, "lineage": lineage, "rank": lineage2ranks}
+            else:
+                print("unknown alternative!")
         return tax_name
 
     def map_gi_ncbi(self, gi):
