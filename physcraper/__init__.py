@@ -542,33 +542,50 @@ class AlignTreeTax(object):
         """generates an otu_id for new sequences and adds them into the otu_dict.
         Needs to be passed an IdDict to do the mapping"""
         
-        debug("add_otu")
+        debug("add_otu function")
         otu_id = "otuPS{}".format(self.ps_otu)
         self.ps_otu += 1
-        ncbi_id = ids_obj.map_gi_ncbi(gi)  # check that try/except is working here
-        # TODO do we need rank info here?
+        print(gi)
+        print()
+        if type(gi) == int:
 
+            ncbi_id = ids_obj.map_gi_ncbi(gi)  # check that try/except is working here
+        # TODO do we need rank info here?
         # seems like without the try and except we are missing tons of information
-        try:
-            # ncbi_id = int(ids_obj.map_gi_ncbi(gi))
-            # try:
-            ott = int(ids_obj.ncbi_to_ott[ncbi_id])
-            # except:
-            if ott is None:
-                ott = "OTT_{}".format(self.ps_otu)
-                self.ps_otu += 1
-            # spn = str(ids_obj.ott_to_name[ott]).replace(" ", "_")  # seems to be unused
-        except:
-            # spn = ids_obj.get_rank_info(gi, taxon_name = False).replace(" ", "_")
+            debug("ncbi_id")
+            debug(ncbi_id)
+            # debug(some)
+            try:
+                # ncbi_id = int(ids_obj.map_gi_ncbi(gi))
+                # try:
+                ott = int(ids_obj.ncbi_to_ott[ncbi_id])
+                # except:
+                if ott is None:
+                    ott = "OTT_{}".format(self.ps_otu)
+                    self.ps_otu += 1
+                # spn = str(ids_obj.ott_to_name[ott]).replace(" ", "_")  # seems to be unused
+            except:
+                # spn = ids_obj.get_rank_info(gi, taxon_name = False).replace(" ", "_")
+                debug(gi)
+                spn = ids_obj.get_rank_info(gi_id=gi)
+                if spn == None:
+                    print("no species name returned")
+                else:
+                    ncbi_id = ids_obj.otu_rank[spn]["taxon id"]
+                # following try except seems to be unused
+                # try:
+                #     ott = int(ids_obj.ncbi_to_ott[ncbi_id])
+                # except:
+                #     ott = "OTT_{}".format(self.ps_otu)
+                #     self.ps_otu += 1
+        else:
             debug(gi)
-            spn = ids_obj.get_rank_info(gi_id=gi)
+            spn = self.otu_dict[key]['^user:TaxonName']
+            spn = ids_obj.get_rank_info(taxon_name=spn)
             ncbi_id = ids_obj.otu_rank[spn]["taxon id"]
-            # following try except seems to be unused
-            # try:
-            #     ott = int(ids_obj.ncbi_to_ott[ncbi_id])
-            # except:
-            #     ott = "OTT_{}".format(self.ps_otu)
-            #     self.ps_otu += 1
+        debug("otu_id")
+        debug(otu_id)
+
         self.otu_dict[otu_id] = {}
         self.otu_dict[otu_id]['^ncbi:gi'] = gi
         self.otu_dict[otu_id]['^ncbi:accession'] = self.gi_dict[gi]['accession']
@@ -797,8 +814,12 @@ class IdDicts(object):
         # debug("get_rank_info")
         print(gi_id, taxon_name)
         Entrez.email = self.config.email
+
+
         if gi_id:
-            debug("gi_id to tax_name")
+            tax_name = None
+       
+            debug("gi_id to tax_name using Entrez")
             debug(gi_id)  # 1273855514
             tries = 10
             for i in range(tries):
@@ -814,7 +835,7 @@ class IdDicts(object):
                     break
             records = Entrez.read(handle)
             handle.close()
-            len_seq = records[0]["Length"]
+            len_seq = int(records[0]["Length"])
             debug(len_seq)
             debug(type(len_seq))
             if len_seq < 10000:  ## exclude chromosomes
@@ -848,31 +869,50 @@ class IdDicts(object):
                     # debug(read_handle)
                     debug("are you printing this line")
                 # debug(read_handle)
+                debug("get tax_name next from gi_id")
+        
                 tax_name = read_handle['GBSeq_feature-table'][0]['GBFeature_quals'][0]['GBQualifier_value']
+        
+            else:
+
+
         else:
-            tax_name = str(taxon_name).replace("_", " ")
-        # debug(tax_name)
-        if tax_name not in self.otu_rank.keys():
-            # debug("tax_name to rank")
-            ncbi = NCBITaxa()
-            try:
-                # debug("try")
-                tax_id = int(Entrez.read(Entrez.esearch(db="taxonomy", term=tax_name, RetMax=100))['IdList'][0])
-                # debug(tax_id)
-                # debug(type(tax_id))
-            except:
-                # debug("except")
-                tax_info = ncbi.get_name_translator([tax_name])
-                # debug(tax_info)
-                if tax_info == {}:
-                    print("Taxon name does not match any species name in ncbi. Check that name is written correctly!")
-                tax_id = int(tax_info.items()[0][1][0])
-            ncbi = NCBITaxa()
-            lineage = ncbi.get_lineage(tax_id)
-            lineage2ranks = ncbi.get_rank(lineage)
-            tax_name = str(tax_name).replace(" ", "_")
-            assert type(tax_id) == int
-            self.otu_rank[tax_name] = {"taxon id": tax_id, "lineage": lineage, "rank": lineage2ranks}
+            if tax_name != None:
+
+
+                tax_name = str(taxon_name).replace("_", " ")
+                debug(tax_name)
+
+                if tax_name in rankedlineages.keys():
+                    print(self.rankedlineages[tax_name])
+
+
+                elif tax_name not in self.otu_rank.keys():
+                    # debug("tax_name to rank")
+                    ncbi = NCBITaxa()
+                    try:
+                        # debug("try")
+                        tax_id = int(Entrez.read(Entrez.esearch(db="taxonomy", term=tax_name, RetMax=100))['IdList'][0])
+                        # debug(tax_id)
+                        # debug(type(tax_id))
+                    except:
+                        # debug("except")
+                        tax_info = ncbi.get_name_translator([tax_name])
+                        # debug(tax_info)
+                        if tax_info == {}:
+                            print("Taxon name does not match any species name in ncbi. Check that name is written correctly!")
+                        tax_id = int(tax_info.items()[0][1][0])
+
+
+
+                    ncbi = NCBITaxa()
+                    lineage = ncbi.get_lineage(tax_id)
+                    lineage2ranks = ncbi.get_rank(lineage)
+                    tax_name = str(tax_name).replace(" ", "_")
+                    assert type(tax_id) == int
+                    self.otu_rank[tax_name] = {"taxon id": tax_id, "lineage": lineage, "rank": lineage2ranks}
+                else:
+                    print("unknown alternative!")
         return tax_name
 
     def map_gi_ncbi(self, gi):
