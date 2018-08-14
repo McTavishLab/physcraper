@@ -220,17 +220,14 @@ def generate_ATT_from_files(seqaln,
     # Read in the file
     with open(seqaln, 'r') as file:
         filedata = file.read()
-
     # Replace the target string
     filedata = filedata.replace('?', '-')
-
     # Write the file out again
     if not os.path.exists(workdir):
         os.makedirs(workdir)
     new_seq_file = "{}/replaced_inputaln.fasta".format(workdir)
     with open("{}/replaced_inputaln.fasta".format(workdir), 'w') as file:
         file.write(filedata)
-
     aln = DnaCharacterMatrix.get(path=new_seq_file, schema=mattype)
     assert aln.taxon_namespace
     for tax in aln.taxon_namespace:
@@ -825,12 +822,10 @@ class IdDicts(object):
                     break
                 debug(handle)
                 debug("try and except")
-                # debug()
                 read_handle = Entrez.read(handle)
                 handle.close()
                 debug(read_handle)
-
-        	    try:
+                try:
                     debug("try")
                     # debug(Entrez.read(handle)[0])
                     read_handle =read_handle[0]
