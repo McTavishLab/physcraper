@@ -830,7 +830,7 @@ class IdDicts(object):
                     # debug(Entrez.read(handle)[0])
                     read_handle =read_handle[0]
                     # debug(read_handle)
-        	    except:
+                except:
                     debug("except read")
                     # debug(handle)
                     # debug(Entrez.read(handle))
