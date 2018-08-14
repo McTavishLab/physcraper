@@ -802,7 +802,7 @@ class IdDicts(object):
             debug(gi_id)  # 1273855514
             tries = 10
 
-            handle = Entrez.esummary(db="nucleotide", id="663681406", retmode="xml")
+            handle = Entrez.esummary(db="nucleotide", id="{}".format(gi_id), retmode="xml")
             records = Entrez.read(handle)
             handle.close()
             len_seq = records[0]["Length"]
