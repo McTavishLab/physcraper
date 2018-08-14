@@ -801,8 +801,17 @@ class IdDicts(object):
             debug("gi_id to tax_name")
             debug(gi_id)  # 1273855514
             tries = 10
-
-            handle = Entrez.esummary(db="nucleotide", id="{}".format(gi_id), retmode="xml")
+            for i in range(tries):
+                    try:
+                        handle = Entrez.esummary(db="nucleotide", id="{}".format(gi_id), retmode="xml")
+                    except:
+                        debug("except efetch")
+                        if i < tries - 1:  # i is zero indexed
+                            continue
+                        else:
+                            debug("im going to raise")
+                            raise
+                    break
             records = Entrez.read(handle)
             handle.close()
             len_seq = records[0]["Length"]
