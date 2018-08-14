@@ -815,7 +815,8 @@ class IdDicts(object):
             records = Entrez.read(handle)
             handle.close()
             len_seq = records[0]["Length"]
-
+            debug(len_seq)
+            debug(type(len_seq))
             if len_seq < 10000:  ## exclude chromosomes
                 for i in range(tries):
                     try:
