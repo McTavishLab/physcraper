@@ -904,7 +904,7 @@ class IdDicts(object):
             else:
                 print("unknown alternative!")
         else:
-            self.otu_rank[tax_name] = {"taxon id": "irrelevant", "lineage": "irrelevant", "rank": "irrelevant"}
+            self.otu_rank[tax_name.replace(" ", "_")] = {"taxon id": "irrelevant", "lineage": "irrelevant", "rank": "irrelevant"}
         return tax_name
 
     def map_gi_ncbi(self, gi):
@@ -1168,7 +1168,18 @@ class PhyscraperScrape(object):  # TODO do I wantto be able to instantiate this 
             existing_id = self.get_sp_id_of_otulabel(tax_lab)
             i += 1
             inc_seq = seq_dict[tax_lab].replace("-", "")
-            if len(inc_seq) >= len(new_seq):  # if seq is identical and shorter
+            # debug("length")
+            # print(len(inc_seq), len(new_seq))
+            # debug(self.data.orig_seqlen)
+            # debug(len(self.data.orig_seqlen))
+            # debug(sum(self.data.orig_seqlen))
+            # debug(sum(self.data.orig_seqlen) / len(self.data.orig_seqlen))
+            # debug(some)
+            if len(new_seq) >= sum(self.data.orig_seqlen) / len(self.data.orig_seqlen) * 2.5:
+                debug("seq not added because it is to long...")
+
+
+            elif len(inc_seq) >= len(new_seq):  # if seq is identical and shorter
                 if inc_seq.find(new_seq) != -1:
                     # if (existing_taxa != spn_of_label and existing_taxa is not  None) or 
                     if type(existing_id) == int and existing_id != id_of_label:
