@@ -236,14 +236,17 @@ def generate_ATT_from_files(seqaln,
     # Read in the file
     with open(seqaln, 'r') as file:
         filedata = file.read()
+
     # Replace the target string
     filedata = filedata.replace('?', '-')
+
     # Write the file out again
     if not os.path.exists(workdir):
         os.makedirs(workdir)
     new_seq_file = "{}/replaced_inputaln.fasta".format(workdir)
     with open("{}/replaced_inputaln.fasta".format(workdir), 'w') as file:
         file.write(filedata)
+
     aln = DnaCharacterMatrix.get(path=new_seq_file, schema=mattype)
     assert aln.taxon_namespace
     for tax in aln.taxon_namespace:
@@ -553,14 +556,19 @@ class AlignTreeTax(object):
                 break
         for taxon in self.aln:
             self.aln[taxon] = self.aln[taxon][start:stop]
+
+
+
         aln_ids = set()
         for tax in self.aln:
             aln_ids.add(tax.label)
         assert aln_ids.issubset(self.otu_dict.keys())
+
         treed_taxa = set()
         for leaf in self.tre.leaf_nodes():
             treed_taxa.add(leaf.taxon)
         # debug(treed_taxa)
+
         for leaf in self.tre.leaf_nodes():
             if leaf.taxon not in aln_ids:
                 # debug("leaf.taxon not present in aln_ids")
@@ -571,6 +579,7 @@ class AlignTreeTax(object):
                 # scrape.data.tre.taxon_namespace.remove_taxon_label(leaf.taxon.label)
                 treed_taxa.remove(leaf.taxon)
         assert treed_taxa.issubset(aln_ids)
+
         if _VERBOSE:
             sys.stdout.write("trimmed alignement ends to < {} missing taxa, start {}, stop {}\n".format(taxon_missingness, start, stop))
         return
@@ -1029,66 +1038,6 @@ class PhyscraperScrape(object):  # TODO do I wantto be able to instantiate this 
                 last_blast = self.data.otu_dict[otu_id]['^physcraper:last_blasted']
                 today = str(datetime.date.today()).replace("-", "/")
                 time_passed = abs((datetime.datetime.strptime(today, "%Y/%m/%d") - datetime.datetime.strptime(last_blast, "%Y/%m/%d")).days)
-<<<<<<< Updated upstream
-                if time_passed > 14:  # TODO make configurable
-                    equery = "txid{}[orgn] AND {}:{}[mdat]".format(self.mrca_ncbi,
-                                                                   last_blast,
-                                                                   today)
-                    query = seq.symbols_as_string().replace("-", "").replace("?", "")
-                    if self.config.gifilename is True:
-                        xml_fi = "{}/{}.xml".format(self.blast_subdir, self.data.otu_dict[taxon.label].get('^ncbi:gi', taxon.label))
-                    else:
-                        xml_fi = "{}/{}.xml".format(self.blast_subdir, taxon.label)
-                    if _DEBUG:
-                        sys.stdout.write("attempting to write {}\n".format(xml_fi))
-                    if not os.path.isfile(xml_fi):
-                        if _VERBOSE:
-                            sys.stdout.write("blasting seq {}\n".format(taxon.label))
-                        if self.config.blast_loc == 'local':
-                            fi_old = open("{}/tmp.fas".format(self.blast_subdir), 'w')
-                            fi_old.write(">{}\n".format(taxon.label))
-                            fi_old.write("{}\n".format(query))
-                            fi_old.close()
-                            blastcmd = "blastn -query " + \
-                                       "{}/tmp.fas".format(self.blast_subdir) + \
-                                       " -db {}nt -out ".format(self.config.blastdb) + \
-                                       xml_fi + \
-                                       " -outfmt 5 -num_threads {}".format(self.config.num_threads) + \
-                                       " -max_target_seqs  {} -max_hsps {}".format(self.config.hitlist_size, self.config.hitlist_size) #TODO query via stdin
-                            debug(blastcmd)
-                            
-			    os.system(blastcmd)
-                            debug(some)
-			    self.data.otu_dict[otu_id]['^physcraper:last_blasted'] = today
-                        if self.config.blast_loc == 'remote':
-                            if self.config.url_base:
-                                result_handle = AWSWWW.qblast("blastn",
-                                                              "nt",
-                                                              query,
-                                                              url_base=self.config.url_base,
-                                                              entrez_query=equery,
-                                                              hitlist_size=self.config.hitlist_size,
-                                                              num_threads=self.config.num_threads)
-                            else:
-                                debug("use BLAST webservice")
-                                result_handle = AWSWWW.qblast("blastn",
-                                                              "nt",
-                                                              query,
-                                                              entrez_query=equery,
-                                                              hitlist_size=self.config.hitlist_size)
-                                # debug(result_handle.read())
-                            save_file = open(xml_fi, "w")
-                            save_file.write(result_handle.read())
-                            result_handle.close()
-                            save_file.close()
-                            self.data.otu_dict[otu_id]['^physcraper:last_blasted'] = today
-                    # except (ValueError, URLError): TODO what to do when NCBI down?! how to handle error
-                    #     sys.stderr.write("NCBIWWW error. Carrying on, but skipped {}\n".format(otu_id))
-                    else:
-                        # changes date of blasted accordingly, if file is already present in the folder
-                        if _DEBUG_MK == 1:
-                            self.data.otu_dict[otu_id]['^physcraper:last_blasted'] = today
-=======
                 query = seq.symbols_as_string().replace("-", "").replace("?", "")
 
                 if self.localblast:
@@ -1297,8 +1246,6 @@ class PhyscraperScrape(object):  # TODO do I wantto be able to instantiate this 
         # TODO unify spp name somehow?
         # debug(label)
         id_of_label = self.get_sp_id_of_otulabel(label)
-        if _DEBUG:
-            sys.stdout.write("taxon is ott{}\n".format(id_of_label))
         new_seq = seq.replace("-", "")
         tax_list = deepcopy(seq_dict.keys())
         i = 0
@@ -1421,15 +1368,11 @@ class PhyscraperScrape(object):  # TODO do I wantto be able to instantiate this 
             else:
                 self.newseqsgi.append(gi)
                 if len(seq.replace("-", "").replace("N", "")) > seq_len_cutoff:
-                    otu_id = self.data.add_otu(gi, self.ids)
-
-                    # try:
-                    #     debug("try")
-                    # except:
-                    #     debug("except")
-                    #     otu_id = gi
-                    # debug(otu_id)
-                    # debug("go to seq_dict_build")
+                    try:
+                        otu_id = self.data.add_otu(gi, self.ids)
+                    except:
+                        otu_id = gi
+                        # print(otu_id)
                     self.seq_dict_build(seq, otu_id, tmp_dict)
             # else:
             #     debug("gi was already compared")
