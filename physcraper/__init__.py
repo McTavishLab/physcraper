@@ -1022,9 +1022,11 @@ class PhyscraperScrape(object):  # TODO do I wantto be able to instantiate this 
                                        xml_fi + \
                                        " -outfmt 5 -num_threads {}".format(self.config.num_threads) + \
                                        " -max_target_seqs  {} -max_hsps {}".format(self.config.hitlist_size, self.config.hitlist_size) #TODO query via stdin
-                            #debug(blastcmd)
-                            os.system(blastcmd)
-                            self.data.otu_dict[otu_id]['^physcraper:last_blasted'] = today
+                            debug(blastcmd)
+                            
+			    os.system(blastcmd)
+                            debug(some)
+			    self.data.otu_dict[otu_id]['^physcraper:last_blasted'] = today
                         if self.config.blast_loc == 'remote':
                             if self.config.url_base:
                                 result_handle = AWSWWW.qblast("blastn",

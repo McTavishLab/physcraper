@@ -28,8 +28,8 @@ blast_seq = "otuSlagascanus"
 
 if not os.path.exists("{}/blast".format(filteredScrape.data.workdir)):
     os.makedirs("{}/blast/".format(filteredScrape.data.workdir))
-print(os.getcwd())    
 path1 = '{}/tests/data/precooked/fixed/select-blast/*'.format(os.getcwd())
+
 path2 = "{}/blast/".format(filteredScrape.data.workdir)
 cmd = 'cp -r ' + path1 + ' ' + path2
 os.system(cmd)
