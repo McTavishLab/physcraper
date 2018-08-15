@@ -878,7 +878,7 @@ class IdDicts(object):
                 tax_name = "irrelevant sequence"
         else:
             tax_name = str(taxon_name).replace("_", " ")   
-        if tax_name != None and != "irrelevant sequence":
+        if tax_name != None and tax_name != "irrelevant sequence":
             debug(tax_name)
             if tax_name not in self.otu_rank.keys():
                 # debug("tax_name to rank")
