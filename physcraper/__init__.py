@@ -956,7 +956,7 @@ class IdDicts(object):
                 assert type(tax_id) == int
                 self.otu_rank[tax_name] = {"taxon id": tax_id, "lineage": lineage, "rank": lineage2ranks}
             else:
-                print("unknown alternative!")
+                print("rank already known")
         else:
             self.otu_rank[tax_name.replace(" ", "_")] = {"taxon id": "irrelevant", "lineage": "irrelevant", "rank": "irrelevant"}
         return tax_name
@@ -1835,7 +1835,7 @@ class FilterBlast(PhyscraperScrape):
                 if spn is None:
                     # debug("value is None")
                     gi_id = self.data.otu_dict[key]['^ncbi:gi']
-                    debug(gi_id)
+                    # debug(gi_id)
                     # debug(type(gi_id))
                     spn = self.ids.get_rank_info(gi_id=gi_id)
                     if spn is None:
