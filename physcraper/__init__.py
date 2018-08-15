@@ -1142,12 +1142,19 @@ class PhyscraperScrape(object):  # TODO do I wantto be able to instantiate this 
             spn_of_label = None
         if spn_of_label is not None:
             spn_of_label = str(spn_of_label).replace(" ", "_").replace("-", "_")
-        if '^ncbi:taxon' in self.data.otu_dict[label].keys():
-            id_of_label = self.data.otu_dict[label]['^ncbi:taxon']
+        if spn_of_label in self.ids.otu_rank.keys():
+            id_of_label = int(self.ids.otu_rank[spn_of_label]["taxon id"])
+        elif '^ncbi:taxon' in self.data.otu_dict[label].keys():
+            # debug(self.data.otu_dict[label])
+            if self.data.otu_dict[label]['^ncbi:taxon'] is not None:
+                id_of_label = int(self.data.otu_dict[label]['^ncbi:taxon'])
+            else:
+                tax_name = self.ids.get_rank_info(taxon_name=spn_of_label)
+                id_of_label = int(self.ids.otu_rank[tax_name]["taxon id"])
             # debug(id_of_label)
             # debug(type(id_of_label))
-        elif spn_of_label in self.ids.otu_rank.keys():
-            id_of_label = int(self.ids.otu_rank[spn_of_label]["taxon id"])
+            # debug(some)
+
         else:
             # debug(spn_of_label)
             tax_name = self.ids.get_rank_info(taxon_name=spn_of_label)
@@ -1558,9 +1565,9 @@ class PhyscraperScrape(object):  # TODO do I wantto be able to instantiate this 
                         if not os.path.exists("{}/previous_run".format(self.workdir)):
                             # debug('{}/previous_run/'.format(self.workdir))
                             os.makedirs('{}/previous_run/'.format(self.workdir))
-                        os.rename(filename, "{}/{}".format(self.blast_subdir, filename.split("/")[-1]))
                         # debug( "{}/{}".format(self.workdir, filename.split("/")[-1]))
                         # debug(filename)
+                        os.rename(filename, "{}/{}".format(self.workdir, filename.split("/")[-1]))
                 for filename in glob.glob('{}/papara*'.format(self.workdir)):
                     os.rename(filename, "{}/previous_run/{}".format(self.workdir, filename.split("/")[-1]))
                 os.rename("{}/{}".format(self.workdir, self.newseqs_file),
@@ -1772,7 +1779,7 @@ class FilterBlast(PhyscraperScrape):
         """
         # Note: has test,test_select_seq_by_local_blast.py, runs
         debug("select_seq_by_local_blast")
-        seq_blast_score = self.read_local_blast(seq_d, fn)
+        seq_blast_score = read_local_blast(self.workdir, seq_d, fn)
         random_seq_ofsp = {}
         if (treshold - count) <= 0:
             debug("already too many samples of sp in aln, skip adding more.")
@@ -1973,7 +1980,7 @@ class FilterBlast(PhyscraperScrape):
                             if self.downtorank is not None:
                                 filename = key
                             print(filename, seq)
-                            self.write_blast_files(filename, seq)
+                            write_blast_files(self.workdir, filename, seq)
                     # if '^user:TaxonName' in gi_id:
                     #     spn_name = gi_id['^user:TaxonName']
                     #     for spn_name_aln, seq in self.data.aln.items():
@@ -2018,7 +2025,7 @@ class FilterBlast(PhyscraperScrape):
                                     filename = key
                                     nametoreturn = key
                                 debug(filename)
-                                self.write_blast_files(filename, seq, db=True, fn=nametoreturn)
+                                write_blast_files(self.workdir, filename, seq, db=True, fn=nametoreturn)
                                 # blastfile_taxon_names[gi_num] = gi_num
                     namegi = key
         if self.downtorank is not None:
@@ -2041,7 +2048,7 @@ class FilterBlast(PhyscraperScrape):
                     seq_present += 1
                 if isinstance(sp_keys, unicode):
                     seq_present += 1
-        # this determines if a taxonomic concept  is already present in the aln and how many new seq. were found
+        # this determines if a taxonomic  name / otu is already present in the aln and how many new seq. were found
         new_taxon = True
         query_count = 0
         for item in self.sp_d[taxon_id]:
@@ -2088,7 +2095,7 @@ class FilterBlast(PhyscraperScrape):
                                 #         blast_db = "{}".format(element['^ot:ottTaxonName']).replace(" ", "_")
                                 if self.downtorank is not None:
                                     taxonfn = taxon_id
-                                self.run_local_blast(taxonfn, taxonfn)
+                                run_local_blast(self.workdir, taxonfn, taxonfn)
                                 self.select_seq_by_local_blast(self.sp_seq_d[taxon_id], taxonfn, treshold, seq_present)
                             elif query_count + seq_present <= treshold:
                                 self.add_all(taxon_id)
@@ -2112,15 +2119,15 @@ class FilterBlast(PhyscraperScrape):
                                     str_db = str(blast_seq)
                             # write files for local blast first:
                             seq = self.sp_seq_d[taxon_id][blast_seq]
-                            self.write_blast_files(str_db, seq)  # blast qguy
+                            write_blast_files(self.workdir, str_db, seq)  # blast qguy
                             debug("blast db new")
                             blast_db = self.sp_seq_d[taxon_id].keys()[1:]
                             # debug(blast_db)
                             for blast_key in blast_db:
                                 seq = self.sp_seq_d[taxon_id][blast_key]
-                                self.write_blast_files(blast_key, seq, db=True, fn=str_db)  # local db
+                                write_blast_files(self.workdir, blast_key, seq, db=True, fn=str_db)  # local db
                             # make local blast of sequences
-                            self.run_local_blast(str_db, str_db)
+                            run_local_blast(self.workdir, str_db, str_db)
                             if len(self.sp_seq_d[taxon_id]) + seq_present >= treshold:
                                 self.select_seq_by_local_blast(self.sp_seq_d[taxon_id], str_db, treshold, seq_present)
                             elif len(self.sp_seq_d[taxon_id]) + seq_present < treshold:
