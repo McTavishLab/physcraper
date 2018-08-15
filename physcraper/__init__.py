@@ -1248,8 +1248,9 @@ class PhyscraperScrape(object):  # TODO do I wantto be able to instantiate this 
         continue_search = False
         never_add = False
         for tax_lab in tax_list:
+
+
             existing_id = self.get_sp_id_of_otulabel(tax_lab)
-            # print(id_of_label, existing_id)
             i += 1
             inc_seq = seq_dict[tax_lab].replace("-", "")
             # debug("length")
@@ -1259,6 +1260,11 @@ class PhyscraperScrape(object):  # TODO do I wantto be able to instantiate this 
             # debug(sum(self.data.orig_seqlen))
             # debug(sum(self.data.orig_seqlen) / len(self.data.orig_seqlen))
             # debug(some)
+            
+            print(id_of_label, existing_id)
+            if id_of_label == "irrelevant_sequence":
+                print("do not add to aln!")
+                debug(some)
             if len(new_seq) >= sum(self.data.orig_seqlen) / len(self.data.orig_seqlen) * 2.5:
                 debug("seq not added because it is to long...")
             elif len(inc_seq) >= len(new_seq):  # if seq is identical and shorter
