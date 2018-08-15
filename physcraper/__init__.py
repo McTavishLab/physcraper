@@ -864,13 +864,13 @@ class IdDicts(object):
         used to delimit the sequences from blast,
         when you have a local blast database or a Filter Blast run
         """
-        # debug("get_rank_info")
+        debug("get_rank_info")
         print(gi_id, taxon_name)
         Entrez.email = self.config.email
         if gi_id:
             tax_name = None
-            debug("gi_id to tax_name using Entrez")
-            debug(gi_id)  # 1273855514
+            # debug("gi_id to tax_name using Entrez")
+            # debug(gi_id)  # 1273855514
             tries = 10
             for i in range(tries):
                     try:
@@ -887,7 +887,7 @@ class IdDicts(object):
             handle.close()
             len_seq = int(records[0]["Length"])
             debug(len_seq)
-            debug(type(len_seq))
+            # debug(type(len_seq))
             if len_seq < 10000:  ## exclude chromosomes
                 for i in range(tries):
                     try:
@@ -901,7 +901,7 @@ class IdDicts(object):
                             debug("im going to raise")
                             raise
                     break
-                debug(handle)
+                # debug(handle)
                 debug("try and except")
                 read_handle = Entrez.read(handle)
                 handle.close()
