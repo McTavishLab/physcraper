@@ -813,11 +813,8 @@ class IdDicts(object):
         # debug("get_rank_info")
         print(gi_id, taxon_name)
         Entrez.email = self.config.email
-
-
         if gi_id:
             tax_name = None
-       
             debug("gi_id to tax_name using Entrez")
             debug(gi_id)  # 1273855514
             tries = 10
@@ -868,23 +865,21 @@ class IdDicts(object):
                     # debug(read_handle)
                     debug("are you printing this line")
                 # debug(read_handle)
-                debug("get tax_name next from gi_id")
-                debug(read_handle['GBSeq_feature-table'][0]['GBFeature_quals'][0]['GBQualifier_value'])
-                debug(read_handle['GBSeq_feature-table'][0]['GBFeature_quals'][0])
-                debug(read_handle['GBSeq_feature-table'][0]['GBFeature_quals'])
-                debug(read_handle['GBSeq_feature-table'][0])
+                # debug("get tax_name next from gi_id")
+                # debug(read_handle['GBSeq_feature-table'][0]['GBFeature_quals'][0]['GBQualifier_value'])
+                # debug(read_handle['GBSeq_feature-table'][0]['GBFeature_quals'][0])
+                # debug(read_handle['GBSeq_feature-table'][0]['GBFeature_quals'])
+                # debug(read_handle['GBSeq_feature-table'][0])
                 debug(read_handle['GBSeq_feature-table'])
                 tax_name = read_handle['GBSeq_feature-table'][0]['GBFeature_quals'][0]['GBQualifier_value']
                 tax_name = str(tax_name).replace("_", " ")
                 debug(tax_name)
+            else:
+                tax_name = "irrelevant sequence"
         else:
             tax_name = str(taxon_name).replace("_", " ")   
-        if tax_name != None:
-
-
-            
+        if tax_name != None and != "irrelevant sequence":
             debug(tax_name)
-
             if tax_name not in self.otu_rank.keys():
                 # debug("tax_name to rank")
                 ncbi = NCBITaxa()
@@ -900,9 +895,6 @@ class IdDicts(object):
                     if tax_info == {}:
                         print("Taxon name does not match any species name in ncbi. Check that name is written correctly!")
                     tax_id = int(tax_info.items()[0][1][0])
-
-
-
                 ncbi = NCBITaxa()
                 lineage = ncbi.get_lineage(tax_id)
                 lineage2ranks = ncbi.get_rank(lineage)
@@ -911,6 +903,8 @@ class IdDicts(object):
                 self.otu_rank[tax_name] = {"taxon id": tax_id, "lineage": lineage, "rank": lineage2ranks}
             else:
                 print("unknown alternative!")
+        else:
+            self.otu_rank[tax_name] = {"taxon id": "irrelevant", "lineage": "irrelevant", "rank": "irrelevant"}
         return tax_name
 
     def map_gi_ncbi(self, gi):
