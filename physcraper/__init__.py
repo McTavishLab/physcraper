@@ -50,8 +50,6 @@ def debug(msg):
     """
     if _DEBUG_MK == 1:
         print(msg)
-    with open("{}/debug.out".format(self.workdir), "a") as debug:
-        debug.write(msg)
 
 
 def is_number(s):
@@ -592,7 +590,6 @@ class AlignTreeTax(object):
         otu_id = "otuPS{}".format(self.ps_otu)
         self.ps_otu += 1
         print(gi)
-        print()
         if type(gi) == int:
 
             ncbi_id = ids_obj.map_gi_ncbi(gi)  # check that try/except is working here
