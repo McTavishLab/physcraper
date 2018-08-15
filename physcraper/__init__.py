@@ -1108,7 +1108,6 @@ class PhyscraperScrape(object):  # TODO do I wantto be able to instantiate this 
                             # changes date of blasted accordingly, if file is already present in the folder
                             if _DEBUG_MK == 1:
                                 self.data.otu_dict[otu_id]['^physcraper:last_blasted'] = today
->>>>>>> Stashed changes
         self._blasted = 1
 
     def get_all_gi_mrca(self):
