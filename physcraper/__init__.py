@@ -598,16 +598,18 @@ class AlignTreeTax(object):
             debug("ncbi_id")
             debug(ncbi_id)
             # debug(some)
-            try:
+            if ncbi_id in ids_obj.ncbi_to_ott.keys():
                 # ncbi_id = int(ids_obj.map_gi_ncbi(gi))
                 # try:
+                debug("if")
                 ott = int(ids_obj.ncbi_to_ott[ncbi_id])
                 # except:
                 if ott is None:
                     ott = "OTT_{}".format(self.ps_otu)
                     self.ps_otu += 1
                 # spn = str(ids_obj.ott_to_name[ott]).replace(" ", "_")  # seems to be unused
-            except:
+            else:
+                debug("else")
                 # spn = ids_obj.get_rank_info(gi, taxon_name = False).replace(" ", "_")
                 debug(gi)
                 spn = ids_obj.get_rank_info(gi_id=gi)
@@ -622,13 +624,22 @@ class AlignTreeTax(object):
                 #     ott = "OTT_{}".format(self.ps_otu)
                 #     self.ps_otu += 1
         else:
-            debug(gi)
-            spn = self.otu_dict[key]['^user:TaxonName']
-            spn = ids_obj.get_rank_info(taxon_name=spn)
+            debug(gi[:6])
+            # debug(some)
+            if gi[:6] == "unpubl":
+                spn = self.otu_dict[gi]['^ot:ottTaxonName'].replace(" ", "_")
+                debug(spn)
+                # debug(some)
+            else:
+            #     debug("why am i in else?")
+            #     debug(gi)
+            #     debug(some2)
+                spn = self.otu_dict[gi]['^user:TaxonName']
+            ids_obj.get_rank_info(taxon_name=spn)
             ncbi_id = ids_obj.otu_rank[spn]["taxon id"]
         debug("otu_id")
         debug(otu_id)
-
+        # debug(some3)
         self.otu_dict[otu_id] = {}
         self.otu_dict[otu_id]['^ncbi:gi'] = gi
         self.otu_dict[otu_id]['^ncbi:accession'] = self.gi_dict[gi]['accession']
