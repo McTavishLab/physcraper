@@ -2417,11 +2417,12 @@ def read_local_blast(workdir, seq_d, fn):
             debug("rebuild the local blast db and try again")
             sys.stderr.write("{} blast file has a problem. Redo running it".format(fn))
 
-            os.remove("{}_db.*".format(fn))
 
 
             general_wd = os.getcwd()
             os.chdir(os.path.join(workdir, "blast"))
+            os.remove("{}_db.*".format(fn))
+
             out_fn = "{}_tobeblasted".format(str(fn))
             cmd1 = "makeblastdb -in {}_db -dbtype nucl".format(fn)
             os.system(cmd1)
