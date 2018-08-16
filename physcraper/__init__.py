@@ -897,7 +897,7 @@ class IdDicts(object):
                 debug("try and except")
                 read_handle = Entrez.read(handle)
                 handle.close()
-                debug(read_handle)
+                # debug(read_handle)
                 try:
                     debug("try")
                     # debug(Entrez.read(handle)[0])
@@ -2261,7 +2261,7 @@ class FilterBlast(PhyscraperScrape):
         # debug(keylist)
         if not self.localblast:
             keylist = [x for x in keylist if type(x) == int]
-        debug(self.new_seqs.keys())
+        # debug(self.new_seqs.keys())
         seq_not_added = self.new_seqs.keys()
         seq_not_added = [x for x in seq_not_added if type(x) == int]
         reduced_new_seqs_dic = {}
@@ -2398,17 +2398,40 @@ def read_local_blast(workdir, seq_d, fn):
     os.chdir(general_wd)
     blast_out = NCBIXML.parse(xml_file)
     hsp_scores = {}
-    for record in blast_out:
-        for alignment in record.alignments:
-            for hsp in alignment.hsps:
-                gi_id = alignment.title.split(" ")[1]
-                if gi_id.isdigit():
-                    gi_id = int(gi_id)
-                # except:
-                #     gi_id = gi_id
-                # # debug(gi_id)
-                hsp_scores[gi_id] = {'hsp.bits': hsp.bits, 'hsp.score': hsp.score,
-                                     'alignment.length': alignment.length, 'hsp.expect': hsp.expect}
+
+    tries = 5
+    for i in range(tries):
+        try:
+            for record in blast_out:
+                for alignment in record.alignments:
+                    for hsp in alignment.hsps:
+                        gi_id = alignment.title.split(" ")[1]
+                        if gi_id.isdigit():
+                            gi_id = int(gi_id)
+                        # except:
+                        #     gi_id = gi_id
+                        # # debug(gi_id)
+                        hsp_scores[gi_id] = {'hsp.bits': hsp.bits, 'hsp.score': hsp.score,
+                                             'alignment.length': alignment.length, 'hsp.expect': hsp.expect}
+        except ValueError:
+            debug("rebuild the local blast db and try again")
+            sys.stderr.write("{} blast file has a problem. Redo running it".format(fn))
+
+            general_wd = os.getcwd()
+            os.chdir(os.path.join(workdir, "blast"))
+            out_fn = "{}_tobeblasted".format(str(fn))
+            cmd1 = "makeblastdb -in {}_db -dbtype nucl".format(fn)
+            cmd2 = "blastn -query {} -db {}_db -out {} -outfmt 5".format(out_fn, blast_db, output)
+            os.system(cmd2)
+            os.chdir(general_wd)
+            if i < tries - 1:  # i is zero indexed
+                continue
+            else:
+                debug("im going to raise")
+                raise
+        break
+
+
     # make values to select for blast search, calculate standard deviation,mean
     mean_sd = calculate_mean_sd(hsp_scores)
     # select which sequences to use
