@@ -1261,7 +1261,6 @@ class PhyscraperScrape(object):  # TODO do I wantto be able to instantiate this 
         continue_search = False
         never_add = False
         for tax_lab in tax_list:
-
             existing_id = self.get_sp_id_of_otulabel(tax_lab)
             i += 1
             inc_seq = seq_dict[tax_lab].replace("-", "")
@@ -1329,11 +1328,12 @@ class PhyscraperScrape(object):  # TODO do I wantto be able to instantiate this 
                         continue_search = True
                         continue
                     return seq_dict
+
         if continue_search is True or never_add is True:
             if (self.data.otu_dict[label]['^physcraper:status'].split(' ')[0] in self.seq_filter) or never_add is True:
-                try:
+                if label in seq_dict.keys():
                     del seq_dict[label]
-                except:
+                else:
                     debug("label was never added to seq_dict")
                 try:
                     self.data.remove_taxa_aln_tre(label)
@@ -1374,10 +1374,10 @@ class PhyscraperScrape(object):  # TODO do I wantto be able to instantiate this 
             else:
                 self.newseqsgi.append(gi)
                 if len(seq.replace("-", "").replace("N", "")) > seq_len_cutoff:
-                    try:
-                        otu_id = self.data.add_otu(gi, self.ids)
-                    except:
-                        otu_id = gi
+                    otu_id = self.data.add_otu(gi, self.ids)
+                    # except:
+                    #     print("rm identical except")
+                    #     otu_id = gi
                         # print(otu_id)
                     self.seq_dict_build(seq, otu_id, tmp_dict)
             # else:
@@ -1830,6 +1830,7 @@ class FilterBlast(PhyscraperScrape):
             # debug(key['^physcraper:status'])
             if self.data.otu_dict[key]['^physcraper:status'].split(' ')[0] not in self.seq_filter:
                 # debug(self.downtorank)
+
                 if '^ot:ottTaxonName' in self.data.otu_dict[key]:
                     spn = self.data.otu_dict[key]['^ot:ottTaxonName']
                 elif '^user:TaxonName' in self.data.otu_dict[key]:
@@ -2088,6 +2089,7 @@ class FilterBlast(PhyscraperScrape):
                         elif '^ot:ottTaxonName' in self.data.otu_dict[spn_name_aln.label]:
                             otu_dict_name = self.data.otu_dict[spn_name_aln.label]['^ot:ottTaxonName']
                         if spn_name == otu_dict_name:
+                            # if selectby == "blast":
                             filename = nametoreturn
                             # filename = spn_name_aln.label
                             if self.downtorank is not None:
@@ -2314,6 +2316,7 @@ class FilterBlast(PhyscraperScrape):
 class Settings(object):
     """A class to store all settings for PhyScraper.
     """
+
     def __init__(self, seqaln, mattype, trfn, schema_trf, workdir, treshold=None,
                  selectby=None, downtorank=None, spInfoDict=None, add_local_seq=None,
                  id_to_spn_addseq_json=None, configfi=None, blacklist=None):
@@ -2399,11 +2402,11 @@ def read_local_blast(workdir, seq_d, fn):
         for alignment in record.alignments:
             for hsp in alignment.hsps:
                 gi_id = alignment.title.split(" ")[1]
-                try:
+                if gi_id.isdigit():
                     gi_id = int(gi_id)
-                except:
-                    gi_id = gi_id
-                # debug(gi_id)
+                # except:
+                #     gi_id = gi_id
+                # # debug(gi_id)
                 hsp_scores[gi_id] = {'hsp.bits': hsp.bits, 'hsp.score': hsp.score,
                                      'alignment.length': alignment.length, 'hsp.expect': hsp.expect}
     # make values to select for blast search, calculate standard deviation,mean
