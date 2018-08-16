@@ -1267,7 +1267,7 @@ class PhyscraperScrape(object):  # TODO do I wantto be able to instantiate this 
             # debug("length")
             # print(len(inc_seq), len(new_seq))
             # debug(sum(self.data.orig_seqlen) / len(self.data.orig_seqlen))
-            print(id_of_label, existing_id)
+            # print(id_of_label, existing_id)
             if id_of_label == "irrelevant_sequence":
                 print("do not add to aln!")
                 debug(some)
@@ -2421,7 +2421,8 @@ def read_local_blast(workdir, seq_d, fn):
 
             general_wd = os.getcwd()
             os.chdir(os.path.join(workdir, "blast"))
-            os.remove("{}_db.*".format(fn))
+            # os.remove("{}_db.*".format(fn))
+            subprocess.call(["rm", "{}_db.*".format(fn)])
 
             out_fn = "{}_tobeblasted".format(str(fn))
             cmd1 = "makeblastdb -in {}_db -dbtype nucl".format(fn)
@@ -2464,5 +2465,5 @@ def write_blast_files(workdir, file_name, seq, db=False, fn=None):
         fi_o = open(fnw, 'w')
     # debug(fnw)
     fi_o.write(">{}\n".format(file_name))
-    fi_o.write("{}\n".format(seq))
+    fi_o.write("{}\n".format(seq.replace("-","")))
     fi_o.close()
