@@ -199,7 +199,7 @@ def generate_ATT_from_phylesystem(aln,
         except KeyError:
             sys.stderr.write("{} doesn't have an otu id. It is being removed from the alignement. "
                              "This may indicate a mismatch between tree and alignement\n".format(tax.label))
-   #need to prune tree to seqs and seqs to tree...
+    # need to prune tree to seqs and seqs to tree...
     otu_newick = tre.as_string(schema="newick")
     workdir = os.path.abspath(workdir)
     return AlignTreeTax(otu_newick, otu_dict, aln, ingroup_mrca=ott_mrca, workdir=workdir)
@@ -242,8 +242,8 @@ def generate_ATT_from_files(seqaln,
     if not os.path.exists(workdir):
         os.makedirs(workdir)
     new_seq_file = "{}/replaced_inputaln.fasta".format(workdir)
-    with open("{}/replaced_inputaln.fasta".format(workdir), 'w') as file:
-        file.write(filedata)
+    with open("{}/replaced_inputaln.fasta".format(workdir), 'w') as aln_file:
+        aln_file.write(filedata)
 
     aln = DnaCharacterMatrix.get(path=new_seq_file, schema=mattype)
     assert aln.taxon_namespace
@@ -255,10 +255,10 @@ def generate_ATT_from_files(seqaln,
                    taxon_namespace=aln.taxon_namespace)
     assert tre.taxon_namespace is aln.taxon_namespace
     otu_newick = tre.as_string(schema=schema_trf)
+    otu_dict = json.load(open(otu_json, "r"))
     if ingroup_mrca:
         ott_mrca = int(ingroup_mrca)
     else:
-        otu_dict = json.load(open(otu_json, "r"))
         ott_ids = [otu_dict[otu].get(u'^ot:ottId', ) for otu in otu_dict]
         ott_ids = filter(None, ott_ids)
         ott_ids = set(ott_ids)
@@ -379,6 +379,7 @@ class AlignTreeTax(object):
         self.gi_dict = {}
         self.orig_aln = alignment
         self.orig_newick = newick
+        self._reconciled = False
 
     def _reconcile_names(self):
         """This checks that the tree "original labels" from phylsystem
@@ -397,13 +398,13 @@ class AlignTreeTax(object):
         self.aln.remove_sequences(prune)
         self.tre.prune_taxa(prune)
         for tax in prune:
-            try:
+            if tax.label in self.otu_dict:
                 self.otu_dict[tax.label]['^physcraper:status'] = "deleted in name reconciliation"
-            except:
+            else:
                 sys.stderr.write("lost taxon {} in name reconcilliation".format(tax.label))
             self.aln.taxon_namespace.remove_taxon(tax)
         assert (self.aln.taxon_namespace == self.tre.taxon_namespace)
-        reverse_otu_dict = {}
+        # reverse_otu_dict = {}  # seems not to be used
         for tax in self.aln.taxon_namespace:
             if tax.label in self.otu_dict.keys():
                 pass
@@ -605,7 +606,7 @@ class AlignTreeTax(object):
                 # spn = ids_obj.get_rank_info(gi, taxon_name = False).replace(" ", "_")
                 debug(gi)
                 spn = ids_obj.get_rank_info(gi_id=gi)
-                if spn == None:
+                if spn is None:
                     print("no species name returned")
                 else:
                     ncbi_id = ids_obj.otu_rank[spn]["taxon id"]
@@ -621,11 +622,7 @@ class AlignTreeTax(object):
             if gi[:6] == "unpubl":
                 spn = self.otu_dict[gi]['^ot:ottTaxonName'].replace(" ", "_")
                 debug(spn)
-                # debug(some)
             else:
-            #     debug("why am i in else?")
-            #     debug(gi)
-            #     debug(some2)
                 spn = self.otu_dict[gi]['^user:TaxonName']
             ids_obj.get_rank_info(taxon_name=spn)
             ncbi_id = ids_obj.otu_rank[spn]["taxon id"]
@@ -640,7 +637,8 @@ class AlignTreeTax(object):
         self.otu_dict[otu_id]['^ot:ottId'] = ids_obj.ncbi_to_ott.get(ncbi_id)
         self.otu_dict[otu_id]['^physcraper:status'] = "query"
         self.otu_dict[otu_id]['^ot:ottTaxonName'] = ids_obj.ott_to_name.get(self.otu_dict[otu_id]['^ot:ottId'])
-        self.otu_dict[otu_id]['^physcraper:last_blasted'] = "1800/01/01"  # 1800 = never blasted; 1900 = blasted 1x, not added; this century = blasted and added
+        # last_blasted date infos: 1800 = never blasted; 1900 = blasted 1x, not added; this century = blasted and added
+        self.otu_dict[otu_id]['^physcraper:last_blasted'] = "1800/01/01"
         if _DEBUG >= 2:
             sys.stderr.write("gi:{} assigned new otu: {}\n".format(gi, otu_id))
         
@@ -1214,14 +1212,17 @@ class PhyscraperScrape(object):  # TODO do I wantto be able to instantiate this 
         # debug("get_spn_id_of_otulabel")
         # debug(label)
         # debug(self.data.otu_dict.keys())
-        if '^ot:ottTaxonName' in self.data.otu_dict[label].keys():
-            spn_of_label = self.data.otu_dict[label]['^ot:ottTaxonName']
-        elif '^user:TaxonName' in self.data.otu_dict[label].keys():
-            spn_of_label = self.data.otu_dict[label]['^user:TaxonName']
-        else:
-            spn_of_label = None
+        spn_of_label = find_name(self.data.otu_dict[label])
+        # if '^ot:ottTaxonName' in self.data.otu_dict[label].keys():
+        #     spn_of_label = self.data.otu_dict[label]['^ot:ottTaxonName']
+        # elif '^user:TaxonName' in self.data.otu_dict[label].keys():
+        #     spn_of_label = self.data.otu_dict[label]['^user:TaxonName']
+        # else:
+        #     spn_of_label = None
         if spn_of_label is not None:
             spn_of_label = str(spn_of_label).replace(" ", "_").replace("-", "_")
+        else:
+            debug("Problem, no sp name found!")
         if spn_of_label in self.ids.otu_rank.keys():
             # debug("i already have the rank info")
             id_of_label = int(self.ids.otu_rank[spn_of_label]["taxon id"])
@@ -1768,9 +1769,10 @@ class FilterBlast(PhyscraperScrape):
     They can be filtered by number or by rank and number. This can be useful for non-population-level studies,
     e.g. analyses which require a single representative per taxon (threshold = 1)
     or to check the monophyly of taxa without having to deal with over-representation of few taxa (e.g. threshold = 4,
-    which allows to get a good overview of what is available without having some taxa being represented by high numbers of sequences).
-    The second option (downtorank) allows to filter according to taxonomic levels, e.g. getting a number of representative
-    sequences for a genus or lineage. This can also be used to not have to deal with subspecies.
+    which allows to get a good overview of what is available without having some taxa being represented
+    by high numbers of sequences). The second option (downtorank) allows to filter according to taxonomic levels,
+    e.g. getting a number of representative sequences for a genus or lineage.
+    This can also be used to not have to deal with subspecies.
     """
 
     def __init__(self, data_obj, ids_obj, settings=None):
@@ -1830,11 +1832,7 @@ class FilterBlast(PhyscraperScrape):
             # debug(key['^physcraper:status'])
             if self.data.otu_dict[key]['^physcraper:status'].split(' ')[0] not in self.seq_filter:
                 # debug(self.downtorank)
-
-                if '^ot:ottTaxonName' in self.data.otu_dict[key]:
-                    spn = self.data.otu_dict[key]['^ot:ottTaxonName']
-                elif '^user:TaxonName' in self.data.otu_dict[key]:
-                    spn = self.data.otu_dict[key]['^user:TaxonName']
+                spn = find_name(self.data.otu_dict[key])
                 if spn is None:
                     debug("spn is None")
                     debug(self.data.otu_dict[key])
@@ -1844,6 +1842,7 @@ class FilterBlast(PhyscraperScrape):
                     spn = self.ids.get_rank_info(gi_id=gi_id)
                     if spn is None:
                         print("something is going wrong!Check species name")
+                        sys.stderr.write("{} has no corresponding spn! Check what is wrong!".format(key))
                 if self.downtorank is not None:
                     spn = str(spn).replace(" ", "_")
                     if spn not in self.ids.otu_rank.keys():
@@ -1883,47 +1882,21 @@ class FilterBlast(PhyscraperScrape):
             # number of items in key2 will be filtered according to threshold and already present seq
             # debug(key)
             seq_d = {}
-            # tres_minimizer = 0
             for gi_id in self.sp_d[key]:
-                # if statement should not be necessary as it is already filtered in the step before, I leave it in for now.
+                # following if statement should not be necessary as it is already filtered in the step before.
+                # I leave it in for now.
                 if '^physcraper:status' in gi_id and gi_id['^physcraper:status'].split(' ')[0] not in self.seq_filter:
                     # I am using the next if to delimit which seq where already present from an earlier run,
                     # they will get a sp name (str), in order to distinguish them from newly found seq,
                     # which will have the gi (int). This differentiation is needed in the filtering blast step.
                     if gi_id['^physcraper:last_blasted'] != '1800/01/01':
-                        if '^user:TaxonName' in gi_id:
-                            user_name = gi_id['^user:TaxonName']
-                        elif '^ot:ottTaxonName' in gi_id:
-                            user_name = gi_id['^ot:ottTaxonName']
+                        user_name = find_name(gi_id)
                         for user_name_aln, seq in self.data.aln.items():
-                            if '^user:TaxonName' in self.data.otu_dict[user_name_aln.label]:
-                                otu_dict_label = self.data.otu_dict[user_name_aln.label]['^user:TaxonName']
-                            elif '^ot:ottTaxonName' in self.data.otu_dict[user_name_aln.label]:
-                                otu_dict_label = self.data.otu_dict[user_name_aln.label]['^ot:ottTaxonName']
+                            otu_dict_label = find_name(self.data.otu_dict[user_name_aln.label])
                             if user_name == otu_dict_label:
                                 seq = seq.symbols_as_string().replace("-", "")
                                 seq = seq.replace("?", "")
                                 seq_d[user_name_aln.label] = seq
-                        # if '^user:TaxonName' in gi_id:
-                        #     # tres_minimizer += 1
-                        #     user_name = gi_id['^user:TaxonName']
-                        #     for user_name_aln, seq in self.data.aln.items():
-                        #         if '^user:TaxonName' in self.data.otu_dict[user_name_aln.label]:
-                        #             otu_dict_label = self.data.otu_dict[user_name_aln.label]['^user:TaxonName']
-                        #             if user_name == otu_dict_label:
-                        #                 seq = seq.symbols_as_string().replace("-", "")
-                        #                 seq = seq.replace("?", "")
-                        #                 seq_d[user_name_aln.label] = seq
-                        # elif '^ot:ottTaxonName' in gi_id:
-                        #     # tres_minimizer += 1
-                        #     user_name = gi_id['^ot:ottTaxonName']
-                        #     for user_name_aln, seq in self.data.aln.items():
-                        #         if '^ot:ottTaxonName' in self.data.otu_dict[user_name_aln.label]:
-                        #             otu_dict_label = self.data.otu_dict[user_name_aln.label]['^ot:ottTaxonName']
-                        #             if user_name == otu_dict_label:
-                        #                 seq = seq.symbols_as_string().replace("-", "")
-                        #                 seq = seq.replace("?", "")
-                        #                 seq_d[user_name_aln.label] = seq
                     else:
                         if "^ncbi:gi" in gi_id:  # this should not be needed: all new blast seq have gi
                             # debug("gi in gi_id")
@@ -2020,49 +1993,35 @@ class FilterBlast(PhyscraperScrape):
     def get_name_for_blastfiles(self, key):
         """ Gets the name which is needed to write the blast files in 'loop_for_write_blast files'.
 
-        The name needs to be retrieved before the actual loop starts.
-        I use the taxonomic names here, as this is the measure of which information goes into which local filter blast database.
+        The name needs to be retrieved before the actual loop starts. I use the taxonomic names here,
+        as this is the measure of which information goes into which local filter blast database.
         The function is only used within 'loop_for_write_blast_files' to generate the filenames.
         """
         nametoreturn = None
         # loop needs to happen before the other one, as we need nametoreturn in second:
         for gi_id in self.sp_d[key]:
             # this if should not be necessary
+            spn_name = find_name(gi_id)
             if '^physcraper:status' in gi_id and gi_id['^physcraper:status'].split(' ')[0] not in self.seq_filter:
                 # if gi_id['^physcraper:status'].split(' ')[0] not in self.seq_filter:
                 # if gi_id['^physcraper:last_blasted'] != '1800/01/01':
-                if '^user:TaxonName' in gi_id:
-                    spn_name = gi_id['^user:TaxonName'].replace(" ", "_")
-                elif '^ot:ottTaxonName' in gi_id:
-                    spn_name = gi_id['^ot:ottTaxonName']
-                    if spn_name == None:
-                        # debug(key)
-                        spn_name = self.ids.get_rank_info(taxon_name=key)
-                        # gi_id['^ot:ottTaxonName'] = spn_name
-                    spn_name = spn_name.replace(" ", "_")
+                if spn_name is None:
+                    # debug(key)
+                    spn_name = self.ids.get_rank_info(taxon_name=key)
+                    # gi_id['^ot:ottTaxonName'] = spn_name
+                spn_name = spn_name.replace(" ", "_")
                                            
                 for spn_name_aln, seq in self.data.aln.items():
-                    if '^user:TaxonName' in self.data.otu_dict[spn_name_aln.label]:
-                        otu_dict_name = self.data.otu_dict[spn_name_aln.label]['^user:TaxonName']
-                    elif '^ot:ottTaxonName' in self.data.otu_dict[spn_name_aln.label]:
-                        otu_dict_name = self.data.otu_dict[spn_name_aln.label]['^ot:ottTaxonName']
+                    otu_dict_name = find_name(self.data.otu_dict[spn_name_aln.label])
                     if spn_name == otu_dict_name:
                         nametoreturn = spn_name_aln.label
-                    # for spn_name_aln in self.data.aln.keys():
-                    #     if '^ot:ottTaxonName' in self.data.otu_dict[spn_name_aln.label]:
-                    #         if spn_name == self.data.otu_dict[spn_name_aln.label]['^ot:ottTaxonName']:
-                    #             nametoreturn = spn_name_aln.label
             # the next lines where added because the test was breaking,
             # needs thorough testing if it not breaks something else now.
-            if nametoreturn is not None:
-                try:
-                    nametoreturn = spn_name.replace(" ", "_")
-                except:
-                    debug("do something?")
+            if nametoreturn is not None and spn_name is not None:
+                nametoreturn = spn_name.replace(" ", "_")
             else:
-                break
+                debug("do something?")
         return nametoreturn
-
 
     def loop_for_write_blast_files(self, key):
         """This loop is needed to be able to write the local blast files for the filtering step correctly.
@@ -2079,45 +2038,17 @@ class FilterBlast(PhyscraperScrape):
             if '^physcraper:status' in gi_id and gi_id['^physcraper:status'].split(' ')[0] not in self.seq_filter:
                 debug("generate files used for blast")
                 if gi_id['^physcraper:last_blasted'] != '1800/01/01':  # old seq
-                    if '^user:TaxonName' in gi_id:
-                        spn_name = gi_id['^user:TaxonName']
-                    elif '^ot:ottTaxonName' in gi_id:
-                        spn_name = gi_id['^ot:ottTaxonName']
+                    spn_name = find_name(gi_id)
                     for spn_name_aln, seq in self.data.aln.items():
-                        if '^user:TaxonName' in self.data.otu_dict[spn_name_aln.label]:
-                            otu_dict_name = self.data.otu_dict[spn_name_aln.label]['^user:TaxonName']
-                        elif '^ot:ottTaxonName' in self.data.otu_dict[spn_name_aln.label]:
-                            otu_dict_name = self.data.otu_dict[spn_name_aln.label]['^ot:ottTaxonName']
+                        otu_dict_name = find_name(self.data.otu_dict[spn_name_aln.label])
                         if spn_name == otu_dict_name:
                             # if selectby == "blast":
                             filename = nametoreturn
                             # filename = spn_name_aln.label
                             if self.downtorank is not None:
                                 filename = key
-                            print(filename, seq)
+                            # print(filename, seq)
                             write_blast_files(self.workdir, filename, seq)
-                    # if '^user:TaxonName' in gi_id:
-                    #     spn_name = gi_id['^user:TaxonName']
-                    #     for spn_name_aln, seq in self.data.aln.items():
-                    #         if '^user:TaxonName' in self.data.otu_dict[spn_name_aln.label]:
-                    #             if spn_name == self.data.otu_dict[spn_name_aln.label]['^user:TaxonName']:
-                    #                 # if selectby == "blast":
-                    #                 filename = spn_name_aln.label
-                    #                 if self.downtorank is not None:
-                    #                     filename = key
-                    #                 self.write_blast_files(filename, seq)
-                    #                 # blastfile_taxon_names[spn_name] = spn_name_aln.label
-                    # elif '^ot:ottTaxonName' in gi_id:
-                    #     spn_name = gi_id['^ot:ottTaxonName']
-                    #     for spn_name_aln, seq in self.data.aln.items():
-                    #         if '^ot:ottTaxonName' in self.data.otu_dict[spn_name_aln.label]:
-                    #             if spn_name == self.data.otu_dict[spn_name_aln.label]['^ot:ottTaxonName']:
-                    #                 # if selectby == "blast":  # should be obsolete now?!
-                    #                 filename = spn_name_aln.label
-                    #                 if self.downtorank is not None:
-                    #                     filename = key
-                    #                 self.write_blast_files(filename, seq)
-                    #                 # blastfile_taxon_names[spn_name] = spn_name_aln.label
                 else:
                     debug("make gilist as local blast database")
                     if "^ncbi:gi" in gi_id:
@@ -2293,7 +2224,7 @@ class FilterBlast(PhyscraperScrape):
             log.write("{} sequences added after filtering, of {} before filtering\n".format(len(reduced_new_seqs_dic),
                                                                                             len(self.new_seqs_otu_id)))
         self.new_seqs = deepcopy(reduced_new_seqs)
-        self.new_seqs_otu_id = deepcopy(reduced_new_seqs_dic) # ! key is not exactly same format as before in new_seqs_otu_id
+        self.new_seqs_otu_id = deepcopy(reduced_new_seqs_dic)  # TODO: key is not exactly same format as before in new_seqs_otu_id
         # the dict does not seem to be used for something...
         # set back to empty dict
         self.sp_d.clear()
@@ -2336,16 +2267,15 @@ class Settings(object):
         self.blacklist = blacklist
 
 
-###################3
+# ##################
 def run_local_blast(workdir, blast_seq, blast_db, output=None):
-    """Runs  a local blast to get a measurement of differentiation between available sequences for the same taxon concept.
+    """Runs  a local blast to get measurement of differentiation between available sequences for the same taxon concept.
 
     The blast run will only be run if there are more sequences found than specified by the threshold value.
     When several sequences are found per taxon, blasts each seq against all other ones found for that taxon.
-    The measure of differentiation will then be used to be able to select a random representative from the taxon concept,
+    The measure of differentiation will then be used to select a random representative from the taxon concept,
     but allows to exclude potential mis-identifications.
     In a later step (select_seq_by_local_blast) sequences will be selected based on the blast results generated here.
-
     """
     # Note: has test, runs -> test_run_local_blast.py
     debug("run_local_blast")
@@ -2363,6 +2293,7 @@ def run_local_blast(workdir, blast_seq, blast_db, output=None):
     os.system(cmd2)
     debug(cmd2)
     os.chdir(general_wd)
+
 
 def calculate_mean_sd(hsp_scores):
     """Calculates standard deviation, mean of scores which are used as a measure of sequence differentiation
@@ -2383,6 +2314,7 @@ def calculate_mean_sd(hsp_scores):
     mean_hsp_bits = float(bit_sum / total_seq)
     mean_sd = {"mean": mean_hsp_bits, "sd": bit_sd}
     return mean_sd
+
 
 def read_local_blast(workdir, seq_d, fn):
     """Reads the files of the local blast run and returns sequences below a value
@@ -2416,15 +2348,10 @@ def read_local_blast(workdir, seq_d, fn):
         except ValueError:
             debug("rebuild the local blast db and try again")
             sys.stderr.write("{} blast file has a problem. Redo running it".format(fn))
-
-
-
             general_wd = os.getcwd()
             os.chdir(os.path.join(workdir, "blast"))
             # os.remove("{}_db.*".format(fn))
             subprocess.call(["rm", "{}_db.*".format(fn)])
-
-            out_fn = "{}_tobeblasted".format(str(fn))
             cmd1 = "makeblastdb -in {}_db -dbtype nucl".format(fn)
             os.system(cmd1)
             cmd2 = "blastn -query {}_tobeblasted -db {}_db -out output_{}tobeblasted.xml -outfmt 5".format(fn, fn, fn)
@@ -2436,8 +2363,6 @@ def read_local_blast(workdir, seq_d, fn):
                 debug("im going to raise")
                 raise
         break
-
-
     # make values to select for blast search, calculate standard deviation,mean
     mean_sd = calculate_mean_sd(hsp_scores)
     # select which sequences to use
@@ -2449,6 +2374,7 @@ def read_local_blast(workdir, seq_d, fn):
             if gi_id in seq_d:
                 seq_blast_score[gi_id] = seq_d[gi_id]
     return seq_blast_score
+
 
 def write_blast_files(workdir, file_name, seq, db=False, fn=None):
     """Writes local blast files which will be read by run_local_blast.
@@ -2467,3 +2393,13 @@ def write_blast_files(workdir, file_name, seq, db=False, fn=None):
     fi_o.write(">{}\n".format(file_name))
     fi_o.write("{}\n".format(str(seq).replace("-","")))
     fi_o.close()
+
+
+def find_name(dict):
+    spn = None
+    if '^ot:ottTaxonName' in dict:
+        spn = dict['^ot:ottTaxonName']
+    elif '^user:TaxonName' in dict:
+        spn = dict['^user:TaxonName']
+    spn = spn.replace(" ", "_")
+    return spn
