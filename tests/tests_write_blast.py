@@ -3,7 +3,7 @@ import pickle
 import sys
 import os
 from physcraper import ConfigObj, IdDicts
-from physcraper import FilterBlast
+from physcraper import FilterBlast, write_blast_files
 
 sys.stdout.write("\ntests write_blast\n")
 
@@ -26,7 +26,7 @@ try:
 except:
     sys.stdout.write("\n\nTest FAILED\n\n")
     sys.exit()
-filteredScrape =  FilterBlast(data_obj, ids)
+filteredScrape = FilterBlast(data_obj, ids)
 filteredScrape._blasted = 1
 blast_dir = "tests/data/precooked/fixed/tte_blast_files"
 filteredScrape.gi_list_mrca = pickle.load(open("tests/data/precooked/gi_list_mrca.p", 'rb'))
@@ -39,11 +39,11 @@ for taxonID in filteredScrape.sp_d:
 	if len(filteredScrape.sp_seq_d[taxonID]) > treshold:
 	    blast_seq = filteredScrape.sp_seq_d[taxonID].keys()[0]
 	    seq = filteredScrape.sp_seq_d[taxonID][blast_seq]
-	    filteredScrape.write_blast_files(taxonID, seq)
+	    write_blast_files(workdir, taxonID, seq)
 	    blast_db = filteredScrape.sp_seq_d[taxonID].keys()[1:]
 	    for blast_key in blast_db:
 	    	seq = filteredScrape.sp_seq_d[taxonID][blast_key]
-	    	filteredScrape.write_blast_files(blast_key, seq, db=True, fn=str(taxonID))
+	    	write_blast_files(workdir, blast_key, seq, db=True, fn=str(taxonID))
 	    break
 try:
 	blast_file_blast = "{}/blast/{}_tobeblasted".format(workdir, taxonID)

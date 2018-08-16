@@ -1,26 +1,54 @@
-from physcraper import wrappers_nonstandard
+from physcraper import wrappers, ConfigObj, IdDicts, OtuJsonDict
 import os
 
 #
-seqaln= "Senecioneae/its_sl.fasta"
+seqaln= "tests/data/Senecioneae_input/its_sl.fasta"
 mattype="fasta"
-trfn= "Senecioneae/its_sl.tre"
+trfn= "tests/data/Senecioneae_input/its_sl.tre"
 schema_trf = "newick"
-workdir="Senecioneae_its_output"
-configfi = "example.config"
-id_to_spn = r"Senecioneae/nicespl.csv"
+workdir="test_iddict"
+configfi = "tests/data/test.config"
+id_to_spn = r"tests/data/Senecioneae_input/nicespl.csv"
 cwd = os.getcwd()  
+otu_jsonfi = "{}/otu_dict.json".format(workdir)
+
+
+treshold = 2
+selectby = "blast"
+downtorank = None
+blacklist = None
+# downtorank = "species"
+add_local_seq = None
+id_to_spn_addseq_json = None
 
 
 
-otu_json = wrappers_nonstandard.OtuJsonDict(id_to_spn, configfi)
+if not os.path.exists("{}".format(workdir)):
+        os.makedirs("{}".format(workdir))
+
+conf = ConfigObj(configfi)
+ids = IdDicts(conf, workdir=workdir)
+
+
+if os.path.exists(otu_jsonfi):
+    print("load json")
+    otu_json = json.load(open(otu_jsonfi))
+else:
+    otu_json = OtuJsonDict(id_to_spn, ids)
+    json.dump(otu_json, open(otu_jsonfi,"w"))
 
 
 
-wrappers_nonstandard.own_data_run(seqaln,
+wrappers.filter_data_run(seqaln,
                  mattype,
                  trfn,
                  schema_trf,
                  workdir,
-                 otu_json,
+                 treshold,
+                 selectby,
+                downtorank,
+                 otu_jsonfi,
+                 blacklist,
+                  add_local_seq,
+                 id_to_spn_addseq_json,
                  configfi)
