@@ -2421,7 +2421,8 @@ def read_local_blast(workdir, seq_d, fn):
             os.chdir(os.path.join(workdir, "blast"))
             out_fn = "{}_tobeblasted".format(str(fn))
             cmd1 = "makeblastdb -in {}_db -dbtype nucl".format(fn)
-            cmd2 = "blastn -query {} -db {}_db -out {} -outfmt 5".format(out_fn, blast_db, output)
+            os.system(cmd1)
+            cmd2 = "blastn -query {}_tobeblasted -db {}_db -out output_{}.xml -outfmt 5".format(fn, fn, fn)
             os.system(cmd2)
             os.chdir(general_wd)
             if i < tries - 1:  # i is zero indexed
