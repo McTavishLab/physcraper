@@ -2465,5 +2465,5 @@ def write_blast_files(workdir, file_name, seq, db=False, fn=None):
         fi_o = open(fnw, 'w')
     # debug(fnw)
     fi_o.write(">{}\n".format(file_name))
-    fi_o.write("{}\n".format(seq.replace("-","")))
+    fi_o.write("{}\n".format(str(seq).replace("-","")))
     fi_o.close()
