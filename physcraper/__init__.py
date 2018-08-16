@@ -2417,12 +2417,15 @@ def read_local_blast(workdir, seq_d, fn):
             debug("rebuild the local blast db and try again")
             sys.stderr.write("{} blast file has a problem. Redo running it".format(fn))
 
+            os.remove("{}_db.*".format(fn))
+
+
             general_wd = os.getcwd()
             os.chdir(os.path.join(workdir, "blast"))
             out_fn = "{}_tobeblasted".format(str(fn))
             cmd1 = "makeblastdb -in {}_db -dbtype nucl".format(fn)
             os.system(cmd1)
-            cmd2 = "blastn -query {}_tobeblasted -db {}_db -out output_{}.xml -outfmt 5".format(fn, fn, fn)
+            cmd2 = "blastn -query {}_tobeblasted -db {}_db -out output_{}tobeblasted.xml -outfmt 5".format(fn, fn, fn)
             os.system(cmd2)
             os.chdir(general_wd)
             if i < tries - 1:  # i is zero indexed
