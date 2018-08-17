@@ -326,7 +326,7 @@ def OtuJsonDict(id_to_spn, id_dict):
                     sys.stdout.write("match to taxon {} not found in open tree taxonomy. Trying NCBI next.\n".format(spn))
                 ncbi = NCBITaxa()
                 name2taxid = ncbi.get_name_translator([spn])
-                debug(name2taxid)
+                # debug(name2taxid)
                 if len(name2taxid.items()) >= 1:
                     if _DEBUG:
                         sys.stdout.write("found taxon {} in ncbi".format(spn))
@@ -857,69 +857,77 @@ class IdDicts(object):
         debug("get_rank_info")
         # print(gi_id, taxon_name)
         Entrez.email = self.config.email
+
         if gi_id:
-            tax_name = None
-            # debug("gi_id to tax_name using Entrez")
-            # debug(gi_id)  # 1273855514
-            tries = 10
-            for i in range(tries):
-                    try:
-                        handle = Entrez.esummary(db="nucleotide", id="{}".format(gi_id), retmode="xml")
-                    except:
-                        debug("except summary")
-                        if i < tries - 1:  # i is zero indexed
-                            continue
-                        else:
-                            debug("im going to raise")
-                            raise
-                    break
-            records = Entrez.read(handle)
-            handle.close()
-            len_seq = int(records[0]["Length"])
-            debug(len_seq)
-            # debug(type(len_seq))
-            if len_seq < 10000:  ## exclude chromosomes
-                for i in range(tries):
-                    try:
-                        handle = Entrez.efetch(db="nucleotide", id=gi_id, retmode="xml")
+            # tax_name = None
+            # # debug("gi_id to tax_name using Entrez")
+            
+            # # if len_seq < 10000:  ## exclude chromosomes
+            # tries = 10
+
+            # debug("gi_id was supplied")
+            # try:
+            #     debug("try efetch")
+            #     for i in range(tries):
+            #         try:
+            #             handle = Entrez.efetch(db="nucleotide", id=gi_id, retmode="xml")
                     
-                    except:
-                        debug("except efetch")
-                        if i < tries - 1:  # i is zero indexed
-                            continue
-                        else:
-                            debug("im going to raise")
-                            raise
-                    break
-                # debug(handle)
-                debug("try and except")
-                read_handle = Entrez.read(handle)
-                handle.close()
-                # debug(read_handle)
-                try:
-                    debug("try")
-                    # debug(Entrez.read(handle)[0])
-                    read_handle =read_handle[0]
-                    # debug(read_handle)
-                except:
-                    debug("except read")
-                    # debug(handle)
-                    # debug(Entrez.read(handle))
-                    read_handle = read_handle
-                    # debug(read_handle)
-                    debug("are you printing this line")
-                # debug(read_handle)
-                # debug("get tax_name next from gi_id")
-                # debug(read_handle['GBSeq_feature-table'][0]['GBFeature_quals'][0]['GBQualifier_value'])
-                # debug(read_handle['GBSeq_feature-table'][0]['GBFeature_quals'][0])
-                # debug(read_handle['GBSeq_feature-table'][0]['GBFeature_quals'])
-                # debug(read_handle['GBSeq_feature-table'][0])
-                debug(read_handle['GBSeq_feature-table'])
-                tax_name = read_handle['GBSeq_feature-table'][0]['GBFeature_quals'][0]['GBQualifier_value']
-                tax_name = str(tax_name).replace("_", " ")
-                debug(tax_name)
-            else:
-                tax_name = "irrelevant sequence"
+            #         except:
+            #             debug("except efetch")
+            #             if i < tries - 1:  # i is zero indexed
+            #                 continue
+            #             else:
+            #                 debug("im going to raise")
+            #                 raise
+            #         break
+            #     # debug(handle)
+            #     debug("try and except")
+            #     read_handle = Entrez.read(handle)
+            #     handle.close()
+            #     # debug(read_handle)
+            #     try:
+            #         debug("try")
+            #         # debug(Entrez.read(handle)[0])
+            #         read_handle = read_handle[0]
+            #         # debug(read_handle)
+            #     except:
+            #         debug("except read")
+            #     #     # debug(handle)
+            #     #     # debug(Entrez.read(handle))
+            #     #     read_handle = read_handle
+            #     #     # debug(read_handle)
+            #     #     debug("are you printing this line")
+            #     # debug(read_handle)
+            #     # debug("get tax_name next from gi_id")
+            #     # debug(read_handle['GBSeq_feature-table'])
+            #     tax_name = read_handle['GBSeq_feature-table'][0]['GBFeature_quals'][0]['GBQualifier_value']
+            #     tax_name = str(tax_name).replace("_", " ")
+                # debug(tax_name)
+
+            # except:
+            #     debug('except efetch')
+            #     # # debug(gi_id)  # 1273855514
+            #     # tries = 10
+            #     # for i in range(tries):
+            #     #         try:
+            #     #             handle = Entrez.esummary(db="nucleotide", id="{}".format(gi_id), retmode="xml")
+            #     #         except:
+            #     #             debug("except summary")
+            #     #             if i < tries - 1:  # i is zero indexed
+            #     #                 continue
+            #     #             else:
+            #     #                 debug("im going to raise")
+            #     #                 raise
+            #     #         break
+            #     # records = Entrez.read(handle)
+            #     # handle.close()
+            #     # len_seq = int(records[0]["Length"])
+            #     # debug(len_seq)
+            # # debug(type(len_seq))
+            #     tax_name = "irrelevant sequence"
+            #     sys.stderr.write("Cannot get species information from gi: {}. I still have to find a solution for it".format(gi_id))
+            #     debug("Cannot get species information from gi: {}. I still have to find a solution for it".format(gi_id))
+            tax_name = self.find_name(gi=gi_id)
         else:
             tax_name = str(taxon_name).replace("_", " ")   
         if tax_name is not None and tax_name != "irrelevant sequence":
@@ -955,6 +963,49 @@ class IdDicts(object):
         # debug("return from rank function")
         # debug(tax_name)
         return tax_name
+
+    def find_name(self, dict=None, gi=None):
+        """Find the name in the dict or of a gi. If not already known if will ask ncbi using the gi number.
+        """
+        # debug("find_name")
+        spn = None
+        if dict:
+            if '^ot:ottTaxonName' in dict:
+                spn = dict['^ot:ottTaxonName']
+            elif '^user:TaxonName' in dict:
+                spn = dict['^user:TaxonName']
+        if spn is None:
+            if gi:
+                gi_id = gi
+            else:
+                Entrez.email = self.config.email
+                gi_id = dict['^ncbi:gi']
+            # debug(gi_id)
+            # debug(type(gi_id))
+            tries = 10
+            for i in range(tries):
+                try:
+                    handle = Entrez.efetch(db="nucleotide", id=gi_id, retmode="xml")
+                except:
+                    debug("except efetch")
+                    if i < tries - 1:  # i is zero indexed
+                        continue
+                    else:
+                        debug("im going to raise")
+                        raise
+                break
+            read_handle = Entrez.read(handle)
+            handle.close()
+            spn = read_handle[0]['GBSeq_feature-table'][0]['GBFeature_quals'][0]['GBQualifier_value']
+            spn = str(spn)
+        if dict:
+            dict['^ot:ottTaxonName'] = spn
+        # else:
+        #     for key, val in self.data.otu_dict.items():
+        #         if val['^ncbi:gi'] == gi_id:
+        #             val['^ot:ottTaxonName'] = spn
+        spn = spn.replace(" ", "_")
+        return spn
 
     def map_gi_ncbi(self, gi):
         """get the ncbi taxon id's for a gi input"""
@@ -1211,7 +1262,7 @@ class PhyscraperScrape(object):  # TODO do I wantto be able to instantiate this 
         # debug("get_spn_id_of_otulabel")
         # debug(label)
         # debug(self.data.otu_dict.keys())
-        spn_of_label = find_name(self.data.otu_dict[label])
+        spn_of_label = self.ids.find_name(dict=self.data.otu_dict[label])
         # if '^ot:ottTaxonName' in self.data.otu_dict[label].keys():
         #     spn_of_label = self.data.otu_dict[label]['^ot:ottTaxonName']
         # elif '^user:TaxonName' in self.data.otu_dict[label].keys():
@@ -1243,6 +1294,8 @@ class PhyscraperScrape(object):  # TODO do I wantto be able to instantiate this 
             tax_name = self.ids.get_rank_info(taxon_name=spn_of_label)
             id_of_label = int(self.ids.otu_rank[tax_name]["taxon id"])
         return id_of_label
+
+    
 
     def seq_dict_build(self, seq, label, seq_dict):  # Sequence needs to be passed in as string.
         """takes a sequence, a label (the otu_id) and a dictionary and adds the
@@ -1812,7 +1865,6 @@ class FilterBlast(PhyscraperScrape):
             self.blacklist = []
         self.seq_filter = ['deleted', 'subsequence,', 'not', "removed", "deleted,",  "local"]
 
-
     def sp_dict(self, downtorank=None):
         """Takes the information from the Physcraper otu_dict and makes a dict with species name as key and
         the corresponding seq information from aln and blast seq, it returns self.sp_d.
@@ -1831,7 +1883,7 @@ class FilterBlast(PhyscraperScrape):
             # debug(key['^physcraper:status'])
             if self.data.otu_dict[key]['^physcraper:status'].split(' ')[0] not in self.seq_filter:
                 # debug(self.downtorank)
-                spn = find_name(self.data.otu_dict[key])
+                spn = self.ids.find_name(dict=self.data.otu_dict[key])
                 if spn is None:
                     debug("spn is None")
                     debug(self.data.otu_dict[key])
@@ -1889,9 +1941,9 @@ class FilterBlast(PhyscraperScrape):
                     # they will get a sp name (str), in order to distinguish them from newly found seq,
                     # which will have the gi (int). This differentiation is needed in the filtering blast step.
                     if gi_id['^physcraper:last_blasted'] != '1800/01/01':
-                        user_name = find_name(gi_id)
+                        user_name = self.ids.find_name(dict=gi_id)
                         for user_name_aln, seq in self.data.aln.items():
-                            otu_dict_label = find_name(self.data.otu_dict[user_name_aln.label])
+                            otu_dict_label = self.ids.find_name(dict=self.data.otu_dict[user_name_aln.label])
                             if user_name == otu_dict_label:
                                 seq = seq.symbols_as_string().replace("-", "")
                                 seq = seq.replace("?", "")
@@ -2000,7 +2052,7 @@ class FilterBlast(PhyscraperScrape):
         # loop needs to happen before the other one, as we need nametoreturn in second:
         for gi_id in self.sp_d[key]:
             # this if should not be necessary
-            spn_name = find_name(gi_id)
+            spn_name = self.ids.find_name(dict=gi_id)
             if '^physcraper:status' in gi_id and gi_id['^physcraper:status'].split(' ')[0] not in self.seq_filter:
                 # if gi_id['^physcraper:status'].split(' ')[0] not in self.seq_filter:
                 # if gi_id['^physcraper:last_blasted'] != '1800/01/01':
@@ -2011,7 +2063,7 @@ class FilterBlast(PhyscraperScrape):
                 spn_name = spn_name.replace(" ", "_")
                                            
                 for spn_name_aln, seq in self.data.aln.items():
-                    otu_dict_name = find_name(self.data.otu_dict[spn_name_aln.label])
+                    otu_dict_name = self.ids.find_name(dict=self.data.otu_dict[spn_name_aln.label])
                     if spn_name == otu_dict_name:
                         nametoreturn = spn_name_aln.label
             # the next lines where added because the test was breaking,
@@ -2037,9 +2089,9 @@ class FilterBlast(PhyscraperScrape):
             if '^physcraper:status' in gi_id and gi_id['^physcraper:status'].split(' ')[0] not in self.seq_filter:
                 debug("generate files used for blast")
                 if gi_id['^physcraper:last_blasted'] != '1800/01/01':  # old seq
-                    spn_name = find_name(gi_id)
+                    spn_name = self.ids.find_name(dict=gi_id)
                     for spn_name_aln, seq in self.data.aln.items():
-                        otu_dict_name = find_name(self.data.otu_dict[spn_name_aln.label])
+                        otu_dict_name = self.ids.find_name(dict=self.data.otu_dict[spn_name_aln.label])
                         if spn_name == otu_dict_name:
                             # if selectby == "blast":
                             filename = nametoreturn
@@ -2179,8 +2231,6 @@ class FilterBlast(PhyscraperScrape):
                             elif len(self.sp_seq_d[taxon_id]) + seq_present < treshold:
                                 self.add_all(taxon_id)
         return
-
-
 
     def replace_new_seq(self):
         """Replaces the self.new_seqs with the filtered_seq information.
@@ -2394,11 +2444,3 @@ def write_blast_files(workdir, file_name, seq, db=False, fn=None):
     fi_o.close()
 
 
-def find_name(dict):
-    spn = None
-    if '^ot:ottTaxonName' in dict:
-        spn = dict['^ot:ottTaxonName']
-    elif '^user:TaxonName' in dict:
-        spn = dict['^user:TaxonName']
-    spn = spn.replace(" ", "_")
-    return spn
