@@ -24,15 +24,22 @@ downtorank = "genus"
 add_local_seq = None
 id_to_spn_addseq_json = None
 
-cwd = os.getcwd()  
+
+
+if not os.path.exists("{}".format(workdir)):
+        os.makedirs("{}".format(workdir))
+
+conf = ConfigObj(configfi)
+ids = IdDicts(conf, workdir=workdir)
+
 
 if os.path.exists(otu_jsonfi):
+    print("load json")
     otu_json = json.load(open(otu_jsonfi))
 else:
-    otu_json = wrappers.OtuJsonDict(id_to_spn, configfi)
-    if not os.path.exists(workdir):
-       os.mkdir(workdir)
+    otu_json = OtuJsonDict(id_to_spn, ids)
     json.dump(otu_json, open(otu_jsonfi,"w"))
+
 
 wrappers.filter_data_run(seqaln,
                  mattype,

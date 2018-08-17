@@ -309,7 +309,7 @@ def OtuJsonDict(id_to_spn, id_dict):
     """Make otu json dict, which is also produced within the openTreeLife-query
     reads input file into the var spInfo, tranaltes using an IdDict object
     using web to call Open tree, then ncbi if not found"""
-    debug("Set up OtuJsonDict")
+    sys.stdout.write("Set up OtuJsonDict")
     spInfoDict = {}
     with open(id_to_spn, mode='r') as infile:
         for lin in infile:
