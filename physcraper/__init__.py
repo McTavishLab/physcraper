@@ -951,7 +951,7 @@ class IdDicts(object):
                                 raise
                         break
                     read_handle = Entrez.read(handle)
-                    tax_id = self.get_ncbi_tax_id(read_handle)
+                    tax_id = get_ncbi_tax_id(read_handle)
                 except:
                     debug("stupid entrez thing")
 
@@ -959,13 +959,8 @@ class IdDicts(object):
                 debug("tax_name to rank")
                 # ncbi = NCBITaxa()
                 if not gi_id:
-
-
-                
-                
                     try:
                         debug("try")
-
                         tries = 10
                         for i in range(tries):
                             try:
@@ -978,12 +973,8 @@ class IdDicts(object):
                                     debug("im going to raise")
                                     raise
                             break
-              
-                        # debug(tax_name)
-                        # debug(Entrez.read(Entrez.esearch(db="taxonomy", term=tax_name, RetMax=100)))
-                        # debug(Entrez.read(Entrez.esearch(db="taxonomy", term=tax_name, RetMax=100))['IdList'][0])
-                        debug(tax_id)
-                        debug(type(tax_id))
+                        # debug(tax_id)
+                        # debug(type(tax_id))
                     except:
                         debug("except")
                         tax_info = ncbi.get_name_translator([tax_name])
@@ -1006,29 +997,6 @@ class IdDicts(object):
         # debug(tax_name)
         return tax_name
 
-
-    def get_ncbi_tax_id(self, handle):
-        """Get the taxon ID from ncbi.
-        """
-
-        gb_list = handle[0]['GBSeq_feature-table'][0]['GBFeature_quals']
-
-        for item in gb_list:
-            if item[u'GBQualifier_name'] == 'db_xref':
-                debug(item[u'GBQualifier_value'])
-                ncbi_taxonid = int(item[u'GBQualifier_value'][6:])
-        return ncbi_taxonid
-
-    def get_ncbi_tax_name(self, handle):
-        """Get the sp name from ncbi.
-        """
-
-        gb_list = handle[0]['GBSeq_feature-table'][0]['GBFeature_quals']
-
-        for item in gb_list:
-            if item[u'GBQualifier_name'] == 'organism':
-                ncbi_sp = str(item[u'GBQualifier_value'])
-        return ncbi_sp
 
     def find_name(self, dict=None, gi=None):
         """Find the name in the dict or of a gi. If not already known if will ask ncbi using the gi number.
@@ -1064,8 +1032,8 @@ class IdDicts(object):
                 break
             read_handle = Entrez.read(handle)
             handle.close()
-            spn = self.get_ncbi_tax_name(read_handle)
-            ncbi_taxonid = self.get_ncbi_tax_id(read_handle)
+            spn = get_ncbi_tax_name(read_handle)
+            ncbi_taxonid = get_ncbi_tax_id(read_handle)
 
             if dict:
                 dict['^ot:ottTaxonName'] = spn
@@ -2514,4 +2482,25 @@ def write_blast_files(workdir, file_name, seq, db=False, fn=None):
     fi_o.write("{}\n".format(str(seq).replace("-","")))
     fi_o.close()
 
+def get_ncbi_tax_id(handle):
+    """Get the taxon ID from ncbi.
+    """
+    gb_list = handle[0]['GBSeq_feature-table'][0]['GBFeature_quals']
+    for item in gb_list:
+        if item[u'GBQualifier_name'] == 'db_xref':
+            debug(item[u'GBQualifier_value'])
+            if item[u'GBQualifier_value'][:5] == 'taxon':
+                ncbi_taxonid = int(item[u'GBQualifier_value'][6:])
+                break
+            else:
+                continue
+    return ncbi_taxonid
 
+def get_ncbi_tax_name(handle):
+    """Get the sp name from ncbi.
+    """
+    gb_list = handle[0]['GBSeq_feature-table'][0]['GBFeature_quals']
+    for item in gb_list:
+        if item[u'GBQualifier_name'] == 'organism':
+            ncbi_sp = str(item[u'GBQualifier_value'])
+    return ncbi_sp
