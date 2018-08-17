@@ -440,7 +440,7 @@ class AlignTreeTax(object):
             self.aln.remove_sequences(prune)
             self.tre.prune_taxa(prune)
             self.tre.prune_taxa_with_labels(prune)  # sometimes it does not delete it with the statement before. Tried to figure out why, have no clue yet.
-            #self.aln.taxon_namespace.remove_taxon_label(tax)
+            # self.aln.taxon_namespace.remove_taxon_label(tax)
             fi = open("{}/pruned_taxa".format(self.workdir), 'a')
             fi.write("Taxa pruned from tree and alignment in prune short step due to sequence shorter than {}\n".format(min_seqlen))
             for tax in prune:
@@ -932,25 +932,67 @@ class IdDicts(object):
             tax_name = str(taxon_name).replace("_", " ")   
         if tax_name is not None and tax_name != "irrelevant sequence":
             debug(tax_name)
-            if tax_name not in self.otu_rank.keys():
-                # debug("tax_name to rank")
-                ncbi = NCBITaxa()
+            ncbi = NCBITaxa()
+            if gi_id:
+                
                 try:
-                    # debug("try")
-                    # debug(tax_name)
-                    # debug(Entrez.read(Entrez.esearch(db="taxonomy", term=tax_name, RetMax=100)))
-                    # debug(Entrez.read(Entrez.esearch(db="taxonomy", term=tax_name, RetMax=100))['IdList'][0])
-                    tax_id = int(Entrez.read(Entrez.esearch(db="taxonomy", term=tax_name, RetMax=100))['IdList'][0])
-                    # debug(tax_id)
-                    # debug(type(tax_id))
+                    debug("try")
+
+                    tries = 10
+                    for i in range(tries):
+                        try:
+                            handle = Entrez.efetch(db="nucleotide", id=gi_id, retmode="xml")
+                        except:
+                            debug("except efetch")
+                            if i < tries - 1:  # i is zero indexed
+                                continue
+                            else:
+                                debug("im going to raise")
+                                raise
+                        break
+                    read_handle = Entrez.read(handle)
+                    tax_id = self.get_ncbi_tax_id(read_handle)
                 except:
-                    # debug("except")
-                    tax_info = ncbi.get_name_translator([tax_name])
-                    # debug(tax_info)
-                    if tax_info == {}:
-                        print("Taxon name does not match any species name in ncbi. Check that name is written correctly!")
-                    tax_id = int(tax_info.items()[0][1][0])
-                ncbi = NCBITaxa()
+                    debug("stupid entrez thing")
+
+            if tax_name not in self.otu_rank.keys():
+                debug("tax_name to rank")
+                # ncbi = NCBITaxa()
+                if not gi_id:
+
+
+                
+                
+                    try:
+                        debug("try")
+
+                        tries = 10
+                        for i in range(tries):
+                            try:
+                                tax_id = int(Entrez.read(Entrez.esearch(db="taxonomy", term=tax_name, RetMax=100))['IdList'][0])
+                            except:
+                                debug("except esearch/read")
+                                if i < tries - 1:  # i is zero indexed
+                                    continue
+                                else:
+                                    debug("im going to raise")
+                                    raise
+                            break
+              
+                        # debug(tax_name)
+                        # debug(Entrez.read(Entrez.esearch(db="taxonomy", term=tax_name, RetMax=100)))
+                        # debug(Entrez.read(Entrez.esearch(db="taxonomy", term=tax_name, RetMax=100))['IdList'][0])
+                        debug(tax_id)
+                        debug(type(tax_id))
+                    except:
+                        debug("except")
+                        tax_info = ncbi.get_name_translator([tax_name])
+                        # debug(tax_info)
+                        if tax_info == {}:
+                            print("Taxon name does not match any species name in ncbi. Check that name is written correctly!")
+                        tax_id = int(tax_info.items()[0][1][0])
+
+                # ncbi = NCBITaxa()
                 lineage = ncbi.get_lineage(tax_id)
                 lineage2ranks = ncbi.get_rank(lineage)
                 tax_name = str(tax_name).replace(" ", "_")
@@ -963,6 +1005,30 @@ class IdDicts(object):
         # debug("return from rank function")
         # debug(tax_name)
         return tax_name
+
+
+    def get_ncbi_tax_id(self, handle):
+        """Get the taxon ID from ncbi.
+        """
+
+        gb_list = handle[0]['GBSeq_feature-table'][0]['GBFeature_quals']
+
+        for item in gb_list:
+            if item[u'GBQualifier_name'] == 'db_xref':
+                debug(item[u'GBQualifier_value'])
+                ncbi_taxonid = int(item[u'GBQualifier_value'][6:])
+        return ncbi_taxonid
+
+    def get_ncbi_tax_name(self, handle):
+        """Get the sp name from ncbi.
+        """
+
+        gb_list = handle[0]['GBSeq_feature-table'][0]['GBFeature_quals']
+
+        for item in gb_list:
+            if item[u'GBQualifier_name'] == 'organism':
+                ncbi_sp = str(item[u'GBQualifier_value'])
+        return ncbi_sp
 
     def find_name(self, dict=None, gi=None):
         """Find the name in the dict or of a gi. If not already known if will ask ncbi using the gi number.
@@ -998,10 +1064,13 @@ class IdDicts(object):
                 break
             read_handle = Entrez.read(handle)
             handle.close()
-            spn = read_handle[0]['GBSeq_feature-table'][0]['GBFeature_quals'][0]['GBQualifier_value']
-            spn = str(spn)
-        if dict:
-            dict['^ot:ottTaxonName'] = spn
+            spn = self.get_ncbi_tax_name(read_handle)
+            ncbi_taxonid = self.get_ncbi_tax_id(read_handle)
+
+            if dict:
+                dict['^ot:ottTaxonName'] = spn
+
+                dict['^ncbi:taxon'] = ncbi_taxonid
         # else:
         #     for key, val in self.data.otu_dict.items():
         #         if val['^ncbi:gi'] == gi_id:
