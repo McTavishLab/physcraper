@@ -161,7 +161,6 @@ class Concat(object):
                     gi_id = data[u'^ot:originalLabel']
                 # else:
                 #     gi_id = data[u'^user:TaxonName']
-
                     # debug(gi_id)
                 concat_dict = {"gi_id": gi_id, "seq": seq, "spn": spn, "original_PS_id": otu,
                                "concat:status": "single run"}
@@ -215,7 +214,7 @@ class Concat(object):
         return
 
     def sp_seq_counter(self):
-        """Counts how many seq per sp and genes there are. I used by p_to_keep.
+        """Counts how many seq per sp and genes there are -is used by sp_to_keep.
         """
         # has test
         debug("sp_seq_counter")
@@ -235,7 +234,8 @@ class Concat(object):
                     self.sp_counter[spn_new][item] = 0
                 else:
                     self.sp_counter[spn_new] = {item: 0}
-        sys.stdout.write(self.sp_counter)
+        # sys.stdout.write(self.sp_counter)
+        debug(self.sp_counter)
 
     def sp_to_keep(self):
         """Uses the sp_counter to make a list of sp that should be kept in concatenated alignment,
@@ -256,7 +256,7 @@ class Concat(object):
                     not_present += 1
             if not seq_counter:
                 sp_to_keep[spn] = not_present
-        sys.stdout.write(sp_to_keep)
+        debug(sp_to_keep)
         return sp_to_keep
 
     def make_sp_gene_dict(self, sp_to_keep):
@@ -491,7 +491,7 @@ class Concat(object):
         :param random_gen: the corresponding otu
         :return: self.concat_tips
         """
-        debug("otu_to_spn")
+        # debug("otu_to_spn")
         if self.tre_start_gene == gene:
             # debug(self.tre_as_start.taxon_namespace)
             spn = spn_.replace("_", " ")
@@ -535,7 +535,7 @@ class Concat(object):
         Dendropy needs same taxon_namespace and number otu's for concatenation. It will just make an empty sequence of
         the same length.
         """
-        debug("make_empty_seq")
+        # debug("make_empty_seq")
         for tax, seq in self.single_runs[gene].data.aln.items():
             len_gene_aln = len(seq)
             break

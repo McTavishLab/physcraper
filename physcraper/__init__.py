@@ -1162,7 +1162,6 @@ class PhyscraperScrape(object):  # TODO do I wantto be able to instantiate this 
                         if not os.path.isfile(xml_fi):
                             if _VERBOSE:
                                 sys.stdout.write("blasting seq {}\n".format(taxon.label))
-                        
                             if self.config.blast_loc == 'local':
                                 fi_old = open("{}/tmp.fas".format(self.blast_subdir), 'w')
                                 fi_old.write(">{}\n".format(taxon.label))
@@ -1174,7 +1173,7 @@ class PhyscraperScrape(object):  # TODO do I wantto be able to instantiate this 
                                            xml_fi + \
                                            " -outfmt 5 -num_threads {}".format(self.config.num_threads) + \
                                            " -max_target_seqs {} -max_hsps {}".format(self.config.hitlist_size, self.config.hitlist_size)  # TODO query via stdin
-                                # debug(blastcmd)
+                                debug(blastcmd)
                                 os.system(blastcmd)
                                 self.data.otu_dict[otu_id]['^physcraper:last_blasted'] = today
                             if self.config.blast_loc == 'remote':
@@ -1236,6 +1235,7 @@ class PhyscraperScrape(object):  # TODO do I wantto be able to instantiate this 
                 os.mkdir(self.blast_subdir)
         if self.localblast:
             # xml_fi = "{}/blast/{}.xml".format(self.workdir, "output_tst_fn")
+
             # use read_local_blast func
             output_blast = "output_tst_fn.xml"
             general_wd = os.getcwd()
@@ -1469,6 +1469,14 @@ class PhyscraperScrape(object):  # TODO do I wantto be able to instantiate this 
                 self.newseqsgi.append(gi)
                 if len(seq.replace("-", "").replace("N", "")) > seq_len_cutoff:
                     otu_id = self.data.add_otu(gi, self.ids)
+
+                    # try:
+                    #     debug("try")
+                    # except:
+                    #     debug("except")
+                    #     otu_id = gi
+                    # debug(otu_id)
+                    # debug("go to seq_dict_build")
                     self.seq_dict_build(seq, otu_id, tmp_dict)
             # else:
             #     debug("gi was already compared")
@@ -1779,17 +1787,11 @@ class PhyscraperScrape(object):  # TODO do I wantto be able to instantiate this 
         # get list of sequences,
         localfiles = os.listdir(path_to_local_seq)
         for index, item in enumerate(localfiles):
-            # debug(index)
-            # debug(item)
             item = str(item)
-            # debug(item.startswith(".~"))
             if item.startswith(".~"):
-                # debug("in if")
                 localfiles[index] = None
-        # debug(localfiles)
         localfiles = filter(None, localfiles)
         # debug(localfiles)
-
         # gi_counter = 1
         # add assert that tests that every file is a fasta file in the folder
         for file in localfiles:
@@ -1803,10 +1805,8 @@ class PhyscraperScrape(object):  # TODO do I wantto be able to instantiate this 
             count = 0
             gi_id_l = content[::2]
             seq_l = content[1::2]
-            # debug(gi_id_l)
-            # debug(seq_l)
-
-            # in current setup 1 seq per file, but this is written in a way, 
+            # print(gi_id_l, seq_l)
+            # in current setup 1 seq per file, but this is written in a way,
             # that multiple seq fasta file can be read in as well
             for i in xrange(0, len(gi_id_l)):
                 key = gi_id_l[i].replace(">", "")
@@ -1819,7 +1819,6 @@ class PhyscraperScrape(object):  # TODO do I wantto be able to instantiate this 
         os.chdir(os.path.join(self.workdir, "blast"))
         cmd1 = "makeblastdb -in {}_db -dbtype nucl".format("local_unpubl_seq")
         debug(cmd1)
-        # debug("make local db")
         os.system(cmd1)
 
 
@@ -1895,6 +1894,9 @@ class FilterBlast(PhyscraperScrape):
         self.filtered_seq = {}
         self.gi_list_mrca = []
         self.downtorank = None
+        self.localblast = False
+        self.local_otu_json = None
+
         # self.not_added = []
         if settings is not None:
             self.blacklist = settings.blacklist
@@ -2130,7 +2132,6 @@ class FilterBlast(PhyscraperScrape):
                     for spn_name_aln, seq in self.data.aln.items():
                         otu_dict_name = self.ids.find_name(dict=self.data.otu_dict[spn_name_aln.label])
                         if spn_name == otu_dict_name:
-                            # if selectby == "blast":
                             filename = nametoreturn
                             # filename = spn_name_aln.label
                             if self.downtorank is not None:
