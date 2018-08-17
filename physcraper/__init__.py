@@ -922,7 +922,7 @@ class IdDicts(object):
                 tax_name = "irrelevant sequence"
         else:
             tax_name = str(taxon_name).replace("_", " ")   
-        if tax_name != None and tax_name != "irrelevant sequence":
+        if tax_name is not None and tax_name != "irrelevant sequence":
             debug(tax_name)
             if tax_name not in self.otu_rank.keys():
                 # debug("tax_name to rank")
@@ -961,7 +961,6 @@ class IdDicts(object):
         debug("map_gi_ncbi")
         if _DEBUG == 2:
             sys.stderr.write("mapping gi {}\n".format(gi))
-        tax_id = None
         if gi in self.gi_ncbi_dict:
             tax_id = int(self.gi_ncbi_dict[gi])
         else:
@@ -1142,7 +1141,7 @@ class PhyscraperScrape(object):  # TODO do I wantto be able to instantiate this 
             if not os.path.exists(self.blast_subdir):
                 os.mkdir(self.blast_subdir)
         if self.localblast:
-            xml_fi = "{}/blast/{}.xml".format(self.workdir, "output_tst_fn")
+            # xml_fi = "{}/blast/{}.xml".format(self.workdir, "output_tst_fn")
             # use read_local_blast func
             output_blast = "output_tst_fn.xml"
             general_wd = os.getcwd()
@@ -1150,7 +1149,7 @@ class PhyscraperScrape(object):  # TODO do I wantto be able to instantiate this 
             xml_file = open(output_blast)
             os.chdir(general_wd)
             blast_out = NCBIXML.parse(xml_file)
-            hsp_scores = {}
+            # hsp_scores = {}
             for blast_record in blast_out:
                 for alignment in blast_record.alignments:
                     for hsp in alignment.hsps:
@@ -1536,7 +1535,7 @@ class PhyscraperScrape(object):  # TODO do I wantto be able to instantiate this 
                          "-p", "1",
                          "-n", "{}".format(self.date)])
         os.chdir(cwd)
-        self._full_tree_est = 1
+        self._full_tree_est = 1  # Do we use these somewhere?
 
     def calculate_bootstrap(self):
         """calculate bootstrap and consensus trees
@@ -1680,7 +1679,7 @@ class PhyscraperScrape(object):  # TODO do I wantto be able to instantiate this 
         json.dump(self.data.otu_dict, open('{}/otu_dict.json'.format(self.workdir), 'wb'))
 
     def write_unpl_lblastdb(self, path_to_local_seq):
-        """adds local sequences into a  local blsat database, which then can be used to blast aln seq against it
+        """Adds local sequences into a  local blast database, which then can be used to blast aln seq against it
         and adds sequences that were found to be similar to input.
         If this option is used, it queries against local database first and only in "2" round
         it goes back to blasting against GenBank"""
@@ -1701,7 +1700,7 @@ class PhyscraperScrape(object):  # TODO do I wantto be able to instantiate this 
         localfiles = filter(None, localfiles)
         # debug(localfiles)
 
-        gi_counter = 1
+        # gi_counter = 1
         # add assert that tests that every file is a fasta file in the folder
         for file in localfiles:
             # debug(file)
