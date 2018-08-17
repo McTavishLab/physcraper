@@ -977,9 +977,11 @@ class IdDicts(object):
         if spn is None:
             if gi:
                 gi_id = gi
-            else:
+            elif '^ncbi:gi' in dict:
                 Entrez.email = self.config.email
                 gi_id = dict['^ncbi:gi']
+            else:
+                sys.stderr.write("There is no name supplied and no gi available. This should not happen!")
             # debug(gi_id)
             # debug(type(gi_id))
             tries = 10
@@ -1261,7 +1263,7 @@ class PhyscraperScrape(object):  # TODO do I wantto be able to instantiate this 
         """
         # debug("get_spn_id_of_otulabel")
         # debug(label)
-        # debug(self.data.otu_dict.keys())
+        debug(self.data.otu_dict[label].keys())
         spn_of_label = self.ids.find_name(dict=self.data.otu_dict[label])
         # if '^ot:ottTaxonName' in self.data.otu_dict[label].keys():
         #     spn_of_label = self.data.otu_dict[label]['^ot:ottTaxonName']
