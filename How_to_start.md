@@ -36,17 +36,24 @@
 
         General information about the BLAST database can be found [here](ftp://ftp.ncbi.nlm.nih.gov/blast/documents/blastdb.html)
 
-        In Linux do the following in the folder of your future blast database: (for Windows and MAC please use google to figure it out, there should be plenty of information.)
-
+        In Linux do the following in the folder of your future blast database using the terminal: (for Windows and MAC please use google to figure it out, there should be plenty of information.)
+          * `cd /to/the/folder/of/your/future/blastdb`  
           * `sudo apt-get install ncbi-blast+` # if not already installed earlier
           * `wget 'ftp://ftp.ncbi.nlm.nih.gov/blast/db/nt.*'`  # this downloads all nt-compressed files
           * `update_blastdb nt`
           * `cat *.tar.gz | tar -xvzf - -i`
           * `blastdbcmd -db nt -info`
+          
+          The last command shows you if it worked correctly. 'nt' means, we are making the nucleotide database.
+          The database needs to be update regularly, go back to step 1 as soon as there is a database update to get the most recent sequences from GenBank.
+          
+          install the taxonomy database
+          * `wget 'https://www.ncbi.nlm.nih.gov/books/NBK279680/'` # Download the taxdb archive
+          * `cd /to/the/folder/of/your/blastdb`
+          * `gunzip -cd taxdb.tar.gz | (cd $BLASTDB; tar xvf - )`  # Install it in the BLASTDB directory
 
-        The last command shows you if it worked correctly. 'nt' means, we are making the nucleotide database.
-        The database needs to be update regularly, go back to step 1 as soon as there is a database update to get the most recent sequences from GenBank.
-
+           to update the taxonomy database later, run `perl update_blastdb.pl taxdb`
+        
 ### Set up a run
 1. edit major settings in the config file
 
@@ -129,7 +136,7 @@
 
     There are some more features that can be changed if you know where, we will change the code hopefully soon, to make that easier adjustable.
 
-    * time lapse for blasting: at the moment this is hard coded to be 14 days. If you want to adjust the timing look for this line of code:  `if time_passed > 14:`
+    * time lapse for blasting: at the moment this is set to be 14 days. If you want to adjust the timing change `run_blast()` in the wrapper to `run_blast(delay = your_value)`
     * trim method: by default sequences will be trimmed from the alignment if it has not at least 75% of the total sequence length. This can be changed in `./physcraper/__init__.py`, in the function `trim()` the value for `taxon_missingness`. 
     * change the most recent common ancestor (mrca): often phylogenies include outgroups, and someone might not be interested in updating that part of the tree. This can be avoided by defining the most recent common ancestor. It requires the OpenTreeOfLife identifier for the group of interest. You can get that by going to [Open Tree of Life](https://ot14.opentreeoflife.org/opentree/argus/opentree9.1@ott93302) and type in the name of the lineage and get the OTT ID at the right side of the page. That number needs to be provided in the corresponding wrapper function, as following:
 

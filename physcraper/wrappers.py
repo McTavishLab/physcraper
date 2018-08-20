@@ -98,7 +98,9 @@ def standard_run(study_id,
         scraper.read_blast(blast_dir= shared_blast_folder)
         scraper.remove_identical_seqs()
         scraper.generate_streamed_alignment()
-    return
+    scraper.write_otu_info()
+
+    return scraper
 
 
 def own_data_run(seqaln,
@@ -355,7 +357,7 @@ def filter_data_run(seqaln,
         if add_local_seq is not None:
             filteredScrape.localblast = True
             debug(filteredScrape.localblast)
-        if filteredScrape.localblast == True:
+        if filteredScrape.localblast == True: # use unpublished data
 
             debug("will add local sequences now")
             filteredScrape.localblast = True
@@ -422,8 +424,8 @@ def filter_data_run(seqaln,
             sys.stdout.write("calculate the phylogeny\n")
             filteredScrape.generate_streamed_alignment()
             filteredScrape.dump()
-            filteredScrape.write_otu_info(downtorank)
-            return filteredScrape
+        filteredScrape.write_otu_info(downtorank)
+        return filteredScrape
 
 
 
