@@ -4,6 +4,7 @@ import pickle
 from math import sqrt
 from Bio.Blast import NCBIXML
 from physcraper import ConfigObj, IdDicts, FilterBlast
+from physcraper import calculate_mean_sd, run_local_blast
 
 sys.stdout.write("\ntests calculate_mean_sd\n")
 
@@ -32,8 +33,8 @@ if not os.path.exists(os.path.join(filteredScrape.workdir, "blast")):
     os.makedirs(os.path.join(filteredScrape.workdir, "blast"))
 os.chdir(os.path.join(filteredScrape.workdir, "blast"))
 fn_path = '{}/tests/data/precooked/fixed/local-blast/{}'.format(wd, fn)
-filteredScrape.run_local_blast(fn_path, fn_path,
-                               output=os.path.join(filteredScrape.workdir, "blast/output_{}.xml".format(fn)))
+run_local_blast(absworkdir, fn_path, fn_path,
+                output=os.path.join(filteredScrape.workdir, "blast/output_{}.xml".format(fn)))
 output_blast = os.path.join(filteredScrape.workdir, "blast/output_{}.xml".format(fn))
 xml_file = open(output_blast)
 os.chdir(general_wd)
@@ -47,7 +48,7 @@ for record in blast_out:
             hsp_scores[gi] = {"hsp.bits": hsp.bits, "hsp.score": hsp.score, "alignment.length": alignment.length, "hsp.expect": hsp.expect}
             add_hsp = add_hsp + float(hsp.bits)
 # make values to select for blast search, calculate standard deviation, mean
-mean_sed = filteredScrape.calculate_mean_sd(hsp_scores)
+mean_sed = calculate_mean_sd(hsp_scores)
 sum_hsp = len(hsp_scores)
 mean = (add_hsp / sum_hsp)
 sd_all = 0

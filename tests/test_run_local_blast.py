@@ -2,6 +2,7 @@ import os
 import sys
 import pickle
 from physcraper import FilterBlast, ConfigObj, IdDicts
+from physcraper import run_local_blast
 
 sys.stdout.write("\ntests run_local_blast\n")
 
@@ -33,7 +34,7 @@ path2 = "{}/blast/".format(filteredScrape.data.workdir)
 cmd = 'cp -r ' + path1 + ' ' + path2
 os.system(cmd)
 
-filteredScrape.run_local_blast(blast_seq, blast_db)
+run_local_blast(workdir, blast_seq, blast_db)
 blast_out = "{}/blast/output_otuSlagascanus_tobeblasted.xml".format(workdir)
 
 if os.path.exists(blast_out):

@@ -2,6 +2,7 @@ import os
 import sys
 import pickle
 from physcraper import FilterBlast, ConfigObj, IdDicts
+from physcraper import read_local_blast, write_blast_files, run_local_blast
 
 sys.stdout.write("\ntests read_local_blast\n")
 
@@ -38,11 +39,11 @@ for taxonID in filteredScrape.sp_d:
         # print(taxonID)
         blast_seq = filteredScrape.sp_seq_d[taxonID].keys()[0]
         seq = filteredScrape.sp_seq_d[taxonID][blast_seq]
-        filteredScrape.write_blast_files(taxonID, seq)
+        write_blast_files(workdir, taxonID, seq)
         blast_db = [item for item in filteredScrape.sp_seq_d[taxonID].keys()[1:] if type(item) == int]
         for blast_key in blast_db:
             seq = filteredScrape.sp_seq_d[taxonID][blast_key]
-            filteredScrape.write_blast_files(blast_key, seq, db=True, fn=str(taxonID))
+            write_blast_files(workdir, blast_key, seq, db=True, fn=str(taxonID))
         break
 
 # test starts here:
@@ -50,8 +51,8 @@ blast_db = "Senecio_lagascanus"
 blast_seq = "Senecio_lagascanus"
 key = 'Senecio_lagascanus'
 
-filteredScrape.run_local_blast(blast_seq, blast_db)
-filteredScrape.read_local_blast(filteredScrape.sp_seq_d[key], blast_db)
+run_local_blast(workdir, blast_seq, blast_db)
+read_local_blast(workdir, filteredScrape.sp_seq_d[key], blast_db)
 
 blast_out = "{}/blast/output_{}_tobeblasted.xml".format(workdir, key)
 

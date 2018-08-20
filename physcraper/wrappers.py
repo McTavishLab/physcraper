@@ -6,6 +6,7 @@ import subprocess
 from physcraper import generate_ATT_from_phylesystem, generate_ATT_from_files, ConfigObj,  IdDicts, PhyscraperScrape
 from physcraper import FilterBlast, Settings, debug  # Concat
 from dendropy import DnaCharacterMatrix
+from concat import Concat
 
 
 def sync_ncbi(configfi):
@@ -30,7 +31,8 @@ def standard_run(study_id,
                  seqaln,
                  mattype,
                  workdir,
-                 configfi):
+                 configfi,
+                 shared_blast_folder):
     '''looks for a json file to continue run, or builds and runs
     new analysis for as long as new seqs are found'''
     debug('Debugging mode is on')
@@ -41,7 +43,6 @@ def standard_run(study_id,
         data_obj = pickle.load(open("{}/att_checkpoint.p".format(workdir), "rb"))
 #        scraper.repeat = 1
     else:
-#            sync_names()
         sys.stdout.write("setting up Data Object\n")
         sys.stdout.flush()
         # read the config file into a configuration object
@@ -78,16 +79,23 @@ def standard_run(study_id,
     # run the ananlyses
     # uncomment next line if you want to have a shared blast folder and change the path to something meaningful. Remember to change the gifilename setting in the config file to true.
     # scraper.blast_subdir = "/home/martha/physcraper/phyruns/blast_runs/"
-
+    if shared_blast_folder:
+        scraper.blast_subdir = shared_blast_folder
+    else:
+        shared_blast_folder = None
     scraper.run_blast()
-    scraper.read_blast()
+    scraper.read_blast(blast_dir= shared_blast_folder)
     scraper.remove_identical_seqs()
     scraper.generate_streamed_alignment()
     while scraper.repeat == 1:
         scraper.data.write_labelled(label='^ot:ottTaxonName')
         scraper.data.write_otus("otu_info", schema='table')
+        if shared_blast_folder:
+            scraper.blast_subdir = shared_blast_folder
+        else:
+            shared_blast_folder = None
         scraper.run_blast()
-        scraper.read_blast()
+        scraper.read_blast(blast_dir= shared_blast_folder)
         scraper.remove_identical_seqs()
         scraper.generate_streamed_alignment()
     return
@@ -99,7 +107,9 @@ def own_data_run(seqaln,
                  schema_trf,
                  workdir,
                  sp_info_jsonfi,
-                 configfi):
+                 configfi,
+                 ingroup_mrca = None,
+		         shared_blast_folder=None):
     '''looks for pickeled file to continue run, or builds and runs 
     new analysis for as long as new seqs are found'''
 
@@ -110,7 +120,7 @@ def own_data_run(seqaln,
         scraper = pickle.load(open("{}/scrape_checkpoint.p".format(workdir), 'rb'))
         scraper.repeat = 1    
     else:   
-#            sync_names()
+        # sync_names()
         sys.stdout.write("setting up Data Object\n")
         sys.stdout.flush()
         # read the config file into a configuration object
@@ -143,14 +153,22 @@ def own_data_run(seqaln,
         # run the analyses
         # uncomment next line if you want to have a shared blast folder and change the path to something meaningful. Remember to change the gifilename setting in the config file to true.
         # scraper.blast_subdir = "/home/martha/physcraper/phyruns/blast_runs/"
-
+        # scraper.blast_subdir = "/home/mkandziora/shared_runs/"
+        if shared_blast_folder:
+            scraper.blast_subdir = shared_blast_folder
+        else:
+            shared_blast_folder = None
         scraper.run_blast()
-        scraper.read_blast()
+        scraper.read_blast(blast_dir= shared_blast_folder)
         scraper.remove_identical_seqs()
         scraper.generate_streamed_alignment()
     while scraper.repeat == 1: 
         scraper.run_blast()
-        scraper.read_blast()
+        if shared_blast_folder:
+            scraper.blast_subdir = shared_blast_folder
+        else:
+            shared_blast_folder = None
+        scraper.read_blast(blast_dir= shared_blast_folder)
         scraper.remove_identical_seqs()
         scraper.generate_streamed_alignment()
     return 1
@@ -224,10 +242,10 @@ def filter_OTOL(study_id,
         #run the ananlyses
         sys.stdout.write("BLASTing input sequences\n")
         # uncomment next line if you want to have a shared blast folder and change the path to something meaningful. Remember to change the gifilename setting in the config file to true.
-        # filteredScrape.blast_subdir = "/home/martha/physcraper/phyruns/blast_runs/"
+        #filteredScrape.blast_subdir = "/home/martha/physcraper/phyruns/blast_runs/"
 
         filteredScrape.run_blast()
-        filteredScrape.read_blast()
+        filteredScrape.read_blast(blast_dir= shared_blast_folder)
         sys.stdout.write("remove idential sequences\n")
         filteredScrape.remove_identical_seqs()
         filteredScrape.dump()
@@ -248,7 +266,7 @@ def filter_OTOL(study_id,
         filteredScrape.data.write_otus("otu_info", schema='table')
         sys.stdout.write("BLASTing input sequences\n")
         filteredScrape.run_blast()
-        filteredScrape.read_blast()
+        filteredScrape.read_blast(blast_dir= shared_blast_folder)
         filteredScrape.remove_identical_seqs()
         sys.stdout.write("Filter the sequences\n")
         if treshold is not None:
@@ -266,24 +284,28 @@ def filter_OTOL(study_id,
 
 
 def filter_data_run(seqaln,
-                     mattype,
-                     trfn,
-                     schema_trf,
-                     workdir,
-                     treshold,
-                     selectby,
-                     downtorank,
-                     spInfoDict,
-                     blacklist,
-                     add_local_seq,
-                     id_to_spn_addseq_json,
-                     configfi):
+                 mattype,
+                 trfn,
+                 schema_trf,
+                 workdir,
+                 treshold,
+                 selectby,
+                 downtorank,
+                 spInfoDict,
+                 blacklist,
+                 add_local_seq,
+                 id_to_spn_addseq_json,
+                 configfi,
+                 ingroup_mrca=None,
+                 shared_blast_folder=None):
     '''looks for pickeled file to continue run, or builds and runs 
     new analysis for as long as new seqs are found. 
     This uses the FilterBlast subclass to be able to filter the blast output.'''
     debug('Debugging mode is on')
 
-    # if _DEBUG_MK == 1:
+    # debug(shared_blast_folder)
+    # debug(some)
+    # # if _DEBUG_MK == 1:
     #     random.seed(3269235691)
     print(workdir)
     if os.path.isfile("{}/scrape_checkpoint.p".format(workdir)): 
@@ -323,57 +345,85 @@ def filter_data_run(seqaln,
 
         ids = IdDicts(conf, workdir=workdir)
 
-        # Now combine the data, the ids, and the configuration into a single physcraper scrape object
+        #Now combine the data, the ids, and the configuration into a single physcraper scrape object
         filteredScrape =  FilterBlast(data_obj, ids)
         filteredScrape.blacklist = blacklist
 
         # filteredScrape.write_otu_info(downtorank)
+        debug(add_local_seq)
+        debug(add_local_seq != None)
         if add_local_seq is not None:
+            filteredScrape.localblast = True
+            debug(filteredScrape.localblast)
+        if filteredScrape.localblast == True:
+
             debug("will add local sequences now")
-            filteredScrape.add_local_seq(add_local_seq, id_to_spn_addseq_json)
-            # scraper.replace_new_seq()
+            filteredScrape.localblast = True
+            filteredScrape.write_unpl_lblastdb(add_local_seq)
+            #filteredScrape.run_local_blast()
+            filteredScrape.run_blast()
+            print(id_to_spn_addseq_json)
+            filteredScrape.local_otu_json = id_to_spn_addseq_json
+
+            filteredScrape.read_blast()
+            sys.stdout.write("remove idential sequences\n")
             filteredScrape.remove_identical_seqs()
+
             filteredScrape.generate_streamed_alignment()
-        #run the ananlyses
-        sys.stdout.write("BLASTing input sequences\n")
-        # uncomment next line if you want to have a shared blast folder and change the path to something meaningful. Remember to change the gifilename setting in the config file to true.
-        filteredScrape.blast_subdir = "/home/martha/physcraper-git/physcraper/phyruns/blast_runs/"
-        filteredScrape.run_blast()
-        filteredScrape.read_blast()
-        sys.stdout.write("remove idential sequences\n")
-        filteredScrape.remove_identical_seqs()
-        filteredScrape.dump()
-        debug(treshold)
-        sys.stdout.write("Filter the sequences\n")
-        if treshold is not None:
-            filteredScrape.sp_dict(downtorank)
-            filteredScrape.make_sp_seq_dict()
-            filteredScrape.how_many_sp_to_keep(treshold=treshold, selectby=selectby)
-            filteredScrape.replace_new_seq()
-        debug("from replace to streamed aln")
-        sys.stdout.write("calculate the phylogeny\n")
-        filteredScrape.generate_streamed_alignment()
-        filteredScrape.dump()
-    while filteredScrape.repeat == 1:
-        # number_rounds += 1
-        filteredScrape.data.write_labelled(label='^ot:ottTaxonName', gi_id=True)
-        filteredScrape.data.write_otus("otu_info", schema='table')
-        sys.stdout.write("BLASTing input sequences\n")
-        filteredScrape.run_blast()
-        filteredScrape.read_blast()
-        filteredScrape.remove_identical_seqs()
-        sys.stdout.write("Filter the sequences\n")
-        if treshold is not None:
-            filteredScrape.sp_dict(downtorank)
-            filteredScrape.make_sp_seq_dict()
-            filteredScrape.how_many_sp_to_keep(treshold=treshold, selectby=selectby)
-            filteredScrape.replace_new_seq()
-        filteredScrape.data.reconcile(seq_len_perc=0.75)
-        sys.stdout.write("calculate the phylogeny\n")
-        filteredScrape.generate_streamed_alignment()
-        filteredScrape.dump()
-        filteredScrape.write_otu_info(downtorank)
-        return filteredScrape
+            # print(some)
+            filteredScrape.localblast = False
+
+        else:
+            #run the ananlyses
+            sys.stdout.write("BLASTing input sequences\n")
+            # uncomment next line if you want to have a shared blast folder and change the path to something meaningful. Remember to change the gifilename setting in the config file to true.
+            print(shared_blast_folder)
+            if shared_blast_folder:
+                filteredScrape.blast_subdir = shared_blast_folder
+            else:
+                shared_blast_folder = None
+            print(shared_blast_folder)
+
+            filteredScrape.run_blast()
+            filteredScrape.read_blast(blast_dir= shared_blast_folder)
+            sys.stdout.write("remove idential sequences\n")
+            filteredScrape.remove_identical_seqs()
+            filteredScrape.dump()
+            debug(treshold)
+            sys.stdout.write("Filter the sequences\n")
+            if treshold is not None:
+                filteredScrape.sp_dict(downtorank)
+                filteredScrape.make_sp_seq_dict()
+                filteredScrape.how_many_sp_to_keep(treshold=treshold, selectby=selectby)
+                filteredScrape.replace_new_seq()
+            debug("from replace to streamed aln")
+            sys.stdout.write("calculate the phylogeny\n")
+            filteredScrape.generate_streamed_alignment()
+            filteredScrape.dump()
+        while filteredScrape.repeat == 1:
+            # number_rounds += 1
+            filteredScrape.data.write_labelled(label='^ot:ottTaxonName', gi_id=True)
+            filteredScrape.data.write_otus("otu_info", schema='table')
+            sys.stdout.write("BLASTing input sequences\n")
+            if shared_blast_folder:
+                filteredScrape.blast_subdir = shared_blast_folder
+            else:
+                shared_blast_folder = None
+            filteredScrape.run_blast()
+            filteredScrape.read_blast(blast_dir= shared_blast_folder)
+            filteredScrape.remove_identical_seqs()
+            sys.stdout.write("Filter the sequences\n")
+            if treshold is not None:
+                filteredScrape.sp_dict(downtorank)
+                filteredScrape.make_sp_seq_dict()
+                filteredScrape.how_many_sp_to_keep(treshold=treshold, selectby=selectby)
+                filteredScrape.replace_new_seq()
+            filteredScrape.data.reconcile(seq_len_perc=0.75)
+            sys.stdout.write("calculate the phylogeny\n")
+            filteredScrape.generate_streamed_alignment()
+            filteredScrape.dump()
+            filteredScrape.write_otu_info(downtorank)
+            return filteredScrape
 
 
 
@@ -442,12 +492,12 @@ def run_with_settings(settings):
         # filteredScrape.blast_subdir = "/home/martha/physcraper/phyruns/blast_runs/"
 
         filteredScrape.run_blast()
-        filteredScrape.read_blast()
+        filteredScrape.read_blast(blast_dir= shared_blast_folder)
         filteredScrape.remove_identical_seqs()
         filteredScrape.dump()
         if settings.treshold is not None:
             filteredScrape.sp_dict(settings.downtorank)
-            filteredScrape.make_sp_seq_dict()
+            filteredScrape.make_sp_seq_dict(treshold=settings.treshold, selectby=settings.selectby)
             filteredScrape.how_many_sp_to_keep(treshold=settings.treshold, selectby=settings.selectby)
             filteredScrape.replace_new_seq()
         debug("from replace to streamed aln")
@@ -458,16 +508,43 @@ def run_with_settings(settings):
         filteredScrape.data.write_labelled(label='^ot:ottTaxonName', gi_id=True)
         filteredScrape.data.write_otus("otu_info", schema='table')
         filteredScrape.run_blast()
-        filteredScrape.read_blast()
+        filteredScrape.read_blast(blast_dir= shared_blast_folder)
         filteredScrape.remove_identical_seqs()
 
         debug("make sp_dict")    
         if settings.treshold is not None:
             filteredScrape.sp_dict(settings.downtorank)
-            filteredScrape.make_sp_seq_dict()
+            filteredScrape.make_sp_seq_dict(treshold=settings.treshold, selectby=settings.selectby)
             filteredScrape.how_many_sp_to_keep(treshold=settings.treshold, selectby=settings.selectby)
             filteredScrape.replace_new_seq()
         filteredScrape.generate_streamed_alignment()
         filteredScrape.dump()
         filteredScrape.write_otu_info(settings.downtorank)
         return filteredScrape
+
+
+def concat(genelistdict, workdir_comb, email, percentage=0.37, user_concat_fn=None):
+    """This is to concatenate different physcraper runs into a single alignment and tree.
+    genelistdict is a dict with gene names as key and the corresponding workdir.
+    """
+
+    concat = Concat(workdir_comb, email)
+    concat.concatfile = user_concat_fn
+    # print(genelistdict)
+    for item in genelistdict.keys():
+        concat.load_single_genes(genelistdict[item]["workdir"], genelistdict[item]["pickle"], item)
+    concat.combine()
+    concat.sp_seq_counter()
+    sp_to_keep = concat.sp_to_keep()
+    concat.get_largest_tre()
+    concat.make_sp_gene_dict(sp_to_keep)
+    concat.make_alns_dict()
+    concat.concatenate_alns()
+    concat.get_short_seq_from_concat(percentage)
+    concat.remove_short_seq()
+    concat.make_concat_table()
+    concat.write_partition()
+    concat.place_new_seqs()
+    concat.est_full_tree()
+    concat.calculate_bootstrap()
+    return concat
