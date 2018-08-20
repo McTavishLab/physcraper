@@ -4,7 +4,7 @@
 1. install the dependencies:
      * [PaPaRa](http://sco.h-its.org/exelixis/web/software/papara/index.html) - alignment tool
      * [RAxML](http://sco.h-its.org/exelixis/web/software/raxml/index.html) - tree estimation program
-     * [BLAST+](https://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Web&PAGE_TYPE=BlastDocs&DOC_TYPE=Download) - local BLAST is needed for filtering, but no local database needs to be installed if you decide for another general BLAST method (see step 5).
+     * [BLAST+](https://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Web&PAGE_TYPE=BlastDocs&DOC_TYPE=Download) - it's only needed if you want to run a filtering run or if you decide for another general BLAST method (see step 5).
 
 2. make sure they are accessible from everywhere, thus add them to your PATH using the command line:
      * UNIX: `export PATH=$PATH:/path/to/my/program`
@@ -14,10 +14,10 @@
     (! set PATH=%PATH%:  it takes the current path and sets PATH to it.)
 
 3. download PhyScraper using the command line:
-     * as a normal package: `wget 'https://github.com/McTavishLab/physcraper.git'`
-     * as a git repository: `wget 'git@github.com:McTavishLab/physcraper.git'`
+     * as a normal package: `git clone https://github.com/McTavishLab/physcraper.git`
+     * as a git repository: `git clone 'git@github.com:McTavishLab/physcraper.git'`
 
-4. install requirements and dependencies:
+4. install python requirements and dependencies:
 
     run from within the physcraper main folder:
 
@@ -38,7 +38,7 @@
 
         In Linux do the following in the folder of your future blast database: (for Windows and MAC please use google to figure it out, there should be plenty of information.)
 
-          * `sudo apt-get install ncbi-blast+`
+          * `sudo apt-get install ncbi-blast+` # if not already installed earlier
           * `wget 'ftp://ftp.ncbi.nlm.nih.gov/blast/db/nt.*'`  # this downloads all nt-compressed files
           * `update_blastdb nt`
           * `cat *.tar.gz | tar -xvzf - -i`
