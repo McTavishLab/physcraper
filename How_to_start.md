@@ -48,9 +48,9 @@
           The database needs to be update regularly, go back to step 1 as soon as there is a database update to get the most recent sequences from GenBank.
           
           install the taxonomy database
-          * `wget 'https://www.ncbi.nlm.nih.gov/books/NBK279680/'` # Download the taxdb archive
           * `cd /to/the/folder/of/your/blastdb`
-          * `gunzip -cd taxdb.tar.gz | (cd $BLASTDB; tar xvf - )`  # Install it in the BLASTDB directory
+          * `wget 'ftp://ftp.ncbi.nlm.nih.gov/blast/db/taxdb.tar.gz'` # Download the taxdb archive
+          * `gunzip -cd taxdb.tar.gz | (tar xvf - )`  # Install it in the BLASTDB directory
 
            to update the taxonomy database later, run `perl update_blastdb.pl taxdb`
         
