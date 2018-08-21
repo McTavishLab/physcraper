@@ -338,7 +338,7 @@ def filter_data_run(seqaln,
         #This is particularly important when using loci that have been de-concatenated, as some are 0 length which causes problems.
         data_obj.prune_short()
         data_obj.write_files()
-        data_obj.write_labelled( label='^ot:ottTaxonName', gi_id=True)
+        data_obj.write_labelled(label='^ot:ottTaxonName', gi_id=True)
         data_obj.write_otus("otu_info", schema='table')
         data_obj.dump()
 

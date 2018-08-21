@@ -1819,13 +1819,13 @@ class PhyscraperScrape(object):  # TODO do I wantto be able to instantiate this 
                     sys.stdout.write("No new sequences after filtering.\n")
                 self.repeat = 0
         else:
-            if glob.glob("/".join([self.workdir, "RAxML_bootstrap.all*"])):
-                if _VERBOSE:
-                    sys.stdout.write("No new sequences found.\n")
-                self.repeat = 0
-                self.calculate_bootstrap()
-            else:
-                self.repeat = 1
+            # if glob.glob("/".join([self.workdir, "RAxML_bootstrap.all*"])):
+            if _VERBOSE:
+                sys.stdout.write("No new sequences found.\n")
+            self.repeat = 0
+            self.calculate_bootstrap()
+            # else:
+            #     self.repeat = 1
         self.reset_markers()
         self.data.dump()
 #        frozen = jsonpickle.encode(self.data)
