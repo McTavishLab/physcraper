@@ -1819,7 +1819,7 @@ class PhyscraperScrape(object):  # TODO do I wantto be able to instantiate this 
                     sys.stdout.write("No new sequences after filtering.\n")
                 self.repeat = 0
         else:
-            if glob.glob("/".join(self.workdir, "RAxML_bootstrap.all*")):
+            if glob.glob("/".join([self.workdir, "RAxML_bootstrap.all*"])):
                 if _VERBOSE:
                     sys.stdout.write("No new sequences found.\n")
                 self.repeat = 0
