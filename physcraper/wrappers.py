@@ -402,30 +402,30 @@ def filter_data_run(seqaln,
             sys.stdout.write("calculate the phylogeny\n")
             filteredScrape.generate_streamed_alignment()
             filteredScrape.dump()
-        while filteredScrape.repeat == 1:
-            # number_rounds += 1
-            filteredScrape.data.write_labelled(label='^ot:ottTaxonName', gi_id=True)
-            filteredScrape.data.write_otus("otu_info", schema='table')
-            sys.stdout.write("BLASTing input sequences\n")
-            if shared_blast_folder:
-                filteredScrape.blast_subdir = shared_blast_folder
-            else:
-                shared_blast_folder = None
-            filteredScrape.run_blast()
-            filteredScrape.read_blast(blast_dir= shared_blast_folder)
-            filteredScrape.remove_identical_seqs()
-            sys.stdout.write("Filter the sequences\n")
-            if treshold is not None:
-                filteredScrape.sp_dict(downtorank)
-                filteredScrape.make_sp_seq_dict()
-                filteredScrape.how_many_sp_to_keep(treshold=treshold, selectby=selectby)
-                filteredScrape.replace_new_seq()
-            filteredScrape.data.reconcile(seq_len_perc=0.75)
-            sys.stdout.write("calculate the phylogeny\n")
-            filteredScrape.generate_streamed_alignment()
-            filteredScrape.dump()
-        filteredScrape.write_otu_info(downtorank)
-        return filteredScrape
+    while filteredScrape.repeat == 1:
+        # number_rounds += 1
+        filteredScrape.data.write_labelled(label='^ot:ottTaxonName', gi_id=True)
+        filteredScrape.data.write_otus("otu_info", schema='table')
+        sys.stdout.write("BLASTing input sequences\n")
+        if shared_blast_folder:
+            filteredScrape.blast_subdir = shared_blast_folder
+        else:
+            shared_blast_folder = None
+        filteredScrape.run_blast()
+        filteredScrape.read_blast(blast_dir= shared_blast_folder)
+        filteredScrape.remove_identical_seqs()
+        sys.stdout.write("Filter the sequences\n")
+        if treshold is not None:
+            filteredScrape.sp_dict(downtorank)
+            filteredScrape.make_sp_seq_dict()
+            filteredScrape.how_many_sp_to_keep(treshold=treshold, selectby=selectby)
+            filteredScrape.replace_new_seq()
+        filteredScrape.data.reconcile(seq_len_perc=0.75)
+        sys.stdout.write("calculate the phylogeny\n")
+        filteredScrape.generate_streamed_alignment()
+        filteredScrape.dump()
+    filteredScrape.write_otu_info(downtorank)
+    return filteredScrape
 
 
 
