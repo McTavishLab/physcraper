@@ -21,6 +21,7 @@ from ete2 import NCBITaxa
 # from urllib2 import URLError
 import physcraper.AWSWWW as AWSWWW
 import numpy
+import glob
 from Bio.Blast import NCBIWWW, NCBIXML
 # from Bio.Blast.Applications import NcbiblastxCommandline
 from Bio import Entrez  # , SeqIO
@@ -1027,6 +1028,7 @@ class IdDicts(object):
             tries = 10
             for i in range(tries):
                 try:
+                    debug("find name efetch")
                     handle = Entrez.efetch(db="nucleotide", id=gi_id, retmode="xml")
                 except:
                     debug("except efetch")
@@ -1164,7 +1166,7 @@ class PhyscraperScrape(object):  # TODO do I wantto be able to instantiate this 
                         if self.config.gifilename is True:
                             xml_fi = "{}/{}.{}".format(self.blast_subdir, self.data.otu_dict[taxon.label].get('^ncbi:gi', taxon.label),file_ending)
                         else:
-                            xml_fi = "{}/{}.{}}".format(self.blast_subdir, taxon.label, file_ending)
+                            xml_fi = "{}/{}.{}".format(self.blast_subdir, taxon.label, file_ending)
                         if _DEBUG:
                             sys.stdout.write("attempting to write {}\n".format(xml_fi))
                         if not os.path.isfile(xml_fi):
@@ -1817,10 +1819,13 @@ class PhyscraperScrape(object):  # TODO do I wantto be able to instantiate this 
                     sys.stdout.write("No new sequences after filtering.\n")
                 self.repeat = 0
         else:
-            if _VERBOSE:
-                sys.stdout.write("No new sequences found.\n")
-            self.repeat = 0
-            self.calculate_bootstrap()
+            if glob.glob(join(self.workdir, "RAxML_bootstrap.all*")):
+                if _VERBOSE:
+                    sys.stdout.write("No new sequences found.\n")
+                self.repeat = 0
+                self.calculate_bootstrap()
+            else:
+                self.repeat = 1
         self.reset_markers()
         self.data.dump()
 #        frozen = jsonpickle.encode(self.data)
