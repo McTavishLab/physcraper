@@ -231,21 +231,17 @@ def generate_ATT_from_files(seqaln,
     otu_json should encode the taxon names for each tip"""
     # Note: has test -> owndata.py
 
-    # replace ? in seqaln with -:
-    # Read in the file
+    # replace ? in seqaln with - : papara handles them as different characters
     with open(seqaln, 'r') as file:
         filedata = file.read()
-
-    # Replace the target string
     filedata = filedata.replace('?', '-')
-
     # Write the file out again
     if not os.path.exists(workdir):
         os.makedirs(workdir)
     new_seq_file = "{}/replaced_inputaln.fasta".format(workdir)
     with open("{}/replaced_inputaln.fasta".format(workdir), 'w') as aln_file:
         aln_file.write(filedata)
-
+    # use replaces aln as input
     aln = DnaCharacterMatrix.get(path=new_seq_file, schema=mattype)
     assert aln.taxon_namespace
     for tax in aln.taxon_namespace:
@@ -501,7 +497,7 @@ class AlignTreeTax(object):
             if leaf.taxon.label not in aln_ids:
                 self.otu_dict[leaf.taxon.label]['^physcraper:status'] = "deleted due to presence in tree but not aln ?!"
                 orphaned_leafs.add(leaf)
-                # TODO fiure out why sometimes one of them works ano not the other and vice versa
+                # TODO figure out why sometimes one of them works and not the other and vice versa
                 self.tre.prune_taxa([leaf])
                 # self.tre.prune_taxa_with_labels([leaf.taxon.label])
                 self.tre.prune_taxa_with_labels([leaf.taxon.label])
@@ -707,18 +703,20 @@ class AlignTreeTax(object):
                     new_label = "ncbi_{}_ottname_{}".format(self.otu_dict[taxon.label].get("^ncbi:taxon", "unk"), self.otu_dict[taxon.label].get('^ot:ottTaxonName', "unk"))
             new_label = str(new_label).replace(' ', '_')
             if gi_id:
+                gi_id = self.otu_dict[taxon.label].get('^ncbi:gi')
+                if gi_id is None:
+                    gi_id = self.otu_dict[taxon.label].get("^ot:originalLabel")
+                new_label = "_".join([new_label, str(gi_id)])
                 sp_counter = 2
                 if new_label in new_names and norepeats:
-                    # debug(self.otu_dict[taxon.label])
-                    gi_id = self.otu_dict[taxon.label].get('^ncbi:gi')
-                    if gi_id is None:
-                        gi_id = sp_counter
-                        sp_counter += 1
+                    # debug(self.otu_dict[taxon.label].keys())
                     # debug(gi_id)
-                    new_label = "_".join([new_label, str(gi_id)])
+                    new_label = "_".join([new_label, str(sp_counter)])
+                    sp_counter += 1
             else:
                 if new_label in new_names and norepeats:
                     new_label = "_".join([new_label, taxon.label])
+                    debug(new_label)
             taxon.label = new_label
             new_names.add(new_label)
         tmp_tre.write(path=treepath,
@@ -942,10 +940,8 @@ class IdDicts(object):
             debug(tax_name)
             ncbi = NCBITaxa()
             if gi_id:
-                
                 try:
                     debug("try")
-
                     tries = 10
                     for i in range(tries):
                         try:
@@ -990,7 +986,6 @@ class IdDicts(object):
                         if tax_info == {}:
                             print("Taxon name does not match any name in ncbi. Check that name is written correctly!")
                         tax_id = int(tax_info.items()[0][1][0])
-
                 # ncbi = NCBITaxa()
                 lineage = ncbi.get_lineage(tax_id)
                 lineage2ranks = ncbi.get_rank(lineage)
@@ -1022,7 +1017,7 @@ class IdDicts(object):
                 Entrez.email = self.config.email
                 gi_id = dict['^ncbi:gi']
             else:
-                sys.stderr.write("There is no name supplied and no gi available. This should not happen!")
+                sys.stderr.write("There is no name supplied and no gi available. This should not happen! Check name!")
             # debug(gi_id)
             # debug(type(gi_id))
             tries = 10
@@ -1042,7 +1037,6 @@ class IdDicts(object):
             handle.close()
             spn = get_ncbi_tax_name(read_handle)
             ncbi_taxonid = get_ncbi_tax_id(read_handle)
-
             if dict:
                 dict['^ot:ottTaxonName'] = spn
 
@@ -1077,7 +1071,7 @@ class IdDicts(object):
         pickle.dump(self, ofi)
 
 
-class PhyscraperScrape(object):  # TODO do I wantto be able to instantiate this in a different way?!
+class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this in a different way?!
     # set up needed variables as nones here?!
     # TODO better enforce ordering
     """This is the class that does the perpetual updating"""
@@ -1152,7 +1146,6 @@ class PhyscraperScrape(object):  # TODO do I wantto be able to instantiate this 
                     output = "tst_fn"
                     blastcmd = "blastn -query {}/tmp.fas -db {} -out output_{}.xml -outfmt 5".format(self.blast_subdir, blast_db, output)
                     os.system(blastcmd)
-                    # blast update not needed, as this is only the local search? Options would be nice!
                     # self.data.otu_dict[otu_id]['^physcraper:last_blasted'] = today
                 else:
                     if time_passed > delay:
@@ -1945,6 +1938,8 @@ class FilterBlast(PhyscraperScrape):
         self.localblast = False
         self.path_to_local_seq = False
         self.local_otu_json = None
+        self.query_dict = {}  # for local blast txt files
+
         # additional things that are needed for the filtering process
         self.sp_d = {}
         self.sp_seq_d = {}
@@ -2087,7 +2082,6 @@ class FilterBlast(PhyscraperScrape):
         """Select new sequences by length instead of by score values.
         """
         debug("select_seq_by_length")
-
         max_len = max(self.sp_seq_d[taxon_id].values())
         # !!! sometimes the only seq in seq_w_maxlen is the original seq,
         # then this is the one to be added, but it will be removed,
@@ -2096,7 +2090,6 @@ class FilterBlast(PhyscraperScrape):
         for key, val in self.sp_seq_d[taxon_id].iteritems():
             if len(val) == len(max_len):
                 seq_w_maxlen[key] = val
-
         if (treshold - count) <= 0:
             debug("already to many samples of sp in aln, skip adding more.")
             random_seq_ofsp = None
