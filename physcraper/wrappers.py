@@ -355,12 +355,12 @@ def filter_data_run(seqaln,
         debug(add_local_seq)
         debug(add_local_seq != None)
         if add_local_seq is not None:
-            filteredScrape.localblast = True
-            debug(filteredScrape.localblast)
-        if filteredScrape.localblast == True: # use unpublished data
+            filteredScrape.unpublished = True
+            debug(filteredScrape.unpublished)
+        if filteredScrape.unpublished == True: # use unpublished data
 
             debug("will add local sequences now")
-            filteredScrape.localblast = True
+            filteredScrape.unpublished = True
             filteredScrape.write_unpl_lblastdb(add_local_seq)
             #filteredScrape.run_local_blast()
             filteredScrape.run_blast()
@@ -373,7 +373,7 @@ def filter_data_run(seqaln,
 
             filteredScrape.generate_streamed_alignment()
             # print(some)
-            filteredScrape.localblast = False
+            filteredScrape.unpublished = False
 
         else:
             #run the ananlyses

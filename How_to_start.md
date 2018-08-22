@@ -30,7 +30,7 @@
 
       * **web BLAST service**: If the tree is not too large and/or you have enough time, you can run the tool with the main settings, that uses the web BLAST service. The web service is limited to 100? searches a day, for users who are above this, the searches are not terminated, but are being slowed down. Advantage is that it is the most up to date database to blast against.
       * **Amazon cloud service**: If you do not have a fast computer, there are options to pay for a pre-installed cloud service using [amazon](https://aws.amazon.com/marketplace/pp/B00N44P7L6/ref=mkt_wir_ncbi_blast).
-      * **local blast database**: If the trees are bigger and/or you have a relatively fast computer, this might be the best option. ncbi regularly publishes the databases, that can easily be downloaded and initiated.
+      * **local blast database**: This is the recommended method, as it is the fastest and the less dependent on good internet connection. Especially, if the trees are bigger and/or you have a relatively fast computer, this might be the best option. Ncbi regularly publishes the databases, that can easily be downloaded and initiated.
 
         Initiating a local Blast database:
 
