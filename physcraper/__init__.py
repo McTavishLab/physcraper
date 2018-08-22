@@ -1319,6 +1319,9 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
                         for key in self.query_dict.keys():
                             if float(self.query_dict[key]['evalue']) < float(self.config.e_value_thresh):
                                 gi_id = self.query_dict[key]['^ncbi:gi']
+                                debug(type(gi_id))
+                                assert type(gi_id) is int
+                                # debug(some)
                                 # debug(gi_id)
                                 if len(self.gi_list_mrca) >= 1 and (gi_id not in self.gi_list_mrca):
                                     pass
@@ -1958,6 +1961,7 @@ class FilterBlast(PhyscraperScrape):
         self.date = str(datetime.date.today())
         self.repeat = 1
         self.reset_markers()
+        self.gi_list_mrca = []
         if self.config.blast_loc == 'local' and len(self.gi_list_mrca) == 0:
             self.gi_list_mrca = self.get_all_gi_mrca()
         self.unpublished = False
@@ -1969,7 +1973,7 @@ class FilterBlast(PhyscraperScrape):
         self.sp_d = {}
         self.sp_seq_d = {}
         self.filtered_seq = {}
-        self.gi_list_mrca = []
+        
         self.downtorank = None
         # self.localblast = False
         self.local_otu_json = None
