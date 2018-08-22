@@ -892,13 +892,13 @@ class Concat(object):
         # is the -f b command
         # -z specifies file with multiple trees
         subprocess.call(["raxmlHPC", "-m", "GTRCAT",
-                         "-s", aln,
-                         # "-t", "place_resolve.tre",
+                         "-s", aln,  "-q", partition,
+                         # "-t", "place_resolve.tre", 
                          "-p", "1", "-b", "1", "-#", "autoMRE",
                          "-n", "autoMRE"])
         # debug("2b")
         subprocess.call(["raxmlHPC", "-m", "GTRCAT",
-                         "-s", aln,
+                         "-s", aln, "-q", partition,
                          "-p", "1", "-f", "a", "-x", "1", "-#", "autoMRE_fa",
                          "-n", "autoMRE"])
         # strict consensus:
