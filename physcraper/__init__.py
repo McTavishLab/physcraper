@@ -1313,9 +1313,14 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
                                 sseq = sseq.replace("-", "")
                                 sscinames = sscinames.replace(" ","_").replace("/","_").replace("-","_")
                                 # debug(staxids)
-
+                                pident = float(pident)
+                                evalue = float(evalue)
+                                bitscore = int(bitscore)
+                                # print(pident, evalue, bitscore)
+                                # print(type(pident), type(evalue), type(bitscore))
+                                # print(some)
                                 if len(staxids.split(";")) >1:  # sometimes there are seq which are identical and are combined in the local blast db, just get first one
-                                    staxids = staxids.split(";")[0]
+                                    staxids = int(staxids.split(";")[0])
                                     # debug(staxids)
                                     sscinames = sscinames.split(";")[0]
                                     # debug(sscinames)
@@ -1849,7 +1854,7 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
                 self.data.write_otus("otu_info", schema='table')
                 self.new_seqs = {}  # Wipe for next run
                 self.new_seqs_otu_id = {}
-                self.newseqsgi = []
+                # self.newseqsgi = []  # Never replace it, is used to filter already added gis 
                 self.repeat = 1
                 self.query_dict = {}  # clean up for next round
             else:
