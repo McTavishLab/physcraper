@@ -1577,8 +1577,8 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
     def find_otudict_gi(self):
         ncbigi_list =[]
         for key, val in self.data.otu_dict.items():
-            if 'ncbi:gi' in val:
-                gi_otu_dict = val["ncbi:gi"]
+            if '^ncbi:gi' in val:
+                gi_otu_dict = val["^ncbi:gi"]
                 ncbigi_list.append(gi_otu_dict)
         return ncbigi_list
 
