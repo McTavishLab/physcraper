@@ -51,6 +51,9 @@ def debug(msg):
     """
     if _DEBUG_MK == 1:
         print(msg)
+        with open(debugging.txt, "a") as debug:
+            debug.write(msg)
+
 
 
 def is_number(s):
@@ -1544,7 +1547,7 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
                     #     localblast = False
 
                
-                    if gi in find_otudict_gi():
+                    if gi in self.find_otudict_gi():
                         exit(-1)
                     otu_id = self.data.add_otu(gi, self.ids)
 
