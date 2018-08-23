@@ -51,8 +51,8 @@ def debug(msg):
     """
     if _DEBUG_MK == 1:
         print(msg)
-    with open("debugging.txt", "a") as debug:
-        debug.write(msg)
+    with open("debugging.txt", "a") as debugf:
+        debugf.write(msg)
 
 
 
