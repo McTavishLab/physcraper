@@ -369,15 +369,14 @@ class AlignTreeTax(object):
         assert isinstance(otu_dict, dict)
         self.otu_dict = otu_dict
         self.ps_otu = 1  # iterator for new otu IDs
-        # self.otu_taxonlabel_problem = otu_tiplabel(alignment) #Check back - original labels are not stored?
         self._reconcile_names()
         self.workdir = os.path.abspath(workdir)  # TODO - is this where the workdir should live?
         if not os.path.exists(self.workdir):
             os.makedirs(self.workdir)
         assert int(ingroup_mrca)
-        self.ott_mrca = ingroup_mrca
+        self.ott_mrca = ingroup_mrca  # TODO: we only use .ott_mrca to infer mrca_ncbi. Why not using the ncbi one directly?
         self.orig_seqlen = []  # FIXME
-        self.gi_dict = {}
+        self.gi_dict = {}  # TODO: this should be part of physcraper class, as it has all blast information. Blast is not part of this class.
         self.orig_aln = alignment
         self.orig_newick = newick
         self._reconciled = False
@@ -479,7 +478,7 @@ class AlignTreeTax(object):
             # debug(tax)
             # debug(tax.label)
             # debug(self.otu_dict[tax.label])
-            self.otu_dict[tax.label]['^physcraper:status'] = "deleted in reconcile"  # unnecessary? get's overwritten in next line
+            self.otu_dict[tax.label]['^physcraper:status'] = "deleted in reconcile"  # TODO: unnecessary? get's overwritten in next line
             self.remove_taxa_aln_tre(tax.label)
         aln_ids = set()
         for tax in self.aln:
@@ -843,11 +842,11 @@ class IdDicts(object):
         self.workdir = workdir
         self.config = config_obj
         assert self.config.email
-        self.ott_to_ncbi = {}
-        self.ncbi_to_ott = {}
+        self.ott_to_ncbi = {}  # currently only used to find mcra ncbi id from mrca ott id
+        self.ncbi_to_ott = {}  # used to get ott id for new Genbank query taxa
         self.ott_to_name = {}
-        self.gi_ncbi_dict = {}
         self.otu_rank = {}
+        self.gi_ncbi_dict = {}  # file id_map is not existing, is only filled by get_rank_info. is a smaller version of self.otu_rank.
         fi = open(config_obj.ott_ncbi)  # TODO need to keep updated
         for lin in fi:  # TODO This is insanely memory inefficient
             lii = lin.split(",")
@@ -946,7 +945,7 @@ class IdDicts(object):
             tax_name = str(taxon_name).replace("_", " ")   
         if tax_name is not None:
             #and tax_name != "irrelevant sequence":
-            # debug(tax_name)
+            debug(tax_name)
             ncbi = NCBITaxa()
             if gi_id:
                 try:
@@ -968,7 +967,7 @@ class IdDicts(object):
                 except:
                     debug("stupid entrez thing")
 
-            if tax_name not in self.otu_rank.keys():
+            if tax_name not in self.otu_rank.keys() or "lineage" not in self.ids.otu_rank[tax_name]:
                 # debug("tax_name to rank")
                 # ncbi = NCBITaxa()
                 if not gi_id:
@@ -1061,7 +1060,8 @@ class IdDicts(object):
         return spn
 
     def map_gi_ncbi(self, gi):
-        """get the ncbi taxon id's for a gi input"""
+        """get the ncbi taxon id's for a gi input.
+        """
         debug("map_gi_ncbi")
         if _DEBUG == 2:
             sys.stderr.write("mapping gi {}\n".format(gi))
@@ -1094,11 +1094,11 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
         self.logfile = "{}/logfile".format(self.workdir)
         self.data = data_obj
         self.ids = ids_obj
-        self.config = self.ids.config
-        self.new_seqs = {}
-        self.new_seqs_otu_id = {}
-        self.otu_by_gi = {}
-        self._to_be_pruned = []
+        self.config = self.ids.config  # this is already part of .ids, or not? Information are doubled.
+        self.new_seqs = {}  # all new seq after read_blast
+        self.new_seqs_otu_id = {}  # only new seq which passed remove_identical
+        self.otu_by_gi = {}  # TODO: What was this intended for?
+        self._to_be_pruned = []  # TODO: where do we use it?
         self.mrca_ncbi = ids_obj.ott_to_ncbi[data_obj.ott_mrca]
         self.tmpfi = "{}/physcraper_run_in_progress".format(self.workdir)
         self.blast_subdir = "{}/current_blast_run".format(self.workdir)
@@ -1107,8 +1107,8 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
         self.newseqs_file = "tmp.fasta"
         self.date = str(datetime.date.today())  # Date of the run - may lag behind real date!
         self.repeat = 1
-        self.newseqsgi = []
-        self.blacklist = []
+        self.newseqsgi = []  # all ever added gi during any PhyScraper run,
+        self.blacklist = []  # remove sequences by default
         self.gi_list_mrca = []
         self.seq_filter = ['deleted', 'subsequence,', 'not', "removed", "deleted,", "local"]
         self.reset_markers()
@@ -1118,7 +1118,7 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
         self.unpublished = False
         self.path_to_local_seq = False
         self.local_otu_json = None
-        self.query_dict = {}  # for local blast txt files
+        # self.query_dict = {}  # for local blast txt files, equivalent to gi_dict.
 
     # TODO is this the right place for this?
     def reset_markers(self):
@@ -1126,9 +1126,9 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
         self._blast_read = 0
         self._identical_removed = 0
         self._query_seqs_written = 0
-        self._query_seqs_aligned = 0
+        self._query_seqs_aligned = 0  # TODO: Where do we use it?
         self._query_seqs_placed = 0
-        self._reconciled = 0
+        self._reconciled = 0  # TODO: Where do we use it?
         self._full_tree_est = 0
 
     def run_blast(self, delay = 14):  # TODO Should this be happening elsewhere?
@@ -1304,6 +1304,7 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
                     sys.stdout.write("attempting to read {}\n".format(xml_fi))
                 if os.path.isfile(xml_fi):
                     if self.config.blast_loc == 'local':  # new method to read in txt format
+                        query_dict = {}
                         with open(xml_fi, mode='r') as infile:
                             for lin in infile:
                                 # print(lin)
@@ -1324,12 +1325,19 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
                                     # debug(staxids)
                                     sscinames = sscinames.split(";")[0]
                                     # debug(sscinames)
-                                self.query_dict[gi_id] = {'^ncbi:gi': gi_id, 'accession': gi_acc, 'staxids': staxids, 'sscinames': sscinames, 'pident': pident, 'evalue': evalue, 'bitscore': bitscore, 'sseq': sseq, 'title': stitle}
-                        for key in self.query_dict.keys():
-                            if float(self.query_dict[key]['evalue']) < float(self.config.e_value_thresh):
-                                gi_id = self.query_dict[key]['^ncbi:gi']
+
+                                self.ids.otu_rank[sscinames] = {"taxon id": tax_id}  # add information we already have
+                                
+                                if gi_id not in self.gi_ncbi_dict:  # fill up dict with more information.
+                                    self.ids.gi_ncbi_dict[gi] = staxids
+
+                                if gi_id not in query_dict:
+                                    query_dict[gi_id] = {'^ncbi:gi': gi_id, 'accession': gi_acc, 'staxids': staxids, 'sscinames': sscinames, 'pident': pident, 'evalue': evalue, 'bitscore': bitscore, 'sseq': sseq, 'title': stitle}
+                        for key in query_dict.keys():
+                            if float(query_dict[key]['evalue']) < float(self.config.e_value_thresh):
+                                gi_id = query_dict[key]['^ncbi:gi']
                                 # debug(type(gi_id))
-                                assert type(gi_id) is int
+                                # assert type(gi_id) is int
                                 # debug(some)
                                 debug(gi_id)
                                 if len(self.gi_list_mrca) >= 1 and (gi_id not in self.gi_list_mrca):
@@ -1339,8 +1347,8 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
                                     debug("try to add to new seqs")
                                     if gi_id not in self.data.gi_dict:  # skip ones we already have            
                                         debug("added")
-                                        self.new_seqs[gi_id] = self.query_dict[key]['sseq']
-                                        self.data.gi_dict[gi_id] = self.query_dict[key]
+                                        self.new_seqs[gi_id] = query_dict[key]['sseq']
+                                        self.data.gi_dict[gi_id] = query_dict[key]
                     else:
                         result_handle = open(xml_fi)
                         try:
@@ -1856,7 +1864,7 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
                 self.new_seqs_otu_id = {}
                 # self.newseqsgi = []  # Never replace it, is used to filter already added gis 
                 self.repeat = 1
-                self.query_dict = {}  # clean up for next round
+                # self.query_dict = {}  # clean up for next round
             else:
                 if _VERBOSE:
                     sys.stdout.write("No new sequences after filtering.\n")
@@ -1976,11 +1984,11 @@ class FilterBlast(PhyscraperScrape):
         self.logfile = "{}/logfile".format(self.workdir)
         self.data = data_obj
         self.ids = ids_obj
-        self.config = self.ids.config
+        self.config = self.ids.config  # this is already part of .ids, or not? Information are doubled.
         self.new_seqs = {}
         self.new_seqs_otu_id = {}
-        self.otu_by_gi = {}
-        self._to_be_pruned = []
+        self.otu_by_gi = {}  # What was this intended for?
+        self._to_be_pruned = []  # What is this used for?
         self.mrca_ncbi = ids_obj.ott_to_ncbi[data_obj.ott_mrca]
         self.tmpfi = "{}/physcraper_run_in_progress".format(self.workdir)
         self.blast_subdir = "{}/current_blast_run".format(self.workdir)
@@ -1990,13 +1998,13 @@ class FilterBlast(PhyscraperScrape):
         self.date = str(datetime.date.today())
         self.repeat = 1
         self.reset_markers()
-        self.gi_list_mrca = []
+        self.gi_list_mrca = []  # used for local blast to limit seq to seq of interest
         if self.config.blast_loc == 'local' and len(self.gi_list_mrca) == 0:
             self.gi_list_mrca = self.get_all_gi_mrca()
         self.unpublished = False
         self.path_to_local_seq = False
         self.local_otu_json = None
-        self.query_dict = {}  # for local blast txt files
+        # self.query_dict = {}  # for local blast txt files
 
         # additional things that are needed for the filtering process
         self.sp_d = {}
