@@ -1308,7 +1308,7 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
                                 gi_id = int(sseqid.split("|")[1])
                                 gi_acc = sseqid.split("|")[3]
                                 sseq = sseq.replace("-", "")
-
+                                sscinames = sscinames.replace(" ","_").replace("/","_").replace("-","_")
                                 # debug(staxids)
 
                                 if len(staxids.split(";")) >1:  # sometimes there are seq which are identical and are combined in the local blast db, just get first one
@@ -1542,6 +1542,10 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
                     #     localblast = True
                     # else:
                     #     localblast = False
+
+               
+                    if gi in find_otudict_gi():
+                        exit(-1)
                     otu_id = self.data.add_otu(gi, self.ids)
 
                     # try:
@@ -1566,6 +1570,14 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
             log.write("{} new sequences added from genbank after removing identical seq, "
                       "of {} before filtering\n".format(len(self.new_seqs_otu_id), len(self.new_seqs)))
         self.data.dump()
+
+    def find_otudict_gi(self):
+        ncbigi_list =[]
+        for key, val in self.data.otu_dict.items()
+            if 'ncbi:gi' in val:
+                gi_otu_dict = val["ncbi:gi"]
+                ncbigi_list.append(gi_otu_dict)
+        return ncbigi_list
 
     def dump(self, filename=None):
         if filename:
@@ -1836,7 +1848,7 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
                 self.new_seqs_otu_id = {}
                 self.newseqsgi = []
                 self.repeat = 1
-                self.query_dict = {}  # clean up for nexy round
+                self.query_dict = {}  # clean up for next round
             else:
                 if _VERBOSE:
                     sys.stdout.write("No new sequences after filtering.\n")
@@ -1906,6 +1918,8 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
         """adds the local unpublished data to the otu_dict.
         Information are retrieved from the additional json file/self.local_otu_json.
         I make up accession numbers....
+
+        #move to ATT class
         """
         debug("make_otu_dict_entry_unpubl")
         # debug(key)
