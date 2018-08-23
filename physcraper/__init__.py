@@ -52,7 +52,7 @@ def debug(msg):
     if _DEBUG_MK == 1:
         print(msg)
     with open("debugging.txt", "a") as debugf:
-        debugf.write("{}".format(msg))
+        debugf.write("{}\n".format(msg))
 
 
 
