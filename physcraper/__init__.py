@@ -963,7 +963,7 @@ class IdDicts(object):
                     read_handle = Entrez.read(handle)
                     tax_id = get_ncbi_tax_id(read_handle)
                 except:
-                    # debug("stupid entrez thing")
+                    debug("stupid entrez thing")
 
             if tax_name not in self.otu_rank.keys():
                 # debug("tax_name to rank")
