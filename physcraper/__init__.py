@@ -1328,7 +1328,7 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
 
                                 self.ids.otu_rank[sscinames] = {"taxon id": staxids}  # add information we already have
                                 
-                                if gi_id not in self.gi_ncbi_dict:  # fill up dict with more information.
+                                if gi_id not in self.ids.gi_ncbi_dict:  # fill up dict with more information.
                                     self.ids.gi_ncbi_dict[gi] = staxids
 
                                 if gi_id not in query_dict:
