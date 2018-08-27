@@ -39,13 +39,15 @@ from peyotl.nexson_syntax import extract_tree, \
     PhyloSchema  # extract_tree_nexson, \
 # from peyotl.api import APIWrapper
 import concat  # is the local concat class
-import ncbi_data_parser  # is the ncbi data parser class
+import ncbi_data_parser  # is the ncbi data parser class and associated functions
 
 _DEBUG = 1
 _DEBUG_MK = 1
 
 _VERBOSE = 1
 
+
+debug(os.path.realpath(__file__))
 
 def debug(msg):
     """short debugging command
@@ -1021,7 +1023,7 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
         self.path_to_local_seq = False
         self.local_otu_json = None
 
-        self.ncbi_parser = ncbi_data_parser.parser(names_file=self.config.ncbi_parser_names_fn, nodes_file=self.config.ncbi_parser_nodes_fn)
+        self.ncbi_parser = ncbi_data_parser.Parser(names_file=self.config.ncbi_parser_names_fn, nodes_file=self.config.ncbi_parser_nodes_fn)
         # self.query_dict = {}  # for local blast txt files, equivalent to gi_dict.
 
     # TODO is this the right place for this?
@@ -1239,7 +1241,7 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
                                 if gi_id not in self.ids.gi_ncbi_dict:  # fill up dict with more information.
                                     self.ids.gi_ncbi_dict[gi_id] = staxids
 
-                                if gi_id not in query_dict:
+                                if gi_id not in query_dict and gi_id not in self.newseqsgi:
                                     query_dict[gi_id] = {'^ncbi:gi': gi_id, 'accession': gi_acc, 'staxids': staxids, 'sscinames': sscinames, 'pident': pident, 'evalue': evalue, 'bitscore': bitscore, 'sseq': sseq, 'title': stitle}
                         for key in query_dict.keys():
                             if float(query_dict[key]['evalue']) < float(self.config.e_value_thresh):
@@ -1343,6 +1345,8 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
         removes that sequence and replaces it
         """
         # TODO unify spp name somehow?
+        # debug("seq_dict_build")
+
         # debug(label)
         id_of_label = self.get_sp_id_of_otulabel(label)
         # debug(id_of_label)
@@ -1458,6 +1462,10 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
         # debug(seq_len_cutoff)
         for gi, seq in self.new_seqs.items():
             debug(gi)
+            if type(gi) != int:
+                sys.stdout.write("WARNING: gi {} is no integer. Will convert value to int\n".format(gi))
+                debug("WARNING: gi {} is no integer. Will convert value to int\n".format(gi))
+                gi = int(gi)
             if self.blacklist is not None and gi in self.blacklist:
                 debug("gi in blacklist, not added")
                 pass
@@ -1466,15 +1474,14 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
                 pass
             else:
                 debug("add to aln if not similar to existing")
-                self.newseqsgi.append(gi)
                 if len(seq.replace("-", "").replace("N", "")) > seq_len_cutoff:
                     # if self.config.blast_loc == 'local':
                     #     localblast = True
                     # else:
                     #     localblast = False
-
-               
                     if gi in self.find_otudict_gi():
+                    assert type(gi) is int
+                    self.newseqsgi.append(gi)
                         exit(-1)
                     otu_id = self.data.add_otu(gi, self.ids)
 
@@ -1776,7 +1783,7 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
                 self.data.write_otus("otu_info", schema='table')
                 self.new_seqs = {}  # Wipe for next run
                 self.new_seqs_otu_id = {}
-                # self.newseqsgi = []  # Never replace it, is used to filter already added gis 
+                # self.newseqsgi = []  # Never replace it, is used to filter already added gis!!!
                 self.repeat = 1
                 # self.query_dict = {}  # clean up for next round
             else:
@@ -2275,6 +2282,8 @@ class FilterBlast(PhyscraperScrape):
                                 self.add_all(taxon_id)
                         elif seq_present == 0 and count_dict["new_taxon"] is True and query_count >= 1:  # species is completely new in alignment
                             # debug("completely new taxon to blast")
+                            # species is completely new in alignment, \
+                            # make blast with random species
                             # debug(count_dict)
                             # debug(taxon_id)
                             # debug(self.sp_seq_d)
