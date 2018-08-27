@@ -46,13 +46,19 @@
           
           The last command shows you if it worked correctly. 'nt' means, we are making the nucleotide database.
           The database needs to be update regularly, go back to step 1 as soon as there is a database update to get the most recent sequences from GenBank.
-          
-          install the taxonomy database
+
+6. install ncbi databases to circumvent crashes through internet problems during queries on the ncbi website
+    
+      *  install the taxonomy database
           * `cd /to/the/folder/of/your/blastdb`
           * `wget 'ftp://ftp.ncbi.nlm.nih.gov/blast/db/taxdb.tar.gz'` # Download the taxdb archive
           * `gunzip -cd taxdb.tar.gz | (tar xvf - )`  # Install it in the BLASTDB directory
-
+    
            to update the taxonomy database later, run `perl update_blastdb.pl taxdb`
+           
+      * install the taxonomic rank database if you want to use the FilterBlast functions.
+         *  `wget 'ftp://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdump.tar.gz'`
+         * gunzip  -cd taxdump.tar.gz | (tar xvf - names.dmp nodes.dmp)
         
 ### Set up a run
 1. edit major settings in the config file
