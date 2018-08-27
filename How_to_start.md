@@ -75,7 +75,6 @@
       * **gifilename**: if you plan to run different settings for the same phylogeny or several runs with similar phylogenies, where there might be overlap between BLAST searches, set it to true und specify the blastsubdir to be equal among runs (see next section). This will share BLAST searches between runs and thus speeds up the run time of the BLAST search.
       * **seq_len_perc**: here you can specify the minimum percentage length of newly found sequences to be added in comparison to the original alignment.
 
-
 2. write your analysis file - standard run 
 
     This is explaining how to set up a "standard run", which will add all sequences, that are similar and long enough to the alignment, as long as they are no subsequences of an already existing sequence. Optional arguments are explained in the following section.
@@ -115,11 +114,11 @@
 
     Beside the standard definition, there are more input options. Currently supported are:
 
-    * **threshold**: this defines the maximum number of sequences per taxonomic concept to be retrieved.
+    * **threshold**: this defines the maximum number of sequences per taxonomic concept to be retrieved. If your input dataset already contains more sequences, there will be no additional sequences be added, but also not removed. (If the removal of sequences is a function someone would like to have, this should be easy to implement. Just ask.) 
     * **downtorank**: this defines the rank which is used to determine the maximum number per taxonomic concept. It can be set to None and then for all taxonomic concepts, there will be the maximum number of threshold species be retrieved. If it is set to species, there will no more than the maximum number of sequences randomly choosen from all sequences available for the subspecies. It can be set to any ranks defined in the ncbi taxonomy browser.
     * **selectby**: this defines how to select the selected sequences. For the moment only "blast" is supported, "length" is under development.
         * **blast**: All sequences belonging to a taxonomic concept will be used for a filtering blast search. Sequences will be randomly selected from a pool of sequences, that met the criteria of being within the mean +/- standard deviation of sequence  similarity in relation to the queried sequence (a sequence of the same taxonomic concept which is already part of the phylogeny). If the taxonomic concept is likely monophyletic the distances will be similar and thus all sequences will fall within the mean and standard deviation of sequence similarity. If there are a few outlier sequences only, this seems to be likely a misidentification or mis-labeling in GenBank, outlier sequences will not be added, as they are most likely outside the allowed range of mean +/- SD. If the taxon is likely not monophyletic and sequences diverge a lot from each other, the mean and sd value will be larger and allows to randomly pick sequences, that represent the divergence.
-        * **length** (under development): instead of randomly choosing between sequences that are within the criteria of the blast search using sequence divergence as a criteria, here the longest sequences will be selected.
+        * **length** Instead of randomly choosing between sequences that are within the criteria of the blast search using sequence divergence as a criteria, here the longest sequences will be selected.
     * **blacklist**: a list of sequences, that shall not be added or were identified to be removed later. This needs to be formatted as a python list containing the GenBank identifiers (e.g. `[gi number, gi number]`). Please not, that it must be the Genbank identifiers and not the accession numbers.
 
     1. using OpenTreeofLife study ID:
@@ -127,7 +126,6 @@
 
      2. using your own files:
      There is an example file in `tests/tiny_filter_ownfile.py`.  The corresponding function to use in your file setup is `filter_data_run()`.
-
 
 4. start to update your phylogeny:
 
@@ -137,23 +135,30 @@
 
     And now you just need to wait...
 
-
 5. more hidden features that can be changed:
 
     There are some more features that can be changed if you know where, we will change the code hopefully soon, to make that easier adjustable.
 
     * time lapse for blasting: at the moment this is set to be 14 days. If you want to adjust the timing change `run_blast()` in the wrapper to `run_blast(delay = your_value)`
     * trim method: by default sequences will be trimmed from the alignment if it has not at least 75% of the total sequence length. This can be changed in `./physcraper/__init__.py`, in the function `trim()` the value for `taxon_missingness`. 
-    * change the most recent common ancestor (mrca): often phylogenies include outgroups, and someone might not be interested in updating that part of the tree. This can be avoided by defining the most recent common ancestor. It requires the OpenTreeOfLife identifier for the group of interest. You can get that by going to [Open Tree of Life](https://ot14.opentreeoflife.org/opentree/argus/opentree9.1@ott93302) and type in the name of the lineage and get the OTT ID at the right side of the page. That number needs to be provided in the corresponding wrapper function, as following:
+    * change the most recent common ancestor (mrca): often phylogenies include outgroups, and someone might not be interested in updating that part of the tree. This can be avoided by defining the most recent common ancestor. It requires the OpenTreeOfLife identifier for the group of interest. 
+        
+        You can get that ID by two different approaches:
+        1. run `python scripts/get_ottid.py name_of_your_ingroup`
+        2. by going to [Open Tree of Life](https://ot14.opentreeoflife.org/opentree/argus/opentree9.1@ott93302) and type in the name of the lineage and get the OTT ID at the right side of the page. That number needs to be provided in the corresponding wrapper function, as following:
+        
+        The identifying number need to be entered here:
+        1. in an OToL run: within the function  `generate_ATT_from_phylesystem()` in the `__init__.py` file in the field for `ingroup_mrca`
 
-        1. in an OToL run: within the function  `generate_ATT_from_phylesystem()` in the field for `ingroup_mrca`
-
-        2. in an own data run: within the function `generate_ATT_from_files()` in the field for `ingroup_mrca`
+        2. in an own data run: give ID within the wrapper function of your analysis file: `own_data_run()`  in the field for `ingroup_mrca`
 
         Another aspect which needs to be considered, if your group of interest is not monophyletic and you limit the search to the mrca of the group, closely related sequences that belong for example to a different genus will not be added.
-    * sharing blast result files across runs: to do that you need to specify a shared blast folder for the specific runs and change the gifilename config setting to True. To provide a shared name go to the corresponding wrapper function and uncomment the line above `.run_blast()`. Remember to comment it again if you do not want to share blast results across runs.
-    
-
+    * sharing blast result files across runs: 
+ 
+        1. give the path to the folder in the wrapper function of your analysis file.
+        2. in your config file: change the gifilename setting to True. 
+        
+        Be careful! If you have different hitlist_size defined, your blast files have different numbers of sequences saved. Sharing the folder across those different settings is not recommended!
 
 ## Short introduction into what the tool actually does
 
