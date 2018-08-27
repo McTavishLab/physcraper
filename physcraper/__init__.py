@@ -39,6 +39,7 @@ from peyotl.nexson_syntax import extract_tree, \
     PhyloSchema  # extract_tree_nexson, \
 # from peyotl.api import APIWrapper
 import concat  # is the local concat class
+import ncbi_data_parser  # is the ncbi data parser class
 
 _DEBUG = 1
 _DEBUG_MK = 1
@@ -124,6 +125,9 @@ class ConfigObj(object):
                 self.gifilename = True
             else:
                 self.gifilename = False
+        self.ncbi_parser_nodes_fn = config['ncbi_parser']["nodes_fn"]
+        self.ncbi_parser_names_fn = config['ncbi_parser']["names_fn"]
+
         if _DEBUG:
             sys.stdout.write("{}\n".format(self.email))
             if self.blast_loc == 'remote':
@@ -598,7 +602,8 @@ class AlignTreeTax(object):
                ncbi_id = self.gi_dict[gi]['staxids']
                # debug(ncbi_id)
             else:
-                spn = ids_obj.get_rank_info(gi_id=gi)
+                spn = self.find_name(gi=gi_id)
+
                 if spn is None:
                     sys.stderr.write("no species name returned for {}".format(gi))
                 ncbi_id = ids_obj.map_gi_ncbi(gi)
@@ -610,9 +615,9 @@ class AlignTreeTax(object):
                 debug(spn)
             else:
                 spn = self.otu_dict[gi]['^user:TaxonName']
-            tn = ids_obj.get_rank_info(taxon_name=spn)
-            if spn is None:
-                spn = tn
+            # tn = ids_obj.fom(taxon_name=spn)
+            # if spn is None:
+            #     spn = tn
 
 
         if ncbi_id is None:
@@ -847,6 +852,7 @@ class IdDicts(object):
         self.ott_to_name = {}
         self.otu_rank = {}
         self.gi_ncbi_dict = {}  # file id_map is not existing, is only filled by get_rank_info. is a smaller version of self.otu_rank.
+        self.spn_to_ncbiid = {}  # spn to ncbiid
         fi = open(config_obj.ott_ncbi)  # TODO need to keep updated
         for lin in fi:  # TODO This is insanely memory inefficient
             lii = lin.split(",")
@@ -862,151 +868,39 @@ class IdDicts(object):
             for lin in fi:
                 self.gi_ncbi_dict[int(lin.split(",")[0])] = lin.split(",")[1]
 
-    def get_rank_info(self, gi_id=False, taxon_name=False):
-        """Collects rank and lineage information from ncbi,
-        used to delimit the sequences from blast,
-        when you have a local blast database or a Filter Blast run
-        """
-        debug("get_rank_info")
-        # print(gi_id, taxon_name)
-        Entrez.email = self.config.email
+    def get_ncbiid_from_tax_name(self, tax_name):
 
-        if gi_id:
-            # tax_name = None
-            # debug("gi_id to tax_name using Entrez")
-            # # if len_seq < 10000:  ## exclude chromosomes
-            # tries = 10
-
-            # debug("gi_id was supplied")
-            # try:
-            #     debug("try efetch")
-            #     for i in range(tries):
-            #         try:
-            #             handle = Entrez.efetch(db="nucleotide", id=gi_id, retmode="xml")
-                    
-            #         except:
-            #             debug("except efetch")
-            #             if i < tries - 1:  # i is zero indexed
-            #                 continue
-            #             else:
-            #                 debug("im going to raise")
-            #                 raise
-            #         break
-            #     # debug(handle)
-            #     debug("try and except")
-            #     read_handle = Entrez.read(handle)
-            #     handle.close()
-            #     # debug(read_handle)
-            #     try:
-            #         debug("try")
-            #         # debug(Entrez.read(handle)[0])
-            #         read_handle = read_handle[0]
-            #         # debug(read_handle)
-            #     except:
-            #         debug("except read")
-            #     #     # debug(handle)
-            #     #     # debug(Entrez.read(handle))
-            #     #     read_handle = read_handle
-            #     #     # debug(read_handle)
-            #     #     debug("are you printing this line")
-            #     # debug(read_handle)
-            #     # debug("get tax_name next from gi_id")
-            #     # debug(read_handle['GBSeq_feature-table'])
-            #     tax_name = read_handle['GBSeq_feature-table'][0]['GBFeature_quals'][0]['GBQualifier_value']
-            #     tax_name = str(tax_name).replace("_", " ")
-                # debug(tax_name)
-
-            # except:
-            #     debug('except efetch')
-            #     # # debug(gi_id)  # 1273855514
-            #     # tries = 10
-            #     # for i in range(tries):
-            #     #         try:
-            #     #             handle = Entrez.esummary(db="nucleotide", id="{}".format(gi_id), retmode="xml")
-            #     #         except:
-            #     #             debug("except summary")
-            #     #             if i < tries - 1:  # i is zero indexed
-            #     #                 continue
-            #     #             else:
-            #     #                 debug("im going to raise")
-            #     #                 raise
-            #     #         break
-            #     # records = Entrez.read(handle)
-            #     # handle.close()
-            #     # len_seq = int(records[0]["Length"])
-            #     # debug(len_seq)
-            # # debug(type(len_seq))
-            #     tax_name = "irrelevant sequence"
-            #     sys.stderr.write("Cannot get sp info from gi: {}. I still have to find a solution for it".format(gi_id))
-            #     debug("Cannot get sp info from gi: {}. I still have to find a solution for it".format(gi_id))
-            tax_name = self.find_name(gi=gi_id)
-
+        if tax_name in self.spn_to_ncbiid:
+            tax_id = self.spn_to_ncbiid[tax_name]
         else:
-            tax_name = str(taxon_name).replace("_", " ")   
-        if tax_name is not None:
-            #and tax_name != "irrelevant sequence":
-            debug(tax_name)
-            ncbi = NCBITaxa()
-            if gi_id:
-                try:
-                    debug("try")
-                    tries = 10
-                    for i in range(tries):
-                        try:
-                            handle = Entrez.efetch(db="nucleotide", id=gi_id, retmode="xml")
-                        except:
-                            # debug("except efetch")
-                            if i < tries - 1:  # i is zero indexed
-                                continue
-                            else:
-                                # debug("im going to raise")
-                                raise
-                        break
-                    read_handle = Entrez.read(handle)
-                    tax_id = get_ncbi_tax_id(read_handle)
-                except:
-                    debug("stupid entrez thing")
-
-            if tax_name not in self.otu_rank.keys() or "lineage" not in self.ids.otu_rank[tax_name]:
-                # debug("tax_name to rank")
-                # ncbi = NCBITaxa()
-                if not gi_id:
+            try:
+                # debug("try2")
+                tries = 10
+                for i in range(tries):
                     try:
-                        # debug("try2")
-                        tries = 10
-                        for i in range(tries):
-                            try:
-                                tax_id = int(Entrez.read(Entrez.esearch(db="taxonomy", term=tax_name, RetMax=100))['IdList'][0])
-                            except:
-                                # debug("except esearch/read")
-                                if i < tries - 1:  # i is zero indexed
-                                    continue
-                                else:
-                                    # debug("im going to raise")
-                                    raise
-                            break
-                        # debug(tax_id)
-                        # debug(type(tax_id))
+                        tax_id = Entrez.read(Entrez.esearch(db="taxonomy", term=tax_name, RetMax=100))['IdList'][0]
+                        tax_id = int(tax_id)
                     except:
-                        # debug("except")
-                        tax_info = ncbi.get_name_translator([tax_name])
-                        # debug(tax_info)
-                        if tax_info == {}:
-                            print("Taxon name does not match any name in ncbi. Check that name is written correctly!")
-                        tax_id = int(tax_info.items()[0][1][0])
-                # ncbi = NCBITaxa()
-                lineage = ncbi.get_lineage(tax_id)
-                lineage2ranks = ncbi.get_rank(lineage)
-                tax_name = str(tax_name).replace(" ", "_")
-                assert type(tax_id) == int
-                self.otu_rank[tax_name] = {"taxon id": tax_id, "lineage": lineage, "rank": lineage2ranks}
-            # else:
-            #     print("rank already known")
-        # else:
-        #     self.otu_rank[tax_name.replace(" ", "_")] = {"taxon id": "irrelevant", "lineage": "irrelevant", "rank": "irrelevant"}
-        # # debug("return from rank function")
-        # debug(tax_name)
-        return tax_name
+                        # debug("except esearch/read")
+                        if i < tries - 1:  # i is zero indexed
+                            continue
+                        else:
+                            # debug("im going to raise")
+                            raise
+                    break
+                # debug(tax_id)
+                # debug(type(tax_id))
+            except:
+                # debug("except")
+                tax_info = ncbi.get_name_translator([tax_name])
+                # debug(tax_info)
+                if tax_info == {}:
+                    print("Taxon name does not match any name in ncbi. Check that name is written correctly!")
+                tax_id = int(tax_info.items()[0][1][0])
+        assert type(tax_id) is int
+        self.spn_to_ncbiid[tax_name] = tax_id
+        return tax_id
+
 
     def find_name(self, dict=None, gi=None):
         """Find the name in the dict or of a gi. If not already known if will ask ncbi using the gi number.
@@ -1019,38 +913,43 @@ class IdDicts(object):
             elif '^user:TaxonName' in dict:
                 spn = dict['^user:TaxonName']
         if spn is None:
-            if gi:
-                gi_id = gi
-            elif '^ncbi:gi' in dict:
-                Entrez.email = self.config.email
-                gi_id = dict['^ncbi:gi']
+            if gi in self.gi_ncbi_dict:
+                ncbi_taxonid = self.gi_ncbi_dict[gi]
+                spn = self.ncbi_parser.get_name_from_id(ncbi_taxonid)
             else:
-                sys.stderr.write("There is no name supplied and no gi available. This should not happen! Check name!")
-            # debug(gi_id)
-            # debug(type(gi_id))
 
+                if gi:
+                    gi_id = gi
+                elif '^ncbi:gi' in dict:
+                    Entrez.email = self.config.email
+                    gi_id = dict['^ncbi:gi']
+                else:
+                    sys.stderr.write("There is no name supplied and no gi available. This should not happen! Check name!")
+                # debug(gi_id)
+                # debug(type(gi_id))
 
-            tries = 10
-            for i in range(tries):
-                try:
-                    # debug("find name efetch")
-                    handle = Entrez.efetch(db="nucleotide", id=gi_id, retmode="xml")
-                except:
-                    # debug("except efetch")
-                    if i < tries - 1:  # i is zero indexed
-                        continue
-                    else:
-                        # debug("im going to raise")
-                        raise
-                break
-            read_handle = Entrez.read(handle)
-            handle.close()
-            spn = get_ncbi_tax_name(read_handle)
-            ncbi_taxonid = get_ncbi_tax_id(read_handle)
-            if dict:
-                dict['^ot:ottTaxonName'] = spn
+            
+                tries = 10
+                for i in range(tries):
+                    try:
+                        # debug("find name efetch")
+                        handle = Entrez.efetch(db="nucleotide", id=gi_id, retmode="xml")
+                    except:
+                        # debug("except efetch")
+                        if i < tries - 1:  # i is zero indexed
+                            continue
+                        else:
+                            # debug("im going to raise")
+                            raise
+                    break
+                read_handle = Entrez.read(handle)
+                handle.close()
+                spn = get_ncbi_tax_name(read_handle)
+                ncbi_taxonid = get_ncbi_tax_id(read_handle)
+                if dict:
+                    dict['^ot:ottTaxonName'] = spn
 
-                dict['^ncbi:taxon'] = ncbi_taxonid
+                    dict['^ncbi:taxon'] = ncbi_taxonid
         assert spn != None
         # else:
         #     for key, val in self.data.otu_dict.items():
@@ -1069,9 +968,12 @@ class IdDicts(object):
             tax_id = int(self.gi_ncbi_dict[gi])
         else:
             # debug(gi)
-            tax_name = self.get_rank_info(gi_id=gi)
+            # tax_name = self.get_rank_info(gi_id=gi)
+            tax_name = self.find_name(gi=gi_id)
+            tax_id = self.get_ncbiid_from_tax_name(tax_name)
+
             # debug(tax_name)
-            tax_id = self.otu_rank[tax_name]["taxon id"]
+            # tax_id = self.otu_rank[tax_name]["taxon id"]
             self.gi_ncbi_dict[gi] = tax_id
         return tax_id
 
@@ -1118,6 +1020,8 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
         self.unpublished = False
         self.path_to_local_seq = False
         self.local_otu_json = None
+
+        self.ncbi_parser = ncbi_data_parser.parser(names_file=self.config.ncbi_parser_names_fn, nodes_file=self.config.ncbi_parser_nodes_fn)
         # self.query_dict = {}  # for local blast txt files, equivalent to gi_dict.
 
     # TODO is this the right place for this?
@@ -1324,10 +1228,14 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
                                     staxids = int(staxids.split(";")[0])
                                     # debug(staxids)
                                     sscinames = sscinames.split(";")[0]
+                                else:
+                                    staxids = int(staxids)
                                     # debug(sscinames)
-
-                                self.ids.otu_rank[sscinames] = {"taxon id": staxids}  # add information we already have
-                                
+                                # if sscinames not in self.ids.otu_rank:
+                                #     self.ids.otu_rank[sscinames] = {"taxon id": staxids}  # add information we already have
+                                # print(type(staxids))
+                                assert type(staxids) is int
+                                self.ids.spn_to_ncbiid[sscinames] = staxids
                                 if gi_id not in self.ids.gi_ncbi_dict:  # fill up dict with more information.
                                     self.ids.gi_ncbi_dict[gi_id] = staxids
 
@@ -1410,15 +1318,21 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
                 id_of_label = int(self.data.otu_dict[label]['^ncbi:taxon'])
             else:
                 # print("i have nothing")
-                tax_name = self.ids.get_rank_info(taxon_name=spn_of_label)
-                id_of_label = int(self.ids.otu_rank[tax_name]["taxon id"])
+
+
+                
+                # tax_name = self.ids.get_rank_info(taxon_name=spn_of_label)
+                id_of_label = self.get_ncbiid_from_tax_name(spn_of_label)
+
+                # id_of_label = int(self.ids.otu_rank[tax_name]["taxon id"])
             # debug(id_of_label)
             # debug(type(id_of_label))
         else:
             # debug(spn_of_label)
             debug("i have nothing to use and im in else")
-            tax_name = self.ids.get_rank_info(taxon_name=spn_of_label)
-            id_of_label = int(self.ids.otu_rank[tax_name]["taxon id"])
+            # tax_name = self.ids.get_rank_info(taxon_name=spn_of_label)
+            id_of_label = self.get_ncbiid_from_tax_name(spn_of_label)
+            # id_of_label = int(self.ids.otu_rank[tax_name]["taxon id"])
         return id_of_label
 
     def seq_dict_build(self, seq, label, seq_dict):  # Sequence needs to be passed in as string.
@@ -1961,7 +1875,7 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
             self.data.otu_dict[key]['^physcraper:status'] = "local seq"
             self.data.otu_dict[key]['^physcraper:last_blasted'] = "1800/01/01"
             gi_counter += 1
-            self.ids.get_rank_info(taxon_name=self.data.otu_dict[key]['^ot:ottTaxonName'])
+            # self.ids.get_rank_info(taxon_name=self.data.otu_dict[key]['^ot:ottTaxonName'])  #TODO: do i really need this?
 
 
 ###############################
@@ -2047,29 +1961,34 @@ class FilterBlast(PhyscraperScrape):
                     gi_id = self.data.otu_dict[key]['^ncbi:gi']
                     # debug(gi_id)
                     # debug(type(gi_id))
-                    spn = self.ids.get_rank_info(gi_id=gi_id)
+                    # spn = self.ids.get_rank_info(gi_id=gi_id)
+                    spn = self.find_name(gi=gi_id)
                     if spn is None:
                         debug("something is going wrong!Check species name")
                         sys.stderr.write("{} has no corresponding spn! Check what is wrong!".format(key))
                 if self.downtorank is not None:
                     spn = str(spn).replace(" ", "_")
-                    if spn not in self.ids.otu_rank.keys():
-                        self.ids.get_rank_info(taxon_name=spn)
-                        spn = str(spn).replace(" ", "_")
-                    # if spn in self.ids.otu_rank.keys():
-                    lineage2ranks = self.ids.otu_rank[spn]["rank"]
-                    # else:
+                    tax_id = self.ids.get_ncbiid_from_tax_name(spn)
+                    downtorank_id = self.ncbi_parser.get_downtorank_id(tax_id, self.downtorank)
+                    downtorank_name = self.ncbi_parser.get_name_from_id(downtorank_id)
+
+                    # if spn not in self.ids.otu_rank.keys():
                     #     self.ids.get_rank_info(taxon_name=spn)
-                    #     # debug(self.ids.otu_rank.keys())
-                    #     lineage2ranks = self.ids.otu_rank[str(spn).replace(" ", "_")]["rank"]
-                    #     # debug(lineage2ranks)s
-                    ncbi = NCBITaxa()
-                    for key_rank, val in lineage2ranks.iteritems():
-                        if val == downtorank:
-                            tax_id = key_rank
-                            value_d = ncbi.get_taxid_translator([tax_id])
-                            spn = value_d[int(tax_id)]
-                spn = str(spn).replace(" ", "_")
+                    #     spn = str(spn).replace(" ", "_")
+                    # # if spn in self.ids.otu_rank.keys():
+                    # lineage2ranks = self.ids.otu_rank[spn]["rank"]
+                    # # else:
+                    # #     self.ids.get_rank_info(taxon_name=spn)
+                    # #     # debug(self.ids.otu_rank.keys())
+                    # #     lineage2ranks = self.ids.otu_rank[str(spn).replace(" ", "_")]["rank"]
+                    # #     # debug(lineage2ranks)s
+                    # ncbi = NCBITaxa()
+                    # for key_rank, val in lineage2ranks.iteritems():
+                    #     if val == downtorank:
+                    #         tax_id = key_rank
+                    #         value_d = ncbi.get_taxid_translator([tax_id])
+                    #         spn = value_d[int(tax_id)]
+                    spn = downtorank_name
                 if spn in self.sp_d:
                     self.sp_d[spn].append(self.data.otu_dict[key])
                 else:
@@ -2212,11 +2131,11 @@ class FilterBlast(PhyscraperScrape):
             if '^physcraper:status' in gi_id and gi_id['^physcraper:status'].split(' ')[0] not in self.seq_filter:
                 # if gi_id['^physcraper:status'].split(' ')[0] not in self.seq_filter:
                 # if gi_id['^physcraper:last_blasted'] != '1800/01/01':
-                if spn_name is None:
-                    # debug(key)
-                    spn_name = self.ids.get_rank_info(taxon_name=key)
-                    # gi_id['^ot:ottTaxonName'] = spn_name
-                spn_name = spn_name.replace(" ", "_")
+                # if spn_name is None:
+                #     # debug(key)
+                #     spn_name = self.ids.get_rank_info(taxon_name=key)
+                #     # gi_id['^ot:ottTaxonName'] = spn_name
+                # spn_name = spn_name.replace(" ", "_")
                 for spn_name_aln, seq in self.data.aln.items():
                     otu_dict_name = self.ids.find_name(dict=self.data.otu_dict[spn_name_aln.label])
                     if spn_name == otu_dict_name:
