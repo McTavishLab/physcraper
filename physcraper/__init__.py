@@ -1378,7 +1378,7 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
                         self.data.otu_dict[label]['^physcraper:status'] = "new seq added; subsequence, but different species"
                         seq_dict[label] = seq
                         if _DEBUG_MK == 1:
-                            print(id_of_label, "and", existing_id, "subsequence, but different sp. concept")
+                            debug("{} and {} subsequence, but different sp. concept".format(id_of_label, existing_id ))
                         continue_search = True
                         continue
                     else: # subseq of same sp.
@@ -1386,7 +1386,8 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
                             sys.stdout.write("seq {} is subsequence of {}, not added\n".format(label, tax_lab))
                         self.data.otu_dict[label]['^physcraper:status'] = "subsequence, not added"
                         if _DEBUG_MK == 1:
-                            print(id_of_label, " not added, subseq of ", existing_id)
+                            debug("{} not added, subseq of".format(existing_id))
+
                         never_add = True
                         continue
                     return seq_dict
@@ -1398,7 +1399,7 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
                         self.data.otu_dict[label]['^physcraper:status'] = "new seq added"
                         seq_dict[label] = seq
                         if _DEBUG_MK == 1:
-                            print(id_of_label, " and ", existing_id, "added")
+                            debug("{} and  {} added".format(id_of_label, existing_id))
                         continue_search = True
                         continue
                     elif type(existing_id) == int and existing_id != id_of_label:
@@ -1408,7 +1409,7 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
                         self.data.otu_dict[label]['^physcraper:status'] = "new seq added; supersequence, but different species"
                         seq_dict[label] = seq
                         if _DEBUG_MK == 1:
-                            print(id_of_label, "and", existing_id, "supersequence, but different sp. concept")
+                            debug("{} and  {} supersequence, but different sp. concept".format(id_of_label, existing_id))
                         continue_search = True
                         continue
                     else:
@@ -1420,6 +1421,7 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
                         self.data.otu_dict[label]['^physcraper:status'] = "new seq added in place of {}".format(tax_lab)
                         if _DEBUG_MK == 1:
                             print(id_of_label, "added, instead of ", existing_id)
+                            debug("{} added, instead of  {}".format(id_of_label, existing_id))
                         continue_search = True
                         continue
                     return seq_dict
@@ -1901,30 +1903,33 @@ class FilterBlast(PhyscraperScrape):
 
     def __init__(self, data_obj, ids_obj, settings=None):
         super(FilterBlast, self).__init__(data_obj, ids_obj)
-        self.workdir = data_obj.workdir
-        self.logfile = "{}/logfile".format(self.workdir)
-        self.data = data_obj
-        self.ids = ids_obj
-        self.config = self.ids.config  # this is already part of .ids, or not? Information are doubled.
-        self.new_seqs = {}
-        self.new_seqs_otu_id = {}
-        self.otu_by_gi = {}  # What was this intended for?
-        self._to_be_pruned = []  # What is this used for?
-        self.mrca_ncbi = ids_obj.ott_to_ncbi[data_obj.ott_mrca]
-        self.tmpfi = "{}/physcraper_run_in_progress".format(self.workdir)
-        self.blast_subdir = "{}/current_blast_run".format(self.workdir)
-        if not os.path.exists(self.workdir):
-            os.makedirs(self.workdir)
-        self.newseqs_file = "tmp.fasta"
-        self.date = str(datetime.date.today())
-        self.repeat = 1
-        self.reset_markers()
-        self.gi_list_mrca = []  # used for local blast to limit seq to seq of interest
-        if self.config.blast_loc == 'local' and len(self.gi_list_mrca) == 0:
-            self.gi_list_mrca = self.get_all_gi_mrca()
-        self.unpublished = False
-        self.path_to_local_seq = False
-        self.local_otu_json = None
+        debug("start derived class init")
+        # self.workdir = data_obj.workdir
+        # self.logfile = "{}/logfile".format(self.workdir)
+        # self.data = data_obj
+        # self.ids = ids_obj
+        # self.config = self.ids.config  # this is already part of .ids, or not? Information are doubled.
+        # self.new_seqs = {}
+        # self.new_seqs_otu_id = {}
+        # self.otu_by_gi = {}  # What was this intended for?
+        # self._to_be_pruned = []  # What is this used for?
+        # self.mrca_ncbi = ids_obj.ott_to_ncbi[data_obj.ott_mrca]
+        # self.tmpfi = "{}/physcraper_run_in_progress".format(self.workdir)
+        # self.blast_subdir = "{}/current_blast_run".format(self.workdir)
+        # if not os.path.exists(self.workdir):
+        #     os.makedirs(self.workdir)
+        # self.newseqs_file = "tmp.fasta"
+        # self.date = str(datetime.date.today())
+        # self.repeat = 1
+        # self.reset_markers()
+        # self.gi_list_mrca = []  # used for local blast to limit seq to seq of interest
+        # if self.config.blast_loc == 'local' and len(self.gi_list_mrca) == 0:
+        #     self.gi_list_mrca = self.get_all_gi_mrca()
+        # self.unpublished = False
+        # self.path_to_local_seq = False
+        # self.local_otu_json = None
+        # self.ncbi_parser = ncbi_data_parser.parser(names_file=self.config.ncbi_parser_names_fn, nodes_file=self.config.ncbi_parser_nodes_fn)
+
         # self.query_dict = {}  # for local blast txt files
 
         # additional things that are needed for the filtering process
@@ -2260,7 +2265,7 @@ class FilterBlast(PhyscraperScrape):
                 # debug(self.sp_seq_d[taxon_id].keys())
                 if taxon_id in self.sp_seq_d.keys():
                     if selectby == "length":
-                        print(self.sp_seq_d[taxon_id], treshold, seq_present)
+                        debug("{}, {}, {}".format(self.sp_seq_d[taxon_id], treshold, seq_present))
                         self.select_seq_by_length(taxon_id, treshold, seq_present)
 #                        self.select_seq_by_length(self.sp_seq_d[taxon_id], treshold, seq_present)
                     elif selectby == "blast":
@@ -2369,7 +2374,6 @@ class FilterBlast(PhyscraperScrape):
         self.filtered_seq.clear()
         return self.new_seqs
 
-
     def write_otu_info(self, downtorank=None):
         """Writes a table to file with taxon names and number of representatives - taxon_sampling.
         Write a file with all relevant GenBank info to file.
@@ -2394,7 +2398,8 @@ class FilterBlast(PhyscraperScrape):
                 rowinfo = [otu]
                 for item in otu_dict_keys:
                     if item in self.data.otu_dict[otu].keys():
-                        rowinfo.append(self.data.otu_dict[otu][item])
+                        tofile = self.data.otu_dict[otu][item].replace("_", " ")
+                        rowinfo.append(tofile)
                     else:
                         rowinfo.append("-")
                 writer.writerow(rowinfo)
