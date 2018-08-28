@@ -2292,15 +2292,15 @@ class FilterBlast(PhyscraperScrape):
                             # debug(count_dict)
                             # debug(taxon_id)
                             # debug(self.sp_seq_d)
-                            # species is completely new in alignment, \
-                            # make blast with random species
-                            for item in self.sp_d[taxon_id]:
-                                if '^ncbi:gi' in item:
-                                    # if self.config.blast_loc == 'local':
-                                    #     localblast = True
-                                    # else:
-                                    #     localblast = False
-                                    self.data.add_otu(item['^ncbi:gi'], self.ids)
+                            
+                            # this causes to add some taxa twice to aln and phy!!! never use add_otu twice!
+                            # for item in self.sp_d[taxon_id]:
+                            #     if '^ncbi:gi' in item:
+                            #         # if self.config.blast_loc == 'local':
+                            #         #     localblast = True
+                            #         # else:
+                            #         #     localblast = False
+                            #         self.data.add_otu(item['^ncbi:gi'], self.ids)
                             blast_seq = self.sp_seq_d[taxon_id].keys()[0]
                             if self.downtorank is not None:
                                 str_db = taxon_id
