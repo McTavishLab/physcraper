@@ -68,6 +68,7 @@ def is_number(s):
 
 debug(os.path.realpath(__file__))
 
+
 class ConfigObj(object):
     """Pulls out the configuration information from
     the config file and makes it easier to pass
@@ -386,6 +387,8 @@ class AlignTreeTax(object):
         self.orig_aln = alignment
         self.orig_newick = newick
         self._reconciled = False
+        self.local_otu_json = None
+
 
     def _reconcile_names(self):
         """This checks that the tree "original labels" from phylsystem
@@ -592,13 +595,9 @@ class AlignTreeTax(object):
         self.ps_otu += 1
         # debug(gi)
         ncbi_id = None
+        ott = None
         if type(gi) == int:
             # debug("gi is int")
-            
-            # TODO do we need rank info here?
-            # debug("ncbi_id")
-            # debug(ncbi_id)
-            # debug(some)
             if gi in self.gi_dict.keys() and 'staxids' in self.gi_dict[gi].keys():
                spn = self.gi_dict[gi]['sscinames']
                ncbi_id = self.gi_dict[gi]['staxids']
@@ -609,14 +608,19 @@ class AlignTreeTax(object):
                 if spn is None:
                     sys.stderr.write("no species name returned for {}".format(gi))
                 ncbi_id = ids_obj.map_gi_ncbi(gi)
+
+        elif  gi[:6] == "unpubl":
+            # debug(self.gi_dict.keys())
+            # debug(self.gi_dict[gi].keys())
+            spn = self.gi_dict[gi]['^ot:ottTaxonName']
+            ncbi_id = self.gi_dict[gi]['^ncbi:taxon']  # TODO FIX key id change
+            ott = self.gi_dict[gi]['^ot:ottId']
         else:
             # debug(gi[:6])
             # debug(some)
-            if gi[:6] == "unpubl":
-                spn = self.otu_dict[gi]['^ot:ottTaxonName'].replace(" ", "_")
-                debug(spn)
-            else:
-                spn = self.otu_dict[gi]['^user:TaxonName']
+            
+            
+            sys.stderr.write("you're trying to add a new sequence, that has neither a gi id nor is unpublished. Something is going wrong here.")
             # tn = ids_obj.fom(taxon_name=spn)
             # if spn is None:
             #     spn = tn
@@ -625,7 +629,6 @@ class AlignTreeTax(object):
         if ncbi_id is None:
             ncbi_id = ids_obj.otu_rank[spn]["taxon id"]
             # debug(ncbi_id)
-        ott = None
         if ncbi_id in ids_obj.ncbi_to_ott.keys():
             # ncbi_id = int(ids_obj.map_gi_ncbi(gi))
             # try:
@@ -637,7 +640,7 @@ class AlignTreeTax(object):
             # spn = str(ids_obj.ott_to_name[ott]).replace(" ", "_")  # seems to be unused
 
         if otu_id in self.otu_dict.keys():
-            ott_name = ids_obj.ott_to_name.get(self.otu_dict[otu_id]['^ot:ottId'])
+            ott_name = ids_obj.ott_to_name.get(ott)
         else:
             ott_name = spn
         # debug("otu_id")
@@ -657,6 +660,13 @@ class AlignTreeTax(object):
         self.otu_dict[otu_id]['^ot:ottTaxonName'] = ott_name
         # last_blasted date infos: 1800 = never blasted; 1900 = blasted 1x, not added; this century = blasted and added
         self.otu_dict[otu_id]['^physcraper:last_blasted'] = "1800/01/01"
+
+        if type(gi) != int:
+            print(gi)
+            # key = "unpubl_{}".format(gi)
+            self.otu_dict[otu_id]['^user:TaxonName'] = self.gi_dict[gi]['localID']
+            self.otu_dict[otu_id]['^physcraper:status'] = "local seq"
+
         if _DEBUG >= 2:
             sys.stderr.write("gi:{} assigned new otu: {}\n".format(gi, otu_id))
         
@@ -929,8 +939,6 @@ class IdDicts(object):
                     sys.stderr.write("There is no name supplied and no gi available. This should not happen! Check name!")
                 # debug(gi_id)
                 # debug(type(gi_id))
-
-            
                 tries = 10
                 for i in range(tries):
                     try:
@@ -994,6 +1002,7 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
 
     def __init__(self, data_obj, ids_obj):
         # todo check input types assert()
+        debug("start base class init")
         self.workdir = data_obj.workdir
         self.logfile = "{}/logfile".format(self.workdir)
         self.data = data_obj
@@ -1021,7 +1030,6 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
             debug(self.gi_list_mrca)
         self.unpublished = False
         self.path_to_local_seq = False
-        self.local_otu_json = None
 
         self.ncbi_parser = ncbi_data_parser.Parser(names_file=self.config.ncbi_parser_names_fn, nodes_file=self.config.ncbi_parser_nodes_fn)
         # self.query_dict = {}  # for local blast txt files, equivalent to gi_dict.
@@ -1174,6 +1182,8 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
             # xml_fi = "{}/blast/{}.xml".format(self.workdir, "output_tst_fn")
             # use read_local_blast func
             output_blast = "output_tst_fn.xml"
+            gi_counter = 1
+
             general_wd = os.getcwd()
             os.chdir(os.path.join(self.workdir, "blast"))
             xml_file = open(output_blast)
@@ -1188,9 +1198,13 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
                             if gi_id not in self.data.gi_dict:  # skip ones we already have
                                 # debug("add gi to new seqs")
                                 fake_gi = "unpubl_{}".format(gi_id)
-                                self.make_otu_dict_entry_unpubl(fake_gi)
+                                # self.make_otu_dict_entry_unpubl(fake_gi)
                                 self.new_seqs[fake_gi] = hsp.sbjct
-                                self.data.gi_dict[fake_gi] = alignment.__dict__
+
+                                self.data.gi_dict[fake_gi] = {'accession': "000000{}".format(gi_counter), 'title': "unpublished", 'localID': gi_id}
+                                self.data.gi_dict[fake_gi].update(self.local_otu_json['otu{}'.format(gi_id)])
+                                gi_counter += 1
+                                # self.data.gi_dict[fake_gi] = alignment.__dict__
         else:
             if not self._blasted:
                 self.run_blast()
@@ -1464,10 +1478,6 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
         # debug(seq_len_cutoff)
         for gi, seq in self.new_seqs.items():
             debug(gi)
-            if type(gi) != int:
-                sys.stdout.write("WARNING: gi {} is no integer. Will convert value to int\n".format(gi))
-                debug("WARNING: gi {} is no integer. Will convert value to int\n".format(gi))
-                gi = int(gi)
             if self.blacklist is not None and gi in self.blacklist:
                 debug("gi in blacklist, not added")
                 pass
@@ -1477,6 +1487,13 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
             else:
                 debug("add to aln if not similar to existing")
                 if len(seq.replace("-", "").replace("N", "")) > seq_len_cutoff:
+                    
+                    if type(gi) == int or gi.isdigit():
+                        debug("gi is digit")
+                        if type(gi) != int:
+                            sys.stdout.write("WARNING: gi {} is no integer. Will convert value to int\n".format(gi))
+                            debug("WARNING: gi {} is no integer. Will convert value to int\n".format(gi))
+                            gi = int(gi)
                     # if self.config.blast_loc == 'local':
                     #     localblast = True
                     # else:
@@ -1864,27 +1881,27 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
         # debug(key)
         gi_counter = 1
         if key not in self.data.gi_dict.keys():
-            # debug(key)
+            debug("key is new")
             # numbers starting with 0000 are unpublished data
             self.data.gi_dict[key] = {'accession': "000000{}".format(gi_counter), 'title': "unpublished", 'localID': key[7:]}
-            self.data.otu_dict[key] = {}
-            self.data.otu_dict[key]['^ncbi:gi'] = key
-            self.data.otu_dict[key]['^ncbi:accession'] = self.data.gi_dict[key]['accession']
-            self.data.otu_dict[key]['^user:TaxonName'] = self.data.gi_dict[key]['localID']
-            self.data.otu_dict[key]['^ncbi:title'] = self.data.gi_dict[key]['title']
-            local_id = self.data.gi_dict[key]['localID']
-            key2 = "otu{}".format(local_id)
-            # debug(key2)
-            # debug(self.data.otu_dict[key].keys())
-            # debug(self.local_otu_json.keys())
-            # debug(self.local_otu_json[key2].keys())
-            self.data.otu_dict[key]['^ot:ottTaxonName'] = self.local_otu_json[key2]['^ot:ottTaxonName']
-            self.data.otu_dict[key]['^ncbi:taxon'] = self.local_otu_json[key2]['^ncbi:taxon']  # TODO FIX key id change
-            self.data.otu_dict[key]['^ot:ottId'] = self.local_otu_json[key2]['^ot:ottId']
-            self.data.otu_dict[key]['^physcraper:status'] = "local seq"
-            self.data.otu_dict[key]['^physcraper:last_blasted'] = "1800/01/01"
             gi_counter += 1
+            # self.data.otu_dict[key] = {}
+            # self.data.otu_dict[key]['^ncbi:gi'] = key
+            # self.data.otu_dict[key]['^ncbi:accession'] = self.data.gi_dict[key]['accession']
+            # self.data.otu_dict[key]['^user:TaxonName'] = self.data.gi_dict[key]['localID']
+            # self.data.otu_dict[key]['^ncbi:title'] = self.data.gi_dict[key]['title']
+            # local_id = self.data.gi_dict[key]['localID']
+            # key2 = "otu{}".format(local_id)
+            # self.data.otu_dict[key]['^ot:ottTaxonName'] = self.local_otu_json[key2]['^ot:ottTaxonName']
+            # self.data.otu_dict[key]['^ncbi:taxon'] = self.local_otu_json[key2]['^ncbi:taxon']  # TODO FIX key id change
+            # self.data.otu_dict[key]['^ot:ottId'] = self.local_otu_json[key2]['^ot:ottId']
+            # self.data.otu_dict[key]['^physcraper:status'] = "local seq"
+            # self.data.otu_dict[key]['^physcraper:last_blasted'] = "1800/01/01"
             # self.ids.get_rank_info(taxon_name=self.data.otu_dict[key]['^ot:ottTaxonName'])  #TODO: do i really need this?
+        else: 
+            # debug("add new k,v - pairs")
+            # debug(self.data.gi_dict[key])
+            self.data.gi_dict[key].update([ ('accession', "000000{}".format(gi_counter)), ('title', "unpublished"), ('localID', key[7:])] )
 
 
 ###############################
@@ -1939,7 +1956,7 @@ class FilterBlast(PhyscraperScrape):
         
         self.downtorank = None
         # self.localblast = False
-        self.local_otu_json = None
+        # self.local_otu_json = None
 
         # self.not_added = []
         if settings is not None:
