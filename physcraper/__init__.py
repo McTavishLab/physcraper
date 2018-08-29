@@ -47,7 +47,6 @@ _DEBUG_MK = 1
 _VERBOSE = 1
 
 
-debug(os.path.realpath(__file__))
 
 def debug(msg):
     """short debugging command
@@ -67,6 +66,7 @@ def is_number(s):
     except ValueError:
         return False
 
+debug(os.path.realpath(__file__))
 
 class ConfigObj(object):
     """Pulls out the configuration information from
@@ -897,7 +897,7 @@ class IdDicts(object):
                 tax_info = ncbi.get_name_translator([tax_name])
                 # debug(tax_info)
                 if tax_info == {}:
-                    print("Taxon name does not match any name in ncbi. Check that name is written correctly!")
+                    debug("Taxon name does not match any name in ncbi. Check that name is written correctly!")
                 tax_id = int(tax_info.items()[0][1][0])
         assert type(tax_id) is int
         self.spn_to_ncbiid[tax_name] = tax_id
@@ -1420,7 +1420,7 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
                             sys.stdout.write("seq {} is supersequence of {}, {} added and {} removed\n".format(label, tax_lab, label, tax_lab))
                         self.data.otu_dict[label]['^physcraper:status'] = "new seq added in place of {}".format(tax_lab)
                         if _DEBUG_MK == 1:
-                            print(id_of_label, "added, instead of ", existing_id)
+                            # print(id_of_label, "added, instead of ", existing_id)
                             debug("{} added, instead of  {}".format(id_of_label, existing_id))
                         continue_search = True
                         continue
