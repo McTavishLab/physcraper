@@ -1498,10 +1498,9 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
                     #     localblast = True
                     # else:
                     #     localblast = False
-                    if gi in self.find_otudict_gi():
-                    assert type(gi) is int
+                    # assert type(gi) is int
                     self.newseqsgi.append(gi)
-                        exit(-1)
+                   
                     otu_id = self.data.add_otu(gi, self.ids)
 
                     # try:
