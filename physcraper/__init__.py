@@ -2414,7 +2414,7 @@ class FilterBlast(PhyscraperScrape):
                 rowinfo = [otu]
                 for item in otu_dict_keys:
                     if item in self.data.otu_dict[otu].keys():
-                        tofile = self.data.otu_dict[otu][item].replace("_", " ")
+                        tofile = str(self.data.otu_dict[otu][item]).replace("_", " ")
                         rowinfo.append(tofile)
                     else:
                         rowinfo.append("-")
