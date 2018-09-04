@@ -61,6 +61,28 @@ def load_names(names_file):
     return sci_df
 
 
+def load_synonyms(names_file):
+    '''
+    load names.dmp and convert it into a pandas.DataFrame
+    '''
+    assert os.path.exists(names_file)
+    print("load synonyms")
+    df = pd.read_csv(names_file, sep='|', header=None, index_col=False,
+                     names=[
+                         'tax_id',
+                         'name_txt',
+                         'unique_name',
+                         'name_class'
+                     ])
+    df['name_txt'] = df['name_txt'].apply(strip)
+    df['unique_name'] = df['unique_name'].apply(strip)
+    df['name_class'] = df['name_class'].apply(strip)
+    # print(df)
+    sci_df = df[df['name_class'] == 'synonym']
+    sci_df.reset_index(drop=True, inplace=True)
+    return sci_df
+
+
 class Parser:
     """read in databases from ncbi to connect species name with the taxonomic identifier 
     and the corresponding hierarchical information. It provides a much faster way to get those information.
@@ -85,6 +107,8 @@ class Parser:
         nodes = load_nodes(self.nodes_file)
         global names
         names = load_names(self.names_file)
+        global synonyms
+        synonyms = load_synonyms(self.names_file)
 
     def get_downtorank_id(self, tax_id, downtorank="species"):
         """ Recursive function to find the parent id of a taxon as defined by downtorank.
@@ -110,3 +134,48 @@ class Parser:
         if names is None:
             self.initialize() 
         return names[names["tax_id"] == tax_id]["name_txt"].values[0].replace(" ", "_")
+
+    def get_id_from_name(self, tax_name):
+        """ Find the scientific name for a given ID.
+        """
+        if names is None:
+            self.initialize()
+        tax_name = tax_name.replace("_", " ")
+        # print(tax_name)
+        # print(tax_name.split(" "))
+        # print(len(tax_name.split(" ")))
+        try:
+            tax_id = names[names["name_txt"] == tax_name]["tax_id"].values[0]
+        except IndexError:
+            if len(tax_name.split(" ")) == 3:
+                tax_name = "{} {}-{}".format(tax_name.split(" ")[0], tax_name.split(" ")[1], tax_name.split(" ")[2])
+                # print(tax_name)
+                tax_id = names[names["name_txt"] == tax_name]["tax_id"].values[0]
+            else:
+                print("Are you sure, its an accepted name and not a synonym?I look in the synonym table now")
+                tax_id = self.get_id_from_synonym(tax_name)
+
+        # print(names[names["name_txt"] == tax_name])
+        # print(names[names["name_txt"] == tax_name]["tax_id"])
+        return tax_id
+
+    def get_id_from_synonym(self, tax_name):
+        """ Find the scientific name for a given ID.
+        """
+        if names is None:
+            self.initialize()
+        tax_name = tax_name.replace("_", " ")
+        # print(tax_name)
+        # print(tax_name.split(" "))
+        # print(len(tax_name.split(" ")))
+        try:
+            tax_id = synonyms[synonyms["name_txt"] == tax_name]["tax_id"].values[0]
+        except IndexError:
+            if len(tax_name.split(" ")) == 3:
+                tax_name = "{} {}-{}".format(tax_name.split(" ")[0], tax_name.split(" ")[1], tax_name.split(" ")[2])
+                # print(tax_name)
+                tax_id = names[names["name_txt"] == tax_name]["tax_id"].values[0]
+        # print(synonyms[synonyms["name_txt"] == tax_name])
+        # print(names[names["name_txt"] == tax_name]["tax_id"])
+        return tax_id
+
