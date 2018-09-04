@@ -136,7 +136,7 @@ class Parser:
         return names[names["tax_id"] == tax_id]["name_txt"].values[0].replace(" ", "_")
 
     def get_id_from_name(self, tax_name):
-        """ Find the scientific name for a given ID.
+        """ Find the ID for a given taxonomic name.
         """
         if names is None:
             self.initialize()
@@ -160,7 +160,7 @@ class Parser:
         return tax_id
 
     def get_id_from_synonym(self, tax_name):
-        """ Find the scientific name for a given ID.
+        """ Find the ID for a given taxonomic name, which is not an accepted name.
         """
         if names is None:
             self.initialize()
@@ -175,6 +175,9 @@ class Parser:
                 tax_name = "{} {}-{}".format(tax_name.split(" ")[0], tax_name.split(" ")[1], tax_name.split(" ")[2])
                 # print(tax_name)
                 tax_id = names[names["name_txt"] == tax_name]["tax_id"].values[0]
+            else:
+                print("something else is going wrong: {}".format(tax_name))
+
         # print(synonyms[synonyms["name_txt"] == tax_name])
         # print(names[names["name_txt"] == tax_name]["tax_id"])
         return tax_id
