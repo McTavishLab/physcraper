@@ -63,10 +63,10 @@ def load_names(names_file):
 
 class Parser:
     """read in databases from ncbi to connect species name with the taxonomic identifier 
-    and the corresponding hirachical information. It provides a much faster way to get those information.
+    and the corresponding hierarchical information. It provides a much faster way to get those information.
     We use those files to get independent from web requests to find those information 
     (the implementation of it in BioPython was not really reliable).
-    Nodes includes the hierachical infortmation, names the scientific names and ID's.
+    Nodes includes the hierarchical information, names the scientific names and ID's.
     The files need to be updated regularly, best way to always do it when a new blast database was loaded
     """
     def __init__(self, names_file, nodes_file):
