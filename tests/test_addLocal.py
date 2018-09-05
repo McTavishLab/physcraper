@@ -24,8 +24,8 @@ cwd = os.getcwd()
 treshold=10
 selectby="blast"
 downto= None
-add_local_seq = "/home/blubb/Documents/gitdata/physcraper/tests/data/local_seqs"
-id_to_spn_addseq = "/home/blubb/Documents/gitdata/physcraper/tipnTOspn_localAdd.csv"
+add_local_seq = "tests/data/local_seqs"
+id_to_spn_addseq = "tests/data/tipnTOspn_localAdd.csv"
 
 ###################
 
@@ -78,10 +78,12 @@ if add_local_seq is not None:
     filteredScrape.unpublished = True
 if filteredScrape.unpublished == True: # use unpublished data
     filteredScrape.unpublished = True
+    filteredScrape.data.local_otu_json = otu_json_local
+
     filteredScrape.write_unpl_lblastdb(add_local_seq)
-    #filteredScrape.run_local_blast()
+
+    # filteredScrape.make_otu_dict_entry_unpubl()
     filteredScrape.run_blast()
-    filteredScrape.local_otu_json = otu_json_local
     filteredScrape.read_blast()
     filteredScrape.remove_identical_seqs()
 
