@@ -28,6 +28,9 @@ except:
 
 
 scraper =  PhyscraperScrape(data_obj, ids)
+scraper.config.blast_loc = 'remote'
+scraper.config.gifilename = False
+
 scraper._blasted = 1
 blast_dir = "tests/data/precooked/fixed/tte_blast_files"
 scraper.gi_list_mrca = pickle.load(open("tests/data/precooked/gi_list_mrca.p", 'rb'))
@@ -54,6 +57,8 @@ for taxon in scraper.data.tre.taxon_namespace:
 data_obj = pickle.load(open("tests/data/precooked/tiny_dataobj.p", 'rb')) #reload bc data object is mutable
 data_obj.workdir = absworkdir
 scraper2 = PhyscraperScrape(data_obj, ids)
+scraper2.config.blast_loc = 'remote'
+scraper2.config.gifilename = False
 j = len(scraper2.data.aln) == 5
 scraper2.gi_list_mrca = pickle.load(open("tests/data/precooked/gi_list_mrca.p", 'rb'))
 scraper2.read_blast(blast_dir="tests/data/precooked/fixed/tte_blast_files")
@@ -63,7 +68,9 @@ k = len(scraper2.new_seqs) == 40
 l = len(scraper2.new_seqs_otu_id) == 0
 
 scraper2.remove_identical_seqs()
-
+# print(scraper2.data.otu_dict)
+# print(len(scraper.new_seqs_otu_id), 38)
+# print(len(scraper2.new_seqs_otu_id), 36)
 m = len(scraper2.new_seqs_otu_id) == 36
 count = 0
 if a*b*c*d*e*f*g*h*i*j*k*l*m:

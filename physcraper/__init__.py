@@ -673,7 +673,7 @@ class AlignTreeTax(object):
         # last_blasted date infos: 1800 = never blasted; 1900 = blasted 1x, not added; this century = blasted and added
         self.otu_dict[otu_id]['^physcraper:last_blasted'] = "1800/01/01"
         if type(gi_id) != int:
-            debug(gi_id)
+            # debug(gi_id)
             # self.otu_dict[otu_id]['^user:TaxonName']
             self.otu_dict[otu_id]['^physcraper:status'] = "local seq"
             self.otu_dict[otu_id]["^ot:originalLabel"] = self.gi_dict[gi_id]['localID']
@@ -965,7 +965,7 @@ class IdDicts(object):
                 # for key, value in self.spn_to_ncbiid.values():
                 #     if value == ncbi_id:
                 #         tax_name = key
-                if ncbi_id in self.ncbiid_to_spn.keys:
+                if ncbi_id in self.ncbiid_to_spn.keys():
                     tax_name = self.ncbiid_to_spn[ncbi_id]
                 else:
                     tax_name = self.ncbi_parser.get_name_from_id(ncbi_id)
@@ -1245,10 +1245,13 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
             for taxon in self.data.aln:
                 # debug(taxon)
                 # debug("add blast seq to new seqs")
+                # debug("blast location is: {}".format(self.config.blast_loc))
                 if self.config.blast_loc == 'local':
                     file_ending = "txt"
                 else:
                     file_ending = "xml"
+                # debug(self.config.gifilename)
+                # debug(self.blast_subdir)
                 if self.config.gifilename is True:
                     fn = self.data.otu_dict[taxon.label].get('^ncbi:gi', taxon.label)
                     fn_path = "{}/{}.{}".format(self.blast_subdir, fn, file_ending)
@@ -1296,7 +1299,7 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
                             if float(query_dict[key]['evalue']) < float(self.config.e_value_thresh):
                                 gi_id = query_dict[key]['^ncbi:gi']
                                 # debug(type(gi_id))
-                                debug(gi_id)
+                                # debug(gi_id)
                                 if len(self.gi_list_mrca) >= 1 and (gi_id not in self.gi_list_mrca):
                                     # debug("pass")
                                     pass
@@ -1341,7 +1344,7 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
         """Get the species name and the corresponding ncbi id of the otu.
         """
 
-        # debug("get_spn_id_of_otulabel")
+        # debug("get_tax_id_of_otulabel")
         # debug(label)
         # debug(self.data.otu_dict[label].keys())
         spn_of_label = self.ids.find_name(sp_dict=self.data.otu_dict[label])
@@ -1436,7 +1439,7 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
                         if _VERBOSE:
                             sys.stdout.write("seq {} is subsequence of {}, not added\n".format(label, tax_lab))
                         self.data.otu_dict[label]['^physcraper:status'] = "subsequence, not added"
-                        debug("{} not added, subseq of".format(existing_id))
+                        debug("{} not added, subseq of {}".format(id_of_label, existing_id))
                         never_add = True
                         continue
                     return seq_dict
@@ -1475,8 +1478,8 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
             if (self.data.otu_dict[label]['^physcraper:status'].split(' ')[0] in self.seq_filter) or never_add is True:
                 if label in seq_dict.keys():
                     del seq_dict[label]
-                else:
-                    debug("label was never added to seq_dict")
+                # else:
+                #     debug("label was never added to seq_dict")
                 try:
                     self.data.remove_taxa_aln_tre(label)
                 except:
@@ -1518,7 +1521,7 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
         # debug("seq cutoff")
         # debug(seq_len_cutoff)
         for gi_id, seq in self.new_seqs.items():
-            debug(gi_id)
+            # debug(gi_id)
             if self.blacklist is not None and gi_id in self.blacklist:
                 debug("gi_id in blacklist, not added")
                 pass
@@ -1526,11 +1529,11 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
                 debug("passed, was already added")
                 pass
             else:
-                debug("add to aln if not similar exists")
+                # debug("add to aln if no similar seq exists")
                 if len(seq.replace("-", "").replace("N", "")) > seq_len_cutoff:
                     
                     if type(gi_id) == int or gi_id.isdigit():
-                        debug("gi_id is digit")
+                        # debug("gi_id is digit")
                         if type(gi_id) != int:
                             sys.stdout.write("WARNING: gi_id {} is no integer. Will convert value to int\n".format(gi_id))
                             debug("WARNING: gi_id {} is no integer. Will convert value to int\n".format(gi_id))

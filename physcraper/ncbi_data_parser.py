@@ -4,6 +4,18 @@ import os
 import sys
 import pandas as pd
 
+
+_DEBUG_MK = 0
+
+def debug(msg):
+    """short debugging command
+    """
+    if _DEBUG_MK == 1:
+        print(msg)
+    # with open("debugging.txt", "a") as debugf:
+    #     debugf.write("{}\n".format(msg))
+
+
 nodes = None
 names = None
 
@@ -66,7 +78,7 @@ def load_synonyms(names_file):
     load names.dmp and convert it into a pandas.DataFrame
     '''
     assert os.path.exists(names_file)
-    print("load synonyms")
+    # print("load synonyms")
     df = pd.read_csv(names_file, sep='|', header=None, index_col=False,
                      names=[
                          'tax_id',
@@ -167,6 +179,7 @@ class Parser:
 
         # print(names[names["name_txt"] == tax_name])
         # print(names[names["name_txt"] == tax_name]["tax_id"])
+        tax_id = int(tax_id)
         return tax_id
 
     def get_id_from_synonym(self, tax_name):
