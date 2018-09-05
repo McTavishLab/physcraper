@@ -52,9 +52,9 @@ xEno_dactylophyllum,Xenophyllum_dactylophyllum
 S_macroglossus,Senecio_macroglossus
 S_corymbiferus,Senecio_corymbiferus
 GRaph_organensis,Graphistylis_organensis
-S_radicanS,Senecio_radicanS
+S_radicanS,Senecio_radicans
 S_scandens,Senecio_scandens
-S_deltoideuS,Senecio_deltoideuS
+S_deltoideuS,Senecio_deltoideus
 S_meuselii,Senecio_meuselii
 S_scaposus,Senecio_scaposus
 CIn_grandiflora,Cineraria_grandiflora
@@ -78,7 +78,7 @@ DEndrop_bomanii,Dendrophorbium_bomanii
 DOro_pimpinellifolia,Dorobaea_pimpinellifolia
 OThonna_capensis,Othonna_capensis
 BEth_rupicola,Bethencourtia_rupicola
-S_polyanthemoideS,Senecio_polyanthemoideS
+S_polyanthemoideS,Senecio_polyanthemoides
 9_2_maranguensis,Senecio_maranguensis
 S_latifolius,Senecio_latifolius
 S_szyszylowiczii,Senecio_szyszylowiczii
@@ -148,5 +148,5 @@ DOronicum,Doronicum
 BOl_pedunculosa,Bolandia_pedunculosa
 MOn_abietina,Monticalia_abietina
 GYnura_formosana,Gynura_formosana
-LIgularia_stenocephala,LIgularia_stenocephala
+LIgularia_stenocephala,Ligularia_stenocephala
 ELekmania_picardae,Elekmania_picardae
