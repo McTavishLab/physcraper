@@ -272,7 +272,7 @@ def filter_OTOL(study_id,
         if treshold is not None:
             filteredScrape.sp_dict(downtorank)
             filteredScrape.make_sp_seq_dict()
-            filteredScrape.how_many_sp_to_keep(treshold=treshold, selectby=selectby)
+            filteredScrape.how_many_sp_to_keep(threshold=treshold, selectby=selectby)
             filteredScrape.replace_new_seq()
         debug("from replace to streamed aln")
         sys.stdout.write("calculate the phylogeny\n")
@@ -290,7 +290,7 @@ def filter_OTOL(study_id,
         if treshold is not None:
             filteredScrape.sp_dict(downtorank)
             filteredScrape.make_sp_seq_dict()
-            filteredScrape.how_many_sp_to_keep(treshold=treshold, selectby=selectby)
+            filteredScrape.how_many_sp_to_keep(threshold=treshold, selectby=selectby)
             filteredScrape.replace_new_seq()
         filteredScrape.data.reconcile(seq_len_perc=0.75)
         sys.stdout.write("calculate the phylogeny\n")
@@ -412,7 +412,7 @@ def filter_data_run(seqaln,
             if treshold is not None:
                 filteredScrape.sp_dict(downtorank)
                 filteredScrape.make_sp_seq_dict()
-                filteredScrape.how_many_sp_to_keep(treshold=treshold, selectby=selectby)
+                filteredScrape.how_many_sp_to_keep(threshold=treshold, selectby=selectby)
                 filteredScrape.replace_new_seq()
             debug("from replace to streamed aln")
             sys.stdout.write("calculate the phylogeny\n")
@@ -434,7 +434,7 @@ def filter_data_run(seqaln,
         if treshold is not None:
             filteredScrape.sp_dict(downtorank)
             filteredScrape.make_sp_seq_dict()
-            filteredScrape.how_many_sp_to_keep(treshold=treshold, selectby=selectby)
+            filteredScrape.how_many_sp_to_keep(threshold=treshold, selectby=selectby)
             filteredScrape.replace_new_seq()
         filteredScrape.data.reconcile(seq_len_perc=0.75)
         sys.stdout.write("calculate the phylogeny\n")
@@ -516,7 +516,7 @@ def run_with_settings(settings):
         if settings.treshold is not None:
             filteredScrape.sp_dict(settings.downtorank)
             filteredScrape.make_sp_seq_dict(treshold=settings.treshold, selectby=settings.selectby)
-            filteredScrape.how_many_sp_to_keep(treshold=settings.treshold, selectby=settings.selectby)
+            filteredScrape.how_many_sp_to_keep(threshold=settings.treshold, selectby=settings.selectby)
             filteredScrape.replace_new_seq()
         debug("from replace to streamed aln")
         filteredScrape.generate_streamed_alignment()
@@ -533,7 +533,7 @@ def run_with_settings(settings):
         if settings.treshold is not None:
             filteredScrape.sp_dict(settings.downtorank)
             filteredScrape.make_sp_seq_dict(treshold=settings.treshold, selectby=settings.selectby)
-            filteredScrape.how_many_sp_to_keep(treshold=settings.treshold, selectby=settings.selectby)
+            filteredScrape.how_many_sp_to_keep(threshold=settings.treshold, selectby=settings.selectby)
             filteredScrape.replace_new_seq()
         filteredScrape.generate_streamed_alignment()
         filteredScrape.dump()

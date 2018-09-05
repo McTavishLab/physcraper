@@ -2458,7 +2458,7 @@ class Settings(object):
         self.trfn = trfn
         self.schema_trf = schema_trf
         self.workdir = workdir
-        self.treshold = treshold
+        self.threshold = treshold
         self.selectby = selectby
         self.downtorank = downtorank
         self.spInfoDict = spInfoDict
