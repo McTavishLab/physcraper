@@ -118,6 +118,11 @@ class Parser:
         # print(downtorank)
         if nodes is None:
             self.initialize()
+
+        # following statement is to get id of taxa if taxa is higher ranked than specified
+        if nodes[nodes["tax_id"] == tax_id]["rank"].values[0] != "species":
+            if downtorank == "species":
+                return tax_id
         if type(tax_id) != int:
             sys.stdout.write("WARNING: tax_id {} is no integer. Will convert value to int\n".format(tax_id))
             tax_id = int(tax_id)
@@ -145,7 +150,7 @@ class Parser:
         # print(tax_name.split(" "))
         # print(len(tax_name.split(" ")))
 
-        if tax_name.split(" ")[1] == "sp."
+        if tax_name.split(" ")[1] == "sp.":
             tax_name = "{}".format(tax_name.split(" ")[0])
         # print(tax_name)
 
