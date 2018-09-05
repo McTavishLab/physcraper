@@ -1,3 +1,13 @@
+
+## Short introduction into what the tool actually does
+
+PhyScraper is a command-line tool written in python to automatically update phylogenies. As input it needs a phylogeny, the corresponding alignment and the information about the tip names and the corresponding species names. This can either be a file provided by the user or if you have uploaded your tree to Open Tree of Life the corresponding study ID.
+PhyScraper will take every input sequence and blasts it against the ncbi GenBank database. Sequences that are similar to the input sequence will be added to the alignment, if they are a different species concept and/or they are longer than existing sequences or differ in at least one point mutation.
+Then it will place the newly found sequences onto the tree, which is then used as a starting tree for a full RAxML run. In the next round, every newly added sequence will be blasted and this continues until no new sequence were found.
+After a certain time threshold (currently 14 days), the existing sequences will be blasted again to check if new sequences can be found.
+Currently it works only 
+
+
 ## Short tutorial:
 
 ### Before you can start
@@ -159,11 +169,4 @@
         2. in your config file: change the gifilename setting to True. 
         
         Be careful! If you have different hitlist_size defined, your blast files have different numbers of sequences saved. Sharing the folder across those different settings is not recommended!
-
-## Short introduction into what the tool actually does
-
-PhyScraper is a command-line tool written in python to automatically update phylogenies. As input it needs a phylogeny, the corresponding alignment and the information about the tip names and the corresponding species names. This can either be a file provided by the user or if you have uploaded your tree to Open Tree of Life the corresponding study ID.
-PhyScraper will take every input sequence and blasts it against the ncbi GenBank database. Sequences that are similar to the input sequence will be added to the alignment, if they are a different species concept and/or they are longer than existing sequences or differ in at least one point mutation.
-Then it will place the newly found sequences onto the tree, which is then used as a starting tree for a full RAxML run. In the next round, every newly added sequence will be blasted and this continues until no new sequence were found.
-After a certain time threshold (currently 14 days), the existing sequences will be blasted again to check if new sequences can be found.
-Currently it works only for single gene datasets, we are working on an extension to concatenate several runs at the end of the updating.
+for single gene datasets, we are working on an extension to concatenate several runs at the end of the updating.

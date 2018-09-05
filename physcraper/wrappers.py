@@ -451,8 +451,8 @@ def make_settings_class(seqaln, mattype, trfn, schema_trf, workdir,
                         id_to_spn_addseq_json=None, configfi=None, blacklist=None):
     """all the settings are set here and can then be fed to the FilterClass
     """
-    settings = Settings(seqaln=seqaln, mattype=mattype, trfn=trfn, schema_trf=schema_trf, workdir=workdir, 
-                        treshold=treshold, selectby=selectby, downtorank=downtorank, spInfoDict=spInfoDict, 
+    settings = Settings(seqaln=seqaln, mattype=mattype, trfn=trfn, schema_trf=schema_trf, workdir=workdir,
+                        threshold=treshold, selectby=selectby, downtorank=downtorank, spInfoDict=spInfoDict,
                         add_local_seq=add_local_seq, id_to_spn_addseq_json=id_to_spn_addseq_json, configfi=configfi, blacklist=blacklist)
     return settings
     
