@@ -378,7 +378,7 @@ def filter_data_run(seqaln,
             debug("will add local sequences now")
             filteredScrape.unpublished = True
             filteredScrape.write_unpl_lblastdb(add_local_seq)
-            #filteredScrape.run_local_blast()
+            filteredScrape.make_otu_dict_entry_unpubl()
             filteredScrape.run_blast()
             print(id_to_spn_addseq_json)
             filteredScrape.local_otu_json = id_to_spn_addseq_json

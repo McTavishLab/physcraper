@@ -125,9 +125,9 @@ class Parser:
     def get_downtorank_id(self, tax_id, downtorank="species"):
         """ Recursive function to find the parent id of a taxon as defined by downtorank.
         """ 
-        # print(tax_id)
+        debug(tax_id)
         # print(type(tax_id))
-        # print(downtorank)
+        debug(downtorank)
         if nodes is None:
             self.initialize()
 
@@ -158,13 +158,13 @@ class Parser:
         if names is None:
             self.initialize()
         tax_name = tax_name.replace("_", " ")
-        # print(tax_name)
-        # print(tax_name.split(" "))
-        # print(len(tax_name.split(" ")))
+        debug(tax_name)
+        debug(tax_name.split(" "))
+        debug(len(tax_name.split(" ")))
 
         if tax_name.split(" ")[1] == "sp.":
             tax_name = "{}".format(tax_name.split(" ")[0])
-        # print(tax_name)
+        debug(tax_name)
 
         try:
             tax_id = names[names["name_txt"] == tax_name]["tax_id"].values[0]
@@ -174,7 +174,7 @@ class Parser:
                 # print(tax_name)
                 tax_id = names[names["name_txt"] == tax_name]["tax_id"].values[0]
             else:
-                print("Are you sure, its an accepted name and not a synonym?I look in the synonym table now")
+                sys.stdout.write("Are you sure, its an accepted name and not a synonym?I look in the synonym table now")
                 tax_id = self.get_id_from_synonym(tax_name)
 
         # print(names[names["name_txt"] == tax_name])
@@ -188,7 +188,7 @@ class Parser:
         if names is None:
             self.initialize()
         tax_name = tax_name.replace("_", " ")
-        # print(tax_name)
+        debug(tax_name)
         # print(tax_name.split(" "))
         # print(len(tax_name.split(" ")))
         try:
