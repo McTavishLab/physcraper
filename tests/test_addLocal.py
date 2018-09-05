@@ -78,9 +78,9 @@ if add_local_seq is not None:
     filteredScrape.unpublished = True
 if filteredScrape.unpublished == True: # use unpublished data
     filteredScrape.unpublished = True
-    filteredScrape.data.local_otu_json = otu_json_local
+    filteredScrape.data.unpubl_otu_json = otu_json_local
 
-    filteredScrape.write_unpl_lblastdb(add_local_seq)
+    filteredScrape.write_unpubl_blastdb(add_local_seq)
 
     # filteredScrape.make_otu_dict_entry_unpubl()
     filteredScrape.run_blast()

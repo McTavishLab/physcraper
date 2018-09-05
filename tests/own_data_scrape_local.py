@@ -3,11 +3,11 @@ import os
 import json
 from physcraper import wrappers, OtuJsonDict, ConfigObj, IdDicts
 
-seqaln= "tests/data/tiny_test_example/test.fas"
-mattype="fasta"
-trfn= "tests/data/tiny_test_example/test.tre"
+seqaln = "tests/data/tiny_test_example/test.fas"
+mattype = "fasta"
+trfn = "tests/data/tiny_test_example/test.tre"
 schema_trf = "newick"
-workdir="tests/output/test_own_local"
+workdir = "tests/output/test_own_local"
 configfi = "tests/data/test.config"
 # configfi = "tests/data/aws.config"
 id_to_spn = r"tests/data/tiny_test_example/test_nicespl.csv"
@@ -24,8 +24,7 @@ if os.path.exists(otu_jsonfi):
     print("load json")
 else:
     otu_json = OtuJsonDict(id_to_spn, ids)
-    json.dump(otu_json, open(otu_jsonfi,"w"))
-
+    json.dump(otu_json, open(otu_jsonfi, "w"))
 
 wrappers.own_data_run(seqaln,
                       mattype,
@@ -33,5 +32,4 @@ wrappers.own_data_run(seqaln,
                       schema_trf,
                       workdir,
                       otu_jsonfi,
-                      configfi
-                      )
+                      configfi)
