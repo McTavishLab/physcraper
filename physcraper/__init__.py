@@ -625,7 +625,7 @@ class AlignTreeTax(object):
         elif gi_id[:6] == "unpubl":
             # debug(self.gi_dict.keys())
             # debug(self.gi_dict[gi_id].keys())
-            tax_name = self.gi_dict[gi_id]['^ot:ott_idTaxonName']
+            tax_name = self.gi_dict[gi_id]['^ot:ottTaxonName']
             ncbi_id = self.gi_dict[gi_id]['^ncbi:taxon']
             ott_id = self.gi_dict[gi_id]['^ot:ottId']
         else:
@@ -637,7 +637,7 @@ class AlignTreeTax(object):
                 exit(-1)
 
         if ncbi_id is None:
-            print("ncbi is none")
+            debug("ncbi_id is none")
             ncbi_id = ids_obj.ncbi_parser.get_id_from_name(tax_name)
             # if type(gi_id) == int:
             #     print("add id to self")
@@ -673,9 +673,10 @@ class AlignTreeTax(object):
         # last_blasted date infos: 1800 = never blasted; 1900 = blasted 1x, not added; this century = blasted and added
         self.otu_dict[otu_id]['^physcraper:last_blasted'] = "1800/01/01"
         if type(gi_id) != int:
-            print(gi_id)
-            self.otu_dict[otu_id]['^user:TaxonName'] = self.gi_dict[gi_id]['localID']
+            debug(gi_id)
+            # self.otu_dict[otu_id]['^user:TaxonName']
             self.otu_dict[otu_id]['^physcraper:status'] = "local seq"
+            self.otu_dict[otu_id]["^ot:originalLabel"] = self.gi_dict[gi_id]['localID']
         if _DEBUG >= 2:
             sys.stderr.write("gi:{} assigned new otu: {}\n".format(gi_id, otu_id))
         # debug(otu_id)
@@ -945,10 +946,10 @@ class IdDicts(object):
         # debug("find_name")
         tax_name = None
         if sp_dict:
-            if '^user:TaxonName' in sp_dict:
-                tax_name = sp_dict['^user:TaxonName']
-            elif '^ot:ottTaxonName' in sp_dict:
+            if '^ot:ottTaxonName' in sp_dict:
                 tax_name = sp_dict['^ot:ottTaxonName']
+            elif '^user:TaxonName' in sp_dict:
+                tax_name = sp_dict['^user:TaxonName']
         if tax_name is None:
             gi_id = None
             if gi:
@@ -1228,6 +1229,7 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
                             # debug(gi_id)
                             if gi_id not in self.data.gi_dict:  # skip ones we already have
                                 # debug("add gi to new seqs")
+                                self.make_otu_dict_entry_unpubl(gi_id)
                                 fake_gi = "unpubl_{}".format(gi_id)
                                 self.new_seqs[fake_gi] = hsp.sbjct
                                 # debug(gi_id)
@@ -2182,9 +2184,9 @@ class FilterBlast(PhyscraperScrape):
                 #     # gi_id['^ot:ottTaxonName'] = tax_name
                 # tax_name = tax_name.replace(" ", "_")
                 for tax_name_aln, seq in self.data.aln.items():
-                    otu_dict_name = self.ids.find_name(sp_dict=self.data.otu_dict[spn_name_aln.label])
+                    otu_dict_name = self.ids.find_name(sp_dict=self.data.otu_dict[tax_name_aln.label])
                     if tax_name == otu_dict_name:
-                        nametoreturn = spn_name_aln.label
+                        nametoreturn = tax_name_aln.label
             # the next lines where added because the test was breaking,
             # needs thorough testing if it not breaks something else now.
             assert tax_name is not None  # assert instead of if
@@ -2211,11 +2213,11 @@ class FilterBlast(PhyscraperScrape):
                 # debug("generate files used for blast")
                 if gi_id['^physcraper:last_blasted'] != '1800/01/01':  # old seq
                     tax_name = self.ids.find_name(sp_dict=gi_id)
-                    for spn_name_aln, seq in self.data.aln.items():
-                        otu_dict_name = self.ids.find_name(sp_dict=self.data.otu_dict[spn_name_aln.label])
+                    for tax_name_aln, seq in self.data.aln.items():
+                        otu_dict_name = self.ids.find_name(sp_dict=self.data.otu_dict[tax_name_aln.label])
                         if tax_name == otu_dict_name:
                             filename = nametoreturn
-                            # filename = spn_name_aln.label
+                            # filename = tax_name_aln.label
                             if self.downtorank is not None:
                                 filename = key
                             # print(filename, seq)
