@@ -394,7 +394,7 @@ class AlignTreeTax(object):
         self.orig_aln = alignment
         self.orig_newick = newick
         self._reconciled = False
-        self.local_otu_json = None
+        self.unpubl_otu_json = None
 
     def _reconcile_names(self):
         """This checks that the tree "original labels" from phylsystem
@@ -1233,7 +1233,7 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
                                 fake_gi = "unpubl_{}".format(gi_id)
                                 self.new_seqs[fake_gi] = hsp.sbjct
                                 # debug(gi_id)
-                                # debug(self.data.local_otu_json['otu{}'.format(gi_id)])
+                                # debug(self.data.unpubl_otu_json['otu{}'.format(gi_id)])
                                 self.data.gi_dict[fake_gi] = {'accession': "000000{}".format(gi_counter), 'title': "unpublished", 'localID': gi_id}
                                 self.data.gi_dict[fake_gi].update(self.data.local_otu_json['otu{}'.format(gi_id)])
                                 gi_counter += 1
@@ -1875,7 +1875,7 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
 #        pjson.write(frozen)
         json.dump(self.data.otu_dict, open('{}/otu_dict.json'.format(self.workdir), 'wb'))
 
-    def write_unpl_lblastdb(self, path_to_local_seq):
+    def write_unpubl_blastdb(self, path_to_local_seq):
         """Adds local sequences into a  local blast database, which then can be used to blast aln seq against it
         and adds sequences that were found to be similar to input.
         If this option is used, it queries against local database first and only in "2" round
@@ -1920,7 +1920,7 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
 
     def make_otu_dict_entry_unpubl(self, key):
         """adds the local unpublished data to the otu_dict.
-        Information are retrieved from the additional json file/self.local_otu_json.
+        Information are retrieved from the additional json file/self.unpubl_otu_json.
         I make up accession numbers....
 
         """
@@ -1940,9 +1940,9 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
             # self.data.otu_dict[key]['^ncbi:title'] = self.data.gi_dict[key]['title']
             # local_id = self.data.gi_dict[key]['localID']
             # key2 = "otu{}".format(local_id)
-            # self.data.otu_dict[key]['^ot:ottTaxonName'] = self.local_otu_json[key2]['^ot:ottTaxonName']
-            # self.data.otu_dict[key]['^ncbi:taxon'] = self.local_otu_json[key2]['^ncbi:taxon']
-            # self.data.otu_dict[key]['^ot:ottId'] = self.local_otu_json[key2]['^ot:ottId']
+            # self.data.otu_dict[key]['^ot:ottTaxonName'] = self.unpubl_otu_json[key2]['^ot:ottTaxonName']
+            # self.data.otu_dict[key]['^ncbi:taxon'] = self.unpubl_otu_json[key2]['^ncbi:taxon']
+            # self.data.otu_dict[key]['^ot:ottId'] = self.unpubl_otu_json[key2]['^ot:ottId']
             # self.data.otu_dict[key]['^physcraper:status'] = "local seq"
             # self.data.otu_dict[key]['^physcraper:last_blasted'] = "1800/01/01"
             # self.ids.get_rank_info(taxon_name=self.data.otu_dict[key]['^ot:ottTaxonName'])
@@ -1976,7 +1976,7 @@ class FilterBlast(PhyscraperScrape):
         self.filtered_seq = {}
         self.downtorank = None
         # self.localblast = False
-        # self.local_otu_json = None
+        # self.unpubl_otu_json = None
         # self.not_added = []
         if settings is not None:
             self.blacklist = settings.blacklist
