@@ -21,9 +21,9 @@ otu_jsonfi = "{}/otu_dict.json".format(workdir)
 otu_jsonfi_local = "{}/otu_dict_local.json".format(workdir)
 
 cwd = os.getcwd()
-treshold=10
-selectby="blast"
-downto= None
+treshold = 10
+selectby = "blast"
+downto = None
 add_local_seq = "tests/data/local_seqs"
 id_to_spn_addseq = "tests/data/tipnTOspn_localAdd.csv"
 
@@ -35,11 +35,9 @@ try:
     data_obj.workdir = absworkdir
     ids = IdDicts(conf, workdir=data_obj.workdir)
     ids.gi_ncbi_dict = pickle.load(open("tests/data/precooked/tiny_gi_map.p", "rb"))
-
 except:
     sys.stdout.write("\n\nTest setup failed\n\n")
     sys.exit()
-
 
 if not os.path.exists("{}".format(workdir)):
     os.makedirs("{}".format(workdir))
@@ -50,14 +48,13 @@ if os.path.exists(otu_jsonfi_local):
     print(otu_json_local)
 else:
     otu_json_local = OtuJsonDict(id_to_spn_addseq, ids)
-    json.dump(otu_json_local, open(otu_jsonfi_local,"w"))
+    json.dump(otu_json_local, open(otu_jsonfi_local, "w"))
     print(otu_json_local)
 
 
 sys.stdout.write("\ntest addLocal\n")
 
-#Prune sequences below a certain length threshold
-#This is particularly important when using loci that have been de-concatenated, as some are 0 length which causes problems.
+# Prune sequences below a certain length threshold
 data_obj.prune_short()
 data_obj.write_files()
 data_obj.write_labelled(label='^ot:ottTaxonName', gi_id=True)
@@ -69,17 +66,16 @@ sys.stdout.flush()
 
 ids = IdDicts(conf, workdir=workdir)
 
-#Now combine the data, the ids, and the configuration into a single physcraper scrape object
-filteredScrape =  FilterBlast(data_obj, ids)
+# Now combine the data, the ids, and the configuration into a single physcraper scrape object
+filteredScrape = FilterBlast(data_obj, ids)
 filteredScrape.blacklist = blacklist
 
 
 if add_local_seq is not None:
     filteredScrape.unpublished = True
-if filteredScrape.unpublished == True: # use unpublished data
+if filteredScrape.unpublished is True:  # use unpublished data
     filteredScrape.unpublished = True
     filteredScrape.data.unpubl_otu_json = otu_json_local
-
     filteredScrape.write_unpubl_blastdb(add_local_seq)
 
     # filteredScrape.make_otu_dict_entry_unpubl()
@@ -87,14 +83,12 @@ if filteredScrape.unpublished == True: # use unpublished data
     filteredScrape.read_blast()
     filteredScrape.remove_identical_seqs()
 
-test=False
+test = False
 for key in filteredScrape.data.otu_dict.keys():
-
     if '^ncbi:title' in filteredScrape.data.otu_dict[key].keys():
         if filteredScrape.data.otu_dict[key]['^ncbi:title'] == "unpublished":
             test = True
             break
-
 if test:
     sys.stdout.write("\ntest passed\n")
 else:

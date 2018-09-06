@@ -418,9 +418,9 @@ def filter_data_run(seqaln,
             sys.stdout.write("remove idential sequences\n")
             filteredScrape.remove_identical_seqs()
             filteredScrape.dump()
-            debug(treshold)
+            debug(threshold)
             sys.stdout.write("Filter the sequences\n")
-            if treshold is not None:
+            if threshold is not None:
                 filteredScrape.sp_dict(downtorank)
                 filteredScrape.make_sp_seq_dict()
                 filteredScrape.how_many_sp_to_keep(threshold=threshold, selectby=selectby)
@@ -442,10 +442,10 @@ def filter_data_run(seqaln,
         filteredScrape.read_blast(blast_dir= shared_blast_folder)
         filteredScrape.remove_identical_seqs()
         sys.stdout.write("Filter the sequences\n")
-        if treshold is not None:
+        if threshold is not None:
             filteredScrape.sp_dict(downtorank)
             filteredScrape.make_sp_seq_dict()
-            filteredScrape.how_many_sp_to_keep(threshold=treshold, selectby=selectby)
+            filteredScrape.how_many_sp_to_keep(threshold=threshold, selectby=selectby)
             filteredScrape.replace_new_seq()
         filteredScrape.data.reconcile(seq_len_perc=0.75)
         sys.stdout.write("calculate the phylogeny\n")

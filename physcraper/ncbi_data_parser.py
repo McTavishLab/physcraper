@@ -161,9 +161,9 @@ class Parser:
         debug(tax_name)
         debug(tax_name.split(" "))
         debug(len(tax_name.split(" ")))
-
-        if tax_name.split(" ")[1] == "sp.":
-            tax_name = "{}".format(tax_name.split(" ")[0])
+        if len(tax_name.split(" ")) >= 2:
+            if tax_name.split(" ")[1] == "sp.":
+                tax_name = "{}".format(tax_name.split(" ")[0])
         debug(tax_name)
 
         try:

@@ -11,12 +11,6 @@ workdir_comb = "tests/output/impl_concat"
 genelist = {"its": {"workdir": workdir_its, "pickle": pickle_fn}, 
             "ets": {"workdir": workdir_ets, "pickle": pickle_fn}}
 
-##############
-# print("{}/{}".format(workdir, pickle_fn))
-# scrape = pickle.load(open("{}/{}".format(workdir, pickle_fn),'rb'))
-# print(scrape)
-#############
-# get to test status
 
 sys.stdout.write("\ntests Concat func make_concat_id_dict\n")
 
@@ -35,19 +29,12 @@ for genename in concat.single_runs:
             spn = concat.get_taxon_info('^ot:ottTaxonName', data)
         elif '^user:TaxonName' in data:
             spn = concat.get_taxon_info('^user:TaxonName', data)
-
-
-
-
-
         spnl.append(spn)
-	
 
 len_single = len(set(spnl))
 # print(set(spnl))
 # print(concat.sp_gi_comb)
 len_concat_id_dict = len(concat.sp_gi_comb)
-
 
 
 # print(len_single, len_concat_id_dict)
