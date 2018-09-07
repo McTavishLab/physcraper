@@ -5,7 +5,8 @@ PhyScraper is a command-line tool written in python to automatically update phyl
 PhyScraper will take every input sequence and blasts it against the ncbi GenBank database. Sequences that are similar to the input sequence will be added to the alignment, if they are a different species concept and/or they are longer than existing sequences or differ in at least one point mutation.
 Then it will place the newly found sequences onto the tree, which is then used as a starting tree for a full RAxML run. In the next round, every newly added sequence will be blasted and this continues until no new sequence were found.
 After a certain time threshold (currently 14 days), the existing sequences will be blasted again to check if new sequences can be found.
-Currently it works only 
+After the single-gene datasets are updated, the data can be concatenated. Either, the user species which sequences are combined or the tool decides randomly which sequences to combine if thre are more than a single sequence for a taxon in one of the alignments.
+
 
 
 ## Short tutorial:
@@ -14,9 +15,9 @@ Currently it works only
 1. install the dependencies:
      * [PaPaRa](http://sco.h-its.org/exelixis/web/software/papara/index.html) - alignment tool
      * [RAxML](http://sco.h-its.org/exelixis/web/software/raxml/index.html) - tree estimation program
-     * [BLAST+](https://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Web&PAGE_TYPE=BlastDocs&DOC_TYPE=Download) - it's only needed if you want to run a filtering run or if you decide for another general BLAST method (see step 5).
+     * [BLAST+](https://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Web&PAGE_TYPE=BlastDocs&DOC_TYPE=Download) - it's needed if you want to use the filtering approach and is recommended for the standard run as well.
 
-2. make sure they are accessible from everywhere, thus add them to your PATH using the command line:
+2. make sure the programms are accessible from everywhere, thus add them to your PATH using the command line:
      * UNIX: `export PATH=$PATH:/path/to/my/program`
      * Windows: `set PATH=%PATH%;C:\path\to\my\program`
      * MAC: `export PATH=$PATH:~/path/to/program`
@@ -40,13 +41,15 @@ Currently it works only
 
       * **web BLAST service**: If the tree is not too large and/or you have enough time, you can run the tool with the main settings, that uses the web BLAST service. The web service is limited to 100? searches a day, for users who are above this, the searches are not terminated, but are being slowed down. Advantage is that it is the most up to date database to blast against.
       * **Amazon cloud service**: If you do not have a fast computer, there are options to pay for a pre-installed cloud service using [amazon](https://aws.amazon.com/marketplace/pp/B00N44P7L6/ref=mkt_wir_ncbi_blast).
-      * **local blast database**: This is the recommended method, as it is the fastest and the less dependent on good internet connection. Especially, if the trees are bigger and/or you have a relatively fast computer, this might be the best option. Ncbi regularly publishes the databases, that can easily be downloaded and initiated.
+      * **local blast database**: This is the recommended method, as it is the fastest and does not heavily depend on good internet connection. Especially, if the trees are bigger and/or you have a relatively fast computer, this might be the best option. Ncbi regularly publishes the databases, that can easily be downloaded and initiated.
 
         Initiating a local Blast database:
 
-        General information about the BLAST database can be found [here](ftp://ftp.ncbi.nlm.nih.gov/blast/documents/blastdb.html)
+        General information about the BLAST database can be found here: ftp://ftp.ncbi.nlm.nih.gov/blast/documents/blastdb.html.
 
-        In Linux do the following in the folder of your future blast database using the terminal: (for Windows and MAC please use google to figure it out, there should be plenty of information.)
+        In Linux to install the BLAST database do the following (for Windows and MAC please use google to figure it out, there should be plenty of information.):
+
+          * `open a terminal`
           * `cd /to/the/folder/of/your/future/blastdb`  
           * `sudo apt-get install ncbi-blast+` # if not already installed earlier
           * `wget 'ftp://ftp.ncbi.nlm.nih.gov/blast/db/nt.*'`  # this downloads all nt-compressed files
@@ -57,7 +60,7 @@ Currently it works only
           The last command shows you if it worked correctly. 'nt' means, we are making the nucleotide database.
           The database needs to be update regularly, go back to step 1 as soon as there is a database update to get the most recent sequences from GenBank.
 
-6. install ncbi databases to circumvent crashes through internet problems during queries on the ncbi website
+6. install ncbi taxonomy databases to circumvent crashes through internet problems during queries of the ncbi website
     
       *  install the taxonomy database
           * `cd /to/the/folder/of/your/blastdb`
@@ -91,7 +94,7 @@ Currently it works only
 
     Depending if you have uploaded your tree prior to analysis to the [OpenTreeofLife website (OToL)](https://ot14.opentreeoflife.org/opentree/argus/opentree9.1@ott93302), there are two main options:
 
-    Specified paths have to start either from your root directory, or can be relative from within the physcraper main folder.
+    Specified paths have to start either from your root directory (e.g. `/home/USER/physcraper/path/to/file`), or can be relative from within the physcraper main folder (`./path/to/file`).
 
     1. using OpenTreeOfLife study ID:
 
@@ -158,9 +161,9 @@ Currently it works only
         2. by going to [Open Tree of Life](https://ot14.opentreeoflife.org/opentree/argus/opentree9.1@ott93302) and type in the name of the lineage and get the OTT ID at the right side of the page. That number needs to be provided in the corresponding wrapper function, as following:
         
         The identifying number need to be entered here:
-        1. in an OToL run: within the function  `generate_ATT_from_phylesystem()` in the `__init__.py` file in the field for `ingroup_mrca`
+        1. in an OToL run: within the function  `standard_run()`/`filter_OTOL()` in your analysis file in the field for `ingroup_mrca`.
 
-        2. in an own data run: give ID within the wrapper function of your analysis file: `own_data_run()`  in the field for `ingroup_mrca`
+        2. in an own data run: provide ID within the function `own_data_run()`/`filter_data_run()` in your analysis file in the field for `ingroup_mrca`.
 
         Another aspect which needs to be considered, if your group of interest is not monophyletic and you limit the search to the mrca of the group, closely related sequences that belong for example to a different genus will not be added.
     * sharing blast result files across runs: 
@@ -169,4 +172,8 @@ Currently it works only
         2. in your config file: change the gifilename setting to True. 
         
         Be careful! If you have different hitlist_size defined, your blast files have different numbers of sequences saved. Sharing the folder across those different settings is not recommended!
-for single gene datasets, we are working on an extension to concatenate several runs at the end of the updating.
+
+6. Concatenate different single-gene PhyScraper runs:
+    
+    After the single-gene PhyScraper runs were updated, the data can be combined, see for example `tests/data/concat_runs.py`.
+    Either the program randomly decides which sequences to concatenate if there are more sequences available for one loci. Or the user can specify a file, which sequences shall be concatenated. An example file can be found at `tests/data/concatenation_input.csv`.

@@ -37,8 +37,12 @@ from peyotl.nexson_syntax import extract_tree, \
     extract_otu_nexson, \
     PhyloSchema  # extract_tree_nexson, \
 # from peyotl.api import APIWrapper
+
+# extension functions
 import concat  # is the local concat class
 import ncbi_data_parser  # is the ncbi data parser class and associated functions
+import local_blast
+
 
 _DEBUG = 1
 _DEBUG_MK = 1
@@ -170,7 +174,8 @@ def generate_ATT_from_phylesystem(aln,
                                   workdir,
                                   study_id,
                                   tree_id,
-                                  phylesystem_loc='api'):
+                                  phylesystem_loc='api',
+                                  ingroup_mrca=None):
     """gathers together tree, alignment, and study info - forces names to otu_ids.
     Outputs AlignTreeTax object.
     an alignemnt, a
@@ -185,7 +190,10 @@ def generate_ATT_from_phylesystem(aln,
                                tree_id=tree_id,
                                subtree_id="ingroup",
                                return_format="ottid")
-    ott_mrca = get_mrca_ott(ott_ids)
+    if ingroup_mrca:
+        ott_mrca = int(ingroup_mrca)
+    else:
+        ott_mrca = get_mrca_ott(ott_ids)
     newick = extract_tree(nexson,
                           tree_id,
                           PhyloSchema('newick',
@@ -2100,7 +2108,7 @@ class FilterBlast(PhyscraperScrape):
         """
         # Note: has test,test_select_seq_by_local_blast.py, runs
         debug("select_seq_by_local_blast")
-        seq_blast_score = read_local_blast(self.workdir, seq_d, fn)
+        seq_blast_score = local_blast.read_local_blast(self.workdir, seq_d, fn)
         random_seq_ofsp = {}
         if (threshold - count) <= 0:
             debug("already too many samples of sp in aln, skip adding more.")
@@ -2229,7 +2237,7 @@ class FilterBlast(PhyscraperScrape):
                             if self.downtorank is not None:
                                 filename = key
                             # print(filename, seq)
-                            write_blast_files(self.workdir, filename, seq)
+                            local_blast.write_blast_files(self.workdir, filename, seq)
                 else:
                     # debug("make gilist as local blast database")
                     if "^ncbi:gi" in gi_id:
@@ -2251,7 +2259,7 @@ class FilterBlast(PhyscraperScrape):
                                         filename = key
                                         nametoreturn = key
                                     # debug(filename)
-                                    write_blast_files(self.workdir, filename, seq, db=True, fn=nametoreturn)
+                                    local_blast.write_blast_files(self.workdir, filename, seq, db=True, fn=nametoreturn)
                                     # blastfile_taxon_names[gi_num] = gi_num
                     namegi = key
         if self.downtorank is not None:
@@ -2322,7 +2330,7 @@ class FilterBlast(PhyscraperScrape):
                                 #         blast_db = "{}".format(element['^ot:ottTaxonName']).replace(" ", "_")
                                 if self.downtorank is not None:
                                     taxonfn = tax_id
-                                run_local_blast(self.workdir, taxonfn, taxonfn)
+                                local_blast.run_local_blast(self.workdir, taxonfn, taxonfn)
                                 self.select_seq_by_local_blast(self.sp_seq_d[tax_id], taxonfn, threshold, seq_present)
                             elif query_count + seq_present <= threshold:
                                 self.add_all(tax_id)
@@ -2350,15 +2358,15 @@ class FilterBlast(PhyscraperScrape):
                                     str_db = str(blast_seq)
                             # write files for local blast first:
                             seq = self.sp_seq_d[tax_id][blast_seq]
-                            write_blast_files(self.workdir, str_db, seq)  # blast qguy
+                            local_blast.write_blast_files(self.workdir, str_db, seq)  # blast qguy
                             # debug("blast db new")
                             blast_db = self.sp_seq_d[tax_id].keys()[1:]
                             # debug(blast_db)
                             for blast_key in blast_db:
                                 seq = self.sp_seq_d[tax_id][blast_key]
-                                write_blast_files(self.workdir, blast_key, seq, db=True, fn=str_db)  # local db
+                                local_blast.write_blast_files(self.workdir, blast_key, seq, db=True, fn=str_db)  # local db
                             # make local blast of sequences
-                            run_local_blast(self.workdir, str_db, str_db)
+                            local_blast.run_local_blast(self.workdir, str_db, str_db)
                             if len(self.sp_seq_d[tax_id]) + seq_present >= threshold:
                                 self.select_seq_by_local_blast(self.sp_seq_d[tax_id], str_db, threshold, seq_present)
                             elif len(self.sp_seq_d[tax_id]) + seq_present < threshold:

@@ -36,7 +36,8 @@ def standard_run(study_id,
                  mattype,
                  workdir,
                  configfi,
-                 shared_blast_folder):
+                 ingroup_mrca = None,
+                 shared_blast_folder=None):
     """looks for a json file to continue run, or builds and runs
     new analysis for as long as new seqs are found
 
@@ -68,7 +69,8 @@ def standard_run(study_id,
                                                  workdir=workdir,
                                                  study_id=study_id,
                                                  tree_id=tree_id,
-                                                 phylesystem_loc=conf.phylesystem_loc)
+                                                 phylesystem_loc=conf.phylesystem_loc
+                                                 ingroup_mrca=ingroup_mrca)
         # Mapping identifiers between OpenTree and NCBI requires and identifier dict object
         # ids = IdDicts(conf, workdir="example")
         # Prune sequences below a certain length threshold
@@ -205,6 +207,7 @@ def filter_OTOL(study_id,
                 blacklist=None,
                 add_unpubl_seq=None,  # path to local seq
                 id_to_spn_addseq_json=None,
+                ingroup_mrca=None,
                 shared_blast_folder=None):
     """looks for pickeled file to continue run, or builds and runs
     new analysis for as long as new seqs are found. 
@@ -229,7 +232,8 @@ def filter_OTOL(study_id,
                                                  workdir,
                                                  study_id,
                                                  tree_id,
-                                                 phylesystem_loc='api')
+                                                 phylesystem_loc='api',
+                                                 ingroup_mrca)
 
         # Prune sequnces below a certain length threshold
         # This is particularly important when using loci that have been de-concatenated, as some are 0 length which causes problems.
@@ -432,13 +436,14 @@ def filter_data_run(seqaln,
 # # # # # # # # # # # # # # # # # # # # # # #
 def make_settings_class(seqaln, mattype, trfn, schema_trf, workdir, 
                         threshold=None, selectby=None, downtorank=None, spInfoDict=None, add_unpubl_seq=None, 
-                        id_to_spn_addseq_json=None, configfi=None, blacklist=None, shared_blast_folder=None):
+                        id_to_spn_addseq_json=None, configfi=None, blacklist=None, shared_blast_folder=None,
+                        delay=None, trim=None):
     """all the settings are set here and can then be fed to the FilterClass
     """
     settings = Settings(seqaln=seqaln, mattype=mattype, trfn=trfn, schema_trf=schema_trf, workdir=workdir,
                         threshold=threshold, selectby=selectby, downtorank=downtorank, spInfoDict=spInfoDict,
                         add_unpubl_seq=add_unpubl_seq, id_to_spn_addseq_json=id_to_spn_addseq_json, configfi=configfi,
-                        blacklist=blacklist, shared_blast_folder=shared_blast_folder)
+                        blacklist=blacklist, shared_blast_folder=shared_blast_folder, delay=delay, trim=trim)
     return settings
     
 
@@ -488,7 +493,7 @@ def run_with_settings(settings):
         if filteredScrape.unpublished is True:  # use unpublished data
             sys.stdout.write("Blasting against local unpublished data")
             filteredScrape.write_unpubl_blastdb(settings.add_unpubl_seq)
-            filteredScrape.run_blast()
+            filteredScrape.run_blast(settings.delay)
             filteredScrape.local_otu_json = settings.id_to_spn_addseq_json
             filteredScrape.read_blast()
             filteredScrape.remove_identical_seqs()
@@ -497,7 +502,7 @@ def run_with_settings(settings):
 
         # run the ananlyses
         if filteredScrape.unpublished is not True:
-            filteredScrape.run_blast()
+            filteredScrape.run_blast(settings.delay)
             filteredScrape.read_blast(blast_dir=settings.shared_blast_folder)
             filteredScrape.remove_identical_seqs()
             filteredScrape.dump()
@@ -513,7 +518,7 @@ def run_with_settings(settings):
         # number_rounds += 1
         filteredScrape.data.write_labelled(label='^ot:ottTaxonName', gi_id=True)
         filteredScrape.data.write_otus("otu_info", schema='table')
-        filteredScrape.run_blast()
+        filteredScrape.run_blast(settings.delay)
         filteredScrape.read_blast(blast_dir=settings.shared_blast_folder)
         filteredScrape.remove_identical_seqs()
         if settings.threshold is not None:
