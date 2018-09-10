@@ -886,7 +886,7 @@ class IdDicts(object):
         self.ncbi_to_ott = {}  # used to get ott_id for new Genbank query taxa
         self.ott_to_name = {}
         # self.otu_rank = {}  # deprecated for ncbi_parser
-        self.gi_ncbi_dict = {}  # file id_map doesn't exist, is only filled by ncbi_parser. is a smaller version of self.otu_rank.
+        self.gi_ncbi_dict = {}  # file id_map doesn't exist, is only filled by ncbi_parser (by suprocess in earlier versions of the code).
         self.spn_to_ncbiid = {}  # spn to ncbi_id, it's only fed by the ncbi_data_parser, but makes it faster
         self.ncbiid_to_spn = {}
         fi = open(config_obj.ott_ncbi)  # TODO need to keep updated, where does the file come from?
@@ -2070,15 +2070,15 @@ class FilterBlast(PhyscraperScrape):
             # number of items in key2 will be filtered according to threshold and already present seq
             # debug(key)
             seq_d = {}
-            for gi_id in self.sp_d[key]:
+            for otu_id in self.sp_d[key]:
                 # following if statement should not be necessary as it is already filtered in the step before.
                 # I leave it in for now.
-                if '^physcraper:status' in gi_id and gi_id['^physcraper:status'].split(' ')[0] not in self.seq_filter:
+                if '^physcraper:status' in otu_id and otu_id['^physcraper:status'].split(' ')[0] not in self.seq_filter:
                     # I am using the next if to delimit which seq where already present from an earlier run,
                     # they will get a sp name (str), in order to distinguish them from newly found seq,
                     # which will have the gi (int). This differentiation is needed in the filtering blast step.
-                    if gi_id['^physcraper:last_blasted'] != '1800/01/01':
-                        tax_name = self.ids.find_name(sp_dict=gi_id)
+                    if otu_id['^physcraper:last_blasted'] != '1800/01/01':
+                        tax_name = self.ids.find_name(sp_dict=otu_id)
                         for user_name_aln, seq in self.data.aln.items():
                             otu_dict_label = self.ids.find_name(sp_dict=self.data.otu_dict[user_name_aln.label])
                             if tax_name == otu_dict_label:
@@ -2086,10 +2086,10 @@ class FilterBlast(PhyscraperScrape):
                                 seq = seq.replace("?", "")
                                 seq_d[user_name_aln.label] = seq
                     else:
-                        if "^ncbi:gi" in gi_id:  # this should not be needed: all new blast seq have gi
-                            # debug("gi in gi_id")
-                            # gi_num = int(gi_id['^ncbi:gi'])
-                            gi_num = gi_id['^ncbi:gi']
+                        if "^ncbi:gi" in otu_id:  # this should not be needed: all new blast seq have gi
+                            # debug("gi in otu_id")
+                            # gi_num = int(otu_id['^ncbi:gi'])
+                            gi_num = otu_id['^ncbi:gi']
                             if gi_num in self.new_seqs.keys():
                                 seq = self.new_seqs[gi_num]
                                 seq = seq.replace("-", "")
@@ -2169,11 +2169,11 @@ class FilterBlast(PhyscraperScrape):
         """
         # Note: has test, test_add_all.py: runs
         debug('add_all')
-        for gi_id in self.sp_d[key]:
-            if '^physcraper:status' in gi_id:
-                if gi_id['^physcraper:status'].split(' ')[0] not in self.seq_filter:
-                    if gi_id['^physcraper:last_blasted'] == '1800/01/01':
-                        gi_num = gi_id['^ncbi:gi']
+        for otu_id in self.sp_d[key]:
+            if '^physcraper:status' in otu_id:
+                if otu_id['^physcraper:status'].split(' ')[0] not in self.seq_filter:
+                    if otu_id['^physcraper:last_blasted'] == '1800/01/01':
+                        gi_num = otu_id['^ncbi:gi']
                         # debug(gi_num)
                         seq = self.new_seqs[gi_num]
                         self.filtered_seq[gi_num] = seq
@@ -2188,16 +2188,16 @@ class FilterBlast(PhyscraperScrape):
         """
         nametoreturn = None
         # loop needs to happen before the other one, as we need nametoreturn in second:
-        for gi_id in self.sp_d[key]:
+        for otu_id in self.sp_d[key]:
             # this if should not be necessary
-            tax_name = self.ids.find_name(sp_dict=gi_id)
-            if '^physcraper:status' in gi_id and gi_id['^physcraper:status'].split(' ')[0] not in self.seq_filter:
-                # if gi_id['^physcraper:status'].split(' ')[0] not in self.seq_filter:
-                # if gi_id['^physcraper:last_blasted'] != '1800/01/01':
+            tax_name = self.ids.find_name(sp_dict=otu_id)
+            if '^physcraper:status' in otu_id and otu_id['^physcraper:status'].split(' ')[0] not in self.seq_filter:
+                # if otu_id['^physcraper:status'].split(' ')[0] not in self.seq_filter:
+                # if otu_id['^physcraper:last_blasted'] != '1800/01/01':
                 # if tax_name is None:
                 #     # debug(key)
                 #     tax_name = self.ids.get_rank_info(taxon_name=key)
-                #     # gi_id['^ot:ottTaxonName'] = tax_name
+                #     # otu_id['^ot:ottTaxonName'] = tax_name
                 # tax_name = tax_name.replace(" ", "_")
                 for tax_name_aln, seq in self.data.aln.items():
                     otu_dict_name = self.ids.find_name(sp_dict=self.data.otu_dict[tax_name_aln.label])
@@ -2222,13 +2222,13 @@ class FilterBlast(PhyscraperScrape):
         debug("length of sp_d key")
         # debug(len(self.sp_d[key]))
         nametoreturn = self.get_name_for_blastfiles(key)
-        for gi_id in self.sp_d[key]:
+        for otu_id in self.sp_d[key]:
             # debug("in writing file for-loop")
             # this if should not be necessary, I leave it in for now
-            if '^physcraper:status' in gi_id and gi_id['^physcraper:status'].split(' ')[0] not in self.seq_filter:
+            if '^physcraper:status' in otu_id and otu_id['^physcraper:status'].split(' ')[0] not in self.seq_filter:
                 # debug("generate files used for blast")
-                if gi_id['^physcraper:last_blasted'] != '1800/01/01':  # old seq
-                    tax_name = self.ids.find_name(sp_dict=gi_id)
+                if otu_id['^physcraper:last_blasted'] != '1800/01/01':  # old seq
+                    tax_name = self.ids.find_name(sp_dict=otu_id)
                     for tax_name_aln, seq in self.data.aln.items():
                         otu_dict_name = self.ids.find_name(sp_dict=self.data.otu_dict[tax_name_aln.label])
                         if tax_name == otu_dict_name:
@@ -2240,8 +2240,8 @@ class FilterBlast(PhyscraperScrape):
                             local_blast.write_blast_files(self.workdir, filename, seq)
                 else:
                     # debug("make gilist as local blast database")
-                    if "^ncbi:gi" in gi_id:
-                        gi_num = int(gi_id['^ncbi:gi'])
+                    if "^ncbi:gi" in otu_id:
+                        gi_num = int(otu_id['^ncbi:gi'])
                         # debug(gi_num)
                         # debug("new")
                         file_present = False
@@ -2249,8 +2249,8 @@ class FilterBlast(PhyscraperScrape):
                         if gi_num in self.new_seqs.keys():
                             file_present = True
                         if file_present:  # short for if file_present == True
-                            if '^physcraper:status' in gi_id:
-                                if gi_id['^physcraper:status'].split(' ')[0] not in self.seq_filter:
+                            if '^physcraper:status' in otu_id:
+                                if otu_id['^physcraper:status'].split(' ')[0] not in self.seq_filter:
                                     filename = gi_num
                                     # debug("write seq to db")
                                     # debug(nametoreturn)
@@ -2466,8 +2466,10 @@ class Settings(object):
     """
 
     def __init__(self, seqaln, mattype, trfn, schema_trf, workdir, threshold=None,
-                 selectby=None, downtorank=None, spInfoDict=None, add_local_seq=None,
-                 id_to_spn_addseq_json=None, configfi=None, blacklist=None):
+                 selectby=None, downtorank=None, spInfoDict=None, add_unpubl_seq=None,
+                 id_to_spn_addseq_json=None, configfi=None, blacklist=None, shared_blast_folder=None,
+                 delay=None, trim=None):
+
         """Initialize the settings."""
         self.seqaln = seqaln
         self.mattype = mattype
@@ -2478,137 +2480,16 @@ class Settings(object):
         self.selectby = selectby
         self.downtorank = downtorank
         self.spInfoDict = spInfoDict
-        self.add_local_seq = add_local_seq
+        self.add_unpubl_seq = add_unpubl_seq
         self.id_to_spn_addseq_json = id_to_spn_addseq_json
         self.configfi = configfi
         self.blacklist = blacklist
+        self.shared_blast_folder = shared_blast_folder
+        self.delay = delay
+        self.trim = trim
 
 
-# ##################
-def run_local_blast(workdir, blast_seq, blast_db, output=None):
-    """Runs  a local blast to get measurement of differentiation between available sequences for the same taxon concept.
-
-    The blast run will only be run if there are more sequences found than specified by the threshold value.
-    When several sequences are found per taxon, blasts each seq against all other ones found for that taxon.
-    The measure of differentiation will then be used to select a random representative from the taxon concept,
-    but allows to exclude potential mis-identifications.
-    In a later step (select_seq_by_local_blast) sequences will be selected based on the blast results generated here.
-    """
-    # Note: has test, runs -> test_run_local_blast.py
-    debug("run_local_blast")
-    debug(blast_seq)
-    general_wd = os.getcwd()
-    os.chdir(os.path.join(workdir, "blast"))
-    out_fn = "{}_tobeblasted".format(str(blast_seq))
-    cmd1 = "makeblastdb -in {}_db -dbtype nucl".format(blast_seq)
-    # debug("make local db")
-    os.system(cmd1)
-    if output is None:
-        cmd2 = "blastn -query {} -db {}_db -out output_{}.xml -outfmt 5".format(out_fn, blast_db, out_fn)
-    else:
-        cmd2 = "blastn -query {} -db {}_db -out {} -outfmt 5".format(out_fn, blast_db, output)
-    os.system(cmd2)
-    # debug(cmd2)
-    os.chdir(general_wd)
-
-
-def calculate_mean_sd(hsp_scores):
-    """Calculates standard deviation, mean of scores which are used as a measure of sequence differentiation
-    for a given taxon.
-
-    This is being used to select a random representative of a taxon later.
-    """
-    # Note: has test, runs: test_calculate_mean_sd.py
-    debug('calculate_mean_sd')
-    total_seq = 0
-    bit_sum = 0
-    bit_l = []
-    for gi_id in hsp_scores:
-        total_seq += 1
-        bit_sum += hsp_scores[gi_id]["hsp.bits"]
-        bit_l.append(hsp_scores[gi_id]["hsp.bits"])
-    bit_sd = float(numpy.std(bit_l))
-    mean_hsp_bits = float(bit_sum / total_seq)
-    mean_sd = {"mean": mean_hsp_bits, "sd": bit_sd}
-    return mean_sd
-
-
-def read_local_blast(workdir, seq_d, fn):
-    """Reads the files of the local blast run and returns sequences below a value
-    (within the std of the mean scores of the hsp.bit scores at the moment).
-
-    (this is to make sure seqs chosen are representative of the taxon)
-    """
-    # Note: has test, runs: test_read_local_blast.py
-    general_wd = os.getcwd()
-    os.chdir(os.path.join(workdir, "blast"))
-    output_blast = "output_{}_tobeblasted.xml".format(fn)
-    xml_file = open(output_blast)
-    os.chdir(general_wd)
-    blast_out = NCBIXML.parse(xml_file)
-    hsp_scores = {}
-    tries = 5
-    for i in range(tries):
-        try:
-            for record in blast_out:
-                for alignment in record.alignments:
-                    for hsp in alignment.hsps:
-                        gi_id = alignment.title.split(" ")[1]
-                        if gi_id.isdigit():
-                            gi_id = int(gi_id)
-                        # except:
-                        #     gi_id = gi_id
-                        # # debug(gi_id)
-                        hsp_scores[gi_id] = {'hsp.bits': hsp.bits, 'hsp.score': hsp.score,
-                                             'alignment.length': alignment.length, 'hsp.expect': hsp.expect}
-        except ValueError:
-            debug("rebuild the local blast db and try again")
-            sys.stderr.write("{} blast file has a problem. Redo running it".format(fn))
-            general_wd = os.getcwd()
-            os.chdir(os.path.join(workdir, "blast"))
-            # os.remove("{}_db.*".format(fn))
-            subprocess.call(["rm", "{}_db.*".format(fn)])
-            cmd1 = "makeblastdb -in {}_db -dbtype nucl".format(fn)
-            os.system(cmd1)
-            cmd2 = "blastn -query {}_tobeblasted -db {}_db -out output_{}tobeblasted.xml -outfmt 5".format(fn, fn, fn)
-            os.system(cmd2)
-            os.chdir(general_wd)
-            if i < tries - 1:  # i is zero indexed
-                continue
-            else:
-                # debug("im going to raise")
-                raise
-        break
-    # make values to select for blast search, calculate standard deviation,mean
-    mean_sd = calculate_mean_sd(hsp_scores)
-    # select which sequences to use
-    seq_blast_score = {}
-    for gi_id in hsp_scores:  # use only seq that are similar to mean plus minus sd
-        # print(gi_id, hsp_scores[gi_id]['hsp.bits'])
-        if (hsp_scores[gi_id]['hsp.bits'] >= mean_sd['mean'] - mean_sd['sd']) & \
-                (hsp_scores[gi_id]['hsp.bits'] <= mean_sd['mean'] + mean_sd['sd']):
-            if gi_id in seq_d:
-                seq_blast_score[gi_id] = seq_d[gi_id]
-    return seq_blast_score
-
-
-def write_blast_files(workdir, file_name, seq, db=False, fn=None):
-    """Writes local blast files which will be read by run_local_blast.
-    """
-    debug("writing files")
-    # debug(file_name)
-    if not os.path.exists("{}/blast".format(workdir)):
-        os.makedirs("{}/blast/".format(workdir))
-    if db:
-        fnw = "{}/blast/{}_db".format(workdir, fn)
-        fi_o = open(fnw, 'a')
-    else:
-        fnw = "{}/blast/{}_tobeblasted".format(workdir, file_name)
-        fi_o = open(fnw, 'w')
-    # debug(fnw)
-    fi_o.write(">{}\n".format(file_name))
-    fi_o.write("{}\n".format(str(seq).replace("-", "")))
-    fi_o.close()
+####################
 
 
 def get_ncbi_tax_id(handle):

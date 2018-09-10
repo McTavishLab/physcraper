@@ -130,15 +130,15 @@ After the single-gene datasets are updated, the data can be concatenated. Either
     * **threshold**: this defines the maximum number of sequences per taxonomic concept to be retrieved. If your input dataset already contains more sequences, there will be no additional sequences be added, but also not removed. (If the removal of sequences is a function someone would like to have, this should be easy to implement. Just ask.) 
     * **downtorank**: this defines the rank which is used to determine the maximum number per taxonomic concept. It can be set to None and then for all taxonomic concepts, there will be the maximum number of threshold species be retrieved. If it is set to species, there will no more than the maximum number of sequences randomly choosen from all sequences available for the subspecies. It can be set to any ranks defined in the ncbi taxonomy browser.
     * **selectby**: this defines how to select the selected sequences. For the moment only "blast" is supported, "length" is under development.
-        * **blast**: All sequences belonging to a taxonomic concept will be used for a filtering blast search. Sequences will be randomly selected from a pool of sequences, that met the criteria of being within the mean +/- standard deviation of sequence  similarity in relation to the queried sequence (a sequence of the same taxonomic concept which is already part of the phylogeny). If the taxonomic concept is likely monophyletic the distances will be similar and thus all sequences will fall within the mean and standard deviation of sequence similarity. If there are a few outlier sequences only, this seems to be likely a misidentification or mis-labeling in GenBank, outlier sequences will not be added, as they are most likely outside the allowed range of mean +/- SD. If the taxon is likely not monophyletic and sequences diverge a lot from each other, the mean and sd value will be larger and allows to randomly pick sequences, that represent the divergence.
+        * **blast**: All sequences belonging to a taxon will be used for a filtering blast search. Sequences will be randomly selected from a pool of sequences, that met the criteria of being within the mean +/- standard deviation of sequence  similarity in relation to the queried sequence (a sequence of the same taxonomic concept which is already part of the phylogeny). If the taxonomic concept is likely monophyletic the distances will be similar and thus all sequences will fall within the mean and standard deviation of sequence similarity. As value for sequence similarity, we use bit-scores.  Bit-scores are log-scaled scores and a score is a numerical value that describes the overall quality of an alignment (thus from the blasted sequence against the other availbale sequences). Higher numbers correspond to higher similarity. While scores are depending on database size, the rescaled bit-scores do not.  If there are a few outlier sequences only, this seems to be likely a misidentification or mis-labeling in GenBank, outlier sequences will not be added, as they are most likely outside the allowed range of mean +/- SD. If the taxon is likely not monophyletic and sequences diverge a lot from each other, the mean and sd value will be larger and allows to randomly pick sequences, that represent the divergence.
         * **length** Instead of randomly choosing between sequences that are within the criteria of the blast search using sequence divergence as a criteria, here the longest sequences will be selected.
     * **blacklist**: a list of sequences, that shall not be added or were identified to be removed later. This needs to be formatted as a python list containing the GenBank identifiers (e.g. `[gi number, gi number]`). Please not, that it must be the Genbank identifiers and not the accession numbers.
 
     1. using OpenTreeofLife study ID:
     There is an example file in `tests/filter_OTOL.py`. The corresponding function to use in your file setup is `filter_OTOL()`.
 
-     2. using your own files:
-     There is an example file in `tests/tiny_filter_ownfile.py`.  The corresponding function to use in your file setup is `filter_data_run()`.
+    2. using your own files:
+    There is an example file in `tests/tiny_filter_ownfile.py`.  The corresponding function to use in your file setup is `filter_data_run()`.
 
 4. start to update your phylogeny:
 
@@ -148,7 +148,13 @@ After the single-gene datasets are updated, the data can be concatenated. Either
 
     And now you just need to wait...
 
-5. more hidden features that can be changed:
+
+5. Use a local folder as sequence database:
+
+      Instead of using GenBank as the source of new sequences, we can specify a folder  which contains sequences in fasta format and this folder will be used as a sequence database. Then before running a standard or filter run, sequences from that folder can be added to the alignment/phylogeny if the folder contains sequences that are similar to the sequences already present in the alignment. This is intended to be used for newly sequenced material, which is not yet published on GenBank.
+
+
+6. more hidden features that can be changed:
 
     There are some more features that can be changed if you know where, we will change the code hopefully soon, to make that easier adjustable.
 
@@ -173,7 +179,7 @@ After the single-gene datasets are updated, the data can be concatenated. Either
         
         Be careful! If you have different hitlist_size defined, your blast files have different numbers of sequences saved. Sharing the folder across those different settings is not recommended!
 
-6. Concatenate different single-gene PhyScraper runs:
+7. Concatenate different single-gene PhyScraper runs:
     
     After the single-gene PhyScraper runs were updated, the data can be combined, see for example `tests/data/concat_runs.py`.
     Either the program randomly decides which sequences to concatenate if there are more sequences available for one loci. Or the user can specify a file, which sequences shall be concatenated. An example file can be found at `tests/data/concatenation_input.csv`.

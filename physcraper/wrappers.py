@@ -36,7 +36,7 @@ def standard_run(study_id,
                  mattype,
                  workdir,
                  configfi,
-                 ingroup_mrca = None,
+                 ingroup_mrca=None,
                  shared_blast_folder=None):
     """looks for a json file to continue run, or builds and runs
     new analysis for as long as new seqs are found
@@ -48,6 +48,8 @@ def standard_run(study_id,
          trfn = Id of phylogeny to update
          workdir = define where your analysis files shall be stored
          configfi = path to your config file
+         ingroup_mrca = define the mrca, by supplying the Open Tree of Life identifier of the clade of interest
+
          shared_blast_folder = not necessary, if you want to share blast searches across runs (see documentation),
                                 give the path to the folder with the shared runs.
     """
@@ -69,7 +71,7 @@ def standard_run(study_id,
                                                  workdir=workdir,
                                                  study_id=study_id,
                                                  tree_id=tree_id,
-                                                 phylesystem_loc=conf.phylesystem_loc
+                                                 phylesystem_loc=conf.phylesystem_loc,
                                                  ingroup_mrca=ingroup_mrca)
         # Mapping identifiers between OpenTree and NCBI requires and identifier dict object
         # ids = IdDicts(conf, workdir="example")
@@ -233,7 +235,7 @@ def filter_OTOL(study_id,
                                                  study_id,
                                                  tree_id,
                                                  phylesystem_loc='api',
-                                                 ingroup_mrca)
+                                                 ingroup_mrca=ingroup_mrca)
 
         # Prune sequnces below a certain length threshold
         # This is particularly important when using loci that have been de-concatenated, as some are 0 length which causes problems.
@@ -367,8 +369,6 @@ def filter_data_run(seqaln,
         # Now combine the data, the ids, and the configuration into a single physcraper scrape object
         filteredScrape = FilterBlast(data_obj, ids)
         filteredScrape.blacklist = blacklist
-
-        # filteredScrape.write_otu_info(downtorank)
         debug(add_unpubl_seq)
         if add_unpubl_seq is not None:
             filteredScrape.unpublished = True
@@ -385,7 +385,7 @@ def filter_data_run(seqaln,
             filteredScrape.generate_streamed_alignment()
             filteredScrape.unpublished = False
         else:
-            # run the ananlyses
+            # run the analysis
             sys.stdout.write("BLASTing input sequences\n")
             # uncomment next line if you want to have a shared blast folder and change the path to something meaningful. Remember to change the gifilename setting in the config file to true.
             print(shared_blast_folder)
@@ -515,7 +515,6 @@ def run_with_settings(settings):
             filteredScrape.generate_streamed_alignment()
             filteredScrape.dump()
     while filteredScrape.repeat is 1:
-        # number_rounds += 1
         filteredScrape.data.write_labelled(label='^ot:ottTaxonName', gi_id=True)
         filteredScrape.data.write_otus("otu_info", schema='table')
         filteredScrape.run_blast(settings.delay)

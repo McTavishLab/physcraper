@@ -1,11 +1,24 @@
-################## 
-#
-# functions to write/run/read files using the BLAST+ and a local database.
-# 
-##################
+"""functions to write/run/read files using the BLAST+ and a local database.
+"""
+
 
 import os
+import sys
 import subprocess
+import numpy
+from Bio.Blast import NCBIXML
+
+_DEBUG_MK = 0
+
+
+def debug(msg):
+    """short debugging command
+    """
+    if _DEBUG_MK == 1:
+        print(msg)
+    # with open("debugging.txt", "a") as debugf:
+    #     debugf.write("{}\n".format(msg))
+
 
 def run_local_blast(workdir, blast_seq, blast_db, output=None):
     """Runs  a local blast to get measurement of differentiation between available sequences for the same taxon concept.

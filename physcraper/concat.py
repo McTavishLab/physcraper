@@ -1,3 +1,7 @@
+"""Code used to concatenate different single PhyScraper runs into a concatenated one.
+"""
+
+
 #!/usr/bin/env python
 import os
 import sys
@@ -659,6 +663,7 @@ class Concat(object):
     def get_short_seq_from_concat(self, percentage=0.37):
         """Finds short sequences, all below a certain threshold will be removed,
         to avoid having really low coverage in the aln. Default = 0.37.
+        
         Note percentage is a bit misleading, the cutoff is 37% of the whole concatenated
         alignment, but the sequences length is calculated without gaps present.
         The default is so low, as I want to keep taxa that have only a single locus 

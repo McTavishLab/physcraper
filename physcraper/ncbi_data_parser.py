@@ -1,4 +1,7 @@
-# # altered from https://github.com/zyxue/ncbitax2lin/blob/master/ncbitax2lin.py
+"""uses ncbi databases to easily retrieve taxonomic information.
+
+parts are altered from https://github.com/zyxue/ncbitax2lin/blob/master/ncbitax2lin.py
+"""
 
 import os
 import sys
@@ -21,13 +24,14 @@ names = None
 
 
 def strip(str_):
-    """    Strips of blank characters from string
+    """ Strips of blank characters from string in pd dataframe.
     """
     return str_.strip()
 
 
 def load_nodes(nodes_file):
-    """ load nodes.dmp and convert it into a pandas.DataFrame
+    """ Loads nodes.dmp and converts it into a pandas.DataFrame.
+    Contains the information about the taxonomic hierarchy of names.
     """
     # print(nodes_file)
     assert os.path.exists(nodes_file)
@@ -55,7 +59,8 @@ def load_nodes(nodes_file):
 
 
 def load_names(names_file):
-    """ Load names.dmp and convert it into a pandas.DataFrame
+    """ Loads names.dmp and converts it into a pandas.DataFrame.
+    Includes only names which are accepted as scientific name by ncbi.
     """
     assert os.path.exists(names_file)
     df = pd.read_csv(names_file, sep='|', header=None, index_col=False,
@@ -74,9 +79,10 @@ def load_names(names_file):
 
 
 def load_synonyms(names_file):
-    '''
-    load names.dmp and convert it into a pandas.DataFrame
-    '''
+    """Loads names.dmp and converts it into a pandas.DataFrame.
+        Includes only names which are viewed as synonym by ncbi.
+    """
+
     assert os.path.exists(names_file)
     # print("load synonyms")
     df = pd.read_csv(names_file, sep='|', header=None, index_col=False,
@@ -96,12 +102,12 @@ def load_synonyms(names_file):
 
 
 class Parser:
-    """read in databases from ncbi to connect species name with the taxonomic identifier 
-    and the corresponding hierarchical information. It provides a much faster way to get those information.
-    We use those files to get independent from web requests to find those information 
-    (the implementation of it in BioPython was not really reliable).
+    """Reads in databases from ncbi to connect species names with the taxonomic identifier
+    and the corresponding hierarchical information. It provides a much faster way to get those information then using
+    web queries. We use those files to get independent from web requests to find those information (the implementation
+    of it in BioPython was not really reliable).
     Nodes includes the hierarchical information, names the scientific names and ID's.
-    The files need to be updated regularly, best way to always do it when a new blast database was loaded
+    The files need to be updated regularly, best way to always do it when a new blast database was loaded.
     """
     def __init__(self, names_file, nodes_file):
         # self.nodes = self.load_nodes(nodes_file)
