@@ -1924,7 +1924,7 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
                 seq = seq_l[i]
                 # debug(key)
                 # debug(seq)
-                write_blast_files(self.workdir, key, seq, db=True, fn="local_unpubl_seq")
+                local_blast.write_blast_files(self.workdir, key, seq, db=True, fn="local_unpubl_seq")
         os.chdir(os.path.join(self.workdir, "blast"))
         cmd1 = "makeblastdb -in {}_db -dbtype nucl".format("local_unpubl_seq")
         # debug(cmd1)
@@ -1976,10 +1976,19 @@ class FilterBlast(PhyscraperScrape):
     by high numbers of sequences). The second option (downtorank) allows to filter according to taxonomic levels,
     e.g. getting a number of representative sequences for a genus or lineage.
     This can also be used to not have to deal with subspecies.
-    """
 
-    def __init__(self, data_obj, ids_obj, settings=None):
-        super(FilterBlast, self).__init__(data_obj, ids_obj)
+
+    existing self objects are:
+        self.sp_d = {}, is a dict with key = spn, val = dict with key = otuID, val = otu_dict entry.
+        self.sp_seq_d = {}, is a dict with key = spn, val = dict with key = otuID, val = seq. Is overwritten every 'round'
+        self.filtered_seq = {}, is a dict with key = otuID, val = seq. Is used as the self.new_seqs equivalent from Physcraper, just with fewer seqs. Is overwritten every 'round'
+        self.downtorank = None, string defining the level of taxonomic fltering, e.g. "species", "genus"
+        self.blacklist = [], list that contains gi_numbers, which shall not be added to the phylogeny or need to be removed.
+    """
+        # TODO: self.sp_d = {} does not need to contain all otu_dict info, key is sufficient
+
+    def __init__(self, settings=None):
+        super(FilterBlast, self).__init__()
         debug("start derived class init")
         
         # additional things that are needed for the filtering process
@@ -1997,12 +2006,16 @@ class FilterBlast(PhyscraperScrape):
         # self.seq_filter = ['deleted', 'subsequence,', 'not', "removed", "deleted,",  "local"]
 
     def sp_dict(self, downtorank=None):
+
         """Takes the information from the Physcraper otu_dict and makes a dict with species name as key and
         the corresponding seq information from aln and blast seq, it returns self.sp_d.
 
         This is generated to make information for the filtering class more easily available. self.sp_d sums up which
         information are available per taxonomic concept and which have not already been removed during either
         the remove_identical_seq steps or during a filtering run of an earlier cycle.
+
+        :param downtorank: string defining the level of taxonomic filtering, e.g. "species", "genus"
+        :return: self.sp_d
         """
         # Note: has test, test_sp_d.py, runs
         self.downtorank = downtorank
@@ -2062,6 +2075,8 @@ class FilterBlast(PhyscraperScrape):
         This is used to select representatives during the filtering step, where it
         selects how many sequences per species to keep in the alignment. It will only contain sp that were not removed
         in an earlier cycle of the program.
+
+        Returns: self.sp_seq_d
         """
         # Note: has test, test_sp_seq_d.py, runs
         debug("make_sp_seq_dict")
@@ -2101,10 +2116,19 @@ class FilterBlast(PhyscraperScrape):
 
     def select_seq_by_local_blast(self, seq_d, fn, threshold, count):
         """Selects number of sequences from local_blast to fill up to the threshold.
-        It returns a filtered_seq dictionary.
+
+self.sp_seq_d[tax_id], str_db, threshold, seq_present
+
 
         It will only include species which have a blast score of mean plus/minus sd.
-        Is used after read_local_blast.
+        Uses the information returned by read_local_blast() to select which sequences shall be added in a filtered run.
+
+        :param seq_d: is the value of self.sp_d (= another dict)
+        :param fn: refers to a filename to find the local blast file produced before,
+                    which needs to be read in by read_local_blast()
+        :param threshold: self.threshold???
+        :param count:
+        :return: self.filtered_seq
         """
         # Note: has test,test_select_seq_by_local_blast.py, runs
         debug("select_seq_by_local_blast")
@@ -2509,6 +2533,9 @@ def get_ncbi_tax_id(handle):
 
 def get_ncbi_tax_name(handle):
     """Get the sp name from ncbi.
+
+    :param handle: NCBI read.handle
+    :return: ncbi_spn
     """
     gb_list = handle[0]['GBSeq_feature-table'][0]['GBFeature_quals']
     for item in gb_list:
