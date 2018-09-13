@@ -2326,7 +2326,7 @@ class FilterBlast(PhyscraperScrape):
     """
         # TODO MK: self.sp_d = {} does not need to contain all otu_dict info, key is sufficient
 
-    def __init__(self, settings=None):
+    def __init__(self, data_obj, ids, settings=None):
         super(FilterBlast, self).__init__(data_obj, ids)
         debug("start derived class init")
         # additional things that are needed for the filtering process
