@@ -8,7 +8,6 @@ After a certain time threshold (currently 14 days), the existing sequences will 
 After the single-gene datasets are updated, the data can be concatenated. Either, the user species which sequences are combined or the tool decides randomly which sequences to combine if thre are more than a single sequence for a taxon in one of the alignments.
 
 
-
 ## Short tutorial:
 
 ### Before you can start
@@ -127,10 +126,23 @@ After the single-gene datasets are updated, the data can be concatenated. Either
 
     Beside the standard definition, there are more input options. Currently supported are:
 
-    * **threshold**: this defines the maximum number of sequences per taxonomic concept to be retrieved. If your input dataset already contains more sequences, there will be no additional sequences be added, but also not removed. (If the removal of sequences is a function someone would like to have, this should be easy to implement. Just ask.) 
-    * **downtorank**: this defines the rank which is used to determine the maximum number per taxonomic concept. It can be set to None and then for all taxonomic concepts, there will be the maximum number of threshold species be retrieved. If it is set to species, there will no more than the maximum number of sequences randomly choosen from all sequences available for the subspecies. It can be set to any ranks defined in the ncbi taxonomy browser.
-    * **selectby**: this defines how to select the selected sequences. For the moment only "blast" is supported, "length" is under development.
-        * **blast**: All sequences belonging to a taxon will be used for a filtering blast search. Sequences will be randomly selected from a pool of sequences, that met the criteria of being within the mean +/- standard deviation of sequence  similarity in relation to the queried sequence (a sequence of the same taxonomic concept which is already part of the phylogeny). If the taxonomic concept is likely monophyletic the distances will be similar and thus all sequences will fall within the mean and standard deviation of sequence similarity. As value for sequence similarity, we use bit-scores.  Bit-scores are log-scaled scores and a score is a numerical value that describes the overall quality of an alignment (thus from the blasted sequence against the other availbale sequences). Higher numbers correspond to higher similarity. While scores are depending on database size, the rescaled bit-scores do not.  If there are a few outlier sequences only, this seems to be likely a misidentification or mis-labeling in GenBank, outlier sequences will not be added, as they are most likely outside the allowed range of mean +/- SD. If the taxon is likely not monophyletic and sequences diverge a lot from each other, the mean and sd value will be larger and allows to randomly pick sequences, that represent the divergence.
+    * **threshold**: this defines the maximum number of sequences per taxon (e.g. species) to be retrieved. 
+            If your input dataset already contains more sequences, there will be no additional sequences added, but also not removed.
+            (If the removal of sequences that were already part of the initial phylogeny is a function someone would like to have, this should be easy to implement. Just ask.) 
+    * **downtorank**: this defines the rank which is used to determine the maximum number of sequences per taxon. 
+                It can be set to None and then for all taxons, there will be the maximum number of threshold sequences retrieved. 
+                If it is set to species, there will no more than the maximum number of sequences randomly choosen from all sequences available for all the subspecies. 
+                It can be set to any ranks defined in the ncbi taxonomy browser.
+    * **selectby**: this defines how to select the representative sequences.
+        * **blast**: All sequences belonging to a taxon will be used for a filtering blast search. 
+            A sequence already present in the phylogeny, or a randomly chosen sequence, will be used to blast against all other sequences from the locus with the same taxon name.
+            From the sequences that pass the filtering criterium, sequences will be randomly selected as representative. The filtering criterium is that they need to be within the mean +/- standard deviation of sequence  similarity in relation to the queried sequence. See below for the explanation of the similarity value.
+    
+            If the taxon is likely monophyletic the distances will be similar and thus all sequences will fall within the mean and standard deviation of sequence similarity. 
+            If there are a few outlier sequences only, this seems to be likely a misidentification or mis-labeling in GenBank, outlier sequences will not be added, as they are most likely outside the allowed range of mean +/- SD. 
+            If the taxon is likely not monophyletic and sequences diverge a lot from each other, the mean and SD will be larger and allows to randomly pick sequences, that represent the divergence.
+            
+            As value for sequence similarity, we use bit-scores.  Bit-scores are log-scaled scores and a score is a numerical value that describes the overall quality of an alignment (thus from the blasted sequence against the other available sequences). Higher numbers correspond to higher similarity. While scores are depending on database size, the rescaled bit-scores do not. Check out https://www.ncbi.nlm.nih.gov/BLAST/tutorial/Altschul-1.html for more detail. 
         * **length** Instead of randomly choosing between sequences that are within the criteria of the blast search using sequence divergence as a criteria, here the longest sequences will be selected.
     * **blacklist**: a list of sequences, that shall not be added or were identified to be removed later. This needs to be formatted as a python list containing the GenBank identifiers (e.g. `[gi number, gi number]`). Please not, that it must be the Genbank identifiers and not the accession numbers.
 
@@ -182,4 +194,4 @@ After the single-gene datasets are updated, the data can be concatenated. Either
 7. Concatenate different single-gene PhyScraper runs:
     
     After the single-gene PhyScraper runs were updated, the data can be combined, see for example `tests/data/concat_runs.py`.
-    Either the program randomly decides which sequences to concatenate if there are more sequences available for one loci. Or the user can specify a file, which sequences shall be concatenated. An example file can be found at `tests/data/concatenation_input.csv`.
+    Either the program randomly decides which sequences to concatenate if there are more sequences available for one loci or the user can specify a file, which sequences shall be concatenated. An example file can be found at `tests/data/concatenation_input.csv`.
