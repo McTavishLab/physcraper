@@ -53,7 +53,8 @@ def remove_aln_tre_leaf(scrape):
 
 
 def add_to_del_gi(del_gi, gene, spn, random_gen):
-    """Adds gi number to del_gi. Del_gi is used to remove gi's from tmp_dict, so that they will
+    """Adds gi number to del_gi. 
+    Del_gi is used to remove gi's from tmp_dict, so that they will
     not be added to the concat dict twice.
     """
     spn_ = spn.replace(" ", "_")
@@ -69,9 +70,67 @@ def add_to_del_gi(del_gi, gene, spn, random_gen):
 
 class Concat(object):
     """Combines several physcraper runs into a concatenated alignment and calculates a phylogeny.
-     User need to make sure, that there are at least some overlapping lineages.
-     Do not concatenate data from the same loci (if you want to expand an alignment, run physcraper!).
-     """
+    
+    There are two options available, either data will be concatenated by random (per taxon name) or the 
+    user provides a file which say, which sequences shall be concatenated.
+
+    User need to make sure, that there are at least some overlapping lineages.
+    Do not concatenate data from the same loci (if you want to expand an alignment, run physcraper!).
+    
+    To build the class the following is needed:
+        workdir_comb: the path to your directory where the data shall be stored
+        email: your email address, currently used to retrieve missing taxon information
+
+        During the initializing process the following self objects are generated:
+        self.workdir: the path to your directory
+        self.sp_gi_comb: dictonary - similar to otu_dcit of Physcraper class
+            key: taxon name
+            value: dictionary:
+                key: gene name
+                value: dictionary:
+                    key: unique identifier of concat_class
+                    value: dictionary - key-value-pairs:
+                        "gi_id": gi_id
+                        "seq": corresponding sequence
+                        "spn": taxon name
+                        "original_PS_id": otu_id from single-gene run
+                        "concat:status": "single run"/ "concatenated"
+                        "new tipname": taxon name plus number if there are more than a single concatenated sequence per taxon
+        self.single_runs: dictonary
+            key: gene name, as provided by user in input
+            value: file containing the single gene Physcraper run, loaded from pickle
+        self.sp_counter: dictonary
+            key: taxon name
+            value: dictionary
+                key: gene name
+                value: number of sequences present for the given gene and taxon
+        self.email: email
+        self.comb_seq: dictonary
+            key: gene name
+            value: dictionary:
+                key: taxon name
+                value: sequence
+        self.comb_gi: dictonary # !!! Note can be easily combined with comb_seq
+            key: gene name
+            value: dictionary:
+                key: taxon name
+                value: unique identifier of concat_class
+        self.aln_all: dictonary
+            key: numbers from 1 to amount of loci concatenated
+            value: dendropy aln including empty seq
+        self.num_of_genes = number corresponding to the number of genes that shall be concatenated
+        self.genes_present = list of the gene names that shall be concatenated
+        self.tre_as_start = phylogeny used as starting tree for concatenated run, is the one with most tips present
+        self.tre_start_gene = corresponding name to tre_as_start
+        self.short_concat_seq = list of taxa that have only few sequences information/short genes
+        self.concat_tips: dictonary
+            key: otu.label from self.tre_as_start.taxon_namespace
+            value: taxon name
+        self.concatfile = path to file if user supplied concatenation file is used
+        self.concatenated_aln = concatenated alignment
+        self.tmp_dict = subset of self.sp_gi_comb
+        self.part_len = holds sequence partition position to write the partitioning file # ! TODO MK: might not need to be self
+    """
 
     def __init__(self, workdir_comb, email):
         # super(PhyscraperScrape, self).__init__()
@@ -86,7 +145,7 @@ class Concat(object):
         self.comb_seq = {}
         self.comb_gi = {}
         self.aln_all = {}
-        self.aln_all_len = {}
+        #self.aln_all_len = {}
         self.num_of_genes = 0
         self.genes_present = []
         self.tre_as_start = None
@@ -99,20 +158,29 @@ class Concat(object):
         self.tmp_dict = None
         self.part_len = None
 
-    def load_single_genes(self, workdir, pickle_fn, genename):
+    def load_single_genes(self, pickle_fn, genename):
         """Load PhyScraper class objects and make a single dict per run.
         Removes abandoned nodes first.
+
+        :param pickle_fn: path to pickled file of the Physcraper run
+        :param genename: string, name for locus provided by user
+        :return: self.single_runs
         """
         debug("load_single_genes: {}".format(genename))
         # debug("{}/{}".format(workdir, pickle_fn))
-        scrape = pickle.load(open("{}/{}".format(workdir, pickle_fn), 'rb'))
+        scrape = pickle.load(open("{}/{}".format(self.workdir, pickle_fn), 'rb'))
         scrape = remove_aln_tre_leaf(scrape)
         self.single_runs[genename] = deepcopy(scrape)
         return
 
     def get_taxon_info(self, key, data):
-        """
-        If there are no taxon information (for what ever reason) try again to obtain sp names.
+        """If there are no taxon information (for what ever reason) try again to obtain sp names.
+
+        If the key is not part of data, it will get the name through a web query using the GI number.
+
+        :param key: key of otu_dict/data that shall contain the taxon name, e.g.^ot:ottTaxonName
+        :param data: otu_dict entry from single gene physcraper run
+        :return: taxon name
         """
         # debug("get_rank_info")
         if key in data:
@@ -141,14 +209,19 @@ class Concat(object):
 
     def make_concat_id_dict(self, otu, genename, concat_id):
         """Makes a concat_id entry with all information
+
+        Note: has test
+
+        :param otu: otu_id
+        :param genename: name of single gene run
+        :param concat_id: unique identifier in the concat class
+        :return: modified self.sp_gi_comb
         """
-        # has test
         # debug("make_concat_id_dict")
         data = self.single_runs[genename].data.otu_dict[otu]
         seq = str(self.single_runs[genename].data.aln[otu])
         # debug(data.keys())
         # debug(data)
-        # debug(some)
         # for key, val in data.items():
         #     debug(key, val)
         if '^ot:ottTaxonName' in data:
@@ -203,6 +276,9 @@ class Concat(object):
 
     def combine(self):
         """Combines several PhyScraper objects to make a concatenated run dict.
+
+        Is a wrapper function around make_concat_id_dict(). It produces the parameters needed for the function.
+
         """
         debug("combine")
         self.num_of_genes = len(self.single_runs)
@@ -219,8 +295,11 @@ class Concat(object):
 
     def sp_seq_counter(self):
         """Counts how many seq per sp and genes there are -is used by sp_to_keep.
+
+        Note: has test
+
+        :return: builds self.sp_counter
         """
-        # has test
         debug("sp_seq_counter")
         # debug(self.sp_gi_comb)
         for spn in self.sp_gi_comb:
@@ -244,9 +323,11 @@ class Concat(object):
     def sp_to_keep(self):
         """Uses the sp_counter to make a list of sp that should be kept in concatenated alignment,
         because they are the only representative of the sp.
-        """
-        # has test
 
+        Note: has test
+
+        :return: dictionary with taxon name and number saying how many genes are missing
+        """
         debug("sp to keep")
         sp_to_keep = {}
         # debug(self.sp_counter)
@@ -263,34 +344,37 @@ class Concat(object):
         debug(sp_to_keep)
         return sp_to_keep
 
-    def make_sp_gene_dict(self, sp_to_keep):
+    def make_sp_gene_dict(self):
         """Is the build around to make the dicts that are used to make it into a dendropy aln
         """
         debug("make_sp_gene_dict")
         if self.concatfile is not None:
             self.user_defined_concat()
         else:
-            count = 2
+            sp_to_keep = self.sp_to_keep()
+
+
             self.tmp_dict = deepcopy(self.sp_gi_comb)
             while len(self.tmp_dict.keys()) >= 1:
                 # debug(len(self.tmp_dict.keys()))
                 # debug("start of while loop")
                 del_gi = {}
                 for spn in self.tmp_dict.keys():
+
                     sp_to_keep_list = sp_to_keep.keys()
                     if spn.replace(" ", "_") in sp_to_keep_list:
                         # debug("in sp_to_keep_list")
                         tmp_gene = deepcopy(self.genes_present)
                         for gene in self.tmp_dict[spn]:
                             tmp_gene.remove(gene)
-                            del_gi = self.select_rnd_seq(spn, gene, del_gi, count)
+                            del_gi = self.select_rnd_seq(spn, gene, del_gi)
                         for item in tmp_gene:
                             self.make_empty_seq(spn, item)
                         self.rm_rnd_sp(del_gi)
                         del self.tmp_dict[spn]
                     else:
                         for gene in self.tmp_dict[spn]:
-                            del_gi = self.select_rnd_seq(spn, gene, del_gi, count)
+                            del_gi = self.select_rnd_seq(spn, gene, del_gi)
                         self.rm_rnd_sp(del_gi)
                     self.rm_empty_spn_entries(del_gi)
         self.rename_drop_tips()
@@ -420,13 +504,19 @@ class Concat(object):
         # for gene in self.comb_seq:
         #     debug(len(self.comb_seq[gene].keys()))
 
-    def select_rnd_seq(self, spn, gene, del_gi, count):
+    def select_rnd_seq(self, spn, gene, del_gi):
         """Select a random seq from spn and gene to combine it with a random other one from another gene,
         but same spn. Is used if the user does not give a concatenation input file.
-        """
-        # has test
 
+        Note: has test
+
+        :param spn: taxon name
+        :param gene:  gene name
+        :param del_gi: dictionary that contains gene name: dict(spn: concat_id of random seq)
+        :return: del_gi
+        """
         debug("select_rnd_seq")
+        count = 2
         # debug(spn, gene, del_gi, count)
         random_gen = random.choice(list(self.tmp_dict[spn][gene]))
         # debug("random_gen")
@@ -455,7 +545,6 @@ class Concat(object):
                 # debug("spn already present")
                 spn_new = "{}_{}".format(spn_, count)
                 while spn_new in self.comb_seq[gene].keys():
-
                     count += 1
                     spn_new = "{}_{}".format(spn_, count)
                     # debug(spn_new, count)

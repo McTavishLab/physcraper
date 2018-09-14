@@ -539,10 +539,9 @@ def concat(genelistdict, workdir_comb, email, percentage=0.37, user_concat_fn=No
     concat.concatfile = user_concat_fn
     # print(genelistdict)
     for item in genelistdict.keys():
-        concat.load_single_genes(genelistdict[item]["workdir"], genelistdict[item]["pickle"], item)
+        concat.load_single_genes(genelistdict[item]["pickle"], item)
     concat.combine()
     concat.sp_seq_counter()
-    sp_to_keep = concat.sp_to_keep()
     concat.get_largest_tre()
     concat.make_sp_gene_dict(sp_to_keep)
     concat.make_alns_dict()

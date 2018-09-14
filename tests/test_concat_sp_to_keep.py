@@ -19,7 +19,7 @@ genelist = {"its": {"workdir": workdir_its, "pickle": pickle_fn}, "ets": {"workd
 
 concat = Concat(workdir_comb, email)
 for item in genelist.keys():
-    concat.load_single_genes(genelist[item]["workdir"], genelist[item]["pickle"], item)
+    concat.load_single_genes(genelist[item]["pickle"], item)
 
 concat.combine()
 concat.sp_seq_counter()

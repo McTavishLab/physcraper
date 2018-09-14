@@ -26,7 +26,7 @@ sys.stdout.write("\ntests Concat func select_rnd_seq\n")
 
 concat = Concat(workdir_comb, email)
 for item in genelist.keys():
-    concat.load_single_genes(genelist[item]["workdir"], genelist[item]["pickle"], item)
+    concat.load_single_genes(genelist[item]["pickle"], item)
 
 
 concat.combine()
@@ -56,7 +56,7 @@ while len(concat.tmp_dict.keys()) >= 1:
                 tmp_gene.remove(gene)
                 # print("select_rnd_seq")
                 # print(spn, gene,del_gi, count)
-                del_gi = concat.select_rnd_seq(spn, gene, del_gi, count)
+                del_gi = concat.select_rnd_seq(spn, gene, del_gi)
                 # print("now it should break")
                 break
             break

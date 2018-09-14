@@ -17,7 +17,7 @@ sys.stdout.write("\ntests Concat func make_concat_id_dict\n")
 
 concat = Concat(workdir_comb, email)
 for item in genelist.keys():
-    concat.load_single_genes(genelist[item]["workdir"], genelist[item]["pickle"], item)
+    concat.load_single_genes(genelist[item]["pickle"], item)
 
 concat.combine()
 spnl = []
