@@ -1,6 +1,6 @@
 """Code used to concatenate different single PhyScraper runs into a concatenated one.
 """
-
+print("Current Version number: 09142018.0")
 
 #!/usr/bin/env python
 import os

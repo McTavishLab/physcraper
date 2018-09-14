@@ -8,6 +8,7 @@ from physcraper import FilterBlast, Settings, debug  # Concat
 from dendropy import DnaCharacterMatrix
 from concat import Concat
 
+print("Current Version number: 09142018.0")
 
 # TODO: we never do anything with the function nor the file
 def sync_ncbi(configfi): 
