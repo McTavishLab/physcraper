@@ -89,7 +89,7 @@ class ConfigObj(object):
     around and store.
 
     To build the class the following is needed:
-        configfi: a configuration file in a format, e.g. to read in self.e_value_thresh.
+        configfi: a configuration file in a specific format, e.g. to read in self.e_value_thresh.
                     The file needs to have a heading of the format: [blast] and then somewhere below that heading
                     a string e_value_thresh = value
 
@@ -100,7 +100,7 @@ class ConfigObj(object):
         self.seq_len_perc: value from 0 to 1. Defines how much shorter new seq can be compared to input
         self.get_ncbi_taxonomy: Path to sh file doing something...
         self.ncbi_dmp: path to file that has gi numbers and the corresponding ncbi tax id's
-        self.phylesystem_loc: ????  # TODO: what is it used for
+        self.phylesystem_loc: ????  # TODO: what is it used for?
         self.ott_ncbi: file containing OTT id, ncbi and taxon name???
         self.id_pickle: path to pickle file
         self.email: email address used for blast queries
@@ -140,7 +140,7 @@ class ConfigObj(object):
             os.system("gunzip taxonomy/gi_taxid_nucl.dmp.gz")
             self.ncbi_dmp = "taxonomy/gi_taxid_nucl.dmp.gz"
         self.phylesystem_loc = config['phylesystem']['location'] 
-        assert (self.phylesystem_loc in ['local', 'api'])  # TODO: Do we have something implemented for local?
+        assert (self.phylesystem_loc in ['local', 'api'])  # TODO: What is the phylesystem? Do we have something implemented for local?
         self.ott_ncbi = config['taxonomy']['ott_ncbi']
         assert os.path.isfile(self.ott_ncbi)
         self.id_pickle = os.path.abspath(config['taxonomy']['id_pickle'])  # TODO: what is this doing again?
@@ -180,7 +180,7 @@ class ConfigObj(object):
 # ATT is a dumb acronym for Alignment Tree Taxa object
 def get_dataset_from_treebase(study_id,
                               phylesystem_loc='api'):
-    # TODO: please write a docstring. it is used to get the aln from treebase, if OToL has those information???
+    # TODO: What does this function do? Function is used to get the aln from treebase, if OToL has those information???
     try:
         nexson = get_nexson(study_id, phylesystem_loc)
     except:
@@ -210,7 +210,7 @@ def generate_ATT_from_phylesystem(aln,
     Outputs AlignTreeTax object.
 
     an alignemnt, a  # TODO: either left overs, or incomplete sentence
-    Input can be either a study ID and tree ID from OpenTree  # TODO: write down easiest way to get them. According to code it cannot be either, but must be both
+    Input can be either a study ID and tree ID from OpenTree  # TODO: Is there another way to get those data, than actually going to the OToL website, or can I query the internet for a desired part of the tree and corresponding studies?. According to code it cannot be either, but must be both
     Alignemnt need to be a Dendropy DNA character matrix!
 
     :param aln: dendropy alignment object
@@ -476,7 +476,7 @@ class AlignTreeTax(object):
         self.gi_dict: dictionary, that has all information from sequences found during the blasting.
                     key: GenBank sequence identifier
                     value: dictionary, content depends on blast option, differs between webquery and local blast queries
-                        keys - value pairs for local blast:
+                        key - value pairs for local blast:
                             '^ncbi:gi': GenBank sequence identifier
                             'accession': GenBank accession number
                             'staxids': Taxon identifier
@@ -486,8 +486,13 @@ class AlignTreeTax(object):
                             'bitscore': Blast bitscore, used for FilterBlast
                             'sseq': corresponding sequence
                             'title': title of Genbank sequence submission
-                        key - values for web-query:
-                            ????? # TODO MK: get information
+                        key - value for web-query:
+                            'accession':Genbank accession number
+                            'length': length of sequence
+                            'title': string combination of hit_id and hit_def
+                            'hit_id': string combination of gi id and accession number
+                            'hsps': Bio.Blast.Record.HSP object
+                            'hit_def': title from GenBank sequence
                         optional key - value pairs for unpublished option:
                             'localID': local sequence identifier
         self.orig_aln: original input alignment
@@ -759,8 +764,6 @@ class AlignTreeTax(object):
         :param ids_obj: needs to IDs class to have access to the taxonomic information
         :return: the unique otu_id - the key from self.otu_dict of the corresponding sequence
         """
-        # TODO: why is it part of this class, we only call the function in the Physcraper class. the original sequences have those information already...
-
         # debug("add_otu function")
         otu_id = "otuPS{}".format(self.ps_otu)
         self.ps_otu += 1
@@ -1286,14 +1289,24 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
             self.data = ATT object
             self.ids = IdDict object
             self.config = Config object
-            self.new_seqs: dictionary that contains the newly found seq using blast:
-                        key:
-                        value:
-
-            self.new_seqs_otu_id: dictionary that contains the new sequences that passed the remove_identical_seq() step:
-                        key:
-                        value:
-
+            * value: is a dictionary again, but varies depending on the blast method used:
+                * local blast: 
+                    * ^ncbi:gi': gi id
+                    * 'accession':Genbank accession number
+                    * 'staxids': ncbi taxon id
+                    * 'sscinames': ncbi species name
+                    * 'pident': pident
+                    * 'evalue': evalue
+                    * 'bitscore': bitscore
+                    * 'sseq': sequence
+                    * 'title': title from GenBank sequence
+                * web-query blast: 
+                    * 'accession':Genbank accession number
+                    * 'length': length of sequence
+                    * 'title': string combination of hit_id and hit_def
+                    * 'hit_id': string combination of gi id and accession number
+                    * 'hsps': Bio.Blast.Record.HSP object
+                    * 'hit_def': title from GenBank sequence
             self.otu_by_gi: dictionary that contains ????:
                         key:
                         value:
@@ -1489,7 +1502,7 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
 
         :return: list of corresponding gi numbers
         """
-        # TODO: gi list limited to 100000000, for huge trees that is a problem. Think of what to do...
+        # TODO MK: gi list limited to 100000000, for huge trees that is a problem. Think of what to do...
         debug("get_all_gi_mrca")
         Entrez.email = self.config.email
         handle = Entrez.esearch(db="nucleotide", term="txid{}[Orgn]".format(self.mrca_ncbi),
@@ -1958,7 +1971,7 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
             subprocess.call(["papara",
                              "-t", "random_resolve.tre",
                              "-s", "aln_ott.phy",
-                             # "-j", self.config.num_threads,  # TODO: gives error, try to implement for speed up
+                             # "-j", self.config.num_threads,  # TODO MK: gives error, try to implement for speed up
                              "-q", self.newseqs_file,
                              "-n", papara_runname])  # FIXME directory ugliness
             if _VERBOSE:
@@ -2232,7 +2245,7 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
                 localfiles[index] = None
         localfiles = filter(None, localfiles)
         # debug(localfiles)
-        # TODO: add assert to ensure that every file is a fasta file in the folder
+        # TODO MK: add assert to ensure that every file is a fasta file in the folder
         for filename in localfiles:
             # debug(file)
             filepath = "{}/{}".format(path_to_local_seq, filename)
@@ -2260,7 +2273,8 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
         os.system(cmd1)
 
     def make_otu_dict_entry_unpubl(self, key):
-        """adds the local unpublished data to the otu_dict.
+        """Adds the local unpublished data to the otu_dict.
+
         Information are retrieved from the additional json file/self.unpubl_otu_json.
         I make up accession numbers, which might not be necessary
 

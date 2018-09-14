@@ -18,7 +18,7 @@ threshold = 2
 selectby = "blast"
 downtorank = "species"
 shared_blast_folder = "/home/blubb/Documents/gitdata/physcraper/shared_runs/"
-
+ingroup_mrca = 723076
 # setup the run
 if not os.path.exists("{}".format(workdir)):
         os.makedirs("{}".format(workdir))
@@ -46,4 +46,5 @@ wrappers.filter_data_run(seqaln,
                          configfi,
                          selectby=selectby,
                          downtorank=downtorank,
+                         ingroup_mrca=ingroup_mrca,
                          shared_blast_folder=shared_blast_folder)
