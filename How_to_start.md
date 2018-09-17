@@ -5,7 +5,7 @@ PhyScraper is a command-line tool written in python to automatically update phyl
 PhyScraper will take every input sequence and blasts it against the ncbi GenBank database. Sequences that are similar to the input sequence will be added to the alignment, if they are a different species concept and/or they are longer than existing sequences or differ in at least one point mutation.
 Then it will place the newly found sequences onto the tree, which is then used as a starting tree for a full RAxML run. In the next round, every newly added sequence will be blasted and this continues until no new sequence were found.
 After a certain time threshold (currently 14 days), the existing sequences will be blasted again to check if new sequences can be found.
-After the single-gene datasets are updated, the data can be concatenated. Either, the user species which sequences are combined or the tool decides randomly which sequences to combine if thre are more than a single sequence for a taxon in one of the alignments.
+After the single-gene datasets are updated, the data can be concatenated. Either, the user specifies which sequences are combined or the tool decides randomly which sequences to combine if there are more than a single sequence for a taxon in one of the alignments.
 
 
 ## Short tutorial:
