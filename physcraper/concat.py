@@ -14,7 +14,7 @@ from __init__ import debug
 
 """Code used to concatenate different single PhyScraper runs into a concatenated one.
 """
-print("Current Version number: 09142018.0")
+print("Current Version number: 09172018.0")
 
 # def remove_leaf(tre, leaf):
 #     """ Removes a taxon from tre.
@@ -80,7 +80,7 @@ class Concat(object):
         workdir_comb: the path to your directory where the data shall be stored
         email: your email address, currently used to retrieve missing taxon information
 
-        During the initializing process the following self objects are generated:
+    During the initializing process the following self objects are generated:
         self.workdir: the path to your directory
         self.sp_gi_comb: dictonary - similar to otu_dcit of Physcraper class
             key: taxon name

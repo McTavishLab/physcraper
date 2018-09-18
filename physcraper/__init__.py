@@ -80,7 +80,7 @@ def is_number(s):
 
 
 # which python physcraper file do I use?
-print("Current Version number: 09142018.0")
+print("Current Version number: 09182018.0")
 debug(os.path.realpath(__file__))
 
 
