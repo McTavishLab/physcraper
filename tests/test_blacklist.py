@@ -107,4 +107,3 @@ try:
     sys.stdout.write("\ntest passed\n")
 except:
     sys.stderr.write("\ntest failed\n")
-

@@ -1,8 +1,10 @@
 import os
 import sys
 import pickle
-from physcraper import FilterBlast, ConfigObj, IdDicts
-from physcraper import read_local_blast, write_blast_files, run_local_blast
+#from physcraper import FilterBlast, ConfigObj, IdDicts
+import physcraper
+import physcraper.local_blast as local_blast
+
 
 sys.stdout.write("\ntests read_local_blast\n")
 
@@ -16,15 +18,15 @@ downtorank = None
 absworkdir = os.path.abspath(workdir)
 
 try:
-    conf = ConfigObj(configfi)
+    conf = physcraper.ConfigObj(configfi)
     data_obj = pickle.load(open("tests/data/precooked/tiny_dataobj.p", 'rb'))
     data_obj.workdir = absworkdir
-    ids = IdDicts(conf, workdir=data_obj.workdir)
+    ids = physcraper.IdDicts(conf, workdir=data_obj.workdir)
     ids.gi_ncbi_dict = pickle.load(open("tests/data/precooked/tiny_gi_map.p", "rb"))
 except:
     sys.stdout.write("\n\nTest FAILED\n\n")
     sys.exit()
-filteredScrape = FilterBlast(data_obj, ids)
+filteredScrape = physcraper.FilterBlast(data_obj, ids)
 filteredScrape._blasted = 1
 blast_dir = "tests/data/precooked/fixed/tte_blast_files"
 filteredScrape.gi_list_mrca = pickle.load(open("tests/data/precooked/gi_list_mrca.p", 'rb'))
@@ -39,11 +41,11 @@ for taxonID in filteredScrape.sp_d:
         # print(taxonID)
         blast_seq = filteredScrape.sp_seq_d[taxonID].keys()[0]
         seq = filteredScrape.sp_seq_d[taxonID][blast_seq]
-        write_blast_files(workdir, taxonID, seq)
+        physcraper.write_blast_files(filteredScrape.workdir, taxonID, seq)
         blast_db = [item for item in filteredScrape.sp_seq_d[taxonID].keys()[1:] if type(item) == int]
         for blast_key in blast_db:
             seq = filteredScrape.sp_seq_d[taxonID][blast_key]
-            write_blast_files(workdir, blast_key, seq, db=True, fn=str(taxonID))
+            physcraper.write_blast_files(filteredScrape.workdir, blast_key, seq, db=True, fn=str(taxonID))
         break
 
 # test starts here:
@@ -51,8 +53,8 @@ blast_db = "Senecio_lagascanus"
 blast_seq = "Senecio_lagascanus"
 key = 'Senecio_lagascanus'
 
-run_local_blast(workdir, blast_seq, blast_db)
-read_local_blast(workdir, filteredScrape.sp_seq_d[key], blast_db)
+local_blast.run_local_blast(filteredScrape.workdir, blast_seq, blast_db)
+local_blast.read_local_blast(filteredScrape.workdir, filteredScrape.sp_seq_d[key], blast_db)
 
 blast_out = "{}/blast/output_{}_tobeblasted.xml".format(workdir, key)
 
@@ -62,7 +64,7 @@ if os.path.exists(blast_out):
         try:
             assert len(first_line.strip()) != 0
             sys.stdout.write("\nTest passed!\n")
-            # print("output file exists and is not empty, method can read the blast files and make an output file")
+        # print("output file exists and is not empty, method can read the blast files and make an output file")
         except:
             sys.stderr.write("\ntest failed\n")
-			# print(" output file of read_local_blast does not exist or is empty, method works not correctly")
+        # print(" output file of read_local_blast does not exist or is empty, method works not correctly")

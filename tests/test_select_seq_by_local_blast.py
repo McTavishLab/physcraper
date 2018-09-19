@@ -1,8 +1,10 @@
 import sys
 import os
-from physcraper import ConfigObj, IdDicts, FilterBlast
-from physcraper import run_local_blast, write_blast_files
+#from physcraper import ConfigObj, IdDicts, FilterBlast
 import pickle#
+import physcraper
+import physcraper.local_blast as local_blast
+
 
 sys.stdout.write("\ntests select_seq_by_local_blast\n")
 
@@ -18,16 +20,16 @@ absworkdir = os.path.abspath(workdir)
 
 
 try:
-    conf = ConfigObj(configfi)
+    conf = physcraper.ConfigObj(configfi)
     data_obj = pickle.load(open("tests/data/precooked/tiny_dataobj.p", 'rb'))
     data_obj.workdir = absworkdir
-    ids = IdDicts(conf, workdir=data_obj.workdir)
+    ids = physcraper.IdDicts(conf, workdir=data_obj.workdir)
     ids.gi_ncbi_dict = pickle.load(open("tests/data/precooked/tiny_gi_map.p", "rb"))
 except:
     sys.stdout.write("\n\nTest FAILED\n\n")
     sys.exit()
 
-filteredScrape =  FilterBlast(data_obj, ids)
+filteredScrape =  physcraper.FilterBlast(data_obj, ids)
 filteredScrape._blasted = 1
 blast_dir = "tests/data/precooked/fixed/tte_blast_files"
 filteredScrape.gi_list_mrca = pickle.load(open("tests/data/precooked/gi_list_mrca.p", 'rb'))
@@ -67,9 +69,12 @@ for giID in filteredScrape.sp_d:
                             blast_seq = blast_seq.replace(" ", "_")
                             blast_db = "{}".format(element['^ot:ottTaxonName'])
                             blast_db = blast_db.replace(" ", "_")
-                    if filteredScrape.downtorank != None:
+                            # print(blast_db, blast_seq)
+                    if filteredScrape.downtorank is not None:
                         taxonfn = giID
-                    run_local_blast(workdir, taxonfn, taxonfn)
+                    print('taxonfn')
+                    print(taxonfn)
+                    local_blast.run_local_blast(filteredScrape.data.workdir, taxonfn, taxonfn)
                     filteredScrape.select_seq_by_local_blast(filteredScrape.sp_seq_d[giID], taxonfn, treshold, seq_present)
             elif seq_present == 0 and count_dict["new_taxon"] == True and query_count>=1:
 
@@ -84,15 +89,19 @@ for giID in filteredScrape.sp_d:
                 blast_db = filteredScrape.sp_seq_d[giID].keys()[1:]
                 # write files for local blast first:
                 seq = filteredScrape.sp_seq_d[giID][blast_seq]
-                write_blast_files(workdir, str_db, seq) #blast qguy
+                print('str_db')
+                print(str_db)
+
+                physcraper.write_blast_files(filteredScrape.data.workdir, str_db, seq) #blast qguy
                 # print(blast_db)
                 for blast_key in blast_db:
                     seq = filteredScrape.sp_seq_d[giID][blast_key]
-                    write_blast_files(workdir, blast_key, seq, db=True, fn=str_db) #local db
+                    physcraper.write_blast_files(filteredScrape.data.workdir, blast_key, seq, db=True, fn=str_db) #local db
                 # make local blast of sequences
-                if filteredScrape.downtorank != None:
+                if filteredScrape.downtorank is not None:
                     str_db = giID
-                run_local_blast(workdir, str_db, str_db)
+                print(str_db)
+                local_blast.run_local_blast(filteredScrape.data.workdir, str_db, str_db)
                 if len(filteredScrape.sp_seq_d[giID]) + seq_present >= treshold:
                     filteredScrape.select_seq_by_local_blast(filteredScrape.sp_seq_d[giID], str_db, treshold, seq_present)
                 elif len(filteredScrape.sp_seq_d[giID]) + seq_present < treshold:
