@@ -8,9 +8,9 @@ from dendropy import DnaCharacterMatrix
 from copy import deepcopy
 
 
-workdir_its = "./tiny_comb_its"
-workdir_ets = "./tiny_comb_ets"
-workdir_3 = "./tiny_comb_ets"
+workdir_its = "./runs/tiny_comb_its"
+workdir_ets = "./runs/tiny_comb_ets"
+workdir_3 = "./runs/tiny_comb_ets"
 email = "martha.kandziora@yahoo.com"
 percentage = 0.4
 

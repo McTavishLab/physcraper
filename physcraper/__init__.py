@@ -84,6 +84,8 @@ print("Current --init-- version number: 09182018.0")
 debug(os.path.realpath(__file__))
 
 
+
+
 class ConfigObj(object):
     """Pulls out the configuration information from
     the config file and makes it easier to pass
@@ -122,8 +124,8 @@ class ConfigObj(object):
     def __init__(self, configfi):
         if _DEBUG:
             sys.stdout.write("Building config object\n")
-        # debug(configfi)
-        # debug(os.path.isfile(configfi))
+        debug(configfi)
+        debug(os.path.isfile(configfi))
         assert os.path.isfile(configfi)
         config = configparser.ConfigParser()
         config.read(configfi)
@@ -330,6 +332,8 @@ def generate_ATT_from_files(seqaln,
     otu_newick = tre.as_string(schema=schema_trf)
     otu_dict = json.load(open(otu_json, "r"))
     debug("get mrca")
+    debug(ingroup_mrca)
+    # debug(some)
     if ingroup_mrca:
         ott_mrca = int(ingroup_mrca)
     else:
@@ -1059,11 +1063,13 @@ def get_mrca_ott(ott_ids):
     synth_tree_ott_ids = []
     ott_ids_not_in_synth = []
     for ott in ott_ids:
+        debug(ott)
         try:
             tree_of_life.mrca(ott_ids=[ott], wrap_response=False)
             synth_tree_ott_ids.append(ott)
         except:
             ott_ids_not_in_synth.append(ott)
+    debug(synth_tree_ott_ids)
     if len(synth_tree_ott_ids) == 0:
         sys.stderr.write('No sampled taxa were found in the current synthetic tree. '
                          'Please find and input and appropriate OTT id as ingroup mrca in generate_ATT_from_files')
@@ -3120,6 +3126,32 @@ class FilterBlast(PhyscraperScrape):
                         rowinfo.append("-")
                 writer.writerow(rowinfo)
 
+    def print_sp_d_as_is(self):
+        if self.sp_d is not None:
+            with open('sp_d_info.csv', 'w') as output:
+                writer = csv.writer(output)
+                for group in self.sp_d.keys():
+                    rowinfo = [group]
+                    for otu in self.sp_d[group].keys():
+                        for item in self.sp_d[group][otu].keys():
+                            tofile = str(self.sp_d[group][otu][item]).replace("_", " ")
+                            rowinfo.append(tofile)
+                    writer.writerow(rowinfo)
+
+    def print_sp_d_recalc(self, downtorank):
+        if self.sp_d is not None:
+            sp_d = self.sp_dict(downtorank)
+            with open('sp_d_info.csv', 'w') as output:
+                writer = csv.writer(output)
+                for group in sp_d.keys():
+                    rowinfo = group
+                    for otu in sp_d[group].keys():
+                        for item in sp_d[group][otu].keys():
+                            tofile = str(sp_d[group][otu][item]).replace("_", " ")
+                            rowinfo.append(otu)
+                            rowinfo.append(tofile)
+                    writer.writerow(rowinfo)
+
 
 class Settings(object):
     """A class to store all settings for PhyScraper.
@@ -3181,3 +3213,11 @@ def get_ncbi_tax_name(handle):
         if item[u'GBQualifier_name'] == 'organism':
             ncbi_sp = str(item[u'GBQualifier_value'])
     return ncbi_sp
+
+
+
+from guppy import hpy
+
+h = hpy()
+
+print h.heap() 
