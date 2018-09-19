@@ -80,7 +80,7 @@ def is_number(s):
 
 
 # which python physcraper file do I use?
-print("Current --init-- version number: 09182018.0")
+print("Current --init-- version number: 09192018.0")
 debug(os.path.realpath(__file__))
 
 
@@ -3084,23 +3084,29 @@ class FilterBlast(PhyscraperScrape):
                 writer = csv.writer(output)
                 for group in self.sp_d.keys():
                     rowinfo = [group]
-                    for otu in self.sp_d[group].keys():
-                        for item in self.sp_d[group][otu].keys():
-                            tofile = str(self.sp_d[group][otu][item]).replace("_", " ")
+                    for otu in self.sp_d[group]:
+                        for item in otu.keys():
+                            tofile = str(otu[item]).replace("_", " ")
                             rowinfo.append(tofile)
                     writer.writerow(rowinfo)
 
     def print_sp_d_recalc(self, downtorank):
         if self.sp_d is not None:
             sp_d = self.sp_dict(downtorank)
-            with open('sp_d_info.csv', 'w') as output:
+            with open('sp_d_info_recalc.csv', 'w') as output:
                 writer = csv.writer(output)
                 for group in sp_d.keys():
-                    rowinfo = group
+                    rowinfo = list(str(group))
+                    debug(rowinfo)
                     debug(sp_d[group])
-                    for otu in sp_d[group].keys():
-                        for item in sp_d[group][otu].keys():
-                            tofile = str(sp_d[group][otu][item]).replace("_", " ")
+                    for otu in sp_d[group]:
+                        debug(otu)
+                        # debug(sp_d[group][otu])
+                        # debug(sp_d[group][otu].keys())
+                        for item in otu.keys():
+                            tofile = str(otu[item]).replace("_", " ")
+                            debug(tofile)
+                            # tofile = str(sp_d[group][otu][item]).replace("_", " ")
                             rowinfo.append(otu)
                             rowinfo.append(tofile)
                     writer.writerow(rowinfo)
