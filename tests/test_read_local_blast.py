@@ -41,11 +41,11 @@ for taxonID in filteredScrape.sp_d:
         # print(taxonID)
         blast_seq = filteredScrape.sp_seq_d[taxonID].keys()[0]
         seq = filteredScrape.sp_seq_d[taxonID][blast_seq]
-        physcraper.write_blast_files(filteredScrape.workdir, taxonID, seq)
+        local_blast.write_blast_files(filteredScrape.workdir, taxonID, seq)
         blast_db = [item for item in filteredScrape.sp_seq_d[taxonID].keys()[1:] if type(item) == int]
         for blast_key in blast_db:
             seq = filteredScrape.sp_seq_d[taxonID][blast_key]
-            physcraper.write_blast_files(filteredScrape.workdir, blast_key, seq, db=True, fn=str(taxonID))
+            local_blast.write_blast_files(filteredScrape.workdir, blast_key, seq, db=True, fn=str(taxonID))
         break
 
 # test starts here:

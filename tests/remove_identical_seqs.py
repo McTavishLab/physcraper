@@ -29,6 +29,7 @@ except:
 
 scraper =  PhyscraperScrape(data_obj, ids)
 scraper.config.blast_loc = 'remote'
+scraper.ids.otu_rank = {}
 scraper.config.gifilename = False
 
 scraper._blasted = 1
@@ -58,6 +59,8 @@ data_obj = pickle.load(open("tests/data/precooked/tiny_dataobj.p", 'rb')) #reloa
 data_obj.workdir = absworkdir
 scraper2 = PhyscraperScrape(data_obj, ids)
 scraper2.config.blast_loc = 'remote'
+scraper2.ids.otu_rank = {}
+
 scraper2.config.gifilename = False
 j = len(scraper2.data.aln) == 5
 scraper2.gi_list_mrca = pickle.load(open("tests/data/precooked/gi_list_mrca.p", 'rb'))

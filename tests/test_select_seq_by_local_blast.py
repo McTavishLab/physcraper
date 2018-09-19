@@ -92,11 +92,11 @@ for giID in filteredScrape.sp_d:
                 print('str_db')
                 print(str_db)
 
-                physcraper.write_blast_files(filteredScrape.data.workdir, str_db, seq) #blast qguy
+                local_blast.write_blast_files(filteredScrape.data.workdir, str_db, seq) #blast qguy
                 # print(blast_db)
                 for blast_key in blast_db:
                     seq = filteredScrape.sp_seq_d[giID][blast_key]
-                    physcraper.write_blast_files(filteredScrape.data.workdir, blast_key, seq, db=True, fn=str_db) #local db
+                    local_blast.write_blast_files(filteredScrape.data.workdir, blast_key, seq, db=True, fn=str_db) #local db
                 # make local blast of sequences
                 if filteredScrape.downtorank is not None:
                     str_db = giID
