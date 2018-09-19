@@ -1,6 +1,6 @@
 """functions to write/run/read files using the BLAST+ and a local database.
 """
-print("Current Version number: 09142018.0")
+print("Current local_blast version number: 09142018.0")
 
 import os
 import sys

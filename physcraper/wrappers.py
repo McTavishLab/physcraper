@@ -264,7 +264,7 @@ def filter_OTOL(study_id,
             # filteredScrape.make_otu_dict_entry_unpubl()
             filteredScrape.run_blast()
             debug(id_to_spn_addseq_json)
-            filteredScrape.local_otu_json = id_to_spn_addseq_json
+            filteredScrape.data.local_otu_json = id_to_spn_addseq_json
             filteredScrape.read_blast()
             filteredScrape.remove_identical_seqs()
             filteredScrape.generate_streamed_alignment()

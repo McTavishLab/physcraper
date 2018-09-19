@@ -3,6 +3,9 @@ import os
 #from physcraper import ConfigObj, IdDicts, FilterBlast
 import pickle#
 import physcraper
+import physcraper.local_blast as local_blast
+
+
 sys.stdout.write("\ntests select_seq_by_local_blast\n")
 
 # tests select_seq_local_blast_test
@@ -71,7 +74,7 @@ for giID in filteredScrape.sp_d:
                         taxonfn = giID
                     print('taxonfn')
                     print(taxonfn)
-                    physcraper.run_local_blast(filteredScrape.data.workdir, taxonfn, taxonfn)
+                    local_blast.run_local_blast(filteredScrape.data.workdir, taxonfn, taxonfn)
                     filteredScrape.select_seq_by_local_blast(filteredScrape.sp_seq_d[giID], taxonfn, treshold, seq_present)
             elif seq_present == 0 and count_dict["new_taxon"] == True and query_count>=1:
                 
@@ -98,7 +101,7 @@ for giID in filteredScrape.sp_d:
                 if filteredScrape.downtorank is not None:
                     str_db = giID
                 print(str_db)
-                physcraper.run_local_blast(filteredScrape.data.workdir, str_db, str_db)
+                local_blast.run_local_blast(filteredScrape.data.workdir, str_db, str_db)
                 if len(filteredScrape.sp_seq_d[giID]) + seq_present >= treshold:
                     filteredScrape.select_seq_by_local_blast(filteredScrape.sp_seq_d[giID], str_db, treshold, seq_present)
                 elif len(filteredScrape.sp_seq_d[giID]) + seq_present < treshold:

@@ -5,6 +5,9 @@ from math import sqrt
 from Bio.Blast import NCBIXML
 #from physcraper import ConfigObj, IdDicts, FilterBlast
 import physcraper
+import physcraper.local_blast as local_blast
+
+
 sys.stdout.write("\ntests calculate_mean_sd\n")
 
 workdir = "tests/output/mean_sd_test"
@@ -30,7 +33,7 @@ if not os.path.exists(os.path.join(filteredScrape.workdir, "blast")):
     os.makedirs(os.path.join(filteredScrape.workdir, "blast"))
 os.chdir(os.path.join(filteredScrape.workdir, "blast"))
 fn_path = '/home/blubb/Documents/gitdata/physcraper/tests/data/precooked/fixed/local-blast/{}'.format(fn)
-physcraper.run_local_blast(filteredScrape.workdir, fn_path, fn_path,
+local_blast.run_local_blast(filteredScrape.workdir, fn_path, fn_path,
                                output=os.path.join(filteredScrape.workdir, "blast/output_{}.xml".format(fn)))
 
 output_blast = os.path.join(filteredScrape.workdir, "blast/output_{}.xml".format(fn))

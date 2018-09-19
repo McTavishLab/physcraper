@@ -21,7 +21,7 @@ otu_jsonfi = "{}/otu_dict.json".format(workdir)
 otu_jsonfi_local = "{}/otu_dict_local.json".format(workdir)
 
 cwd = os.getcwd()
-treshold = 10
+threshold = 10
 selectby = "blast"
 downto = None
 add_local_seq = "tests/data/local_seqs"
@@ -74,7 +74,7 @@ filteredScrape.blacklist = blacklist
 if add_local_seq is not None:
     filteredScrape.unpublished = True
 if filteredScrape.unpublished is True:  # use unpublished data
-    filteredScrape.unpublished = True
+    # filteredScrape.unpublished = True
     filteredScrape.data.unpubl_otu_json = otu_json_local
     filteredScrape.write_unpubl_blastdb(add_local_seq)
 

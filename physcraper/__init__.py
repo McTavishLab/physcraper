@@ -80,7 +80,7 @@ def is_number(s):
 
 
 # which python physcraper file do I use?
-print("Current Version number: 09182018.0")
+print("Current --init-- version number: 09182018.0")
 debug(os.path.realpath(__file__))
 
 
@@ -1784,9 +1784,12 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
                                 fake_gi = "unpubl_{}".format(gi_id)
                                 self.new_seqs[fake_gi] = hsp.sbjct
                                 # debug(gi_id)
-                                # debug(self.data.unpubl_otu_json['otu{}'.format(gi_id)])
+                                # print(self.data.unpubl_otu_json)
+                                # print(self.data.unpubl_otu_json.keys())
+
+                                # print(self.data.unpubl_otu_json['otu{}'.format(gi_id)])
                                 self.data.gi_dict[fake_gi] = {'accession': "000000{}".format(gi_counter), 'title': "unpublished", 'localID': gi_id}
-                                self.data.gi_dict[fake_gi].update(self.data.local_otu_json['otu{}'.format(gi_id)])
+                                self.data.gi_dict[fake_gi].update(self.data.unpubl_otu_json['otu{}'.format(gi_id)])
                                 gi_counter += 1
                                 # self.data.gi_dict[fake_gi] = alignment.__dict__
         else:

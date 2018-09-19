@@ -2,7 +2,7 @@
 
 parts are altered from https://github.com/zyxue/ncbitax2lin/blob/master/ncbitax2lin.py
 """
-print("Current Version number: 09142018.0")
+print("Current ncbi_parser version number: 09142018.0")
 
 import os
 import sys

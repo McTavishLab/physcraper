@@ -3,7 +3,9 @@ import pickle
 import sys
 import os
 from physcraper import ConfigObj, IdDicts
-from physcraper import FilterBlast, write_blast_files
+from physcraper import FilterBlast
+import physcraper.local_blast as local_blast
+
 
 sys.stdout.write("\ntests write_blast\n")
 
@@ -39,11 +41,11 @@ for taxonID in filteredScrape.sp_d:
 	if len(filteredScrape.sp_seq_d[taxonID]) > treshold:
 	    blast_seq = filteredScrape.sp_seq_d[taxonID].keys()[0]
 	    seq = filteredScrape.sp_seq_d[taxonID][blast_seq]
-	    write_blast_files(workdir, taxonID, seq)
+	    local_blast.write_blast_files(workdir, taxonID, seq)
 	    blast_db = filteredScrape.sp_seq_d[taxonID].keys()[1:]
 	    for blast_key in blast_db:
 	    	seq = filteredScrape.sp_seq_d[taxonID][blast_key]
-	    	write_blast_files(workdir, blast_key, seq, db=True, fn=str(taxonID))
+	    	local_blast.write_blast_files(workdir, blast_key, seq, db=True, fn=str(taxonID))
 	    break
 try:
 	blast_file_blast = "{}/blast/{}_tobeblasted".format(workdir, taxonID)

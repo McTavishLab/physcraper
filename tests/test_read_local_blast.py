@@ -3,6 +3,9 @@ import sys
 import pickle
 #from physcraper import FilterBlast, ConfigObj, IdDicts
 import physcraper
+import physcraper.local_blast as local_blast
+
+
 sys.stdout.write("\ntests read_local_blast\n")
 
 # tests if I can read a local blast output file
@@ -50,8 +53,8 @@ blast_db = "Senecio_lagascanus"
 blast_seq = "Senecio_lagascanus"
 key = 'Senecio_lagascanus'
 
-physcraper.run_local_blast(filteredScrape.workdir, blast_seq, blast_db)
-physcraper.read_local_blast(filteredScrape.workdir, filteredScrape.sp_seq_d[key], blast_db)
+local_blast.run_local_blast(filteredScrape.workdir, blast_seq, blast_db)
+local_blast.read_local_blast(filteredScrape.workdir, filteredScrape.sp_seq_d[key], blast_db)
 
 blast_out = "{}/blast/output_{}_tobeblasted.xml".format(workdir, key)
 
