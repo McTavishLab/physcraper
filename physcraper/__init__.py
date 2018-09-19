@@ -1008,6 +1008,47 @@ class IdDicts(object):
             fi = open("{}/id_map.txt".format(workdir))
             for lin in fi:
                 self.gi_ncbi_dict[int(lin.split(",")[0])] = lin.split(",")[1]
+        # ncbi parser contains information about spn, tax_id, and ranks
+        self.ncbi_parser = ncbi_data_parser.Parser(names_file=self.config.ncbi_parser_names_fn,
+                                                   nodes_file=self.config.ncbi_parser_nodes_fn)
+
+    def get_ncbiid_from_tax_name(self, tax_name):
+        """Get the ncbi_id from the species name using ncbi web query.
+
+        :param tax_name: species name
+        :return: corresponding ncbi id
+        """
+        ncbi_id = None
+        if tax_name in self.spn_to_ncbiid:
+            ncbi_id = self.spn_to_ncbiid[tax_name]
+        else:
+            try:
+                # debug("try2")
+                tries = 10
+                for i in range(tries):
+                    try:
+                        ncbi_id = Entrez.read(Entrez.esearch(db="taxonomy", term=tax_name, RetMax=100))['IdList'][0]
+                        ncbi_id = int(ncbi_id)
+                    except:
+                        # debug("except esearch/read")
+                        if i < tries - 1:  # i is zero indexed
+                            continue
+                        else:
+                            raise
+                    break
+                # debug(ncbi_id)
+                # debug(type(ncbi_id))
+            except:
+                # debug("except")
+                ncbi = NCBITaxa()
+                tax_info = ncbi.get_name_translator([tax_name])
+                # debug(tax_info)
+                if tax_info == {}:
+                    debug("Taxon name does not match any name in ncbi. Check that name is written correctly!")
+                ncbi_id = int(tax_info.items()[0][1][0])
+        assert type(ncbi_id) is int
+        self.spn_to_ncbiid[tax_name] = ncbi_id
+        return ncbi_id
 
     def get_rank_info(self, gi_id=False, taxon_name=False):
         """Collects rank and lineage information from ncbi,
