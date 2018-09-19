@@ -25,8 +25,10 @@ Pulls out the configuration information from
   * **self.blast_loc**: defines which blasting method to use, either web-query (=remote) or from a local
                         blast database (=local)
   * **self.num_threads**: number of cores to be used during a run
-  * **self.url_base**: if blastloc == remote, it defines the url for the blast queries.
-                        if blastloc == local: url_base = None
+  * **self.url_base**: 
+  
+    * if blastloc == remote: it defines the url for the blast queries.
+    * if blastloc == local: url_base = None
 
   * **optional self.objects**:
       * self.blastdb: if blastloc == local, this defines the path to the local blast database
