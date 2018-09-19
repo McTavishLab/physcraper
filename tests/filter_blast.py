@@ -18,8 +18,7 @@ treshold=2
 selectby="blast"
 downtorank = None
 # downtorank = "species"
-add_local_seq = None
-id_to_spn_addseq_json = None
+
 
 if os.path.exists(otu_jsonfi):
     otu_json = json.load(open(otu_jsonfi))
@@ -31,16 +30,12 @@ else:
 
 
 wrappers.filter_data_run(seqaln,
-                 mattype,
-                 trfn,
-                 schema_trf,
-                 workdir,
-                 treshold,
-                 selectby,
-                downtorank,
-                 otu_jsonfi,
-                  add_local_seq,
-                 id_to_spn_addseq_json,
-                 configfi)
-
-
+                         mattype,
+                         trfn,
+                         schema_trf,
+                         workdir,
+                         treshold,
+                         otu_jsonfi,
+                         configfi,
+                         selectby=selectby,
+                         downtorank=downtorank)
