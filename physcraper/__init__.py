@@ -330,6 +330,7 @@ def standardize_label(item):
     """Make sure that the tipnames are unicode.
 
     Function is only used if own files are used for the OtuJsonDict() function.
+
     Note: has test -> test_edit_dict_key.py
 
     :param item: original tipname
@@ -695,7 +696,7 @@ class AlignTreeTax(object):
                 ncbigi_list.append(str(gi_otu_dict))
         return ncbigi_list
 
-    def add_otu(self, gi, ids_obj):
+    def add_otu(self, gi_id, ids_obj):
         """
         generates an otu_id for new sequences and adds them into self.otu_dict.
         Needs to be passed an IdDict to do the mapping
@@ -710,40 +711,71 @@ class AlignTreeTax(object):
         ncbi_id = None
         tax_name = None
         ott_id = None
+        if type(gi_id) == int:
+            # debug("gi_id is int")
+            if gi_id in self.gi_dict.keys() and 'staxids' in self.gi_dict[gi_id].keys():
+                tax_name = self.gi_dict[gi_id]['sscinames']
+                ncbi_id = self.gi_dict[gi_id]['staxids']
+                # debug(ncbi_id)
+            else:
+                tax_name = ids_obj.find_name(gi=gi_id)
+                if tax_name is None:
+                    sys.stderr.write("no species name returned for {}".format(gi_id))
+                ncbi_id = ids_obj.map_gi_ncbi(gi_id)
+        elif gi_id[:6] == "unpubl":
+            # debug(self.gi_dict.keys())
+            # debug(self.gi_dict[gi_id].keys())
+            tax_name = self.gi_dict[gi_id]['^ot:ottTaxonName']
+            ncbi_id = self.gi_dict[gi_id]['^ncbi:taxon']
+            ott_id = self.gi_dict[gi_id]['^ot:ottId']
+        else:
+            sys.stderr.write("Something is wrong, I cannot add a new seq which has no gi_id or is not unpublished.")
+        if ncbi_id is None:
+            debug("ncbi_id is none")
 
-        ncbi_id = ids_obj.map_gi_ncbi(gi)  # check that try/except is working here
-        # TODO do we need rank info here?
+            if ids_obj.otu_rank != None:
+                ncbi_id = ids_obj.otu_rank[tax_name]["taxon id"]
+            else:
+                ncbi_id = ids_obj.ncbi_parser.get_id_from_name(tax_name)
+            # if type(gi_id) == int:
+            #     print("add id to self")
+            self.gi_ncbi_dict[gi_id] = ncbi_id
+            self.ncbiid_to_spn[ncbi_id] = tax_name
 
-        # seems like without the try and except we are missing tons of information
-        try:
-            # ncbi_id = int(ids_obj.map_gi_ncbi(gi))
-            # try:
-            ott = int(ids_obj.ncbi_to_ott[ncbi_id])
-            # except:
-            if ott is None:
-                ott = "OTT_{}".format(self.ps_otu)
-                self.ps_otu += 1
-            spn = str(ids_obj.ott_to_name[ott]).replace(" ", "_")
-        except:
-            spn = ids_obj.get_rank_info(gi_id=gi)
-
-            ncbi_id = ids_obj.otu_rank[spn]["taxon id"]
-            try:
-                ott = int(ids_obj.ncbi_to_ott[ncbi_id])
-            except:
-                ott = "OTT_{}".format(self.ps_otu)
-                self.ps_otu += 1
+        if ncbi_id in ids_obj.ncbi_to_ott.keys():
+            # ncbi_id = int(ids_obj.map_gi_ncbi(gi_id))
+            ott_id = int(ids_obj.ncbi_to_ott[ncbi_id])
+        if ott_id is None:
+            ott_id = "OTT_{}".format(self.ps_otu)
+            self.ps_otu += 1
+            # tax_name = str(ids_obj.ott_to_name[ott]).replace(" ", "_")  # seems to be unused
+        if otu_id in self.otu_dict.keys():
+            ott_name = ids_obj.ott_to_name.get(ott_id)
+        else:
+            ott_name = tax_name
+        # debug("otu_id")
+        # debug(otu_id)
+        # debug("ncbi_id")
+        # debug(ncbi_id)
+        # debug(self.gi_dict[gi_id].keys())
         self.otu_dict[otu_id] = {}
-        self.otu_dict[otu_id]['^ncbi:gi'] = gi
-        self.otu_dict[otu_id]['^ncbi:accession'] = self.gi_dict[gi]['accession']
-        self.otu_dict[otu_id]['^ncbi:title'] = self.gi_dict[gi]['title']
+        self.otu_dict[otu_id]['^ncbi:gi'] = gi_id
+        self.otu_dict[otu_id]['^ncbi:accession'] = self.gi_dict[gi_id]['accession']
+        self.otu_dict[otu_id]['^ncbi:title'] = self.gi_dict[gi_id]['title']
         self.otu_dict[otu_id]['^ncbi:taxon'] = ncbi_id
-        self.otu_dict[otu_id]['^ot:ottId'] = ids_obj.ncbi_to_ott.get(ncbi_id)
+        self.otu_dict[otu_id]['^ot:ottId'] = ott_id
         self.otu_dict[otu_id]['^physcraper:status'] = "query"
-        self.otu_dict[otu_id]['^ot:ottTaxonName'] = ids_obj.ott_to_name.get(self.otu_dict[otu_id]['^ot:ottId'])
-        self.otu_dict[otu_id]['^physcraper:last_blasted'] = "1800/01/01"  # 1800 = never blasted; 1900 = blasted 1x, not added; this century = blasted and added
+        self.otu_dict[otu_id]['^ot:ottTaxonName'] = ott_name
+        # last_blasted date infos: 1800 = never blasted; 1900 = blasted 1x, not added; this century = blasted and added
+        self.otu_dict[otu_id]['^physcraper:last_blasted'] = "1800/01/01"
+        if type(gi_id) != int:
+            # debug(gi_id)
+            # self.otu_dict[otu_id]['^user:TaxonName']
+            self.otu_dict[otu_id]['^physcraper:status'] = "local seq"
+            self.otu_dict[otu_id]["^ot:originalLabel"] = self.gi_dict[gi_id]['localID']
         if _DEBUG >= 2:
-            sys.stderr.write("gi:{} assigned new otu: {}\n".format(gi, otu_id))
+            sys.stderr.write("gi:{} assigned new otu: {}\n".format(gi_id, otu_id))
+        # debug(otu_id)
         return otu_id
 
     def write_papara_files(self, treefilename="random_resolve.tre", alnfilename="aln_ott.phy"):
@@ -838,7 +870,6 @@ class AlignTreeTax(object):
 
     def write_otus(self, filename, schema='table'):
         """Writes out OTU dict as json.
-
 
         :param filename: filename
         :param schema: either table or json format
@@ -975,6 +1006,7 @@ class IdDicts(object):
                         value: ncbi taxon name
         Optional:
         self.ncbi_parser: initializes the ncbi_parser class, that contains information about rank and identifiers
+        self.otu_rank: contains hierarchical information for web queries
     """
 
     # TODO - could - should be shared acrosss runs?! .... nooo.
@@ -986,7 +1018,6 @@ class IdDicts(object):
         self.ott_to_ncbi = {}  # currently only used to find mcra ncbi id from mrca ott_id
         self.ncbi_to_ott = {}  # used to get ott_id for new Genbank query taxa
         self.ott_to_name = {}  # used in add_otu to get name from otuId
-        self.otu_rank = {}  # deprecated for ncbi_parser, contained taxonomic hierarchy information
         self.gi_ncbi_dict = {}  # file id_map doesn't exist (see below), is only filled by ncbi_parser (by subprocess in earlier versions of the code).
         self.spn_to_ncbiid = {}  # spn to ncbi_id, it's only fed by the ncbi_data_parser, but makes it faster
         self.ncbiid_to_spn = {}
@@ -1008,8 +1039,10 @@ class IdDicts(object):
             fi = open("{}/id_map.txt".format(workdir))
             for lin in fi:
                 self.gi_ncbi_dict[int(lin.split(",")[0])] = lin.split(",")[1]
-        # ncbi parser contains information about spn, tax_id, and ranks
-        self.ncbi_parser = ncbi_data_parser.Parser(names_file=self.config.ncbi_parser_names_fn,
+        if config_obj.blast_loc == 'remote':
+            self.otu_rank = {}  # used only for web queries - contains taxonomic hierarchy information
+        else:  # ncbi parser contains information about spn, tax_id, and ranks
+            self.ncbi_parser = ncbi_data_parser.Parser(names_file=self.config.ncbi_parser_names_fn,
                                                    nodes_file=self.config.ncbi_parser_nodes_fn)
 
     def get_ncbiid_from_tax_name(self, tax_name):
@@ -1050,42 +1083,15 @@ class IdDicts(object):
         self.spn_to_ncbiid[tax_name] = ncbi_id
         return ncbi_id
 
-    def get_rank_info(self, gi_id=False, taxon_name=False):
-        """Collects rank and lineage information from ncbi,
+    def get_rank_info_from_web(self, taxon_name):
+        """Collects rank and lineage information via web query from ncbi,
         used to delimit the sequences from blast,
         when you have a local blast database or a Filter Blast run
         """
         # debug("get_rank_info")
-        Entrez.email = self.config.email
-        if gi_id:
-            # debug("gi_id to tax_name")
-            tries = 5
-            for i in range(tries):
-                try:
-                    handle = Entrez.efetch(db="nucleotide", id=gi_id, retmode="xml")
-                except:
-                    if i < tries - 1:  # i is zero indexed
-                        continue
-                    else:
-                        raise
-                break
-            read_handle = Entrez.read(handle)[0]
-            tax_name = read_handle['GBSeq_feature-table'][0]['GBFeature_quals'][0]['GBQualifier_value']
-        else:
-            tax_name = str(taxon_name).replace("_", " ")
+        tax_name = taxon_name.replace(" ", "_")
         if tax_name not in self.otu_rank.keys():
             ncbi_id = self.get_ncbiid_from_tax_name(tax_name)
-            # replaced by newer functio: get_ncbiid_from_tax_name()
-            # debug("tax_name to rank")
-            # ncbi = NCBITaxa()
-            # try:
-            #     tax_id = int(Entrez.read(Entrez.esearch(db="taxonomy", term=tax_name, RetMax=100))['IdList'][0])
-            # except:
-            #     # debug("except")
-            #     tax_info = ncbi.get_name_translator([tax_name])
-            #     if tax_info == {}:
-            #         print("Taxon name does not match any species name in ncbi. Check that name is written correctly!")
-            #     tax_id = int(tax_info.items()[0][1][0])
             ncbi = NCBITaxa()
             lineage = ncbi.get_lineage(ncbi_id)
             lineage2ranks = ncbi.get_rank(lineage)
@@ -1117,7 +1123,6 @@ class IdDicts(object):
             if gi:
                 gi_id = gi
             elif '^ncbi:gi' in sp_dict:
-                #
                 gi_id = sp_dict['^ncbi:gi']
             else:
                 sys.stderr.write("There is no name supplied and no gi available. This should not happen! Check name!")
@@ -1133,16 +1138,12 @@ class IdDicts(object):
                     tax_name = self.ncbi_parser.get_name_from_id(ncbi_id)
                     self.ncbiid_to_spn[ncbi_id] = tax_name
             else:  # usually being used for web-queries, local blast searches should have the information
-                # debug(gi_id)
-                # debug(type(gi_id))
                 tries = 10
                 Entrez.email = self.config.email
                 for i in range(tries):
                     try:
-                        # debug("find name efetch")
                         handle = Entrez.efetch(db="nucleotide", id=gi_id, retmode="xml")
                     except:
-                        # debug("except efetch")
                         if i < tries - 1:  # i is zero indexed
                             continue
                         else:
@@ -1176,9 +1177,16 @@ class IdDicts(object):
         if gi_id in self.gi_ncbi_dict:
             tax_id = int(self.gi_ncbi_dict[gi_id])
         else:
-            tax_name = self.get_rank_info(gi_id=gi_id)
-            tax_id = self.otu_rank[tax_name]["taxon id"]
+            # debug(gi)
+            tax_name = self.find_name(gi=gi_id)
+            if self.config.blast_loc == 'remote':
+                self.get_rank_info_from_web(taxon_name=tax_name)
+                tax_id = self.otu_rank[tax_name]["taxon id"]
+            else:
+                tax_id = self.ncbi_parser.get_id_from_name(tax_name)
+            self.ncbiid_to_spn[tax_id] = tax_name
             self.gi_ncbi_dict[gi_id] = tax_id
+            self.spn_to_ncbiid[tax_name] = tax_id
         return tax_id
 
     def dump(self, filename=None):
@@ -1457,24 +1465,16 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
                 gi_id = int(sseqid.split("|")[1])
                 gi_acc = sseqid.split("|")[3]
                 sseq = sseq.replace("-", "")
-                # sscinames = sscinames.replace(" ", "_").replace("/", "_").replace("-", "_")
                 sscinames = sscinames.replace(" ", "_").replace("/", "_")
-
-                # debug(staxids)
                 pident = float(pident)
                 evalue = float(evalue)
                 bitscore = float(bitscore)
-                # print(pident, evalue, bitscore)
-                # print(type(pident), type(evalue), type(bitscore))
                 # NOTE: sometimes there are seq which are identical and are combined in the local blast db, just get first one
                 if len(staxids.split(";")) > 1:
                     staxids = int(staxids.split(";")[0])
-                    # debug(staxids)
                     sscinames = sscinames.split(";")[0]
                 else:
                     staxids = int(staxids)
-                    # debug(sscinames)
-                # print(type(staxids))
                 assert type(staxids) is int
                 self.ids.spn_to_ncbiid[sscinames] = staxids
                 if gi_id not in self.ids.gi_ncbi_dict:  # fill up dict with more information.
@@ -1486,15 +1486,10 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
         for key in query_dict.keys():
             if float(query_dict[key]['evalue']) < float(self.config.e_value_thresh):
                 gi_id = query_dict[key]['^ncbi:gi']
-                # debug(type(gi_id))
-                # debug(gi_id)
                 if len(self.gi_list_mrca) >= 1 and (gi_id not in self.gi_list_mrca):
-                    # debug("pass")
                     pass
                 else:
-                    # debug("try to add to new seqs")
                     if gi_id not in self.data.gi_dict:  # skip ones we already have
-                        # debug("added")
                         self.new_seqs[gi_id] = query_dict[key]['sseq']
                         self.data.gi_dict[gi_id] = query_dict[key]
 
@@ -1557,14 +1552,12 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
                         if float(hsp.expect) < float(self.config.e_value_thresh):
                             gi_id = alignment.title.split('|')[-1].split(' ')[-1]
                             if gi_id not in self.data.gi_dict:  # skip ones we already have
-                                # debug("add gi to new seqs")
                                 self.make_otu_dict_entry_unpubl(gi_id)
                                 fake_gi = "unpubl_{}".format(gi_id)
                                 self.new_seqs[fake_gi] = hsp.sbjct
                                 self.data.gi_dict[fake_gi] = {'accession': "000000{}".format(gi_counter), 'title': "unpublished", 'localID': gi_id}
                                 self.data.gi_dict[fake_gi].update(self.data.unpubl_otu_json['otu{}'.format(gi_id)])
                                 gi_counter += 1
-                                # self.data.gi_dict[fake_gi] = alignment.__dict__
         else:
             if not self._blasted:
                 self.run_blast()
@@ -1619,10 +1612,12 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
         if spn_of_label in self.ids.spn_to_ncbiid:
             id_of_label = self.ids.spn_to_ncbiid[spn_of_label]
         else:
-            # debug(spn_of_label)
-            debug("i have nothing to use and im in else")
-            tax_name = self.ids.get_rank_info(taxon_name=spn_of_label)
-            id_of_label = int(self.ids.otu_rank[tax_name]["taxon id"])
+            if self.config.blast_loc == 'remote':
+                self.ids.get_rank_info_from_web(taxon_name=spn_of_label)
+                id_of_label = self.ids.otu_rank[spn_of_label]["taxon id"]
+            else:
+                id_of_label = self.ids.ncbi_parser.get_id_from_name(spn_of_label)
+            self.ids.spn_to_ncbiid[spn_of_label] = id_of_label
         return id_of_label
 
     def seq_dict_build(self, seq, label, seq_dict):
@@ -1753,13 +1748,21 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
             else:
                 self.newseqsgi.append(gi_id)
                 if len(seq.replace("-", "").replace("N", "")) > seq_len_cutoff:
+                    if type(gi_id) != int and gi_id[:6] != "unpubl":
+                        sys.stdout.write("WARNING: gi_id {} is no integer. Will convert value to int\n".format(gi_id))
+                        debug("WARNING: gi_id {} is no integer. Will convert value to int\n".format(gi_id))
+                        gi_id = int(gi_id)
                     if _DEBUG:
                         sys.stdout.write("checking gi {} for similarity\n".format(gi_id))
                     otu_id = self.data.add_otu(gi_id, self.ids)
                     self.seq_dict_build(seq, otu_id, tmp_dict)
+        old_seqs_ids = set()
+        for tax in old_seqs:
+            old_seqs_ids.add(tax)
+        assert old_seqs_ids.issubset(tmp_dict.keys())
         for tax in old_seqs:
            # try:
-                del tmp_dict[tax]
+            del tmp_dict[tax]
            # except KeyError:
            #     pass
         self.new_seqs_otu_id = tmp_dict  # renamed new seq to their otu_ids from GI's, but all info is in self.otu_dict
@@ -2208,23 +2211,23 @@ class FilterBlast(PhyscraperScrape):
                         sys.stderr.write("{} has no corresponding tax_name! Check what is wrong!".format(key))
                 if self.downtorank is not None:
                     tax_name = str(tax_name).replace(" ", "_")
-                    if tax_name not in self.ids.otu_rank.keys():
-                        self.ids.get_rank_info(taxon_name=tax_name)
-                        tax_name = str(tax_name).replace(" ", "_")
-                    # if tax_name in self.ids.otu_rank.keys():
-                    lineage2ranks = self.ids.otu_rank[tax_name]["rank"]
-                    # else:
-                    #     self.ids.get_rank_info(taxon_name=tax_name)
-                    #     # debug(self.ids.otu_rank.keys())
-                    #     lineage2ranks = self.ids.otu_rank[str(tax_name).replace(" ", "_")]["rank"]
-                    #     # debug(lineage2ranks)s
-                    ncbi = NCBITaxa()
-                    for key_rank, val in lineage2ranks.iteritems():
-                        if val == downtorank:
-                            tax_id = key_rank
-                            value_d = ncbi.get_taxid_translator([tax_id])
-                            tax_name = value_d[int(tax_id)]
-                    tax_name = str(tax_name).replace(" ", "_")
+                    # tax_id = self.ids.get_ncbiid_from_tax_name(tax_name)
+                    if self.config.blast_loc == 'remote':
+                        self.ids.get_rank_info_from_web(taxon_name=tax_name)
+                        tax_id = self.ids.otu_rank[tax_name]["taxon id"]
+                        lineage2ranks = self.ids.otu_rank[str(tax_name).replace(" ", "_")]["rank"]
+                        ncbi = NCBITaxa()
+                        for key_rank, val in lineage2ranks.iteritems():
+                            if val == downtorank:
+                                downtorank_id = key_rank
+                                value_d = ncbi.get_taxid_translator([downtorank_id])
+                                downtorank_name = value_d[int(downtorank_id)]
+                    else:
+                        tax_id = self.ids.ncbi_parser.get_id_from_name(tax_name)
+                        downtorank_id = self.ids.ncbi_parser.get_downtorank_id(tax_id, self.downtorank)
+                        downtorank_name = self.ids.ncbi_parser.get_name_from_id(downtorank_id)
+                    tax_name = downtorank_name
+                tax_name = tax_name.replace(" ", "_")
                 if tax_name in self.sp_d:
                     self.sp_d[tax_name].append(self.data.otu_dict[key])
                 else:
@@ -2358,7 +2361,6 @@ class FilterBlast(PhyscraperScrape):
         assert random_seq_ofsp is not None
         if random_seq_ofsp is not None:
             for key in random_seq_ofsp.keys():
-                # debug(key)
                 self.filtered_seq[key] = random_seq_ofsp[key]
 
     def add_all(self, key):
@@ -2371,7 +2373,6 @@ class FilterBlast(PhyscraperScrape):
         :param key: key of self.sp_d (taxon name)
         :return: self.filtered_seq
         """
-        # Note: has test, test_add_all.py: runs
         debug('add_all')
         for otu_id in self.sp_d[key]:
             if '^physcraper:status' in otu_id:
@@ -2545,7 +2546,7 @@ class FilterBlast(PhyscraperScrape):
                                 taxonfn = self.loop_for_write_blast_files(tax_id)
                                 if self.downtorank is not None:
                                     taxonfn = tax_id
-                                run_local_blast(self.workdir, taxonfn, taxonfn)
+                                local_blast.run_local_blast(self.workdir, taxonfn, taxonfn)
                                 self.select_seq_by_local_blast(self.sp_seq_d[tax_id], taxonfn, threshold, seq_present)
                             elif query_count + seq_present <= threshold:
                                 self.add_all(tax_id)
@@ -2726,4 +2727,5 @@ def get_ncbi_tax_name(handle):
     for item in gb_list:
         if item[u'GBQualifier_name'] == 'organism':
             ncbi_sp = str(item[u'GBQualifier_value'])
+            ncbi_sp = ncbi_sp.replace(" ", "_")
     return ncbi_sp
