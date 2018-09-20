@@ -406,8 +406,13 @@ def filter_data_run(seqaln,
                 filteredScrape.how_many_sp_to_keep(threshold=threshold, selectby=selectby)
                 filteredScrape.replace_new_seq()
             sys.stdout.write("Calculate the phylogeny\n")
+            # with open("debug_PS_instances_r1", "a") as PS:
+            #     PS.write("{}".format(filteredScrape.__dict__))
+            # with open("debug_ATT_instances_r1", "a") as ATT:
+            #     ATT.write("{}".format(filteredScrape.data.__dict__))
             filteredScrape.generate_streamed_alignment()
             filteredScrape.dump()
+            
     while filteredScrape.repeat == 1:
         # number_rounds += 1
         filteredScrape.data.write_labelled(label='^ot:ottTaxonName', gi_id=True)
@@ -428,9 +433,20 @@ def filter_data_run(seqaln,
             filteredScrape.replace_new_seq()
         filteredScrape.data.reconcile(seq_len_perc=0.75)
         sys.stdout.write("calculate the phylogeny\n")
+        # with open("debug_PS_instances_w1", "a") as PS:
+        #     PS.write("{}".format(filteredScrape.__dict__))
+        # with open("debug_ATT_instances_w1", "a") as ATT:
+        #     ATT.write("{}".format(filteredScrape.data.__dict__))
         filteredScrape.generate_streamed_alignment()
         filteredScrape.dump()
+
     filteredScrape.write_otu_info(downtorank)
+    filteredScrape.print_sp_d_recalc(downtorank)
+    filteredScrape.print_sp_d_as_is()
+    # with open("debug_PS_instances_f", "a") as PS:
+    #     PS.write("{}".format(filteredScrape.__dict__))
+    # with open("debug_ATT_instances_f", "a") as ATT:
+    #     ATT.write("{}".format(filteredScrape.data.__dict__))
     return filteredScrape
 
 
@@ -555,3 +571,4 @@ def concat(genelistdict, workdir_comb, email, percentage=0.37, user_concat_fn=No
     concat.est_full_tree()
     concat.calculate_bootstrap()
     return concat
+
