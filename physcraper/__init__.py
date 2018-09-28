@@ -1230,18 +1230,18 @@ class IdDicts(object):
             self.otu_rank[tax_name] = {"taxon id": ncbi_id, "lineage": lineage, "rank": lineage2ranks}
         return tax_name
 
-    def find_name(self, sp_dict=None, gi=None):
-        """Find the taxon name either in the sp_dict or of a gi_id.
-        If not already known it will ask ncbi using the gi_id.
+    # def find_name(self, sp_dict=None, gi=None):
+    #     """Find the taxon name either in the sp_dict or of a gi_id.
+    #     If not already known it will ask ncbi using the gi_id.
 
-        :param sp_dict: optional, otu_dict entry is given
-        :param gi: optional, gi_id to taxon name
-        :return: corresponding taxon name
-        """
-        # debug("find_name")
-        if sp_dict is not None or gi is not None:
-            inputinfo = True
-        assert inputinfo is True
+    #     :param sp_dict: optional, otu_dict entry is given
+    #     :param gi: optional, gi_id to taxon name
+    #     :return: corresponding taxon name
+    #     """
+    #     # debug("find_name")
+    #     if sp_dict is not None or gi is not None:
+    #         inputinfo = True
+    #     assert inputinfo is True
 
     def get_ncbiid_from_tax_name(self, tax_name):
         """Get the ncbi_id from the species name using ncbi web query.
