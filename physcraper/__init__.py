@@ -700,7 +700,7 @@ class AlignTreeTax(object):
         generates an otu_id for new sequences and adds them into self.otu_dict.
         Needs to be passed an IdDict to do the mapping
 
-        :param gi_id the Genbank identifier:
+        :param gi_id: the Genbank identifier
         :param ids_obj: needs to IDs class to have access to the taxonomic information
         :return: the unique otu_id - the key from self.otu_dict of the corresponding sequence
         """
@@ -732,14 +732,14 @@ class AlignTreeTax(object):
         if ncbi_id is None:
             debug("ncbi_id is none")
 
-            if ids_obj.otu_rank != None:
+            if ids_obj.otu_rank is not None:
                 ncbi_id = ids_obj.otu_rank[tax_name]["taxon id"]
             else:
                 ncbi_id = ids_obj.ncbi_parser.get_id_from_name(tax_name)
             # if type(gi_id) == int:
             #     print("add id to self")
-            self.gi_ncbi_dict[gi_id] = ncbi_id
-            self.ncbiid_to_spn[ncbi_id] = tax_name
+            self.ids.gi_ncbi_dict[gi_id] = ncbi_id
+            self.ids.ncbiid_to_spn[ncbi_id] = tax_name
 
         if ncbi_id in ids_obj.ncbi_to_ott.keys():
             # ncbi_id = int(ids_obj.map_gi_ncbi(gi_id))
@@ -1108,6 +1108,7 @@ class IdDicts(object):
         :return: corresponding taxon name
         """
         # debug("find_name")
+        inputinfo = False
         if sp_dict is not None or gi is not None:
             inputinfo = True
         assert inputinfo is True
@@ -2205,6 +2206,8 @@ class FilterBlast(PhyscraperScrape):
                 tax_name = str(tax_name).replace(" ", "_")
                 tax_id = self.ids.ncbi_parser.get_id_from_name(tax_name)
                 if self.downtorank is not None:
+                    downtorank_name = None
+                    downtorank_id = None
                     tax_name = str(tax_name).replace(" ", "_")
                     if self.config.blast_loc == 'remote':
                         self.ids.get_rank_info_from_web(taxon_name=tax_name)
@@ -2704,6 +2707,7 @@ def get_ncbi_tax_id(handle):
     :param handle: NCBI read.handle
     :return: ncbi_id
     """
+    ncbi_id = None
     gb_list = handle[0]['GBSeq_feature-table'][0]['GBFeature_quals']
     for item in gb_list:
         if item[u'GBQualifier_name'] == 'db_xref':
@@ -2722,6 +2726,7 @@ def get_ncbi_tax_name(handle):
     :param handle: NCBI read.handle
     :return: ncbi_spn
     """
+    ncbi_sp = None
     gb_list = handle[0]['GBSeq_feature-table'][0]['GBFeature_quals']
     for item in gb_list:
         if item[u'GBQualifier_name'] == 'organism':
