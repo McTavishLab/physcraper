@@ -740,6 +740,7 @@ class AlignTreeTax(object):
             #     print("add id to self")
             self.ids.gi_ncbi_dict[gi_id] = ncbi_id
             self.ids.ncbiid_to_spn[ncbi_id] = tax_name
+            self.ids.spn_to_ncbiid[tax_name] = ncbi_id
 
         if ncbi_id in ids_obj.ncbi_to_ott.keys():
             # ncbi_id = int(ids_obj.map_gi_ncbi(gi_id))
@@ -810,6 +811,7 @@ class AlignTreeTax(object):
     def write_labelled(self, label, treepath=None, alnpath=None, norepeats=True, gi_id=False):
         """output tree and alignment with human readable labels
         Jumps through a bunch of hoops to make labels unique.
+
         NOT MEMORY EFFICIENT AT ALL
 
         Has different options available for different desired outputs
@@ -1608,7 +1610,9 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
         else:
             debug("Problem, no tax_name found!")
         # debug(spn_of_label)
-        if spn_of_label in self.ids.spn_to_ncbiid:
+        if '^ncbi:taxon' in self.data.otu_dict[label]:
+            id_of_label = self.data.otu_dict[label]['^ncbi:taxon']
+        elif spn_of_label in self.ids.spn_to_ncbiid:
             id_of_label = self.ids.spn_to_ncbiid[spn_of_label]
         else:
             if self.config.blast_loc == 'remote':
