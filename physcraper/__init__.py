@@ -760,8 +760,7 @@ class AlignTreeTax(object):
         return ncbigi_list
 
     def add_otu(self, gi_id, ids_obj):
-        """
-        generates an otu_id for new sequences and adds them into self.otu_dict.
+        """ Generates an otu_id for new sequences and adds them into self.otu_dict.
         Needs to be passed an IdDict to do the mapping
 
         :param gi_id: the Genbank identifier
@@ -1881,6 +1880,13 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
             id_of_label = self.data.otu_dict[label]['^ncbi:taxon']
         elif spn_of_label in self.ids.spn_to_ncbiid:
             id_of_label = self.ids.spn_to_ncbiid[spn_of_label]
+        elif u'^ot:ottId' in self.data.otu_dict[label]:  # from OTT to ncbi id
+            info = get_ott_taxon_info(spn_of_label.replace("_", " "))
+            debug(info)
+            ottid, ottname, id_of_label = info
+            assert ottid == self.data.otu_dict[label][u'^ot:ottId']
+            self.ids.ncbi_to_ott[id_of_label] = ottid
+            self.ids.ott_to_name[ottid] = spn_of_label
         else:
             if self.config.blast_loc == 'remote':
                 self.ids.get_rank_info_from_web(taxon_name=spn_of_label)
