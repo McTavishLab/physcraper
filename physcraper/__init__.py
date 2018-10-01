@@ -559,7 +559,7 @@ class AlignTreeTax(object):
         for key in self.otu_dict:
             debug(self.otu_dict[key].keys())
             if '^ot:ottId' not in self.otu_dict[key]:
-                if "^ot:u'^ot:treebaseOTUId" in self.otu_dict[key]:  # second condition for OToL unmapped taxa, not  present in own_data
+                if u'^ot:treebaseOTUId' in self.otu_dict[key]:  # second condition for OToL unmapped taxa, not  present in own_data
                     debug(key)
                     self.remove_taxa_aln_tre(key)
 
