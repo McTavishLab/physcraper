@@ -155,7 +155,6 @@ class ConfigObj(object):
         if not os.path.isfile(self.ncbi_parser_nodes_fn):
             os.system("rsync -av ftp://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdump.tar.gz" "./tests/data/taxdump.tar.gz")
             os.system("gunzip - cd ./tests/data/taxdump.tar.gz | (tar xvf - names.dmp nodes.dmp)")
-
         if _DEBUG:
             sys.stdout.write("{}\n".format(self.email))
             if self.blast_loc == 'remote':
@@ -1598,7 +1597,6 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
         :param label: otu_label = key from otu_dict
         :return: ncbi id of corresponding label
         """
-
         # debug("get_tax_id_of_otulabel")
         # debug(label)
         # debug(self.data.otu_dict[label].keys())
@@ -1849,6 +1847,7 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
 
     def remove_alien_aln_tre(self):
         """Sometimes there were alien entries in self.tre and self.aln.
+
         This function ensures they are properly removed."""
         for tax_lab in self.data.aln.taxon_namespace:
             if tax_lab not in self.data.tre.taxon_namespace:
@@ -2061,7 +2060,6 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
         :param path_to_local_seq: path to the local seqs that shall be added
         :return: writes local blast databases for the local sequences
         """
-
         debug("add_local_seq")
         self.path_to_local_seq = path_to_local_seq
         # get list of sequences,
@@ -2159,7 +2157,7 @@ class FilterBlast(PhyscraperScrape):
                 val = seq.
         self.downtorank: optional string defining the level of taxonomic filtering, e.g. "species", "genus"
     """
-        # TODO MK: self.sp_d = {} does not need to contain all otu_dict info, key is sufficient
+    # TODO MK: self.sp_d = {} does not need to contain all otu_dict info, key is sufficient
 
     def __init__(self, data_obj, ids, settings=None):
         super(FilterBlast, self).__init__(data_obj, ids)
@@ -2196,22 +2194,18 @@ class FilterBlast(PhyscraperScrape):
         self.sp_d = {}
         for key in self.data.otu_dict:
             if self.data.otu_dict[key]['^physcraper:status'].split(' ')[0] not in self.seq_filter:
-                # debug(self.downtorank)
                 tax_name = self.ids.find_name(sp_dict=self.data.otu_dict[key])
                 if tax_name is None:
                     debug("tax_name is None")
-                    # debug(self.data.otu_dict[key])
                     gi_id = self.data.otu_dict[key]['^ncbi:gi']
-                    # debug(gi_id)
-                    # debug(type(gi_id))
-                    # tax_name = self.ids.get_rank_info(gi_id=gi_id)
                     tax_name = self.ids.find_name(gi=gi_id)
                     if tax_name is None:
                         debug("something is going wrong!Check species name")
                         sys.stderr.write("{} has no corresponding tax_name! Check what is wrong!".format(key))
+                tax_name = str(tax_name).replace(" ", "_")
+                tax_id = self.ids.ncbi_parser.get_id_from_name(tax_name)
                 if self.downtorank is not None:
                     tax_name = str(tax_name).replace(" ", "_")
-                    # tax_id = self.ids.get_ncbiid_from_tax_name(tax_name)
                     if self.config.blast_loc == 'remote':
                         self.ids.get_rank_info_from_web(taxon_name=tax_name)
                         tax_id = self.ids.otu_rank[tax_name]["taxon id"]
@@ -2227,11 +2221,15 @@ class FilterBlast(PhyscraperScrape):
                         downtorank_id = self.ids.ncbi_parser.get_downtorank_id(tax_id, self.downtorank)
                         downtorank_name = self.ids.ncbi_parser.get_name_from_id(downtorank_id)
                     tax_name = downtorank_name
+                    tax_id = downtorank_id
                 tax_name = tax_name.replace(" ", "_")
-                if tax_name in self.sp_d:
-                    self.sp_d[tax_name].append(self.data.otu_dict[key])
+                self.ids.spn_to_ncbiid[tax_name] = tax_id
+                self.ids.ncbiid_to_spn[tax_id] = tax_name
+                # change to tax_id
+                if tax_id in self.sp_d:
+                    self.sp_d[tax_id].append(self.data.otu_dict[key])
                 else:
-                    self.sp_d[tax_name] = [self.data.otu_dict[key]]
+                    self.sp_d[tax_id] = [self.data.otu_dict[key]]
         return self.sp_d
 
     def make_sp_seq_dict(self):
@@ -2419,7 +2417,8 @@ class FilterBlast(PhyscraperScrape):
             # debug(nametoreturn)
             # else:
             #     debug("do something?")
-        return nametoreturn
+        # return nametoreturn
+        return key
 
     def loop_for_write_blast_files(self, key):
         """This loop is needed to be able to write the local blast files for the filtering step correctly.
