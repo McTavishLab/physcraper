@@ -1334,8 +1334,27 @@ class IdDicts(object):
             # debug(gi)
             tax_name = self.find_name(gi=gi_id)
             if self.config.blast_loc == 'remote':
-                self.get_rank_info_from_web(taxon_name=tax_name)
-                tax_id = self.otu_rank[tax_name]["taxon id"]
+                try:
+                    self.get_rank_info_from_web(taxon_name=tax_name)
+                    tax_id = self.otu_rank[tax_name]["taxon id"]
+                except IndexError:  # get id via genbank query xref in description
+                    tries = 10
+                    Entrez.email = self.config.email
+                    for i in range(tries):
+                        try:
+                            # debug("find name efetch")
+                            handle = Entrez.efetch(db="nucleotide", id=gi_id, retmode="xml")
+                        except:
+                            # debug("except efetch")
+                            if i < tries - 1:  # i is zero indexed
+                                continue
+                            else:
+                                raise
+                        break
+                    read_handle = Entrez.read(handle)
+                    handle.close()
+                    tax_name = get_ncbi_tax_name(read_handle)
+                    ncbi_id = get_ncbi_tax_id(read_handle)
             else:
                 tax_id = self.ncbi_parser.get_id_from_name(tax_name)
             self.ncbiid_to_spn[tax_id] = tax_name
