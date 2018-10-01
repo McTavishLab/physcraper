@@ -246,7 +246,9 @@ def generate_ATT_from_phylesystem(aln,
                    schema="newick",
                    preserve_underscores=True,
                    taxon_namespace=aln.taxon_namespace)
-    otus = get_subtree_otus(nexson, tree_id=tree_id)
+    # print("get_subtree_otus")
+    otus = get_subtree_otus(nexson, tree_id=tree_id) #TODO: what is the difference to ott_ids
+    # print(otus)
     otu_dict = {}
     orig_lab_to_otu = {}
     treed_taxa = {}
@@ -544,6 +546,29 @@ class AlignTreeTax(object):
         self.orig_newick = newick  # TODO: we never do anything with it.
         self._reconciled = False  # TODO: for what do we want to use it?
         self.unpubl_otu_json = None
+        self.remove_OToL_unmapped()  # added to remove un-mapped tips from OToL
+
+    def remove_OToL_unmapped(self):
+        """Remove tips from aln and tre that were not mapped during initiation of ATT class.
+        """
+        debug("remove_OToL_unmapped")
+        # drop tips without ott _id
+        # debug(ott_ids_not_in_synth)
+        # debug(self.otu_dict)
+        # debug(len(self.aln.taxon_namespace))
+        for key in self.otu_dict:
+            debug(self.otu_dict[key].keys())
+            if '^ot:ottId' not in self.otu_dict[key]:
+                if "^ot:u'^ot:treebaseOTUId" in self.otu_dict[key]:  # second condition for OToL unmapped taxa, not  present in own_data
+                    debug(key)
+                    self.remove_taxa_aln_tre(key)
+
+        debug(len(self.otu_dict))
+        # debug(self.aln.taxon_namespace)        
+        debug(len(self.aln.taxon_namespace))
+        # debug(self.tre.taxon_namespace)        
+        debug(len(self.tre.taxon_namespace))
+        # debug(some)
 
     def _reconcile_names(self):
         """This checks that the tree "original labels" from phylsystem
