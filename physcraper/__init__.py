@@ -1246,6 +1246,7 @@ class IdDicts(object):
     def get_ncbiid_from_tax_name(self, tax_name):
         """Get the ncbi_id from the species name using ncbi web query.
         """
+        debug(tax_name)
         ncbi_id = None
         if tax_name in self.spn_to_ncbiid:
             ncbi_id = self.spn_to_ncbiid[tax_name]
