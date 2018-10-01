@@ -85,7 +85,6 @@ print("Current --init-- version number: 09192018.0")
 debug(os.path.realpath(__file__))
 
 
-
 class ConfigObj(object):
     """Pulls out the configuration information from
     the config file and makes it easier to pass
@@ -144,7 +143,6 @@ class ConfigObj(object):
             self.ncbi_dmp = "taxonomy/gi_taxid_nucl.dmp.gz"
         self.phylesystem_loc = config['phylesystem']['location'] 
         assert (self.phylesystem_loc in ['local', 'api'])  # TODO: What is the phylesystem? Do we have something implemented for local?
-
         self.ott_ncbi = config['taxonomy']['ott_ncbi']
         assert os.path.isfile(self.ott_ncbi)
         self.id_pickle = os.path.abspath(config['taxonomy']['id_pickle'])  # TODO: what is this doing again?
@@ -166,7 +164,6 @@ class ConfigObj(object):
                 self.gifilename = False
         self.ncbi_parser_nodes_fn = config['ncbi_parser']["nodes_fn"]
         self.ncbi_parser_names_fn = config['ncbi_parser']["names_fn"]
-
         # TODO MK: check if following really works
         # ncbi nodes and names file
         if not os.path.isfile(self.ncbi_parser_nodes_fn):
@@ -809,7 +806,7 @@ class AlignTreeTax(object):
             if ids_obj.otu_rank != None:
                 ncbi_id = ids_obj.otu_rank[tax_name]["taxon id"]
             else:
-                ncbi_id = ids_obj.ncbi_parser.get_id_from_name(tax_name)  
+                ncbi_id = ids_obj.ncbi_parser.get_id_from_name(tax_name)
             # if type(gi_id) == int:
             #     print("add id to self")
             self.gi_ncbi_dict[gi_id] = ncbi_id
@@ -947,8 +944,7 @@ class AlignTreeTax(object):
                       schema="fasta")
 
     def write_otus(self, filename, schema='table'):
-        """Writes out OTU dict as json. 
-
+        """Writes out OTU dict as json.
 
         :param filename: filename
         :param schema: either table or json format
@@ -967,7 +963,6 @@ class AlignTreeTax(object):
         :param taxon_label: taxon_label from dendropy object - aln or phy
         :return: removes information/data from taxon_label
         """
-
         # debug('remove_taxa_aln_tre')
         # debug(taxon_label)
         # debug(type(taxon_label))
@@ -1230,60 +1225,18 @@ class IdDicts(object):
             self.otu_rank[tax_name] = {"taxon id": ncbi_id, "lineage": lineage, "rank": lineage2ranks}
         return tax_name
 
-    # def find_name(self, sp_dict=None, gi=None):
-    #     """Find the taxon name either in the sp_dict or of a gi_id.
-    #     If not already known it will ask ncbi using the gi_id.
-
-    #     :param sp_dict: optional, otu_dict entry is given
-    #     :param gi: optional, gi_id to taxon name
-    #     :return: corresponding taxon name
-    #     """
-    #     # debug("find_name")
-    #     if sp_dict is not None or gi is not None:
-    #         inputinfo = True
-    #     assert inputinfo is True
-
-    def get_ncbiid_from_tax_name(self, tax_name):
-        """Get the ncbi_id from the species name using ncbi web query.
-        """
-        debug(tax_name)
-        ncbi_id = None
-        if tax_name in self.spn_to_ncbiid:
-            ncbi_id = self.spn_to_ncbiid[tax_name]
-        else:
-            try:
-                # debug("try2")
-                tries = 10
-                for i in range(tries):
-                    try:
-                        ncbi_id = Entrez.read(Entrez.esearch(db="taxonomy", term=tax_name, RetMax=100))['IdList'][0]
-                        ncbi_id = int(ncbi_id)
-                    except:
-                        # debug("except esearch/read")
-                        if i < tries - 1:  # i is zero indexed
-                            continue
-                        else:
-                            raise
-                    break
-                # debug(ncbi_id)
-                # debug(type(ncbi_id))
-            except:
-                # debug("except")
-                ncbi = NCBITaxa()
-                tax_info = ncbi.get_name_translator([tax_name])
-                # debug(tax_info)
-                if tax_info == {}:
-                    debug("Taxon name does not match any name in ncbi. Check that name is written correctly!")
-                ncbi_id = int(tax_info.items()[0][1][0])
-        assert type(ncbi_id) is int
-        self.spn_to_ncbiid[tax_name] = ncbi_id
-        return ncbi_id
-
     def find_name(self, sp_dict=None, gi=None):
-        """ Find the taxon name in the sp_dict or of a gi_id.
+        """Find the taxon name either in the sp_dict or of a gi_id.
         If not already known it will ask ncbi using the gi_id.
+
+        :param sp_dict: optional, otu_dict entry is given
+        :param gi: optional, gi_id to taxon name
+        :return: corresponding taxon name
         """
         # debug("find_name")
+        if sp_dict is not None or gi is not None:
+            inputinfo = True
+        assert inputinfo is True
         tax_name = None
         if sp_dict:
             if '^ot:ottTaxonName' in sp_dict:
@@ -1295,7 +1248,6 @@ class IdDicts(object):
             if gi:
                 gi_id = gi
             elif '^ncbi:gi' in sp_dict:
-                # 
                 gi_id = sp_dict['^ncbi:gi']
             else:
                 sys.stderr.write("There is no name supplied and no gi available. This should not happen! Check name!")
@@ -1485,7 +1437,6 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
         self._reconciled = 0  # TODO: We don't use it
         self._full_tree_est = 0
 
-
     def run_local_blast_cmd(self, query, taxon_label, fn_path):
         """Contains the cmds used to run a local blast query, which is different from the web-queries.
 
@@ -1619,7 +1570,6 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
                                 # self.data.otu_dict[otu_id]['^physcraper:last_blasted'] = today
                             if self.config.blast_loc == 'remote':
                                 equery = "txid{}[orgn] AND {}:{}[mdat]".format(self.mrca_ncbi, last_blast, today)
-
                                 self.run_web_blast_query(query, equery, fn_path)
                                 # if self.config.url_base:
                                 #     result_handle = AWSWWW.qblast("blastn",
@@ -1642,7 +1592,6 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
                                 # result_handle.close()
                                 # save_file.close()
                             self.data.otu_dict[otu_id]['^physcraper:last_blasted'] = today
-
                         # except (ValueError, URLError): TODO what to do when NCBI down?! how to handle error
                         #     sys.stderr.write("NCBIWWW error. Carrying on, but skipped {}\n".format(otu_id))
                         else:
@@ -1662,13 +1611,11 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
         """get all available gi numbers from Genbank for mrca.
 
         The list will be used to filter out sequences from the local Blast search,
-
         that do not belong to ingroup
 
         :return: list of corresponding gi numbers
         """
         # TODO MK: gi list limited to 100000000, for huge trees that is a problem. Think of what to do...
-
         debug("get_all_gi_mrca")
         Entrez.email = self.config.email
         handle = Entrez.esearch(db="nucleotide", term="txid{}[Orgn]".format(self.mrca_ncbi),
@@ -1694,7 +1641,6 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
                 sseq = sseq.replace("-", "")
                 # sscinames = sscinames.replace(" ", "_").replace("/", "_").replace("-", "_")
                 sscinames = sscinames.replace(" ", "_").replace("/", "_")
-                
                 # debug(staxids)
                 pident = float(pident)
                 evalue = float(evalue)
@@ -1919,7 +1865,6 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
 
         :param label: otu_label = key from otu_dict
         :return: ncbi id of corresponding label
-
         """
         # debug("get_tax_id_of_otulabel")
         # debug(label)
@@ -1939,7 +1884,7 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
                 id_of_label = self.ids.otu_rank[spn_of_label]["taxon id"]
             else:
                 id_of_label = self.ids.ncbi_parser.get_id_from_name(spn_of_label)
-            self.ids.spn_to_ncbiid[spn_of_label] = id_of_label  
+            self.ids.spn_to_ncbiid[spn_of_label] = id_of_label
         return id_of_label
 
     def seq_dict_build(self, seq, label, seq_dict):
@@ -1956,7 +1901,6 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
         """
         # TODO unify spp name somehow?
         # debug("seq_dict_build")
-
         # debug(label)
         id_of_label = self.get_sp_id_of_otulabel(label)
         # debug("id of label is{}".format(id_of_label))
@@ -2092,7 +2036,6 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
             else:
                 # debug("add to aln if no similar seq exists")
                 if len(seq.replace("-", "").replace("N", "")) > seq_len_cutoff:
-                    
                     if type(gi_id) == int or gi_id.isdigit():
                         # debug("gi_id is digit")
                         if type(gi_id) != int:
@@ -2111,11 +2054,15 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
                     self.seq_dict_build(seq, otu_id, tmp_dict)
             # else:
             #     debug("gi was already compared")
+        old_seqs_ids = set()
         for tax in old_seqs:
-            try:
-                del tmp_dict[tax]
-            except:
-                pass
+            old_seqs_ids.add(tax)
+        assert old_seqs_ids.issubset(tmp_dict.keys())
+        for tax in old_seqs:
+           # try:
+            del tmp_dict[tax]
+           # except KeyError:
+           #     pass
         self.new_seqs_otu_id = tmp_dict  # renamed new seq to their otu_ids from GI's, but all info is in self.otu_dict
         if _deep_debug == 1:
             for otu in self.new_seqs_otu_id:
@@ -2181,7 +2128,6 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
         self._query_seqs_written = 1
 
     def align_query_seqs(self, papara_runname="extended"):
-
         """runs papara on the tree, the alignment and the new query sequences
 
         :param papara_runname: possible file extension name for papara
@@ -2209,7 +2155,6 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
                              "-t", "random_resolve.tre",
                              "-s", "aln_ott.phy",
                              # "-j", self.config.num_threads,  # TODO MK: gives error, try to implement for speed up
-
                              "-q", self.newseqs_file,
                              "-n", papara_runname])  # FIXME directory ugliness
             if _VERBOSE:
@@ -2472,7 +2417,6 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
         :param path_to_local_seq: path to the local seqs that shall be added
         :return: writes local blast databases for the local sequences
         """
-
         debug("add_local_seq")
         self.path_to_local_seq = path_to_local_seq
         # self.sp_d = {}
