@@ -169,11 +169,13 @@ class ConfigObj(object):
         # TODO MK: check if following really works
         # ncbi nodes and names file
         if not os.path.isfile(self.ncbi_parser_nodes_fn):
-            write("Do you want to download taxonomy databases from ncbi? Note: This is a US government website! You agree to their terms")
-            write("Please write either yes or no")
-            x=sys.argv[1]
+            print("Do you want to download taxonomy databases from ncbi? Note: This is a US government website! "
+                  "You agree to their terms")
+            print("Please write either yes or no")
+            x = sys.argv[1]
             if x == "yes":
-                os.system("rsync -av ftp://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdump.tar.gz" "./tests/data/taxdump.tar.gz")
+                os.system("rsync -av ftp://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdump.tar.gz" 
+                          "./tests/data/taxdump.tar.gz")
                 os.system("gunzip - cd ./tests/data/taxdump.tar.gz | (tar xvf - names.dmp nodes.dmp)")
             elif x == "no":
                 print("You did not agree to download data from ncbi. Programm will default to blast web-queries.")
@@ -443,7 +445,8 @@ def OtuJsonDict(id_to_spn, id_dict):
                 ottid, ottname, ncbiid = info
             if not info:
                 if _DEBUG:
-                    sys.stdout.write("match to taxon {} not found in open tree taxonomy. Trying NCBI next.\n".format(spn))
+                    sys.stdout.write("match to taxon {} not found in open tree taxonomy. "
+                                     "Trying NCBI next.\n".format(spn))
                 ncbi = NCBITaxa()
                 name2taxid = ncbi.get_name_translator([spn])
                 # debug(name2taxid)
@@ -495,7 +498,7 @@ class AlignTreeTax(object):
                                                     If the year is different from the 20th century, it tells us
                                                     something about the initial status:
                                                      - 1800 = never blasted, not yet considered to be added
-                                                     - 1900 =never blasted and not added - see status for more information
+                                                     - 1900 = never blasted and not added - see status for more info
                                                      - this century = blasted and added.
                         '^user:TaxonName': optional, user given label from OtuJsonDict
                         "^ot:originalLabel" optional, user given tip label of phylogeny
@@ -531,7 +534,7 @@ class AlignTreeTax(object):
         self.unpubl_otu_json: optional, will contain the OTU-dict for unpublished data, if that option is used
 
     Following functions are called during the init-process:
-        self._reconcile_names(): removes taxa, that are not found in both, the phylogeny and the aln and changes their names????
+        self._reconcile_names(): ## TODO: removes taxa, that are not found in both, the phylogeny and the aln and changes their names????
 
     The physcraper class is then updating: self.aln, self.tre and self.otu_dict, self.ps_otu, self.gi_dict
     """
@@ -573,6 +576,7 @@ class AlignTreeTax(object):
         self.unpubl_otu_json = None
         # self.OToL_unmapped_tips()  # added to remove un-mapped tips from OToL
 
+    
     def _reconcile_names(self):
         """This checks that the tree "original labels" from phylsystem
         align with those found in the alignment. Spaces vs underscores
@@ -585,7 +589,8 @@ class AlignTreeTax(object):
         prune = treed_taxa ^ aln_tax
         missing = [i.label for i in prune]
         if missing:
-            errmf = 'NAME RECONCILIATION Some of the taxa in the tree are not in the alignment or vice versa and will be pruned. Missing "{}"\n'
+            errmf = 'NAME RECONCILIATION Some of the taxa in the tree are not in the alignment or vice versa' \
+                    ' and will be pruned. Missing "{}"\n'
             errm = errmf.format('", "'.join(missing))
             sys.stderr.write(errm)
         self.aln.remove_sequences(prune)
@@ -1533,7 +1538,7 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
                         for i in nms['results']:
                             for j in i['matches']:
                                 taxon_name = j[u'taxon'][u'ott_id']
-                        self.data.otu_dict[key]['^ot:ottTaxonName'] = taxon_name
+                        self.data.otu_dict[key]['^ot:ottTaxonName'] = "unknown_{}".format(taxon_name)
 
     def run_local_blast_cmd(self, query, taxon_label, fn_path):
         """Contains the cmds used to run a local blast query, which is different from the web-queries.
