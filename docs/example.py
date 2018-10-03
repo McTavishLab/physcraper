@@ -6,7 +6,7 @@ tree_id = "tree1679"
 seqaln = "tests/data/minitest.fas"
 mattype="fasta"
 workdir="example_output"
-configfi = "example.config"
+configfi = "tests/data/test.config"
 
 
 wrappers.standard_run(study_id,
