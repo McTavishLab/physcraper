@@ -30,7 +30,7 @@ from dendropy import Tree, \
     DnaCharacterMatrix, \
     DataSet, \
     datamodel
-from peyotl.api.phylesystem_api import PhylesystemAPI
+from peyotl.api.phylesystem_api import PhylesystemAPI, APIWrapper
 from peyotl.sugar import tree_of_life, taxomachine  # taxonomy,
 from peyotl.nexson_syntax import extract_tree, \
     get_subtree_otus, \
@@ -80,7 +80,7 @@ def is_number(s):
 
 
 # which python physcraper file do I use?
-print("Current --init-- version number: 09192018.0")
+print("Current --init-- version number: 10-03-2018.0")
 
 debug(os.path.realpath(__file__))
 
@@ -118,6 +118,8 @@ class ConfigObj(object):
 
         self.ncbi_parser_nodes_fn: path to 'nodes.dmp' file, that contains the hierarchical information
         self.ncbi_parser_names_fn: path to 'names.dmp' file, that contains the different ID's
+        self.unmapped: remove/keep - used for OToL original tips that can not be assigned to a taxon.
+                        remove - tips will be removed/ keep - tip will be assigned to mrca id
     """
 
     def __init__(self, configfi):
@@ -179,6 +181,8 @@ class ConfigObj(object):
                 self.blast_loc = 'remote'
             else:
                 print("You did not type yes or no. Please restart and type yes or no!")
+        self.unmapped = config['blast']['unmapped']
+        assert self.unmapped in ['remove', 'keep']
         if _DEBUG:
             sys.stdout.write("{}\n".format(self.email))
             if self.blast_loc == 'remote':
@@ -229,7 +233,7 @@ def generate_ATT_from_phylesystem(aln,
     :param study_id: OToL study id of the corresponding phylogeny which shall be updated
     :param tree_id: OToL corresponding tree ID as some studies have several phylogenies
     :param phylesystem_loc: ?? # TODO: what is this?
-    :param ingroup_mrca: OToL identifier of the mrca of the clade that shall be updated (can be a subset of the phylogeny)
+    :param ingroup_mrca: OToL identifier of the mrca of the clade that shall be updated (can be subset of the phylogeny)
     :return: object of class ATT
     """
     # TODO CHECK ARGS
@@ -567,29 +571,7 @@ class AlignTreeTax(object):
         self.orig_newick = newick  # TODO: we never do anything with it.
         self._reconciled = False  # TODO: for what do we want to use it?
         self.unpubl_otu_json = None
-        self.remove_OToL_unmapped()  # added to remove un-mapped tips from OToL
-
-    def remove_OToL_unmapped(self):
-        """Remove tips from aln and tre that were not mapped during initiation of ATT class.
-        """
-        debug("remove_OToL_unmapped")
-        # drop tips without ott _id
-        # debug(ott_ids_not_in_synth)
-        # debug(self.otu_dict)
-        # debug(len(self.aln.taxon_namespace))
-        for key in self.otu_dict:
-            debug(self.otu_dict[key].keys())
-            if '^ot:ottId' not in self.otu_dict[key]:
-                if u'^ot:treebaseOTUId' in self.otu_dict[key]:  # second condition for OToL unmapped taxa, not  present in own_data
-                    debug(key)
-                    self.remove_taxa_aln_tre(key)
-
-        debug(len(self.otu_dict))
-        # debug(self.aln.taxon_namespace)        
-        debug(len(self.aln.taxon_namespace))
-        # debug(self.tre.taxon_namespace)        
-        debug(len(self.tre.taxon_namespace))
-        # debug(some)
+        # self.OToL_unmapped_tips()  # added to remove un-mapped tips from OToL
 
     def _reconcile_names(self):
         """This checks that the tree "original labels" from phylsystem
@@ -1500,6 +1482,7 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
         self.unpublished = False  # used to look for local unpublished seq that shall be added.
         self.path_to_local_seq = False  # path to unpublished seq.
         self.backbone = False
+        self.OToL_unmapped_tips()  # added to remove un-mapped tips from OToL
 
         if _deep_debug == 1:
             self.newadd_gi_otu = {}  # search for doubles!
@@ -1514,6 +1497,43 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
         self._query_seqs_placed = 0
         self._reconciled = 0  # TODO: We don't use it
         self._full_tree_est = 0
+
+    def OToL_unmapped_tips(self):
+        """Remove tips from aln and tre that were not mapped during initiation of ATT class.
+        """
+        if self.config.unmapped is True:
+            debug("remove_OToL_unmapped")
+            # drop tips without ott _id
+            # debug(ott_ids_not_in_synth)
+            # debug(self.otu_dict)
+            # debug(len(self.aln.taxon_namespace))
+            for key in self.data.otu_dict:
+                debug(self.data.otu_dict[key].keys())
+                if '^ot:ottId' not in self.data.otu_dict[key]:
+                    if u'^ot:treebaseOTUId' in self.data.otu_dict[key]:  # second condition for OToL unmapped taxa, not  present in own_data
+                        debug(key)
+                        self.data.remove_taxa_aln_tre(key)
+
+            debug(len(self.data.otu_dict))
+            # debug(self.aln.taxon_namespace)        
+            debug(len(self.data.aln.taxon_namespace))
+            # debug(self.tre.taxon_namespace)        
+            debug(len(self.data.tre.taxon_namespace))
+        else:
+            for key in self.data.otu_dict:
+                debug(self.data.otu_dict[key].keys())
+                if '^ot:ottId' not in self.data.otu_dict[key]:
+                    self.data.otu_dict[key]['^ot:ottId'] = self.data.ott_mrca
+                    if self.data.ott_mrca in self.ids.ott_to_name:
+                        self.data.otu_dict[key]['^ot:ottTaxonName'] = self.ids.ott_to_name[self.data.ott_mrca]
+                    else:
+                        print("think about way")
+                        tx = APIWrapper().taxomachine
+                        nms = tx.TNRS([self.data.ott_mrca])
+                        for i in nms['results']:
+                            for j in i['matches']:
+                                taxon_name = j[u'taxon'][u'ott_id']
+                        self.data.otu_dict[key]['^ot:ottTaxonName'] = taxon_name
 
     def run_local_blast_cmd(self, query, taxon_label, fn_path):
         """Contains the cmds used to run a local blast query, which is different from the web-queries.
