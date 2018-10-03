@@ -1504,7 +1504,7 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
         self._full_tree_est = 0
 
     def OToL_unmapped_tips(self):
-        """Remove tips from aln and tre that were not mapped during initiation of ATT class.
+        """Assign names or remove tips from aln and tre that were not mapped during initiation of ATT class.
         """
         if self.config.unmapped is True:
             debug("remove_OToL_unmapped")
@@ -2730,7 +2730,10 @@ class FilterBlast(PhyscraperScrape):
                         debug("something is going wrong!Check species name")
                         sys.stderr.write("{} has no corresponding tax_name! Check what is wrong!".format(key))
                 tax_name = str(tax_name).replace(" ", "_")
-                tax_id = self.ids.ncbi_parser.get_id_from_name(tax_name)
+                if self.config.blast_loc == 'remote':
+                    tax_id = self.ids.otu_rank[tax_name]["taxon id"]
+                else:
+                    tax_id = self.ids.ncbi_parser.get_id_from_name(tax_name)
                 if self.downtorank is not None:
                     downtorank_name = None
                     downtorank_id = None
