@@ -9,6 +9,7 @@ workdir="example_output"
 configfi = "tests/data/test.config"
 
 
+
 wrappers.standard_run(study_id,
                       tree_id,
                       seqaln,

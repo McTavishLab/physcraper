@@ -103,7 +103,7 @@ class ConfigObj(object):
         self.get_ncbi_taxonomy: Path to sh file doing something...
         self.ncbi_dmp: path to file that has gi numbers and the corresponding ncbi tax id's
         self.phylesystem_loc: ????  # TODO: what is it used for?
-        self.ott_ncbi: file containing OTT id, ncbi and taxon name???
+        self.ott_ncbi: # TODO: file containing OTT id, ncbi and taxon name???
         self.id_pickle: path to pickle file
         self.email: email address used for blast queries
         self.blast_loc: defines which blasting method to use, either web-query (=remote) or from a local
@@ -167,8 +167,18 @@ class ConfigObj(object):
         # TODO MK: check if following really works
         # ncbi nodes and names file
         if not os.path.isfile(self.ncbi_parser_nodes_fn):
-            os.system("rsync -av ftp://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdump.tar.gz" "./tests/data/taxdump.tar.gz")
-            os.system("gunzip - cd ./tests/data/taxdump.tar.gz | (tar xvf - names.dmp nodes.dmp)")
+            write("Do you want to download taxonomy databases from ncbi? Note: This is a US government website! You agree to their terms")
+            write("Please write either yes or no")
+            x=sys.argv[1]
+            if x == "yes":
+                os.system("rsync -av ftp://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdump.tar.gz" "./tests/data/taxdump.tar.gz")
+                os.system("gunzip - cd ./tests/data/taxdump.tar.gz | (tar xvf - names.dmp nodes.dmp)")
+            elif x == "no":
+                print("You did not agree to download data from ncbi. Programm will default to blast web-queries.")
+                print("This is slow and crashes regularly!")
+                if self.blast_loc = 'remote'
+            else:
+                print("You did not type yes or no. Please restart and type yes or no!")
         if _DEBUG:
             sys.stdout.write("{}\n".format(self.email))
             if self.blast_loc == 'remote':
@@ -253,6 +263,8 @@ def generate_ATT_from_phylesystem(aln,
     orig_lab_to_otu = {}
     treed_taxa = {}
     for otu_id in otus:
+        # print(otu_id)
+        # print(extract_otu_nexson(nexson, otu_id))
         otu_dict[otu_id] = extract_otu_nexson(nexson, otu_id)[otu_id]
         otu_dict[otu_id]['^physcraper:status'] = "original"
         otu_dict[otu_id]['^physcraper:last_blasted'] = "1800/01/01"
@@ -268,6 +280,8 @@ def generate_ATT_from_phylesystem(aln,
     # need to prune tree to seqs and seqs to tree...
     otu_newick = tre.as_string(schema="newick")
     workdir = os.path.abspath(workdir)
+    # print(treed_taxa)
+    # print(some)
     return AlignTreeTax(otu_newick, otu_dict, aln, ingroup_mrca=ott_mrca, workdir=workdir)
     # newick should be bare, but alignment should be DNACharacterMatrix
 
@@ -335,7 +349,13 @@ def generate_ATT_from_files(seqaln,
     debug(ingroup_mrca)
     # debug(some)
     if ingroup_mrca:
-        ott_mrca = int(ingroup_mrca)
+        if type(ingroup_mrca) == list:
+            ott_ids = set(ingroup_mrca)
+            debug(ott_ids)
+
+            ott_mrca = get_mrca_ott(ott_ids)
+        else:
+            ott_mrca = int(ingroup_mrca)
     else:
         ott_ids = [otu_dict[otu].get(u'^ot:ottId', ) for otu in otu_dict]
         ott_ids = filter(None, ott_ids)
@@ -514,6 +534,7 @@ class AlignTreeTax(object):
 
     def __init__(self, newick, otu_dict, alignment, ingroup_mrca, workdir, schema=None, taxon_namespace=None):
         # TODO add assertions that inputs are correct type!!!
+        print("build ATT class")
         self.aln = alignment
         if schema is None:
             self.tre = Tree.get(data=newick,
@@ -853,6 +874,7 @@ class AlignTreeTax(object):
         # debug("ncbi_id")
         # debug(ncbi_id)
         # debug(self.gi_dict[gi_id].keys())
+
         self.otu_dict[otu_id] = {}
         self.otu_dict[otu_id]['^ncbi:gi'] = gi_id
         self.otu_dict[otu_id]['^ncbi:accession'] = self.gi_dict[gi_id]['accession']
@@ -947,6 +969,8 @@ class AlignTreeTax(object):
             if gi_id:
                 gi_id = self.otu_dict[taxon.label].get('^ncbi:gi')
                 if gi_id is None:
+                    gi_id = self.otu_dict[taxon.label].get('^ncbi:accession')
+                if gi_id is None:
                     gi_id = self.otu_dict[taxon.label].get("^ot:originalLabel")
                 new_label = "_".join([new_label, str(gi_id)])
                 sp_counter = 2
@@ -988,13 +1012,13 @@ class AlignTreeTax(object):
         :param taxon_label: taxon_label from dendropy object - aln or phy
         :return: removes information/data from taxon_label
         """
-        # debug('remove_taxa_aln_tre')
-        # debug(taxon_label)
-        # debug(type(taxon_label))
+        debug('remove_taxa_aln_tre')
+        debug(taxon_label)
+        debug(type(taxon_label))
         tax = self.aln.taxon_namespace.get_taxon(taxon_label)
         tax2 = self.tre.taxon_namespace.get_taxon(taxon_label)
-        # debug(tax)
-        # debug(tax2)
+        debug(tax)
+        debug(tax2)
         # debug(len(self.tre.taxon_namespace))
         if tax:
             self.aln.remove_sequences([tax])
@@ -1032,7 +1056,6 @@ def get_nexson(study_id, phylesystem_loc):
 def get_mrca_ott(ott_ids):
     """finds the mrca of the taxa in the ingroup of the original
     tree. The blast search later is limited to descendants of this
-
     mrca according to the ncbi taxonomy
 
     Used in the functions that generate the ATT object.
@@ -1040,6 +1063,8 @@ def get_mrca_ott(ott_ids):
     :param ott_ids: list of all OToL identifiers for tiplabels in phylogeny
     :return: OToL identifier of most recent common ancestor or ott_ids
     """
+    debug("get_mrca_ott")
+    # drop_tip = []
     if None in ott_ids:
         ott_ids.remove(None)
     synth_tree_ott_ids = []
@@ -1050,14 +1075,16 @@ def get_mrca_ott(ott_ids):
             tree_of_life.mrca(ott_ids=[ott], wrap_response=False)
             synth_tree_ott_ids.append(ott)
         except:
+            debug("except")
             ott_ids_not_in_synth.append(ott)
+            # drop_tip.append(ott)
     debug(synth_tree_ott_ids)
     if len(synth_tree_ott_ids) == 0:
         sys.stderr.write('No sampled taxa were found in the current synthetic tree. '
                          'Please find and input and appropriate OTT id as ingroup mrca in generate_ATT_from_files')
         sys.exit()
     mrca_node = tree_of_life.mrca(ott_ids=synth_tree_ott_ids, wrap_response=False)  # need to fix wrap eventually
-    # debug(mrca_node)
+    debug(mrca_node)
     if u'nearest_taxon' in mrca_node.keys():
         tax_id = mrca_node[u'nearest_taxon'].get(u'ott_id')
         if _VERBOSE:
@@ -1194,7 +1221,7 @@ class IdDicts(object):
                 # debug("except")
                 ncbi = NCBITaxa()
                 tax_info = ncbi.get_name_translator([tax_name])
-                # debug(tax_info)
+                debug(tax_info)
                 if tax_info == {}:
                     debug("Taxon name does not match any name in ncbi. Check that name is written correctly!")
                 ncbi_id = int(tax_info.items()[0][1][0])
@@ -1256,9 +1283,16 @@ class IdDicts(object):
         """ Find the taxon name in the sp_dict or of a gi_id.
         If not already known it will ask ncbi using the gi_id.
         """
-        # debug("find_name")
+        debug("find_name")
+        if sp_dict is not None or gi is not None:
+            inputinfo = True
+        assert inputinfo is True
         tax_name = None
+        debug([sp_dict, gi])
         if sp_dict:
+            debug('^ot:ottTaxonName' in sp_dict)
+            debug(u'^ot:ottTaxonName' in sp_dict)
+            debug(sp_dict.keys())
             if '^ot:ottTaxonName' in sp_dict:
                 tax_name = sp_dict['^ot:ottTaxonName']
             elif '^user:TaxonName' in sp_dict:
@@ -1269,6 +1303,9 @@ class IdDicts(object):
                 gi_id = gi
             elif '^ncbi:gi' in sp_dict:
                 gi_id = sp_dict['^ncbi:gi']
+                if gi_id == None:
+                    gi_id = sp_dict['^ncbi:accession']
+
             else:
                 sys.stderr.write("There is no name supplied and no gi available. This should not happen! Check name!")
             if gi_id in self.gi_ncbi_dict:
@@ -1462,6 +1499,8 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
         self.reset_markers()
         self.unpublished = False  # used to look for local unpublished seq that shall be added.
         self.path_to_local_seq = False  # path to unpublished seq.
+        self.backbone = False
+
         if _deep_debug == 1:
             self.newadd_gi_otu = {}  # search for doubles!
 
@@ -1497,7 +1536,7 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
         # TODO query via stdin
         blastcmd = "blastn -query " + \
                    "{}/tmp.fas".format(self.blast_subdir) + \
-                   " -db {}nt -out ".format(self.config.blastdb) + \
+                   " -db {}nt -taxids {} -out ".format(self.mrca_ncbi, self.config.blastdb) + \
                    fn_path + \
                    " {} -num_threads {}".format(outfmt, self.config.num_threads) + \
                    " -max_target_seqs {} -max_hsps {}".format(self.config.hitlist_size,
@@ -1567,6 +1606,8 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
                     output = "tst_fn"
                     blastcmd = "blastn -query {}/tmp.fas -db {} -out output_{}.xml -outfmt 5".format(self.blast_subdir, blast_db, output)
                     os.system(blastcmd)
+                    if self.backbone == True:
+                        self.data.otu_dict[otu_id]['^physcraper:last_blasted'] = today
                     # self.data.otu_dict[otu_id]['^physcraper:last_blasted'] = today
                 else:
                     if time_passed > delay:
@@ -1576,6 +1617,9 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
                             file_ending = "xml"
                         if self.config.gifilename is True:
                             fn = self.data.otu_dict[taxon.label].get('^ncbi:gi', taxon.label)
+                            if fn == None:
+                                fn = self.data.otu_dict[taxon.label].get('^ncbi:accession', taxon.label)
+
                             fn_path = "{}/{}.{}".format(self.blast_subdir, fn, file_ending)
                         else:
                             fn_path = "{}/{}.{}".format(self.blast_subdir, taxon.label, file_ending)
@@ -1657,6 +1701,7 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
         # TODO MK: gi list limited to 100000000, for huge trees that is a problem. Think of what to do...
         debug("get_all_gi_mrca")
         Entrez.email = self.config.email
+### NOTE MK> if mrca ingroup is list, use the list not the mrca_ncbi/ott
         handle = Entrez.esearch(db="nucleotide", term="txid{}[Orgn]".format(self.mrca_ncbi),
                                 usehistory='n', RetMax=100000000)
         records = Entrez.read(handle)
@@ -1706,6 +1751,9 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
         for key in query_dict.keys():
             if float(query_dict[key]['evalue']) < float(self.config.e_value_thresh):
                 gi_id = query_dict[key]['^ncbi:gi']
+                if gi_id == None:
+                    gi_id = query_dict[key]['accession']
+
                 # debug(type(gi_id))
                 # debug(gi_id)
                 if len(self.gi_list_mrca) >= 1 and (gi_id not in self.gi_list_mrca):
@@ -1808,6 +1856,9 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
                 # debug(self.blast_subdir)
                 if self.config.gifilename is True:
                     fn = self.data.otu_dict[taxon.label].get('^ncbi:gi', taxon.label)
+                    if fn == None:
+                        fn = self.data.otu_dict[taxon.label].get('^ncbi:accession', taxon.label)
+
                     fn_path = "{}/{}.{}".format(self.blast_subdir, fn, file_ending)
                 else:
                     fn_path = "{}/{}.{}".format(self.blast_subdir, taxon.label, file_ending)
@@ -1905,16 +1956,17 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
         :param label: otu_label = key from otu_dict
         :return: ncbi id of corresponding label
         """
-        # debug("get_tax_id_of_otulabel")
-        # debug(label)
-        # debug(self.data.otu_dict[label].keys())
+        debug("get_tax_id_of_otulabel")
+        debug(label)
+        debug(self.data.otu_dict[label])
         spn_of_label = self.ids.find_name(sp_dict=self.data.otu_dict[label])
+        debug(spn_of_label)
         if spn_of_label is not None:
             # spn_of_label = str(spn_of_label).replace(" ", "_").replace("-", "_")
             spn_of_label = str(spn_of_label).replace(" ", "_")
         else:
             debug("Problem, no tax_name found!")
-        # debug(spn_of_label)
+        debug(self.data.otu_dict[label])
         if '^ncbi:taxon' in self.data.otu_dict[label]:
             id_of_label = self.data.otu_dict[label]['^ncbi:taxon']
         elif spn_of_label in self.ids.spn_to_ncbiid:
@@ -1952,6 +2004,8 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
         # debug(label)
         id_of_label = self.get_sp_id_of_otulabel(label)
         # debug("id of label is{}".format(id_of_label))
+        
+        ##############################################
         if _deep_debug == 1:
             label_gi_id = self.data.otu_dict[label]['^ncbi:gi']
             deep_debug("label_gi_id is{}".format(label_gi_id))
@@ -1961,6 +2015,8 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
                     deep_debug("cehck doubles")
                     if self.data.otu_dict[item]['^ncbi:gi'] == label_gi_id and label != item:
                         exit(-1)
+        
+        #################################################
         # debug(id_of_label)
         new_seq = seq.replace("-", "")
         tax_list = deepcopy(seq_dict.keys())
@@ -2045,6 +2101,8 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
             if i % 50 == 0:
                 sys.stdout.write("\n")
         seq_dict[label] = seq
+
+        #####################################
         if _deep_debug == 1:
             for item in self.data.otu_dict:
                 # debug(self.data.otu_dict[item])
@@ -2055,6 +2113,7 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
 
                     if self.data.otu_dict[item]['^ncbi:gi'] == label_gi_id and label != item:
                         exit(-1)
+        ########################################
         return seq_dict
 
     def remove_identical_seqs(self):
@@ -2099,6 +2158,8 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
                     otu_id = self.data.add_otu(gi_id, self.ids)
                     # debug(otu_id)
                     # debug("go to seq_dict_build")
+                    debug(self.data.otu_dict[otu_id])
+
                     self.seq_dict_build(seq, otu_id, tmp_dict)
             # else:
             #     debug("gi was already compared")
@@ -2112,6 +2173,8 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
            # except KeyError:
            #     pass
         self.new_seqs_otu_id = tmp_dict  # renamed new seq to their otu_ids from GI's, but all info is in self.otu_dict
+       
+        ##################################
         if _deep_debug == 1:
             for otu in self.new_seqs_otu_id:
                 otu_gi_id = self.data.otu_dict[otu]['^ncbi:gi']
@@ -2125,6 +2188,7 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
                     if '^ncbi:gi' in self.data.otu_dict[item]:
                         if self.data.otu_dict[item]['^ncbi:gi'] == otu_gi_id and otu != item:
                             exit(-1)
+        ###############################
         # debug("self.newseqsgi")
         # debug(self.newseqsgi)
         # debug("self.new_seqs_otu_id")
@@ -2259,37 +2323,47 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
 
         # TODO MK: if statement is not yet working, as it contains a path not the number of seqs
         #if len(self.newseqs_file) <= 500:
-        if os.path.exists("RAxML_labelledTree.PLACE"):
-            os.rename("RAxML_labelledTree.PLACE", "RAxML_labelledTreePLACE.tmp")
-        if _VERBOSE:
-            sys.stdout.write("placing query sequences \n")
-        cwd = (os.getcwd())
-        os.chdir(self.workdir)
-        try:
-            subprocess.call(["raxmlHPC", "-m", "GTRCAT",
-                             "-f", "v",
-                             "-s", "papara_alignment.extended",
-                             "-t", "random_resolve.tre",
-                             "-n", "PLACE"])
-            placetre = Tree.get(path="RAxML_labelledTree.PLACE",
-                                schema="newick",
-                                preserve_underscores=True)
-        except OSError as e:
-            if e.errno == os.errno.ENOENT:
-                sys.stderr.write("failed running raxmlHPC. Is it installed?")
-                sys.exit()
-            # handle file not
-            # handle file not found error.
-            else:
-                # Something else went wrong while trying to run `wget`
-                raise
-        placetre.resolve_polytomies()
-        for taxon in placetre.taxon_namespace:
-            if taxon.label.startswith("QUERY"):
-                taxon.label = taxon.label.replace("QUERY___", "")
-        placetre.write(path="place_resolve.tre", schema="newick", unquoted_underscores=True)
-        os.chdir(cwd)
-        self._query_seqs_placed = 1
+        if self.backbone is not True:
+
+            if os.path.exists("RAxML_labelledTree.PLACE"):
+                os.rename("RAxML_labelledTree.PLACE", "RAxML_labelledTreePLACE.tmp")
+            if _VERBOSE:
+                sys.stdout.write("placing query sequences \n")
+            cwd = (os.getcwd())
+            os.chdir(self.workdir)
+            try:
+                subprocess.call(["raxmlHPC", "-m", "GTRCAT",
+                                 "-f", "v",
+                                 "-s", "papara_alignment.extended",
+                                 "-t", "random_resolve.tre",
+                                 "-n", "PLACE"])
+                placetre = Tree.get(path="RAxML_labelledTree.PLACE",
+                                    schema="newick",
+                                    preserve_underscores=True)
+            except OSError as e:
+                if e.errno == os.errno.ENOENT:
+                    sys.stderr.write("failed running raxmlHPC. Is it installed?")
+                    sys.exit()
+                # handle file not
+                # handle file not found error.
+                else:
+                    # Something else went wrong while trying to run `wget`
+                    raise
+            placetre.resolve_polytomies()
+            for taxon in placetre.taxon_namespace:
+                if taxon.label.startswith("QUERY"):
+                    taxon.label = taxon.label.replace("QUERY___", "")
+            placetre.write(path="place_resolve.tre", schema="newick", unquoted_underscores=True)
+            os.chdir(cwd)
+            self._query_seqs_placed = 1
+        else:
+            cwd = (os.getcwd())
+            os.chdir(self.workdir)
+            backbonetre = self.orig_newick
+            backbonetre.resolve_polytomies()
+            backbonetre.write(path="backbone.tre", schema="newick", unquoted_underscores=True)
+            os.chdir(cwd)
+            self._query_seqs_placed = 1
 
     def est_full_tree(self):
         """Full raxml run from the placement tree as starting tree"""
@@ -2302,11 +2376,18 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
 
         # TODO MK: work on it, first step of not using starting tree was wrong, if that is working un-comment the following stuff
         #if self._query_seqs_placed == 1:  # if too many new sequences are found, do not use a starting tree, is not really faster.
-        subprocess.call(["raxmlHPC", "-m", "GTRCAT",
-                         "-s", "papara_alignment.extended",
-                         "-t", "place_resolve.tre",
-                         "-p", "1",
-                         "-n", "{}".format(self.date)])
+        if self.backbone is not True:
+            subprocess.call(["raxmlHPC", "-m", "GTRCAT",
+                             "-s", "papara_alignment.extended",
+                             "-t", "place_resolve.tre",
+                             "-p", "1",
+                             "-n", "{}".format(self.date)])
+        else:
+            subprocess.call(["raxmlHPC", "-m", "GTRCAT",
+                             "-s", "papara_alignment.extended",
+                             "-r", "backbone.tre",
+                             "-p", "1",
+                             "-n", "{}".format(self.date)])
         # else:
         #     subprocess.call(["raxmlHPC", "-m", "GTRCAT",
         #                      "-s", "papara_alignment.extended",
@@ -2375,7 +2456,8 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
         """
         for tax in self.data.aln.taxon_namespace:
             gi_id = self.data.otu_dict[tax.label].get("^ncbi:gi")
-            if gi_id in self.blacklist:
+            acc = self.data.otu_dict[tax.label].get("^ncbi:accession")
+            if gi_id in self.blacklist or acc in self.blacklist:
                 self.data.remove_taxa_aln_tre(tax.label)
                 self.data.otu_dict[tax.label]['^physcraper:status'] = "deleted, gi is part of blacklist"
         self.data.reconcile()
