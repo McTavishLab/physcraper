@@ -1534,9 +1534,10 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
         outfmt = " -outfmt '6 sseqid staxids sscinames pident evalue bitscore sseq stitle'"
         # outfmt = " -outfmt 5"  # format for xml file type
         # TODO query via stdin
+        # TODO MK: update to blast+ v. 2.8 - then we can limit search to taxids: -taxids self.mrca_ncbi
         blastcmd = "blastn -query " + \
                    "{}/tmp.fas".format(self.blast_subdir) + \
-                   " -db {}nt -taxids {} -out ".format(self.mrca_ncbi, self.config.blastdb) + \
+                   " -db {}nt -out ".format(self.config.blastdb) + \
                    fn_path + \
                    " {} -num_threads {}".format(outfmt, self.config.num_threads) + \
                    " -max_target_seqs {} -max_hsps {}".format(self.config.hitlist_size,
