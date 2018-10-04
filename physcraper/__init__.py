@@ -1506,7 +1506,9 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
     def OToL_unmapped_tips(self):
         """Assign names or remove tips from aln and tre that were not mapped during initiation of ATT class.
         """
-        if self.config.unmapped is True:
+        debug("OTOL unmapped")
+
+        if self.config.unmapped == 'remove':
             debug("remove_OToL_unmapped")
             # drop tips without ott _id
             # debug(ott_ids_not_in_synth)
@@ -1532,7 +1534,7 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
                     if self.data.ott_mrca in self.ids.ott_to_name:
                         self.data.otu_dict[key]['^ot:ottTaxonName'] = self.ids.ott_to_name[self.data.ott_mrca]
                     else:
-                        print("think about way")
+                        debug("think about a way...")
                         tx = APIWrapper().taxomachine
                         nms = tx.TNRS([self.data.ott_mrca])
                         for i in nms['results']:
