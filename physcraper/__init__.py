@@ -200,7 +200,7 @@ def get_dataset_from_treebase(study_id,
     # TODO: What does this function do? Function is used to get the aln from treebase, if OToL has those information???
     try:
         nexson = get_nexson(study_id, phylesystem_loc)
-    except:
+    except:  # TODO: seems to be an http error. Did not fgure out how to handle them (requests.exceptions.HTTPError)
         sys.stderr.write("couldn't find study id {} in phylesystem location {}\n".format(study_id, phylesystem_loc))
     treebase_url = nexson['nexml'][u'^ot:dataDeposit'][u'@href']
     if 'treebase' not in nexson['nexml'][u'^ot:dataDeposit'][u'@href']:
@@ -226,7 +226,6 @@ def generate_ATT_from_phylesystem(aln,
     """gathers together tree, alignment, and study info - forces names to otu_ids.
     Outputs AlignTreeTax object.
 
-    an alignemnt, a  # TODO: either left overs, or incomplete sentence
     Input can be either a study ID and tree ID from OpenTree  # TODO: Is there another way to get those data, than actually going to the OToL website, or can I query the internet for a desired part of the tree and corresponding studies?. According to code it cannot be either, but must be both
     Alignemnt need to be a Dendropy DNA character matrix!
 
@@ -394,7 +393,7 @@ def get_ott_taxon_info(spp_name):
     """
     try:
         res = taxomachine.TNRS(spp_name)['results'][0]
-    except:
+    except IndexError:
         sys.stderr.write("match to taxon {} not found in open tree taxonomy".format(spp_name))
         return 0
     if res['matches'][0]['is_approximate_match'] == 1:
@@ -1061,8 +1060,8 @@ def get_mrca_ott(ott_ids):
         try:
             tree_of_life.mrca(ott_ids=[ott], wrap_response=False)
             synth_tree_ott_ids.append(ott)
-        except:
-            # debug("except")
+        except:  # TODO: seems to be requests.exceptions.HTTPError: 500, don"t know how to implement them
+            debug("except")
             ott_ids_not_in_synth.append(ott)
             # drop_tip.append(ott)
     # debug(synth_tree_ott_ids)
@@ -1203,7 +1202,7 @@ class IdDicts(object):
                             ncbi_id = Entrez.read(Entrez.esearch(db="taxonomy", term=tax_name, RetMax=100))['IdList'][0]
 
                         ncbi_id = int(ncbi_id)
-                    except:
+                    except IndexError:
                         # debug("except esearch/read")
                         if i < tries - 1:  # i is zero indexed
                             continue
@@ -1212,7 +1211,7 @@ class IdDicts(object):
                     break
                 # debug(ncbi_id)
                 # debug(type(ncbi_id))
-            except:
+            except IndexError:
                 debug("except")
                 ncbi = NCBITaxa()
                 tax_info = ncbi.get_name_translator([tax_name])
@@ -1283,7 +1282,7 @@ class IdDicts(object):
             inputinfo = True
         assert inputinfo is True
         tax_name = None
-        debug([sp_dict, gi])
+        # debug([sp_dict, gi])
         if sp_dict:
             # debug('^ot:ottTaxonName' in sp_dict)
             # debug(u'^ot:ottTaxonName' in sp_dict)
@@ -1323,7 +1322,7 @@ class IdDicts(object):
                     try:
                         # debug("find name efetch")
                         handle = Entrez.efetch(db="nucleotide", id=gi_id, retmode="xml")
-                    except:
+                    except IndexError:
                         # debug("except efetch")
                         if i < tries - 1:  # i is zero indexed
                             continue
@@ -1371,7 +1370,7 @@ class IdDicts(object):
                         try:
                             # debug("find name efetch")
                             handle = Entrez.efetch(db="nucleotide", id=gi_id, retmode="xml")
-                        except:
+                        except IndexError:
                             # debug("except efetch")
                             if i < tries - 1:  # i is zero indexed
                                 continue
@@ -1590,7 +1589,8 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
         os.chdir(cwd)
 
     def run_web_blast_query(self, query, equery, fn_path):
-        """Equivalent to run_local_blast_cmd() but for webqueries, that need to be implemented differently.
+        """Equivalent to run_local_blast_cmd() but for webqueries, 
+        that need to be implemented differently.
 
         :param query: query sequence
         :param equery: method to limit blast query to mrca
@@ -2134,9 +2134,11 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
                     del seq_dict[label]
                 # else:
                 #     debug("label was never added to seq_dict")
-                try:
+                # try:
+                if label in self.data.aln.taxon_namespace or label in self.data.tre.taxon_namespace:
                     self.data.remove_taxa_aln_tre(label)
-                except:
+                # except:
+                else:
                     debug("label was never added to aln or tre")
                 self.data.otu_dict[label]['^physcraper:status'] = "removed in seq dict build"  # should not be the word 'deleted', as this is used in self.seq_filter
                 return seq_dict
