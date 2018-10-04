@@ -1188,6 +1188,7 @@ class IdDicts(object):
         if tax_name in self.spn_to_ncbiid:
             ncbi_id = self.spn_to_ncbiid[tax_name]
         else:
+            tax_name = "'{}'".format(tax_name)
             try:
                 # debug("try2")
                 tries = 10
@@ -1546,10 +1547,8 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
                     else:
                         debug("think about a way...")
                         tx = APIWrapper().taxomachine
-                        nms = tx.TNRS([self.data.ott_mrca])
-                        for i in nms['results']:
-                            for j in i['matches']:
-                                taxon_name = j[u'taxon'][u'ott_id']
+                        nms = tx.taxon(self.data.ott_mrca)
+                        taxon_name = nms[u'unique_name']
                         self.data.otu_dict[key]['^ot:ottTaxonName'] = "unknown_{}".format(taxon_name)
 
     def run_local_blast_cmd(self, query, taxon_label, fn_path):
