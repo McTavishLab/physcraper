@@ -1188,13 +1188,20 @@ class IdDicts(object):
         if tax_name in self.spn_to_ncbiid:
             ncbi_id = self.spn_to_ncbiid[tax_name]
         else:
-            tax_name = "'{}'".format(tax_name)
+            
+            debug(tax_name)
             try:
-                # debug("try2")
-                tries = 10
+                debug("try2")
+                tries = 15
                 for i in range(tries):
+                    debug(Entrez.read(Entrez.esearch(db="taxonomy", term=tax_name, RetMax=100))['IdList'][0])
                     try:
-                        ncbi_id = Entrez.read(Entrez.esearch(db="taxonomy", term=tax_name, RetMax=100))['IdList'][0]
+                        if tries >= 5:
+                            ncbi_id = Entrez.read(Entrez.esearch(db="taxonomy", term=tax_name, RetMax=100))['IdList'][0]
+                        else:
+                            tax_name = "'{}'".format(tax_name)
+                            ncbi_id = Entrez.read(Entrez.esearch(db="taxonomy", term=tax_name, RetMax=100))['IdList'][0]
+
                         ncbi_id = int(ncbi_id)
                     except:
                         # debug("except esearch/read")
@@ -1206,7 +1213,7 @@ class IdDicts(object):
                 # debug(ncbi_id)
                 # debug(type(ncbi_id))
             except:
-                # debug("except")
+                debug("except")
                 ncbi = NCBITaxa()
                 tax_info = ncbi.get_name_translator([tax_name])
                 debug(tax_info)
