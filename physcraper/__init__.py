@@ -1217,7 +1217,10 @@ class IdDicts(object):
                 tax_info = ncbi.get_name_translator([tax_name])
                 debug(tax_info)
                 if tax_info == {}:
-                    debug("Taxon name does not match any name in ncbi. Check that name is written correctly!")
+                    tax_name = "'{}'".format(tax_name)
+                    tax_info = ncbi.get_name_translator([tax_name])
+                    if tax_info == {}:
+                        debug("Taxon name does not match any name in ncbi. Check that name is written correctly!")
                 ncbi_id = int(tax_info.items()[0][1][0])
         assert type(ncbi_id) is int
         self.spn_to_ncbiid[tax_name] = ncbi_id
