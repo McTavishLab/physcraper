@@ -357,7 +357,7 @@ def generate_ATT_from_files(seqaln,
     if ingroup_mrca:
         if type(ingroup_mrca) == list:
             ott_ids = set(ingroup_mrca)
-            debug(ott_ids)
+            # debug(ott_ids)
 
             ott_mrca = get_mrca_ott(ott_ids)
         else:
@@ -1000,12 +1000,12 @@ class AlignTreeTax(object):
         :return: removes information/data from taxon_label
         """
         debug('remove_taxa_aln_tre')
-        debug(taxon_label)
-        debug(type(taxon_label))
+        # debug(taxon_label)
+        # debug(type(taxon_label))
         tax = self.aln.taxon_namespace.get_taxon(taxon_label)
         tax2 = self.tre.taxon_namespace.get_taxon(taxon_label)
-        debug(tax)
-        debug(tax2)
+        # debug(tax)
+        # debug(tax2)
         # debug(len(self.tre.taxon_namespace))
         if tax:
             self.aln.remove_sequences([tax])
@@ -1057,21 +1057,21 @@ def get_mrca_ott(ott_ids):
     synth_tree_ott_ids = []
     ott_ids_not_in_synth = []
     for ott in ott_ids:
-        debug(ott)
+        # debug(ott)
         try:
             tree_of_life.mrca(ott_ids=[ott], wrap_response=False)
             synth_tree_ott_ids.append(ott)
         except:
-            debug("except")
+            # debug("except")
             ott_ids_not_in_synth.append(ott)
             # drop_tip.append(ott)
-    debug(synth_tree_ott_ids)
+    # debug(synth_tree_ott_ids)
     if len(synth_tree_ott_ids) == 0:
         sys.stderr.write('No sampled taxa were found in the current synthetic tree. '
                          'Please find and input and appropriate OTT id as ingroup mrca in generate_ATT_from_files')
         sys.exit()
     mrca_node = tree_of_life.mrca(ott_ids=synth_tree_ott_ids, wrap_response=False)  # need to fix wrap eventually
-    debug(mrca_node)
+    # debug(mrca_node)
     if u'nearest_taxon' in mrca_node.keys():
         tax_id = mrca_node[u'nearest_taxon'].get(u'ott_id')
         if _VERBOSE:
@@ -1277,9 +1277,9 @@ class IdDicts(object):
         tax_name = None
         debug([sp_dict, gi])
         if sp_dict:
-            debug('^ot:ottTaxonName' in sp_dict)
-            debug(u'^ot:ottTaxonName' in sp_dict)
-            debug(sp_dict.keys())
+            # debug('^ot:ottTaxonName' in sp_dict)
+            # debug(u'^ot:ottTaxonName' in sp_dict)
+            # debug(sp_dict.keys())
             if '^ot:ottTaxonName' in sp_dict:
                 tax_name = sp_dict['^ot:ottTaxonName']
             elif '^user:TaxonName' in sp_dict:
@@ -1507,31 +1507,41 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
         """Assign names or remove tips from aln and tre that were not mapped during initiation of ATT class.
         """
         debug("OTOL unmapped")
+        # debug(self.config.unmapped)
+        # debug(self.data.ott_mrca)
+        # debug(len(self.data.aln.taxon_namespace))
+        # debug(self.data.aln.taxon_namespace)
 
         if self.config.unmapped == 'remove':
-            debug("remove_OToL_unmapped")
+            # debug("remove_OToL_unmapped")
             # drop tips without ott _id
             # debug(ott_ids_not_in_synth)
-            # debug(self.otu_dict)
+            # debug(len(self.data.otu_dict))
             # debug(len(self.aln.taxon_namespace))
             for key in self.data.otu_dict:
-                debug(self.data.otu_dict[key].keys())
+                # debug(self.data.otu_dict[key].keys())
                 if '^ot:ottId' not in self.data.otu_dict[key]:
                     if u'^ot:treebaseOTUId' in self.data.otu_dict[key]:  # second condition for OToL unmapped taxa, not  present in own_data
-                        debug(key)
+                        # debug(key)
                         self.data.remove_taxa_aln_tre(key)
 
-            debug(len(self.data.otu_dict))
-            # debug(self.aln.taxon_namespace)        
-            debug(len(self.data.aln.taxon_namespace))
-            # debug(self.tre.taxon_namespace)        
-            debug(len(self.data.tre.taxon_namespace))
+            # debug(len(self.data.otu_dict))
+            # # debug(self.aln.taxon_namespace)        
+            # debug(len(self.data.aln.taxon_namespace))
+            # # debug(self.tre.taxon_namespace)        
+            # debug(len(self.data.tre.taxon_namespace))
         else:
+            # debug("keep_OToL_unmapped")
+            i=1
             for key in self.data.otu_dict:
-                debug(self.data.otu_dict[key].keys())
+                i=i+1
+                # debug(i)
+                # debug(self.data.otu_dict[key].keys())
                 if '^ot:ottId' not in self.data.otu_dict[key]:
+                    # debug("no id known")
                     self.data.otu_dict[key]['^ot:ottId'] = self.data.ott_mrca
                     if self.data.ott_mrca in self.ids.ott_to_name:
+                        # debug("get id from ott_to_name")
                         self.data.otu_dict[key]['^ot:ottTaxonName'] = self.ids.ott_to_name[self.data.ott_mrca]
                     else:
                         debug("think about a way...")
@@ -1986,7 +1996,7 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
         """
         debug("get_tax_id_of_otulabel")
         debug(label)
-        debug(self.data.otu_dict[label])
+        # debug(self.data.otu_dict[label])
         spn_of_label = self.ids.find_name(sp_dict=self.data.otu_dict[label])
         debug(spn_of_label)
         if spn_of_label is not None:
@@ -2177,16 +2187,18 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
                             sys.stdout.write("WARNING: gi_id {} is no integer. Will convert value to int\n".format(gi_id))
                             debug("WARNING: gi_id {} is no integer. Will convert value to int\n".format(gi_id))
                             gi_id = int(gi_id)
+                            #########################
                             if _deep_debug == 1: 
                                 currentgilist = self.find_otudict_gi()
                                 debug(currentgilist)
                                 if gi_id in currentgilist:
                                     exit(-1)
+                                    ####################
                     self.newseqsgi.append(gi_id)
                     otu_id = self.data.add_otu(gi_id, self.ids)
                     # debug(otu_id)
                     # debug("go to seq_dict_build")
-                    debug(self.data.otu_dict[otu_id])
+                    # debug(self.data.otu_dict[otu_id])
 
                     self.seq_dict_build(seq, otu_id, tmp_dict)
             # else:
@@ -2623,7 +2635,7 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
         :return: generates self.data.gi_dict entry for key
         """
         debug("make_otu_dict_entry_unpubl")
-        debug(self.data.gi_dict.keys())
+        # debug(self.data.gi_dict.keys())
         # debug(key)
         gi_counter = 1
         if key not in self.data.gi_dict.keys():
