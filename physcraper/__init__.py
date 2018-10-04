@@ -2745,6 +2745,7 @@ class FilterBlast(PhyscraperScrape):
                         sys.stderr.write("{} has no corresponding tax_name! Check what is wrong!".format(key))
                 tax_name = str(tax_name).replace(" ", "_")
                 if self.config.blast_loc == 'remote':
+                    debug(self.ids.otu_rank[tax_name])
                     tax_id = self.ids.otu_rank[tax_name]["taxon id"]
                 else:
                     tax_id = self.ids.ncbi_parser.get_id_from_name(tax_name)
