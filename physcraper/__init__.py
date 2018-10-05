@@ -15,12 +15,12 @@ import pickle
 # import inspect
 import random
 # import logging
-import collections
+# import collections
 from copy import deepcopy
 from ete2 import NCBITaxa
 # from urllib2 import URLError
 import physcraper.AWSWWW as AWSWWW
-import numpy
+# import numpy
 from Bio.Blast import NCBIXML  # , NCBIWWW
 # from Bio.Blast.Applications import NcbiblastxCommandline
 from Bio import Entrez  # , SeqIO
@@ -30,7 +30,7 @@ from dendropy import Tree, \
     DnaCharacterMatrix, \
     DataSet, \
     datamodel
-from peyotl.api.phylesystem_api import PhylesystemAPI
+from peyotl.api.phylesystem_api import PhylesystemAPI, APIWrapper
 from peyotl.sugar import tree_of_life, taxomachine  # taxonomy,
 from peyotl.nexson_syntax import extract_tree, \
     get_subtree_otus, \
@@ -67,7 +67,8 @@ def is_number(s):
 
 
 # which python physcraper file do I use?
-print("Current --init-- version number: 09182018.0")
+print("Current --init-- version number: 10-03-2018.0")
+
 debug(os.path.realpath(__file__))
 
 
@@ -170,7 +171,7 @@ def get_dataset_from_treebase(study_id,
     # TODO: What does this function do? Function is used to get the aln from treebase, if OToL has those information???
     try:
         nexson = get_nexson(study_id, phylesystem_loc)
-    except:
+    except:  # TODO: seems to be an http error. Did not fgure out how to handle them (requests.exceptions.HTTPError)
         sys.stderr.write("couldn't find study id {} in phylesystem location {}\n".format(study_id, phylesystem_loc))
     treebase_url = nexson['nexml'][u'^ot:dataDeposit'][u'@href']
     if 'treebase' not in nexson['nexml'][u'^ot:dataDeposit'][u'@href']:
@@ -196,7 +197,6 @@ def generate_ATT_from_phylesystem(aln,
     """gathers together tree, alignment, and study info - forces names to otu_ids.
     Outputs AlignTreeTax object.
 
-    an alignemnt, a  # TODO: either left overs, or incomplete sentence
     Input can be either a study ID and tree ID from OpenTree  # TODO: Is there another way to get those data, than actually going to the OToL website, or can I query the internet for a desired part of the tree and corresponding studies?. According to code it cannot be either, but must be both
     Alignemnt need to be a Dendropy DNA character matrix!
 
@@ -205,7 +205,7 @@ def generate_ATT_from_phylesystem(aln,
     :param study_id: OToL study id of the corresponding phylogeny which shall be updated
     :param tree_id: OToL corresponding tree ID as some studies have several phylogenies
     :param phylesystem_loc: ?? # TODO: what is this?
-    :param ingroup_mrca: OToL identifier of the mrca of the clade that shall be updated (can be a subset of the phylogeny)
+    :param ingroup_mrca: OToL identifier of the mrca of the clade that shall be updated (can be subset of the phylogeny)
     :return: object of class ATT
     """
     # TODO CHECK ARGS
@@ -349,7 +349,7 @@ def get_ott_taxon_info(spp_name):
     """
     try:
         res = taxomachine.TNRS(spp_name)['results'][0]
-    except:
+    except IndexError:
         sys.stderr.write("match to taxon {} not found in open tree taxonomy".format(spp_name))
         return 0
     if res['matches'][0]['is_approximate_match'] == 1:
@@ -399,7 +399,8 @@ def OtuJsonDict(id_to_spn, id_dict):
                 ottid, ottname, ncbiid = info
             if not info:
                 if _DEBUG:
-                    sys.stdout.write("match to taxon {} not found in open tree taxonomy. Trying NCBI next.\n".format(spn))
+                    sys.stdout.write("match to taxon {} not found in open tree taxonomy. "
+                                     "Trying NCBI next.\n".format(spn))
                 ncbi = NCBITaxa()
                 name2taxid = ncbi.get_name_translator([spn])
                 if len(name2taxid.items()) >= 1:
@@ -450,7 +451,7 @@ class AlignTreeTax(object):
                                                     If the year is different from the 20th century, it tells us
                                                     something about the initial status:
                                                      - 1800 = never blasted, not yet considered to be added
-                                                     - 1900 =never blasted and not added - see status for more information
+                                                     - 1900 = never blasted and not added - see status for more info
                                                      - this century = blasted and added.
                         '^user:TaxonName': optional, user given label from OtuJsonDict
                         "^ot:originalLabel" optional, user given tip label of phylogeny
@@ -486,7 +487,7 @@ class AlignTreeTax(object):
         self.unpubl_otu_json: optional, will contain the OTU-dict for unpublished data, if that option is used
 
     Following functions are called during the init-process:
-        self._reconcile_names(): removes taxa, that are not found in both, the phylogeny and the aln and changes their names????
+        self._reconcile_names(): # TODO: removes taxa, that are not found in both, the phylogeny and the aln and changes their names????
 
     The physcraper class is then updating: self.aln, self.tre and self.otu_dict, self.ps_otu, self.gi_dict
     """
@@ -538,7 +539,8 @@ class AlignTreeTax(object):
         prune = treed_taxa ^ aln_tax
         missing = [i.label for i in prune]
         if missing:
-            errmf = 'NAME RECONCILIATION Some of the taxa in the tree are not in the alignment or vice versa and will be pruned. Missing "{}"\n'
+            errmf = 'NAME RECONCILIATION Some of the taxa in the tree are not in the alignment or vice versa' \
+                    ' and will be pruned. Missing "{}"\n'
             errm = errmf.format('", "'.join(missing))
             sys.stderr.write(errm)
         self.aln.remove_sequences(prune)
@@ -589,7 +591,8 @@ class AlignTreeTax(object):
             self.tre.prune_taxa_with_labels(prune)  # sometimes it does not delete it with the statement before. Tried to figure out why, have no clue yet.
             # self.aln.taxon_namespace.remove_taxon_label(tax)
             fi = open("{}/pruned_taxa".format(self.workdir), 'a')
-            fi.write("Taxa pruned from tree and alignment in prune short step due to sequence shorter than {}\n".format(min_seqlen))
+            fi.write("Taxa pruned from tree and alignment in prune short "
+                     "step due to sequence shorter than {}\n".format(min_seqlen))
             for tax in prune:
                 fi.write("{}, {}\n".format(tax.label, self.otu_dict[tax.label].get('^ot:originalLabel')))
             fi.close()
@@ -615,8 +618,10 @@ class AlignTreeTax(object):
             if len(seq.symbols_as_string().translate(None, "-?")) < seq_len_cutoff:
                 prune.append(tax)
         if prune:
+            # debug(prune)
             fi = open("{}/pruned_taxa".format(self.workdir), 'a')
-            fi.write("Taxa pruned from tree and aln in reconcilation step due to sequence shorter than {}\n".format(seq_len_cutoff))
+            fi.write("Taxa pruned from tree and aln in reconcilation step "
+                     "due to sequence shorter than {}\n".format(seq_len_cutoff))
             for tax in prune:
                 fi.write("{}, {}\n".format(tax.label, self.otu_dict.get(tax.label).get('^ot:originalLabel')))
             fi.close()
@@ -737,9 +742,9 @@ class AlignTreeTax(object):
                 ncbi_id = ids_obj.ncbi_parser.get_id_from_name(tax_name)
             # if type(gi_id) == int:
             #     print("add id to self")
-            self.ids.gi_ncbi_dict[gi_id] = ncbi_id
-            self.ids.ncbiid_to_spn[ncbi_id] = tax_name
-            self.ids.spn_to_ncbiid[tax_name] = ncbi_id
+            ids_obj.gi_ncbi_dict[gi_id] = ncbi_id
+            ids_obj.ncbiid_to_spn[ncbi_id] = tax_name
+            ids_obj.spn_to_ncbiid[tax_name] = ncbi_id
 
         if ncbi_id in ids_obj.ncbi_to_ott.keys():
             # ncbi_id = int(ids_obj.map_gi_ncbi(gi_id))
@@ -888,7 +893,6 @@ class AlignTreeTax(object):
         :param taxon_label: taxon_label from dendropy object - aln or phy
         :return: removes information/data from taxon_label
         """
-        # note: has test, test_remove_taxa_aln_tre.py, runs, passes
         tax = self.aln.taxon_namespace.get_taxon(taxon_label)
         tax2 = self.tre.taxon_namespace.get_taxon(taxon_label)
         if tax:
@@ -903,6 +907,7 @@ class AlignTreeTax(object):
             self.otu_dict[taxon_label]['^physcraper:status'] = "deleted, but it wasn't in the alignment..."
 
     def dump(self, filename=None):
+        """writes pickled files from att class"""
         if filename:
             if not os.path.exists(os.path.dirname(filename)):
                 os.makedirs(os.path.dirname(filename))
@@ -938,7 +943,7 @@ def get_mrca_ott(ott_ids):
         try:
             tree_of_life.mrca(ott_ids=[ott], wrap_response=False)
             synth_tree_ott_ids.append(ott)
-        except:
+        except:  # TODO: seems to be requests.exceptions.HTTPError: 500, don't know how to implement them
             ott_ids_not_in_synth.append(ott)
     if len(synth_tree_ott_ids) == 0:
         sys.stderr.write('No sampled taxa were found in the current synthetic tree. '
@@ -1032,8 +1037,6 @@ class IdDicts(object):
             assert len(self.ott_to_name) > 0
         fi.close()
         # TODO: pandas solution? requires to rewrite usages of self.ott_to_ncbi, self.ncbi_to_ott, self.ott_to_name
-
-
         # TODO: where do we generate id_map?
         if os.path.isfile("{}/id_map.txt".format(workdir)):  # todo config?!
             fi = open("{}/id_map.txt".format(workdir))
@@ -1056,13 +1059,19 @@ class IdDicts(object):
             ncbi_id = self.spn_to_ncbiid[tax_name]
         else:
             try:
-                # debug("try2")
-                tries = 10
+                debug("try2")
+                tries = 15
                 for i in range(tries):
+                    # debug(Entrez.read(Entrez.esearch(db="taxonomy", term=tax_name, RetMax=100))['IdList'][0])
                     try:
-                        ncbi_id = Entrez.read(Entrez.esearch(db="taxonomy", term=tax_name, RetMax=100))['IdList'][0]
+                        if tries >= 5:
+                            ncbi_id = Entrez.read(Entrez.esearch(db="taxonomy", term=tax_name, RetMax=100))['IdList'][0]
+                        else:
+                            tax_name = "'{}'".format(tax_name)
+                            ncbi_id = Entrez.read(Entrez.esearch(db="taxonomy", term=tax_name, RetMax=100))['IdList'][0]
+
                         ncbi_id = int(ncbi_id)
-                    except:
+                    except:  # TODO: is either IndexError or rllib2.HTTPError: HTTP Error 400: Bad Request
                         # debug("except esearch/read")
                         if i < tries - 1:  # i is zero indexed
                             continue
@@ -1071,14 +1080,23 @@ class IdDicts(object):
                     break
                 # debug(ncbi_id)
                 # debug(type(ncbi_id))
-            except:
-                # debug("except")
-                ncbi = NCBITaxa()
-                tax_info = ncbi.get_name_translator([tax_name])
-                # debug(tax_info)
-                if tax_info == {}:
-                    debug("Taxon name does not match any name in ncbi. Check that name is written correctly!")
-                ncbi_id = int(tax_info.items()[0][1][0])
+            except:  # TODO: is either IndexError or rllib2.HTTPError: HTTP Error 400: Bad Request
+                debug("except")
+                try:
+                    ncbi = NCBITaxa()
+                    tax_info = ncbi.get_name_translator([tax_name])
+                    debug(tax_info)
+                    if tax_info == {}:
+                        tax_name = "'{}'".format(tax_name)
+                        tax_info = ncbi.get_name_translator([tax_name])
+                    ncbi_id = int(tax_info.items()[0][1][0])
+                except:
+                    sys.stderr.write("Taxon name does not match any name in ncbi. Check that name is written "
+                                     "correctly: {}! We set it to unidentified_{}".format(tax_name, self.ids.mrca_ncbi))
+                    tax_name = '{}'.format(self.ids.mrca_ncbi)
+                    ncbi_id = Entrez.read(Entrez.esearch(db="taxonomy", term=tax_name, RetMax=100))['IdList'][0]
+                    tax_name = 'unidentified_{}'.format(self.ids.mrca_ncbi)
+                    ncbi_id = int(ncbi_id)
         assert type(ncbi_id) is int
         self.spn_to_ncbiid[tax_name] = ncbi_id
         return ncbi_id
@@ -1144,7 +1162,8 @@ class IdDicts(object):
                 for i in range(tries):
                     try:
                         handle = Entrez.efetch(db="nucleotide", id=gi_id, retmode="xml")
-                    except:
+                    except IndexError:
+                        # debug("except efetch")
                         if i < tries - 1:  # i is zero indexed
                             continue
                         else:
@@ -1191,7 +1210,7 @@ class IdDicts(object):
                         try:
                             # debug("find name efetch")
                             handle = Entrez.efetch(db="nucleotide", id=gi_id, retmode="xml")
-                        except:
+                        except IndexError:
                             # debug("except efetch")
                             if i < tries - 1:  # i is zero indexed
                                 continue
@@ -1313,6 +1332,7 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
         self.reset_markers()
         self.unpublished = False  # used to look for local unpublished seq that shall be added.
         self.path_to_local_seq = False  # path to unpublished seq.
+        self.OToL_unmapped_tips()  # added to remove un-mapped tips from OToL
 
     # TODO is this the right place for this?
     def reset_markers(self):
@@ -1324,6 +1344,30 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
         self._query_seqs_placed = 0
         self._reconciled = 0  # TODO: We don't use it
         self._full_tree_est = 0
+
+    def OToL_unmapped_tips(self):
+        """Assign names or remove tips from aln and tre that were not mapped during initiation of ATT class.
+        """
+        if self.config.unmapped == 'remove':
+            for key in self.data.otu_dict:
+                if '^ot:ottId' not in self.data.otu_dict[key]:
+                    if u'^ot:treebaseOTUId' in self.data.otu_dict[key]:  # second condition for OToL unmapped taxa, not  present in own_data
+                        # debug(key)
+                        self.data.remove_taxa_aln_tre(key)
+        else:
+            i=1
+            for key in self.data.otu_dict:
+                i=i+1
+                if '^ot:ottId' not in self.data.otu_dict[key]:
+                    self.data.otu_dict[key]['^ot:ottId'] = self.data.ott_mrca
+                    if self.data.ott_mrca in self.ids.ott_to_name:
+                        self.data.otu_dict[key]['^ot:ottTaxonName'] = self.ids.ott_to_name[self.data.ott_mrca]
+                    else:
+                        debug("think about a way...")
+                        tx = APIWrapper().taxomachine
+                        nms = tx.taxon(self.data.ott_mrca)
+                        taxon_name = nms[u'unique_name']
+                        self.data.otu_dict[key]['^ot:ottTaxonName'] = "unknown_{}".format(taxon_name)
 
     def run_local_blast_cmd(self, query, taxon_label, fn_path):
         """Contains the cmds used to run a local blast query, which is different from the web-queries.
@@ -1356,7 +1400,8 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
         os.chdir(cwd)
 
     def run_web_blast_query(self, query, equery, fn_path):
-        """Equivalent to run_local_blast_cmd() but for webqueries, that need to be implemented differently.
+        """Equivalent to run_local_blast_cmd() but for webqueries,
+        that need to be implemented differently.
 
         :param query: query sequence
         :param equery: method to limit blast query to mrca
@@ -1618,16 +1663,12 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
         :param label: otu_label = key from otu_dict
         :return: ncbi id of corresponding label
         """
-        # debug("get_tax_id_of_otulabel")
-        # debug(label)
-        # debug(self.data.otu_dict[label].keys())
         spn_of_label = self.ids.find_name(sp_dict=self.data.otu_dict[label])
         if spn_of_label is not None:
             # spn_of_label = str(spn_of_label).replace(" ", "_").replace("-", "_")
             spn_of_label = str(spn_of_label).replace(" ", "_")
         else:
             debug("Problem, no tax_name found!")
-        # debug(spn_of_label)
         if '^ncbi:taxon' in self.data.otu_dict[label]:
             id_of_label = self.data.otu_dict[label]['^ncbi:taxon']
         elif spn_of_label in self.ids.spn_to_ncbiid:
@@ -1735,9 +1776,11 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
                     del seq_dict[label]
                 # else:
                 #     debug("label was never added to seq_dict")
-                try:
+                # try:
+                if label in self.data.aln.taxon_namespace or label in self.data.tre.taxon_namespace:
                     self.data.remove_taxa_aln_tre(label)
-                except:
+                # except:
+                else:
                     debug("label was never added to aln or tre")
                 self.data.otu_dict[label]['^physcraper:status'] = "removed in seq dict build"  # should not be the word 'deleted', as this is used in self.seq_filter
                 return seq_dict
@@ -2131,7 +2174,7 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
         :return: generates self.data.gi_dict entry for key
         """
         debug("make_otu_dict_entry_unpubl")
-        debug(self.data.gi_dict.keys())
+        # debug(self.data.gi_dict.keys())
         # debug(key)
         gi_counter = 1
         if key not in self.data.gi_dict.keys():
@@ -2233,7 +2276,11 @@ class FilterBlast(PhyscraperScrape):
                         debug("something is going wrong!Check species name")
                         sys.stderr.write("{} has no corresponding tax_name! Check what is wrong!".format(key))
                 tax_name = str(tax_name).replace(" ", "_")
-                tax_id = self.ids.ncbi_parser.get_id_from_name(tax_name)
+                if self.config.blast_loc == 'remote':
+                    self.ids.get_rank_info_from_web(taxon_name=tax_name)
+                    tax_id = self.ids.otu_rank[tax_name]["taxon id"]
+                else:
+                    tax_id = self.ids.ncbi_parser.get_id_from_name(tax_name)
                 if self.downtorank is not None:
                     downtorank_name = None
                     downtorank_id = None
@@ -2265,7 +2312,7 @@ class FilterBlast(PhyscraperScrape):
         return self.sp_d
 
     def make_sp_seq_dict(self):
-        """Uses the sp_d to make a dict with species names as key1, key2 is gi/sp.name and value is seq: return sp_seq_d.
+        """Uses the sp_d to make a dict with species names as key1, key2 is gi/sp.name and value is seq
 
         This is used to select representatives during the filtering step, where it selects how many sequences per
         species to keep in the alignment. It will only contain sp that were not removed in an earlier cycle of the program.
