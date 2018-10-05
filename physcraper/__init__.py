@@ -1225,10 +1225,10 @@ class IdDicts(object):
                     ncbi_id = int(tax_info.items()[0][1][0])
                 except: 
                     sys.stderr.write("Taxon name does not match any name in ncbi. Check that name is written "
-                                     "correctly: {}! We set it to unidentified_{}".format(tax_name, self.ids.mrca_ncbi))
-                    tax_name = '{}'.format(self.ids.mrca_ncbi)
+                                     "correctly: {}! We set it to unidentified_{}".format(tax_name, self.mrca_ncbi))
+                    tax_name = '{}'.format(self.mrca_ncbi)
                     ncbi_id = Entrez.read(Entrez.esearch(db="taxonomy", term=tax_name, RetMax=100))['IdList'][0]
-                    tax_name = 'unidentified_{}'.format(self.ids.mrca_ncbi)
+                    tax_name = 'unidentified_{}'.format(self.mrca_ncbi)
                     ncbi_id = int(ncbi_id)
         assert type(ncbi_id) is int
         self.spn_to_ncbiid[tax_name] = ncbi_id
