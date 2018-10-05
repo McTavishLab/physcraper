@@ -641,7 +641,8 @@ class AlignTreeTax(object):
             self.tre.prune_taxa_with_labels(prune)  # sometimes it does not delete it with the statement before. Tried to figure out why, have no clue yet.
             # self.aln.taxon_namespace.remove_taxon_label(tax)
             fi = open("{}/pruned_taxa".format(self.workdir), 'a')
-            fi.write("Taxa pruned from tree and alignment in prune short step due to sequence shorter than {}\n".format(min_seqlen))
+            fi.write("Taxa pruned from tree and alignment in prune short "
+                     "step due to sequence shorter than {}\n".format(min_seqlen))
             for tax in prune:
                 fi.write("{}, {}\n".format(tax.label, self.otu_dict[tax.label].get('^ot:originalLabel')))
             fi.close()
@@ -672,7 +673,8 @@ class AlignTreeTax(object):
         if prune:
             # debug(prune)
             fi = open("{}/pruned_taxa".format(self.workdir), 'a')
-            fi.write("Taxa pruned from tree and aln in reconcilation step due to sequence shorter than {}\n".format(seq_len_cutoff))
+            fi.write("Taxa pruned from tree and aln in reconcilation step "
+                     "due to sequence shorter than {}\n".format(seq_len_cutoff))
             for tax in prune:
                 fi.write("{}, {}\n".format(tax.label, self.otu_dict.get(tax.label).get('^ot:originalLabel')))
             fi.close()
@@ -778,7 +780,8 @@ class AlignTreeTax(object):
                 treed_taxa.remove(leaf.taxon)
         assert treed_taxa.issubset(aln_ids)
         if _VERBOSE:
-            sys.stdout.write("trimmed alignment ends to < {} missing taxa, start {}, stop {}\n".format(taxon_missingness, start, stop))
+            sys.stdout.write("trimmed alignment ends to < {} missing taxa, "
+                             "start {}, stop {}\n".format(taxon_missingness, start, stop))
         return
 
     def check_double_gi(self):
@@ -1060,7 +1063,7 @@ def get_mrca_ott(ott_ids):
         try:
             tree_of_life.mrca(ott_ids=[ott], wrap_response=False)
             synth_tree_ott_ids.append(ott)
-        except:  # TODO: seems to be requests.exceptions.HTTPError: 500, don"t know how to implement them
+        except:  # TODO: seems to be requests.exceptions.HTTPError: 500, don't know how to implement them
             debug("except")
             ott_ids_not_in_synth.append(ott)
             # drop_tip.append(ott)
@@ -1202,7 +1205,7 @@ class IdDicts(object):
                             ncbi_id = Entrez.read(Entrez.esearch(db="taxonomy", term=tax_name, RetMax=100))['IdList'][0]
 
                         ncbi_id = int(ncbi_id)
-                    except IndexError:
+                    except:  # TODO: is either IndexError or rllib2.HTTPError: HTTP Error 400: Bad Request
                         # debug("except esearch/read")
                         if i < tries - 1:  # i is zero indexed
                             continue
@@ -1211,7 +1214,7 @@ class IdDicts(object):
                     break
                 # debug(ncbi_id)
                 # debug(type(ncbi_id))
-            except IndexError:
+            except:  # TODO: is either IndexError or rllib2.HTTPError: HTTP Error 400: Bad Request
                 debug("except")
                 try:
                     ncbi = NCBITaxa()
