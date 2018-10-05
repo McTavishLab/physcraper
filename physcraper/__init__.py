@@ -15,12 +15,12 @@ import pickle
 # import inspect
 import random
 # import logging
-import collections
+# import collections
 from copy import deepcopy
 from ete2 import NCBITaxa
 # from urllib2 import URLError
 import physcraper.AWSWWW as AWSWWW
-import numpy
+# import numpy
 from Bio.Blast import NCBIXML  # , NCBIWWW
 # from Bio.Blast.Applications import NcbiblastxCommandline
 from Bio import Entrez  # , SeqIO
@@ -49,7 +49,6 @@ _DEBUG_MK = 1
 _deep_debug = 0
 
 _VERBOSE = 1
-
 
 
 def debug(msg):
@@ -843,9 +842,9 @@ class AlignTreeTax(object):
                 ncbi_id = ids_obj.ncbi_parser.get_id_from_name(tax_name)
             # if type(gi_id) == int:
             #     print("add id to self")
-            self.ids.gi_ncbi_dict[gi_id] = ncbi_id
-            self.ids.ncbiid_to_spn[ncbi_id] = tax_name
-            self.ids.spn_to_ncbiid[tax_name] = ncbi_id
+            ids_obj.gi_ncbi_dict[gi_id] = ncbi_id
+            ids_obj.ncbiid_to_spn[ncbi_id] = tax_name
+            ids_obj.spn_to_ncbiid[tax_name] = ncbi_id
 
         if ncbi_id in ids_obj.ncbi_to_ott.keys():
             # ncbi_id = int(ids_obj.map_gi_ncbi(gi_id))
@@ -1225,9 +1224,11 @@ class IdDicts(object):
                         tax_info = ncbi.get_name_translator([tax_name])
                     ncbi_id = int(tax_info.items()[0][1][0])
                 except: 
-                    debug("Taxon name does not match any name in ncbi. Check that name is written correctly: {}! We set it to unidentified_{}".format(tax_name, self.mrca_ncbi))
-                    tax_name = 'unidentified_{}'.format(self.mrca_ncbi)
+                    sys.stderr.write("Taxon name does not match any name in ncbi. Check that name is written "
+                                     "correctly: {}! We set it to unidentified_{}".format(tax_name, self.ids.mrca_ncbi))
+                    tax_name = '{}'.format(self.ids.mrca_ncbi)
                     ncbi_id = Entrez.read(Entrez.esearch(db="taxonomy", term=tax_name, RetMax=100))['IdList'][0]
+                    tax_name = 'unidentified_{}'.format(self.ids.mrca_ncbi)
                     ncbi_id = int(ncbi_id)
         assert type(ncbi_id) is int
         self.spn_to_ncbiid[tax_name] = ncbi_id
@@ -1288,6 +1289,7 @@ class IdDicts(object):
         If not already known it will ask ncbi using the gi_id.
         """
         debug("find_name")
+        inputinfo = False
         if sp_dict is not None or gi is not None:
             inputinfo = True
         assert inputinfo is True
@@ -1307,7 +1309,7 @@ class IdDicts(object):
                 gi_id = gi
             elif '^ncbi:gi' in sp_dict:
                 gi_id = sp_dict['^ncbi:gi']
-                if gi_id == None:
+                if gi_id is None:
                     gi_id = sp_dict['^ncbi:accession']
 
             else:
@@ -2822,7 +2824,7 @@ class FilterBlast(PhyscraperScrape):
         return self.sp_d
 
     def make_sp_seq_dict(self):
-        """Uses the sp_d to make a dict with species names as key1, key2 is gi/sp.name and value is seq: return sp_seq_d.
+        """Uses the sp_d to make a dict with species names as key1, key2 is gi/sp.name and value is seq
 
         This is used to select representatives during the filtering step, where it selects how many sequences per
         species to keep in the alignment. It will only contain sp that were not removed in an earlier cycle of the program.
