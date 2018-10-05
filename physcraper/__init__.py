@@ -1213,15 +1213,19 @@ class IdDicts(object):
                 # debug(type(ncbi_id))
             except IndexError:
                 debug("except")
-                ncbi = NCBITaxa()
-                tax_info = ncbi.get_name_translator([tax_name])
-                debug(tax_info)
-                if tax_info == {}:
-                    tax_name = "'{}'".format(tax_name)
+                try:
+                    ncbi = NCBITaxa()
                     tax_info = ncbi.get_name_translator([tax_name])
+                    debug(tax_info)
                     if tax_info == {}:
-                        debug("Taxon name does not match any name in ncbi. Check that name is written correctly!")
-                ncbi_id = int(tax_info.items()[0][1][0])
+                        tax_name = "'{}'".format(tax_name)
+                        tax_info = ncbi.get_name_translator([tax_name])
+                    ncbi_id = int(tax_info.items()[0][1][0])
+                except: 
+                    debug("Taxon name does not match any name in ncbi. Check that name is written correctly: {}! We set it to unidentified_{}".format(tax_name, self.mrca_ncbi))
+                    tax_name = 'unidentified_{}'.format(self.mrca_ncbi)
+                    ncbi_id = Entrez.read(Entrez.esearch(db="taxonomy", term=tax_name, RetMax=100))['IdList'][0]
+                    ncbi_id = int(ncbi_id)
         assert type(ncbi_id) is int
         self.spn_to_ncbiid[tax_name] = ncbi_id
         return ncbi_id
