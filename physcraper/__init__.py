@@ -1193,7 +1193,7 @@ class IdDicts(object):
                 debug("try2")
                 tries = 15
                 for i in range(tries):
-                    debug(Entrez.read(Entrez.esearch(db="taxonomy", term=tax_name, RetMax=100))['IdList'][0])
+                    # debug(Entrez.read(Entrez.esearch(db="taxonomy", term=tax_name, RetMax=100))['IdList'][0])
                     try:
                         if tries >= 5:
                             ncbi_id = Entrez.read(Entrez.esearch(db="taxonomy", term=tax_name, RetMax=100))['IdList'][0]
