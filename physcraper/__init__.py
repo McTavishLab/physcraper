@@ -1453,18 +1453,21 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
             self.newseqs_file = filename of files that contains the sequences from self.new_seqs_otu_id
             self.date: Date of the run - may lag behind real date!
             self.repeat: either 1 or 0, it is used to determine if we continue updating the tree, no new seqs found = 0
-            self.newseqsgi: list of all gi_ids that were passed into remove_identical_seq(). Used to speed up adding process
+            self.newseqsgi: List of all gi_ids that were passed to remove_identical_seq().
+                            It is used to speed up adding process
             self.blacklist: list of gi_id of sequences that shall not be added or need to be removed. Supplied by user.
-            self.gi_list_mrca: list of all gi_ids available on GenBank for a given mrca. Used to limit possible seq to add.
-            self.seq_filter: list of words that may occur in otu_dict.status and which shall not be used
-                            in the building of FilterBlast.sp_d (that's the main function), but it is also used as assert
+            self.gi_list_mrca: List of all gi_ids available on GenBank for a given mrca.
+                               Used to limit possible seq to add.
+            self.seq_filter: List of words that may occur in otu_dict.status and which shall not be used for
+                            building the FilterBlast.sp_d (that's the main function), but it is also used as assert
                             statement to make sure unwanted seqs are not added.
             self.unpublished: True/False. Used to look for local unpublished seq that shall be added if True.
             self.path_to_local_seq: Usually False, contains path to unpublished sequences if option is used.
 
         Following functions are called during the init-process:
             self.reset_markers():
-                adds things to self: I think they are used to make sure certain function run, if program crashed and pickle file if read in.
+                adds things to self:  # TODO: I think they are used to make sure certain function run,
+                                     if program crashed and pickle file if read in.
                     self._blasted: 0/1, if run_blast() was called, it is set to 1 for the round.
                     self._blast_read: 0/1, if read_blast() was called, it is set to 1 for the round.
                     self._identical_removed: 0
@@ -1497,7 +1500,7 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
         self.repeat = 1  # used to determine if we continue updating the tree
         self.newseqsgi = []  # all ever added gi during any PhyScraper run, used to speed up adding process
         self.blacklist = []  # remove sequences by default
-        self.gi_list_mrca = []  # all gi_ids of a given mrca. Used to limit possible seq to add.  # TODO MK: make sure it can be removed (next line), as if needed it will be initiated later
+        # self.gi_list_mrca = []  # all gi_ids of a given mrca. Used to limit possible seq to add.  # TODO MK: make sure it can be removed (next line), as if needed it will be initiated later
         if self.config.blast_loc == 'local' and len(self.gi_list_mrca) == 0:
             self.gi_list_mrca = self.get_all_gi_mrca()
             # debug(self.gi_list_mrca)
@@ -1530,7 +1533,6 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
         # debug(self.data.ott_mrca)
         # debug(len(self.data.aln.taxon_namespace))
         # debug(self.data.aln.taxon_namespace)
-
         if self.config.unmapped == 'remove':
             # debug("remove_OToL_unmapped")
             # drop tips without ott _id
@@ -1540,10 +1542,10 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
             for key in self.data.otu_dict:
                 # debug(self.data.otu_dict[key].keys())
                 if '^ot:ottId' not in self.data.otu_dict[key]:
-                    if u'^ot:treebaseOTUId' in self.data.otu_dict[key]:  # second condition for OToL unmapped taxa, not  present in own_data
+                    # second condition for OToL unmapped taxa, not present in own_data
+                    if u'^ot:treebaseOTUId' in self.data.otu_dict[key]:
                         # debug(key)
                         self.data.remove_taxa_aln_tre(key)
-
             # debug(len(self.data.otu_dict))
             # # debug(self.aln.taxon_namespace)        
             # debug(len(self.data.aln.taxon_namespace))
@@ -1660,7 +1662,8 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
                     toblast.close()
                     blast_db = "local_unpubl_seq_db"
                     output = "tst_fn"
-                    blastcmd = "blastn -query {}/tmp.fas -db {} -out output_{}.xml -outfmt 5".format(self.blast_subdir, blast_db, output)
+                    blastcmd = "blastn -query {}/tmp.fas -db {} -out output_{}.xml " \
+                               "-outfmt 5".format(self.blast_subdir, blast_db, output)
                     os.system(blastcmd)
                     if self.backbone == True:
                         self.data.otu_dict[otu_id]['^physcraper:last_blasted'] = today
@@ -1736,14 +1739,14 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
                         else:
                             # changes date of blasted accordingly, if file is already present in the folder
                             if _DEBUG:
-                                sys.stdout.write(
-                                    "file {} exists in current blast run. Will not blast, delete file to force\n".format(fn_path))
+                                sys.stdout.write("file {} exists in current blast run. Will not blast, "
+                                                 "delete file to force\n".format(fn_path))
                             if _DEBUG_MK == 1:
                                 self.data.otu_dict[otu_id]['^physcraper:last_blasted'] = today
                     else:
                         if _VERBOSE:
-                            sys.stdout.write("otu {} was last blasted {} days ago and is not being re-blasted."
-                                             " Use run_blast(delay = 0) to force a search.\n".format(otu_id, last_blast))
+                            sys.stdout.write("otu {} was last blasted {} days ago and is not being re-blasted. "
+                                             "Use run_blast(delay = 0) to force a search.\n".format(otu_id, last_blast))
         self._blasted = 1
 
     def get_all_gi_mrca(self):
@@ -1892,7 +1895,8 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
                                 # print(self.data.unpubl_otu_json.keys())
 
                                 # print(self.data.unpubl_otu_json['otu{}'.format(gi_id)])
-                                self.data.gi_dict[fake_gi] = {'accession': "000000{}".format(gi_counter), 'title': "unpublished", 'localID': gi_id}
+                                self.data.gi_dict[fake_gi] = {'accession': "000000{}".format(gi_counter),
+                                                              'title': "unpublished", 'localID': gi_id}
                                 self.data.gi_dict[fake_gi].update(self.data.unpubl_otu_json['otu{}'.format(gi_id)])
                                 gi_counter += 1
                                 # self.data.gi_dict[fake_gi] = alignment.__dict__
@@ -2095,8 +2099,10 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
                     # print(type(existing_id))
                     if type(existing_id) == int and existing_id != id_of_label:
                         if _VERBOSE:
-                            sys.stdout.write("seq {} is subsequence of {}, but different species name\n".format(label, tax_lab))
-                        self.data.otu_dict[label]['^physcraper:status'] = "new seq added; subsequence, but different species"
+                            sys.stdout.write("seq {} is subsequence of {}, "
+                                             "but different species name\n".format(label, tax_lab))
+                        self.data.otu_dict[label]['^physcraper:status'] = "new seq added; " \
+                                                                          "subsequence, but different species"
                         seq_dict[label] = seq
                         debug("{} and {} are subsequences, but different sp. concept".format(id_of_label, existing_id))
                         continue_search = True
@@ -2108,12 +2114,13 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
                         debug("{} not added, subseq of {}".format(id_of_label, existing_id))
                         never_add = True
                         continue
-                    return seq_dict
+                    # return seq_dict
             else:  # if seq is longer and identical
                 if new_seq.find(inc_seq) != -1:
                     if self.data.otu_dict[tax_lab].get('^physcraper:status') == "original":
                         if _VERBOSE:
-                            sys.stdout.write("seq {} is supersequence of original seq {}, both kept in alignment\n".format(label, tax_lab))
+                            sys.stdout.write("seq {} is supersequence of original seq {}, "
+                                             "both kept in alignment\n".format(label, tax_lab))
                         self.data.otu_dict[label]['^physcraper:status'] = "new seq added"
                         seq_dict[label] = seq
                         debug("{} and  {} added".format(id_of_label, existing_id))
@@ -2122,8 +2129,10 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
                     elif type(existing_id) == int and existing_id != id_of_label:
                         # elif spn_of_label not in exists:
                         if _VERBOSE:
-                            sys.stdout.write("seq {} is supersequence of {}, but different species concept\n".format(label, tax_lab))
-                        self.data.otu_dict[label]['^physcraper:status'] = "new seq added; supersequence, but different species"
+                            sys.stdout.write("seq {} is supersequence of {}, but different "
+                                             "species concept\n".format(label, tax_lab))
+                        self.data.otu_dict[label]['^physcraper:status'] = "new seq added; supersequence, " \
+                                                                          "but different species"
                         seq_dict[label] = seq
                         debug("{} and  {} supersequence, but different sp. concept".format(id_of_label, existing_id))
                         continue_search = True
@@ -2133,12 +2142,13 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
                         seq_dict[label] = seq
                         self.data.remove_taxa_aln_tre(tax_lab)
                         if _VERBOSE:
-                            sys.stdout.write("seq {} is supersequence of {}, {} added and {} removed\n".format(label, tax_lab, label, tax_lab))
+                            sys.stdout.write("seq {} is supersequence of {}, {} added "
+                                             "and {} removed\n".format(label, tax_lab, label, tax_lab))
                         self.data.otu_dict[label]['^physcraper:status'] = "new seq added in place of {}".format(tax_lab)
                         debug("{} added, instead of  {}".format(id_of_label, existing_id))
                         continue_search = True
                         continue
-                    return seq_dict
+                    # return seq_dict
 
         if continue_search is True or never_add is True:
             if (self.data.otu_dict[label]['^physcraper:status'].split(' ')[0] in self.seq_filter) or never_add is True:
@@ -2152,7 +2162,8 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
                 # except:
                 else:
                     debug("label was never added to aln or tre")
-                self.data.otu_dict[label]['^physcraper:status'] = "removed in seq dict build"  # should not be the word 'deleted', as this is used in self.seq_filter
+                # Note: should not be the word 'deleted', as this is used in self.seq_filter
+                self.data.otu_dict[label]['^physcraper:status'] = "removed in seq dict build"
                 return seq_dict
         if _VERBOSE:
             sys.stdout.write(".")
@@ -2204,7 +2215,8 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
                     if type(gi_id) == int or gi_id.isdigit():
                         # debug("gi_id is digit")
                         if type(gi_id) != int:
-                            sys.stdout.write("WARNING: gi_id {} is no integer. Will convert value to int\n".format(gi_id))
+                            sys.stdout.write("WARNING: gi_id {} is no integer. "
+                                             "Will convert value to int\n".format(gi_id))
                             debug("WARNING: gi_id {} is no integer. Will convert value to int\n".format(gi_id))
                             gi_id = int(gi_id)
                             #########################
@@ -2342,7 +2354,8 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
         os.chdir(cwd)
         # debug(os.path.exists(path="{}/papara_alignment.{}".format(self.workdir, papara_runname)))
         assert os.path.exists(path="{}/papara_alignment.{}".format(self.workdir, papara_runname))
-        self.data.aln = DnaCharacterMatrix.get(path="{}/papara_alignment.{}".format(self.workdir, papara_runname), schema="phylip")
+        self.data.aln = DnaCharacterMatrix.get(path="{}/papara_alignment."
+                                                    "{}".format(self.workdir, papara_runname), schema="phylip")
         # debug(self.data.aln.taxon_namespace)
         self.data.aln.taxon_namespace.is_mutable = True  # Was too strict...
         if _VERBOSE:
@@ -2661,7 +2674,8 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
         if key not in self.data.gi_dict.keys():
             # debug("key is new")
             # numbers starting with 0000 are unpublished data
-            self.data.gi_dict[key] = {'accession': "000000{}".format(gi_counter), 'title': "unpublished", 'localID': key[7:]}
+            self.data.gi_dict[key] = {'accession': "000000{}".format(gi_counter),
+                                      'title': "unpublished", 'localID': key[7:]}
             gi_counter += 1
             # self.data.otu_dict[key] = {}
             # self.data.otu_dict[key]['^ncbi:gi'] = key
@@ -2679,7 +2693,8 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
         else:
             # debug("add new k,v - pairs")
             # debug(self.data.gi_dict[key])
-            self.data.gi_dict[key].update([('accession', "000000{}".format(gi_counter)), ('title', "unpublished"), ('localID', key[7:])])
+            self.data.gi_dict[key].update([('accession', "000000{}".format(gi_counter)),
+                                           ('title', "unpublished"), ('localID', key[7:])])
 
 
 ###############################
@@ -2691,8 +2706,8 @@ class FilterBlast(PhyscraperScrape):
     e.g. analyses which require a single representative per taxon (threshold = 1) or to check the monophyly of taxa
     without having to deal with over-representation of few taxa (e.g. threshold = 4, which allows to get a good overview
     of what is available without having some taxa being represented by high numbers of sequences).
-    The second option (downtorank), which is optional, allows to filter according to taxonomic levels,
-    e.g. getting a number of representative sequences for a genus or lineage it can also be used to deal with subspecies.
+    The second option (downtorank), which is optional, allows to filter according to taxonomic levels, e.g. getting
+    a number of representative sequences for a genus or lineage it can also be used to deal with subspecies.
 
     existing self objects are:
         self.sp_d: dictionary
@@ -2827,7 +2842,8 @@ class FilterBlast(PhyscraperScrape):
         """Uses the sp_d to make a dict with species names as key1, key2 is gi/sp.name and value is seq
 
         This is used to select representatives during the filtering step, where it selects how many sequences per
-        species to keep in the alignment. It will only contain sp that were not removed in an earlier cycle of the program.
+        species to keep in the alignment. It will only contain sp that were not removed in an earlier cycle of the
+        program.
 
         Note: has test, test_sp_seq_d.py
 
@@ -3134,7 +3150,8 @@ class FilterBlast(PhyscraperScrape):
                         # if seq_present >= 1 and seq_present < threshold and count_dict["new_taxon"] == False and query_count != 0:
                         if 1 <= seq_present < threshold and count_dict["new_taxon"] is False and query_count != 0:
                             # debug("seq_present>0")
-                            if query_count + seq_present > threshold:  # species is not new in alignment, make blast with existing seq
+                            # species is not new in alignment, make blast with existing seq
+                            if query_count + seq_present > threshold:
                                 taxonfn = self.loop_for_write_blast_files(tax_id)
                                 # # next loop does not seem to be used
                                 # for element in self.sp_d[tax_id]:
@@ -3147,7 +3164,8 @@ class FilterBlast(PhyscraperScrape):
                                 self.select_seq_by_local_blast(self.sp_seq_d[tax_id], taxonfn, threshold, seq_present)
                             elif query_count + seq_present <= threshold:
                                 self.add_all(tax_id)
-                        elif seq_present == 0 and count_dict["new_taxon"] is True and query_count >= 1:  # species is completely new in alignment
+                        # species is completely new in alignment
+                        elif seq_present == 0 and count_dict["new_taxon"] is True and query_count >= 1:
                             # debug("completely new taxon to blast")
                             # species is completely new in alignment, make blast with random species
                             # debug(count_dict)
@@ -3177,7 +3195,7 @@ class FilterBlast(PhyscraperScrape):
                             # debug(blast_db)
                             for blast_key in blast_db:
                                 seq = self.sp_seq_d[tax_id][blast_key]
-                                local_blast.write_blast_files(self.workdir, blast_key, seq, db=True, fn=str_db)  # local db
+                                local_blast.write_blast_files(self.workdir, blast_key, seq, db=True, fn=str_db)
                             # make local blast of sequences
                             local_blast.run_local_blast(self.workdir, str_db, str_db)
                             if len(self.sp_seq_d[tax_id]) + seq_present >= threshold:
