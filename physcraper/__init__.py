@@ -167,21 +167,7 @@ class ConfigObj(object):
         self.ncbi_parser_names_fn = config['ncbi_parser']["names_fn"]
         # TODO MK: check if following really works
         # ncbi nodes and names file
-        if not os.path.isfile(self.ncbi_parser_nodes_fn):
-            print("Do you want to download taxonomy databases from ncbi? Note: This is a US government website! "
-                  "You agree to their terms")
-            print("Please write either yes or no")
-            x = sys.argv[1]
-            if x == "yes":
-                os.system("rsync -av ftp://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdump.tar.gz" 
-                          "./tests/data/taxdump.tar.gz")
-                os.system("gunzip - cd ./tests/data/taxdump.tar.gz | (tar xvf - names.dmp nodes.dmp)")
-            elif x == "no":
-                print("You did not agree to download data from ncbi. Programm will default to blast web-queries.")
-                print("This is slow and crashes regularly!")
-                self.blast_loc = 'remote'
-            else:
-                print("You did not type yes or no. Please restart and type yes or no!")
+        
         self.unmapped = config['blast']['unmapped']
         assert self.unmapped in ['remove', 'keep']
         if _DEBUG:
