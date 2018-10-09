@@ -101,9 +101,9 @@ class ConfigObj(object):
         self.seq_len_perc: value from 0 to 1. Defines how much shorter new seq can be compared to input
         self.get_ncbi_taxonomy: Path to sh file doing something...
         self.ncbi_dmp: path to file that has gi numbers and the corresponding ncbi tax id's
-        self.phylesystem_loc: ????  # TODO: what is it used for?
-        self.ott_ncbi: # TODO: file containing OTT id, ncbi and taxon name???
-        self.id_pickle: path to pickle file
+        self.phylesystem_loc: Default is to run on remote, github physlestem, can be set to 'local' to access files from local clone
+        self.ott_ncbi: path to file containing OTT id, ncbi and taxon name
+        self.id_pickle: path to pickle file 
         self.email: email address used for blast queries
         self.blast_loc: defines which blasting method to use, either web-query (=remote) or from a local
                         blast database (=local)
@@ -134,19 +134,19 @@ class ConfigObj(object):
         self.hitlist_size = int(config['blast']['hitlist_size'])
         self.seq_len_perc = float(config['physcraper']['seq_len_perc'])
         assert 0 < self.seq_len_perc < 1
-        self.get_ncbi_taxonomy = config['taxonomy']['get_ncbi_taxonomy']  # TODO: Are we using this somewhere?
+        self.get_ncbi_taxonomy = config['taxonomy']['get_ncbi_taxonomy']  # TODODELETE: Was dropped in mov from subprocess I think/...
         assert os.path.isfile(self.get_ncbi_taxonomy)
-        self.ncbi_dmp = config['taxonomy']['ncbi_dmp']  # TODO: Currently not used. Was used to get tax_id from gi via subprocess. 10GB!
+        self.ncbi_dmp = config['taxonomy']['ncbi_dmp']  # TODODELETE: Currently not used. Was used to get tax_id from gi via subprocess. 10GB!
         # gi_id to taxid (according to GenBank it's not updated since 2016, even though the files seems to be newer)
         if not os.path.isfile(self.ncbi_dmp):
             os.system("rsync -av ftp.ncbi.nih.gov::pub/taxonomy/gi_taxid_nucl.dmp.gz {}.gz".format(self.ncbi_dmp))
             os.system("gunzip taxonomy/gi_taxid_nucl.dmp.gz")
             self.ncbi_dmp = "taxonomy/gi_taxid_nucl.dmp.gz"
         self.phylesystem_loc = config['phylesystem']['location']
-        assert (self.phylesystem_loc in ['local', 'api'])  # TODO: What is the phylesystem? Do we have something implemented for local?
+        assert (self.phylesystem_loc in ['local', 'api'])  # default is api, but can on local version of OpenTree datastore
         self.ott_ncbi = config['taxonomy']['ott_ncbi']
         assert os.path.isfile(self.ott_ncbi)
-        self.id_pickle = os.path.abspath(config['taxonomy']['id_pickle'])  # TODO: what is this doing again?
+        self.id_pickle = os.path.abspath(config['taxonomy']['id_pickle'])  #rewrites the relative path as an absolute path sothat it behaves when changing dirs
         self.email = config['blast']['Entrez.email']
         assert '@' in self.email
         self.blast_loc = config['blast']['location']
@@ -182,7 +182,7 @@ class ConfigObj(object):
 # ATT is a dumb acronym for Alignment Tree Taxa object
 def get_dataset_from_treebase(study_id,
                               phylesystem_loc='api'):
-    # TODO: What does this function do? Function is used to get the aln from treebase, if OToL has those information???
+    # TODO: What does this function do? Function is used to get the aln from treebase, for a tree that OpenTree has the mapped tree.
     try:
         nexson = get_nexson(study_id, phylesystem_loc)
     except:  # TODO: seems to be an http error. Did not fgure out how to handle them (requests.exceptions.HTTPError)
@@ -211,14 +211,18 @@ def generate_ATT_from_phylesystem(aln,
     """gathers together tree, alignment, and study info - forces names to otu_ids.
     Outputs AlignTreeTax object.
 
-    Input can be either a study ID and tree ID from OpenTree  # TODO: Is there another way to get those data, than actually going to the OToL website, or can I query the internet for a desired part of the tree and corresponding studies?. According to code it cannot be either, but must be both
+    Input can be either a study ID and tree ID from OpenTree  
+    # TODO: Is there another way to get those data, than actually going to the OToL website, 
+    or can I query the internet for a desired part of the tree and corresponding studies?
+     According to code it cannot be either, but must be both
+
     Alignemnt need to be a Dendropy DNA character matrix!
 
     :param aln: dendropy alignment object
     :param workdir: path to working directory
     :param study_id: OToL study id of the corresponding phylogeny which shall be updated
     :param tree_id: OToL corresponding tree ID as some studies have several phylogenies
-    :param phylesystem_loc: ?? # TODO: what is this?
+    :param phylesystem_loc: access the github version of the OpenTree data store, or a local clone
     :param ingroup_mrca: OToL identifier of the mrca of the clade that shall be updated (can be subset of the phylogeny)
     :return: object of class ATT
     """
@@ -247,7 +251,7 @@ def generate_ATT_from_phylesystem(aln,
                    preserve_underscores=True,
                    taxon_namespace=aln.taxon_namespace)
     # print("get_subtree_otus")
-    otus = get_subtree_otus(nexson, tree_id=tree_id) #TODO: what is the difference to ott_ids
+    otus = get_subtree_otus(nexson, tree_id=tree_id) #this gets the taxa that are in the subtree with all of their info - ott_id, original name,
     # print(otus)
     otu_dict = {}
     orig_lab_to_otu = {}
@@ -553,10 +557,10 @@ class AlignTreeTax(object):
         assert int(ingroup_mrca)
         self.ott_mrca = ingroup_mrca  # TODO: we only use .ott_mrca to infer mrca_ncbi. Why not using the ncbi one directly?
         self.orig_seqlen = []  # FIXME
-        self.gi_dict = {}  # has all info about new blast seq  TODO: Should this not be part of physcraper class instead? it has all blast information. Blast is not part of this class.
-        self.orig_aln = alignment  # TODO: we never do anything with it.
-        self.orig_newick = newick  # TODO: we never do anything with it.
-        self._reconciled = False  # TODO: for what do we want to use it?
+        self.gi_dict = {}  # has all info about new blast seq  TODODELTE (should maybe go anyhow due to gi switch?): Should this not be part of physcraper class instead? it has all blast information. Blast is not part of this class.
+        self.orig_aln = alignment  # TODODELETE: we never do anything with it.
+        self.orig_newick = newick  # TODODELETE: we never do anything with it.
+        self._reconciled = False  # TODO: for what do we want to use it? .... it was checking to see if name reconcilation has ahappened yet. Should get flipped to true when done
         self.unpubl_otu_json = None
         # self.OToL_unmapped_tips()  # added to remove un-mapped tips from OToL
 
@@ -564,8 +568,8 @@ class AlignTreeTax(object):
     def _reconcile_names(self):
         """This checks that the tree "original labels" from phylsystem
         align with those found in the alignment. Spaces vs underscores
-        kept being an issue, so all spaces are coerced to underscores throughout!"""
-        # TODO: explain more detailed what the function does? removes taxa, that are not found in both, the phylogeny and the aln and changes their names????
+        kept being an issue, so all spaces are coerced to underscores throughout!
+        Taxa that are only found in the tree, or only in the alignment are deleted."""
         treed_taxa = set()
         for leaf in self.tre.leaf_nodes():
             treed_taxa.add(leaf.taxon)
@@ -607,14 +611,15 @@ class AlignTreeTax(object):
     # TODO - make sure all taxon labels are unique OTU ids.
 
     def prune_short(self, min_seqlen=0):
+        #TODODELETE I think this overlaps with reconcile?
         """Sometimes in the de-concatenating of the original alignment
         taxa with no sequence are generated.
         This gets rid of those from both the tre and the alignment. MUTATOR
 
         has test: test_prune_short.py
         """
-        # TODO: is this not half the part of _reconcile_names?
-        debug("prune short")
+        # TODO: is this not half the part of _reconcile_names? 
+
         prune = []
         for tax, seq in self.aln.items():
             if len(seq.symbols_as_string().translate(None, "-?")) <= min_seqlen:
@@ -639,6 +644,7 @@ class AlignTreeTax(object):
         self.reconcile()
 
     def reconcile(self, seq_len_perc=0.75):
+        #TODO RENAME This is pruning short seqs - not reconciling!
         """Removes sequences from data if seq is to short.
 
         all missing data seqs are sneaking in, but from where?!
@@ -713,10 +719,9 @@ class AlignTreeTax(object):
     def trim(self, taxon_missingness=0.75):
         """cuts off ends of alignment, maintaining similar to original seq len
         Important bc other while whole chromosomes get dragged in!
-
+        This is cutting down long sequqnces instead of short sequences
         Used in reconcile()
         """
-        # TODO: very similar to reconcile(), seems to be more accurate with "non-base" information in alignment. Not sure though, what they really do...
         debug('in trim')
         seqlen = len(self.aln[0])
         for tax in self.aln:
