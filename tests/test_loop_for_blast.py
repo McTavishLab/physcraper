@@ -45,6 +45,13 @@ for key in filteredScrape.sp_d:
                                 
 # MAKE TEST FOR loop_for_write_blast_files
 
+
+#########################333
+
+#################################
+
+
+
 try:
     for key in filteredScrape.sp_d:
         count = 0
@@ -63,15 +70,16 @@ try:
                     count_int += 1
             folder = '{}/blast/'.format(filteredScrape.workdir)
             for the_file in os.listdir(folder):
-                spn = "_".join(the_file.split("_")[1:-1])
-                file_type = the_file.split("_")[-1]
-                if spn == "_".join(key.split("_")[1:]) and file_type == "db":
+                spn = the_file.split("_")[0]
+                spn = "_".join(the_file.split("_")[0])
+                file_type = the_file.split("_")[1]
+                if spn == key and file_type == "db": # 
                     db = True
                     f = open('{}/blast/{}'.format(filteredScrape.workdir, the_file))
                     for line in iter(f):
                         if line[0] == ">":
                             count_gi_file += 1
-                if spn == "_".join(key.split("_")[1:]) and file_type == "tobeblasted":
+                if spn == key and file_type == "tobeblasted":
                     blasted = True
                     count_str_file += 1
             if blasted:

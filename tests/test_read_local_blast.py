@@ -49,11 +49,12 @@ for taxonID in filteredScrape.sp_d:
         break
 
 # test starts here:
-blast_db = "Senecio_lagascanus"
+blast_db = 1268580
 blast_seq = "Senecio_lagascanus"
-key = 'Senecio_lagascanus'
+key = 1268580
 
 local_blast.run_local_blast(filteredScrape.workdir, blast_seq, blast_db)
+print(filteredScrape.sp_seq_d.keys())
 local_blast.read_local_blast(filteredScrape.workdir, filteredScrape.sp_seq_d[key], blast_db)
 
 blast_out = "{}/blast/output_{}_tobeblasted.xml".format(workdir, key)
