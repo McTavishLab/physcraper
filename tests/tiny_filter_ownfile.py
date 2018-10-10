@@ -25,7 +25,7 @@ if not os.path.exists("{}".format(workdir)):
         os.makedirs("{}".format(workdir))
 
 conf = ConfigObj(configfi)
-ids = IdDicts(conf, workdir=workdir)
+ids = IdDicts(conf, workdir=workdir, mrca=ingroup_mrca)
 
 
 if os.path.exists(otu_jsonfi):

@@ -72,8 +72,6 @@ for giID in filteredScrape.sp_d:
                             # print(blast_db, blast_seq)
                     if filteredScrape.downtorank is not None:
                         taxonfn = giID
-                    print('taxonfn')
-                    print(taxonfn)
                     local_blast.run_local_blast(filteredScrape.data.workdir, taxonfn, taxonfn)
                     filteredScrape.select_seq_by_local_blast(filteredScrape.sp_seq_d[giID], taxonfn, treshold, seq_present)
             elif seq_present == 0 and count_dict["new_taxon"] == True and query_count>=1:
@@ -89,9 +87,6 @@ for giID in filteredScrape.sp_d:
                 blast_db = filteredScrape.sp_seq_d[giID].keys()[1:]
                 # write files for local blast first:
                 seq = filteredScrape.sp_seq_d[giID][blast_seq]
-                print('str_db')
-                print(str_db)
-
                 local_blast.write_blast_files(filteredScrape.data.workdir, str_db, seq) #blast qguy
                 # print(blast_db)
                 for blast_key in blast_db:
@@ -100,7 +95,6 @@ for giID in filteredScrape.sp_d:
                 # make local blast of sequences
                 if filteredScrape.downtorank is not None:
                     str_db = giID
-                print(str_db)
                 local_blast.run_local_blast(filteredScrape.data.workdir, str_db, str_db)
                 if len(filteredScrape.sp_seq_d[giID]) + seq_present >= treshold:
                     filteredScrape.select_seq_by_local_blast(filteredScrape.sp_seq_d[giID], str_db, treshold, seq_present)

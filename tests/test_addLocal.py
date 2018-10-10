@@ -43,13 +43,10 @@ if not os.path.exists("{}".format(workdir)):
     os.makedirs("{}".format(workdir))
 
 if os.path.exists(otu_jsonfi_local):
-    print("load json local")
     otu_json_local = json.load(open(otu_jsonfi_local))
-    print(otu_json_local)
 else:
     otu_json_local = OtuJsonDict(id_to_spn_addseq, ids)
     json.dump(otu_json_local, open(otu_jsonfi_local, "w"))
-    print(otu_json_local)
 
 
 sys.stdout.write("\ntest addLocal\n")

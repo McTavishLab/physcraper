@@ -1,12 +1,14 @@
-import pickle
-import sys
+from dendropy import Tree, \
+      DnaCharacterMatrix, \
+      DataSet, \
+      datamodel
+from physcraper import wrappers, generate_ATT_from_files, AlignTreeTax, OtuJsonDict, IdDicts, ConfigObj
 import os
 import json
-import physcraper 
 
-sys.stdout.write("\ntests prune_short\n")
 
-seqaln= "tests/data/tiny_test_example/test_extrashortseq.fas"
+#------------------------
+seqaln= "tests/data/tiny_test_example/test_extralongseq.fas"
 mattype="fasta"
 treefile= "tests/data/tiny_test_example/test.tre"
 schema_trf = "newick"
@@ -20,17 +22,18 @@ otu_jsonfi = "{}/otu_dict.json".format(workdir)
 if not os.path.exists("{}".format(workdir)):
         os.makedirs("{}".format(workdir))
 
-conf = physcraper.ConfigObj(configfi) 
-ids = physcraper.IdDicts(conf, workdir=workdir)
+conf = ConfigObj(configfi) 
+ids = IdDicts(conf, workdir=workdir)
 
 if os.path.exists(otu_jsonfi):
+    print("load json")
     otu_json = json.load(open(otu_jsonfi))
 else:
-    otu_json = physcraper.OtuJsonDict(id_to_spn, ids)
+    otu_json = OtuJsonDict(id_to_spn, ids)
     json.dump(otu_json, open(otu_jsonfi,"w"))
 
 
-data_obj = physcraper.generate_ATT_from_files(seqaln=seqaln, 
+data_obj = generate_ATT_from_files(seqaln=seqaln, 
                                  mattype=mattype, 
                                  workdir=workdir,
                                  treefile=treefile,
@@ -38,15 +41,13 @@ data_obj = physcraper.generate_ATT_from_files(seqaln=seqaln,
                                  otu_json=otu_jsonfi,
                                  ingroup_mrca=None)
 
+for tax, seq in data_obj.aln.items():
+	len_start = len(seq)
+	next
+data_obj.prune_short()
+for tax, seq in data_obj.aln.items():
+	len_end = len(seq)
+
+assert len_start != len_end
 
 
-len_before = len(data_obj.tre.taxon_namespace)
-data_obj.prune_short(0.9)
-len_after = len(data_obj.tre.taxon_namespace)
-# print(len_before, len_after)
-
-try:
-	assert len_before > len_after
-	sys.stdout.write("\nTEST passed: number of taxa in tre is shorter after pruning\n")
-except:
-	sys.stderr.write("\ntest failed\n")

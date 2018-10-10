@@ -752,7 +752,7 @@ class AlignTreeTax(object):
         :return: prunes aln and tre
         """
         # TODO: is this not half the part of _reconcile_names? 
-        print(sum(self.orig_seqlen), len(self.orig_seqlen))
+        # debug(sum(self.orig_seqlen), len(self.orig_seqlen))
         if sum(self.orig_seqlen) != 0:
             avg_seqlen = sum(self.orig_seqlen) / len(self.orig_seqlen)
             seq_len_cutoff = avg_seqlen * min_seqlen_perc
@@ -771,10 +771,8 @@ class AlignTreeTax(object):
         treed_taxa = set()
         for leaf in self.tre.leaf_nodes():
             treed_taxa.add(leaf.taxon.label)
-        print(prune)
+        # debug(prune)
         if prune:
-            # debug(prune)
-
             # self.tre.prune_taxa(prune)
             # self.aln.taxon_namespace.remove_taxon_label(tax)
             fi = open("{}/pruned_taxa".format(self.workdir), 'a')
@@ -786,20 +784,20 @@ class AlignTreeTax(object):
                 self.remove_taxa_aln_tre(tax.label)
                 fi.write("{}, {}\n".format(tax.label, self.otu_dict[tax.label].get('^ot:originalLabel')))
             fi.close()
-        debug(self.aln.taxon_namespace)
+        # debug(self.aln.taxon_namespace)
         for tax in prune:
             self.otu_dict[tax.label]['^physcraper:status'] = "deleted in prune short"
             # self.aln.taxon_namespace.remove_taxon(tax.label)  # remove_taxon:raises no error, remove_taxon_label: raises error
             # self.tre.taxon_namespace.remove_taxon(tax.label)  # raises error if not found, instead of remove_taxon
 
             # self.remove_taxa_aln_tre(tax.label)
-        debug([self.aln.taxon_namespace, len(self.aln.taxon_namespace)])
-        debug([self.tre.taxon_namespace, len(self.tre.taxon_namespace)])
+        # debug([self.aln.taxon_namespace, len(self.aln.taxon_namespace)])
+        # debug([self.tre.taxon_namespace, len(self.tre.taxon_namespace)])
         assert self.aln.taxon_namespace == self.tre.taxon_namespace
         # debug([treed_taxa, len(treed_taxa)])
         # debug([aln_ids, len(aln_ids)])
-        debug([item for item in treed_taxa if item not in aln_ids])
-        debug([item for item in aln_ids if item not in treed_taxa])
+        # debug([item for item in treed_taxa if item not in aln_ids])
+        # debug([item for item in aln_ids if item not in treed_taxa])
         assert treed_taxa.issubset(aln_ids)
 
         self.orig_seqlen = [len(self.aln[tax].symbols_as_string().replace("-", "").replace("N", "")) for tax in self.aln]
@@ -879,7 +877,7 @@ class AlignTreeTax(object):
 
         :taxon_missingness: defines how much longer sequence can be in percent
         """
-        debug('in trim')
+        # debug('in trim')
         i = 0
         seqlen = len(self.aln[i])
         while seqlen == 0: 
@@ -3301,7 +3299,7 @@ class FilterBlast(PhyscraperScrape):
                     # debug("make gilist as local blast database")
                     if "^ncbi:gi" in otu_id:
                         gi_num = int(otu_id['^ncbi:gi'])
-                        if gi_num == None:
+                        if gi_num is None:
                             gi_num = otu_id['^ncbi:accession']
                         # debug(gi_num)
                         # debug("new")
