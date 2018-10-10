@@ -99,8 +99,8 @@ class ConfigObj(object):
                             https://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Web&PAGE_TYPE=BlastDocs&DOC_TYPE=FAQ
         self.hitlist_size: the maximum number of sequences retrieved by a single blast search
         self.seq_len_perc: value from 0 to 1. Defines how much shorter new seq can be compared to input
-        self.get_ncbi_taxonomy: Path to sh file doing something...
-        self.ncbi_dmp: path to file that has gi numbers and the corresponding ncbi tax id's
+       # self.get_ncbi_taxonomy: Path to sh file doing something...
+        # self.ncbi_dmp: path to file that has gi numbers and the corresponding ncbi tax id's
         self.phylesystem_loc: Default is to run on remote, github physlestem, can be set to 'local' to access files from local clone
         self.ott_ncbi: path to file containing OTT id, ncbi and taxon name
         self.id_pickle: path to pickle file 
@@ -134,19 +134,19 @@ class ConfigObj(object):
         self.hitlist_size = int(config['blast']['hitlist_size'])
         self.seq_len_perc = float(config['physcraper']['seq_len_perc'])
         assert 0 < self.seq_len_perc < 1
-        self.get_ncbi_taxonomy = config['taxonomy']['get_ncbi_taxonomy']  # TODODELETE: Was dropped in mov from subprocess I think/...
-        assert os.path.isfile(self.get_ncbi_taxonomy)
-        self.ncbi_dmp = config['taxonomy']['ncbi_dmp']  # TODODELETE: Currently not used. Was used to get tax_id from gi via subprocess. 10GB!
+        # self.get_ncbi_taxonomy = config['taxonomy']['get_ncbi_taxonomy']  # TODODELETE: Was dropped in mov from subprocess I think/...
+        # assert os.path.isfile(self.get_ncbi_taxonomy)
+        # self.ncbi_dmp = config['taxonomy']['ncbi_dmp']  # TODODELETE: Currently not used. Was used to get tax_id from gi via subprocess. 10GB!
         # gi_id to taxid (according to GenBank it's not updated since 2016, even though the files seems to be newer)
-        if not os.path.isfile(self.ncbi_dmp):
-            os.system("rsync -av ftp.ncbi.nih.gov::pub/taxonomy/gi_taxid_nucl.dmp.gz {}.gz".format(self.ncbi_dmp))
-            os.system("gunzip taxonomy/gi_taxid_nucl.dmp.gz")
-            self.ncbi_dmp = "taxonomy/gi_taxid_nucl.dmp.gz"
+        # if not os.path.isfile(self.ncbi_dmp):
+        #     os.system("rsync -av ftp.ncbi.nih.gov::pub/taxonomy/gi_taxid_nucl.dmp.gz {}.gz".format(self.ncbi_dmp))
+        #     os.system("gunzip taxonomy/gi_taxid_nucl.dmp.gz")
+        #     self.ncbi_dmp = "taxonomy/gi_taxid_nucl.dmp.gz"
         self.phylesystem_loc = config['phylesystem']['location']
-        assert (self.phylesystem_loc in ['local', 'api'])  # default is api, but can on local version of OpenTree datastore
+        assert (self.phylesystem_loc in ['local', 'api'])  # default is api, but can run on local version of OpenTree datastore
         self.ott_ncbi = config['taxonomy']['ott_ncbi']
         assert os.path.isfile(self.ott_ncbi)
-        self.id_pickle = os.path.abspath(config['taxonomy']['id_pickle'])  #rewrites the relative path as an absolute path sothat it behaves when changing dirs
+        self.id_pickle = os.path.abspath(config['taxonomy']['id_pickle'])  # rewrites the relative path as an absolute path sothat it behaves when changing dirs
         self.email = config['blast']['Entrez.email']
         assert '@' in self.email
         self.blast_loc = config['blast']['location']
@@ -182,7 +182,8 @@ class ConfigObj(object):
 # ATT is a dumb acronym for Alignment Tree Taxa object
 def get_dataset_from_treebase(study_id,
                               phylesystem_loc='api'):
-    # TODO: What does this function do? Function is used to get the aln from treebase, for a tree that OpenTree has the mapped tree.
+    """Function is used to get the aln from treebase, for a tree that OpenTree has the mapped tree.
+    """
     try:
         nexson = get_nexson(study_id, phylesystem_loc)
     except:  # TODO: seems to be an http error. Did not fgure out how to handle them (requests.exceptions.HTTPError)
@@ -213,7 +214,8 @@ def generate_ATT_from_phylesystem(aln,
 
     Input can be either a study ID and tree ID from OpenTree  
     # TODO: Is there another way to get those data, than actually going to the OToL website, 
-    or can I query the internet for a desired part of the tree and corresponding studies?
+    or can I query the internet for a desired part of the tree and corresponding studies?TODO MK: write script to easily get those information: Yes it can, use peyotl find_trees
+     
      According to code it cannot be either, but must be both
 
     Alignemnt need to be a Dendropy DNA character matrix!
@@ -516,8 +518,8 @@ class AlignTreeTax(object):
                             'hit_def': title from GenBank sequence
                         optional key - value pairs for unpublished option:
                             'localID': local sequence identifier
-        self.orig_aln: original input alignment
-        self.orig_newick: original input phylogeny
+        # self.orig_aln: original input alignment
+        # self.orig_newick: original input phylogeny
         self._reconciled = True/False,
         self.unpubl_otu_json: optional, will contain the OTU-dict for unpublished data, if that option is used
 
@@ -558,12 +560,10 @@ class AlignTreeTax(object):
         self.ott_mrca = ingroup_mrca  # TODO: we only use .ott_mrca to infer mrca_ncbi. Why not using the ncbi one directly?
         self.orig_seqlen = []  # FIXME
         self.gi_dict = {}  # has all info about new blast seq  TODODELTE (should maybe go anyhow due to gi switch?): Should this not be part of physcraper class instead? it has all blast information. Blast is not part of this class.
-        self.orig_aln = alignment  # TODODELETE: we never do anything with it.
-        self.orig_newick = newick  # TODODELETE: we never do anything with it.
-        self._reconciled = False  # TODO: for what do we want to use it? .... it was checking to see if name reconcilation has ahappened yet. Should get flipped to true when done
+        # self.orig_aln = alignment  # TODODELETE: we never do anything with it.
+        # self.orig_newick = newick  # TODODELETE: we never do anything with it.
+        self._reconciled = False  # TODO: for what do we want to use it? .... it was checking to see if name reconcilation has ahappened yet. Should get flipped to true when done. MK: Yes, but we never do anything with the information
         self.unpubl_otu_json = None
-        # self.OToL_unmapped_tips()  # added to remove un-mapped tips from OToL
-
     
     def _reconcile_names(self):
         """This checks that the tree "original labels" from phylsystem
@@ -717,9 +717,10 @@ class AlignTreeTax(object):
         self._reconciled = 1
 
     def trim(self, taxon_missingness=0.75):
-        """cuts off ends of alignment, maintaining similar to original seq len
-        Important bc other while whole chromosomes get dragged in!
-        This is cutting down long sequqnces instead of short sequences
+        """ It removes bases at the start and end of alignments, if they are represented by less than 75%
+        of the sequences in the alignment.
+        Ensures, that not whole chromosomes get dragged in. This is cutting down long sequqnces instead of short sequences
+
         Used in reconcile()
         """
         debug('in trim')
@@ -1216,10 +1217,10 @@ class IdDicts(object):
                     ncbi_id = int(tax_info.items()[0][1][0])
                 except: 
                     sys.stderr.write("Taxon name does not match any name in ncbi. Check that name is written "
-                                     "correctly: {}! We set it to unidentified_{}".format(tax_name, self.mrca_ncbi))
-                    tax_name = '{}'.format(self.mrca_ncbi)
+                                     "correctly: {}! We set it to unidentified".format(tax_name))
+                    tax_name = 'Eukaryota'
                     ncbi_id = Entrez.read(Entrez.esearch(db="taxonomy", term=tax_name, RetMax=100))['IdList'][0]
-                    tax_name = 'unidentified_{}'.format(self.mrca_ncbi)
+                    tax_name = 'unidentified_Eukaryota'
                     ncbi_id = int(ncbi_id)
         assert type(ncbi_id) is int
         self.spn_to_ncbiid[tax_name] = ncbi_id
@@ -1232,7 +1233,6 @@ class IdDicts(object):
         when you have a local blast database or a Filter Blast run
         """
         # debug("get_rank_info")
-        # TODO MK: use find name first!
         # Entrez.email = self.config.email
         # if gi_id:
         #     # debug("gi_id to tax_name")
@@ -1272,7 +1272,6 @@ class IdDicts(object):
             assert type(ncbi_id) == int
             self.otu_rank[tax_name] = {"taxon id": ncbi_id, "lineage": lineage, "rank": lineage2ranks}
         return tax_name
-
 
 
     def find_name(self, sp_dict=None, gi=None):
@@ -1491,7 +1490,7 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
         self.repeat = 1  # used to determine if we continue updating the tree
         self.newseqsgi = []  # all ever added gi during any PhyScraper run, used to speed up adding process
         self.blacklist = []  # remove sequences by default
-        # self.gi_list_mrca = []  # all gi_ids of a given mrca. Used to limit possible seq to add.  # TODO MK: make sure it can be removed (next line), as if needed it will be initiated later
+        self.gi_list_mrca = []  # all gi_ids of a given mrca. Used to limit possible seq to add. 
         if self.config.blast_loc == 'local' and len(self.gi_list_mrca) == 0:
             self.gi_list_mrca = self.get_all_gi_mrca()
             # debug(self.gi_list_mrca)
@@ -1849,7 +1848,6 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
         :param blast_dir: path to directory which contains blast files
         :return: fills different dictionaries with information from blast files
         """
-        # TODO MK: move different read_blast options to external functions
         debug("read blast")
         # debug(blast_dir)
         if blast_dir:
