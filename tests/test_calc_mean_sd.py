@@ -49,7 +49,7 @@ for record in blast_out:
             hsp_scores[gi] = {"hsp.bits": hsp.bits, "hsp.score": hsp.score, "alignment.length": alignment.length, "hsp.expect": hsp.expect}
             add_hsp = add_hsp + float(hsp.bits)
 # make values to select for blast search, calculate standard deviation, mean
-mean_sed = physcraper.calculate_mean_sd(hsp_scores)
+mean_sed = local_blast.calculate_mean_sd(hsp_scores)
 sum_hsp = len(hsp_scores)
 mean = (add_hsp / sum_hsp)
 sd_all = 0
