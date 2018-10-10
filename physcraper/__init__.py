@@ -1213,7 +1213,7 @@ class IdDicts(object):
                         tax_name = "'{}'".format(tax_name)
                         tax_info = ncbi.get_name_translator([tax_name])
                     ncbi_id = int(tax_info.items()[0][1][0])
-                except: 
+          	except: 
                     sys.stderr.write("Taxon name does not match any name in ncbi. Check that name is written "
                                      "correctly: {}! We set it to unidentified".format(tax_name))
                     tax_name = 'Eukaryota'
@@ -1490,7 +1490,7 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
         self.blacklist = []  # remove sequences by default
         self.gi_list_mrca = []  # all gi_ids of a given mrca. Used to limit possible seq to add. 
         if self.config.blast_loc == 'local' and len(self.gi_list_mrca) == 0:
-            self.gi_list_mrca = self.get_all_gi_mrca()
+           self.gi_list_mrca = self.get_all_gi_mrca()
             # debug(self.gi_list_mrca)
         self.seq_filter = ['deleted', 'subsequence,', 'not', "removed", "deleted,", "local"]  # TODO MK: try to move completely to FilterBlast class
         self.reset_markers()
