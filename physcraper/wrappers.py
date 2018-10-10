@@ -298,7 +298,7 @@ def filter_OTOL(study_id,
             filteredScrape.make_sp_seq_dict()
             filteredScrape.how_many_sp_to_keep(threshold=threshold, selectby=selectby)
             filteredScrape.replace_new_seq()
-        filteredScrape.data.reconcile(seq_len_perc=0.75)
+        filteredScrape.data.prune_short(0.75)
         sys.stdout.write("calculate the phylogeny\n")
         filteredScrape.generate_streamed_alignment()
         filteredScrape.dump()
@@ -307,20 +307,20 @@ def filter_OTOL(study_id,
 
 
 def add_unpubl_to_backbone(seqaln,
-                    mattype,
-                    trfn,
-                    schema_trf,
-                    workdir,
-                    threshold,
-                    spInfoDict,
-                    configfi,
-                    selectby="blast",
-                    downtorank="species",
-                    blacklist=None,
-                    add_unpubl_seq=None,
-                    id_to_spn_addseq_json=None,
-                    ingroup_mrca=None,
-                    shared_blast_folder=None):
+                        mattype,
+                        trfn,
+                        schema_trf,
+                        workdir,
+                        threshold,
+                        spInfoDict,
+                        configfi,
+                        selectby="blast",
+                        downtorank="species",
+                        blacklist=None,
+                        add_unpubl_seq=None,
+                        id_to_spn_addseq_json=None,
+                        ingroup_mrca=None,
+                        shared_blast_folder=None):
     """looks for pickeled file to continue run, or builds and runs 
     new analysis for as long as new seqs are found. 
     This uses the FilterBlast subclass to be able to filter the blast output.
@@ -421,7 +421,7 @@ def add_unpubl_to_backbone(seqaln,
             filteredScrape.make_sp_seq_dict()
             filteredScrape.how_many_sp_to_keep(threshold=threshold, selectby=selectby)
             filteredScrape.replace_new_seq()
-        filteredScrape.data.reconcile(seq_len_perc=0.75)
+        filteredScrape.data.prune_short(0.75)
         sys.stdout.write("calculate the phylogeny\n")
         # with open("debug_PS_instances_w1", "a") as PS:
         #     PS.write("{}".format(filteredScrape.__dict__))
@@ -565,7 +565,7 @@ def filter_data_run(seqaln,
             filteredScrape.make_sp_seq_dict()
             filteredScrape.how_many_sp_to_keep(threshold=threshold, selectby=selectby)
             filteredScrape.replace_new_seq()
-        filteredScrape.data.reconcile(seq_len_perc=0.75)
+        filteredScrape.data.prune_short(0.75)
         sys.stdout.write("calculate the phylogeny\n")
         # with open("debug_PS_instances_w1", "a") as PS:
         #     PS.write("{}".format(filteredScrape.__dict__))

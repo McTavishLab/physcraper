@@ -79,9 +79,27 @@ def is_number(s):
 
 
 # which python physcraper file do I use?
-print("Current --init-- version number: 10-09-2018.0")
+print("Current --init-- version number: 10-10-2018.0")
 
 debug(os.path.realpath(__file__))
+
+
+def get_raw_input():
+    """Asks for yes or no user input.
+
+    :return: user input
+    """
+    debug("get raw input")
+    is_valid = 0
+    while not is_valid:
+        try:
+            x = raw_input("Please write either 'yes' or 'no': ")
+            print(x)
+            if x == "yes" or x == "no":
+                is_valid = 1  # set it to 1 to validate input and to terminate the while..not loop
+        except ValueError, e:
+            print ("'%s' is not a valid answer." % e.args[0].split(": ")[1])
+    return x
 
 
 class ConfigObj(object):
@@ -99,9 +117,10 @@ class ConfigObj(object):
                             https://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Web&PAGE_TYPE=BlastDocs&DOC_TYPE=FAQ
         self.hitlist_size: the maximum number of sequences retrieved by a single blast search
         self.seq_len_perc: value from 0 to 1. Defines how much shorter new seq can be compared to input
-       # self.get_ncbi_taxonomy: Path to sh file doing something...
+        # self.get_ncbi_taxonomy: Path to sh file doing something...
         # self.ncbi_dmp: path to file that has gi numbers and the corresponding ncbi tax id's
-        self.phylesystem_loc: Default is to run on remote, github physlestem, can be set to 'local' to access files from local clone
+        self.phylesystem_loc: Default is to run on remote, github phylesystem, can be set to 'local'
+                              to access files from local clone
         self.ott_ncbi: path to file containing OTT id, ncbi and taxon name
         self.id_pickle: path to pickle file 
         self.email: email address used for blast queries
@@ -146,7 +165,7 @@ class ConfigObj(object):
         assert (self.phylesystem_loc in ['local', 'api'])  # default is api, but can run on local version of OpenTree datastore
         self.ott_ncbi = config['taxonomy']['ott_ncbi']
         assert os.path.isfile(self.ott_ncbi)
-        self.id_pickle = os.path.abspath(config['taxonomy']['id_pickle'])  # rewrites the relative path as an absolute path sothat it behaves when changing dirs
+        self.id_pickle = os.path.abspath(config['taxonomy']['id_pickle'])  # rewrites the relative path as an absolute path so that it behaves when changing dirs
         self.email = config['blast']['Entrez.email']
         assert '@' in self.email
         self.blast_loc = config['blast']['location']
@@ -185,17 +204,9 @@ class ConfigObj(object):
         """
         if self.blast_loc == 'local':
             if not os.path.isfile("{}/nt.01.nhr".format(self.blastdb)):
-                print("Do you want to download the blast nt databases from ncbi? Note: This is a US government website! "
-                      "You agree to their terms")
-                is_valid = 0
-                while not is_valid:
-                    try:
-                        x = int(raw_input("Please write either 'yes' or 'no': ") )
-                        if x == "yes" or x == "no":
-                            is_valid = 1 ## set it to 1 to validate input and to terminate the while..not loop
-                    except ValueError, e:
-                        print ("'%s' is not a valid answer." % e.args[0].split(": ")[1])
-                ### Take action as per selected menu-option ###
+                print("Do you want to download the blast nt databases from ncbi? Note: "
+                      "This is a US government website! You agree to their terms")
+                x = get_raw_input()
                 if x == "yes":
                     os.system("rsync -av ftp://ftp.ncbi.nlm.nih.gov/blast/db/nt.*" 
                               "{}/".format(self.blastdb))
@@ -222,16 +233,8 @@ class ConfigObj(object):
                 if time_passed >= 60: 
                     print("Your databases might not be uptodate anymore. You downloaded them {} days ago. "
                           "Do you want to update the blast databases from ncbi? Note: This is a US government website! "
-                      "You agree to their terms".format(time_passed))
-                is_valid = 0
-                while not is_valid:
-                    try:
-                        x = str(raw_input("Please write either 'yes' or 'no': "))
-                        if x == "yes" or x == "no":
-                            is_valid = 1 ## set it to 1 to validate input and to terminate the while..not loop
-                    except ValueError, e:
-                        print ("'%s' is not a valid answer." % e.args[0].split(": ")[1])
-                    # x = sys.argv[1]
+                          "You agree to their terms".format(time_passed))
+                    x = get_raw_input()
                     if x == "yes":
                         os.system('update_blastdb nt') 
                         os.system("perl update_blastdb.pl taxdb")
@@ -248,15 +251,7 @@ class ConfigObj(object):
             if not os.path.isfile(self.ncbi_parser_nodes_fn):
                 print("Do you want to download taxonomy databases from ncbi? Note: This is a US government website! "
                       "You agree to their terms")
-                is_valid = 0
-                while not is_valid:
-                    try:
-                        x = str(raw_input("Please write either 'yes' or 'no': ") )
-                        if x == "yes" or x == "no":
-                            is_valid = 1 ## set it to 1 to validate input and to terminate the while..not loop
-                    except ValueError, e:
-                        print ("'%s' is not a valid answer." % e.args[0].split(": ")[1])
-                # x = raw_input()
+                x = get_raw_input()
                 if x == "yes":
                     os.system("rsync -av ftp://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdump.tar.gz" 
                               "./tests/data/taxdump.tar.gz")
@@ -275,15 +270,8 @@ class ConfigObj(object):
                 # debug([download_date, today, time_passed])
                 if time_passed >= 60: 
                     print("Do you want to update taxonomy databases from ncbi? Note: This is a US government website! "
-                      "You agree to their terms")
-                    is_valid = 0
-                    while not is_valid:
-                        try:
-                            x = str(raw_input("Please write either 'yes' or 'no': ") )
-                            if x == "yes" or x == "no":
-                                is_valid = 1 ## set it to 1 to validate input and to terminate the while..not loop
-                        except ValueError, e:
-                            print ("'%s' is not a valid answer." % e.args[0].split(": ")[1])
+                          "You agree to their terms")
+                    x = get_raw_input()
                     if x == "yes":
                         os.system("rsync -av ftp://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdump.tar.gz" 
                                   "./tests/data/taxdump.tar.gz")
@@ -862,12 +850,19 @@ class AlignTreeTax(object):
     def trim(self, taxon_missingness=0.75):
         """ It removes bases at the start and end of alignments, if they are represented by less than 75%
         of the sequences in the alignment.
-        Ensures, that not whole chromosomes get dragged in. This is cutting down long sequqnces instead of short sequences
+        Ensures, that not whole chromosomes get dragged in. It's cutting the ends of long sequences.
 
-        Used in reconcile()
+        Used in prune_short()
+        has test: test_trim.py
+
+        :taxon_missingness: defines how much longer sequence can be in percent
         """
         debug('in trim')
-        seqlen = len(self.aln[0])
+        i = 0
+        seqlen = len(self.aln[i])
+        while seqlen == 0: 
+            i = i + 1
+            seqlen = len(self.aln[i])
         for tax in self.aln:
             if len(self.aln[tax]) != seqlen:
                 sys.stderr.write("can't trim un-aligned inputs, moving on")
@@ -1155,7 +1150,7 @@ class AlignTreeTax(object):
             # debug(len(self.tre.taxon_namespace))
             self.otu_dict[tax.label]['^physcraper:status'] = "deleted"
         else:
-            self.otu_dict[taxon_label]['^physcraper:status'] = "deleted, but it wasn't in the alignment..."
+            self.otu_dict[taxon_label]['^physcraper:status'] = "deleted, updated otu_dict entry but was never in tre or aln!"
 
     def dump(self, filename=None):
         """writes pickled files from att class"""
@@ -1273,7 +1268,7 @@ class IdDicts(object):
     """
 
     # TODO - could - should be shared acrosss runs?! .... nooo.
-    def __init__(self, config_obj, workdir, mrca):
+    def __init__(self, config_obj, workdir, mrca = None):
         """Generates a series of name disambiguation dicts"""
         self.workdir = workdir  # TODO: Not needed. only used for dump and map_gi. map_gi file does not exists. dump is only used in wrapper, and we have the information of workdir available in wrapper functions anyways
         self.config = config_obj
@@ -1315,7 +1310,8 @@ class IdDicts(object):
         else:  # ncbi parser contains information about spn, tax_id, and ranks
             self.ncbi_parser = ncbi_data_parser.Parser(names_file=self.config.ncbi_parser_names_fn,
                                                        nodes_file=self.config.ncbi_parser_nodes_fn)
-        self.get_ncbi_mrca()
+        if self.mrca_ott != None:
+            self.get_ncbi_mrca()
 
     def get_ncbi_mrca(self):
         """ get the ncbi tax ids from a list of mrca.
@@ -1376,6 +1372,7 @@ class IdDicts(object):
                 for i in range(tries):
                     # debug(Entrez.read(Entrez.esearch(db="taxonomy", term=tax_name, RetMax=100))['IdList'][0])
                     try:
+                        Entrez.email = self.config.email
                         if tries >= 5:
                             ncbi_id = Entrez.read(Entrez.esearch(db="taxonomy", term=tax_name, RetMax=100))['IdList'][0]
                         else:
@@ -2570,7 +2567,8 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
         lfd = "{}/logfile".format(self.workdir)
         with open(lfd, "a") as log:
             log.write("Following papara alignment, aln has {} seqs \n".format(len(self.data.aln)))
-        self.data.reconcile()
+        # self.data.reconcile()
+        # self.data.prune_short()  #
         self._query_seqs_aligned = 1
 
     def remove_alien_aln_tre(self):
@@ -2595,7 +2593,9 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
         #         sys.stdout.write("tax not in aln. This is an alien name in the data. ")
         #         self.data.remove_taxa_aln_tre(tax_tre.label)
         # added another reconcile step, maybe that helps with the alien taxa problem
-        self.data.reconcile()
+        # self.data.reconcile()
+        self.data.prune_short()
+
 
     def place_query_seqs(self):
         """runs raxml on the tree, and the combined alignment including the new query seqs.
@@ -2740,7 +2740,9 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
             if gi_id in self.blacklist or acc in self.blacklist:
                 self.data.remove_taxa_aln_tre(tax.label)
                 self.data.otu_dict[tax.label]['^physcraper:status'] = "deleted, gi is part of blacklist"
-        self.data.reconcile()
+        # self.data.reconcile()
+        self.data.prune_short()
+
         debug(self.data.tre.as_string(schema='newick'))
 
     def generate_streamed_alignment(self):
@@ -2755,7 +2757,9 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
             if len(self.new_seqs_otu_id) > 0:  # TODO rename to something more intuitive
                 self.write_query_seqs()
                 self.align_query_seqs()
-                self.data.reconcile()
+                # self.data.reconcile()
+                # self.data.prune_short()  # cannot happen here, as aln has new seq but tre not
+
                 self.place_query_seqs()
                 self.est_full_tree()
                 self.data.tre = Tree.get(path="{}/RAxML_bestTree.{}".format(self.workdir, self.date),
