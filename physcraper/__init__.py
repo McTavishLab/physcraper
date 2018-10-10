@@ -79,7 +79,7 @@ def is_number(s):
 
 
 # which python physcraper file do I use?
-print("Current --init-- version number: 10-03-2018.0")
+print("Current --init-- version number: 10-09-2018.0")
 
 debug(os.path.realpath(__file__))
 
@@ -165,9 +165,9 @@ class ConfigObj(object):
                 self.gifilename = False
         self.ncbi_parser_nodes_fn = config['ncbi_parser']["nodes_fn"]
         self.ncbi_parser_names_fn = config['ncbi_parser']["names_fn"]
-        # TODO MK: check if following really works
-        # ncbi nodes and names file
-        
+        # print("check file status")
+        self._download_ncbi_parser()
+        self._download_localblastdb()
         self.unmapped = config['blast']['unmapped']
         assert self.unmapped in ['remove', 'keep']
         if _DEBUG:
@@ -177,6 +177,121 @@ class ConfigObj(object):
             sys.stdout.write("{}\n".format(self.blast_loc))
             if self.blast_loc == 'local':
                 sys.stdout.write("local blast db {}\n".format(self.blastdb))
+
+
+    def _download_localblastdb(self):
+        """Check if files are present and if they are uptodate.
+        If not files will be downloaded. 
+        """
+        if self.blast_loc == 'local':
+            if not os.path.isfile("{}/nt.01.nhr".format(self.blastdb)):
+                print("Do you want to download the blast nt databases from ncbi? Note: This is a US government website! "
+                      "You agree to their terms")
+                is_valid = 0
+                while not is_valid:
+                    try:
+                        x = int(raw_input("Please write either 'yes' or 'no': ") )
+                        if x == "yes" or x == "no":
+                            is_valid = 1 ## set it to 1 to validate input and to terminate the while..not loop
+                    except ValueError, e:
+                        print ("'%s' is not a valid answer." % e.args[0].split(": ")[1])
+                ### Take action as per selected menu-option ###
+                if x == "yes":
+                    os.system("rsync -av ftp://ftp.ncbi.nlm.nih.gov/blast/db/nt.*" 
+                              "{}/".format(self.blastdb))
+                    os.system("rsync -av ftp://ftp.ncbi.nlm.nih.gov/blast/db/taxdb.tar.gz" 
+                              "{}/".format(self.blastdb))
+                    cwd = os.getcwd()
+                    os.chdir(self.blastdb)
+                    os.system("update_blastdb nt")
+                    os.system("cat *.tar.gz | tar -xvzf - -i")
+                    os.system("gunzip -cd taxdb.tar.gz | (tar xvf - )")
+                    os.chdir(cwd)
+                elif x == "no":
+                    print("You did not agree to download data from ncbi. Programm will default to blast web-queries.")
+                    print("This is slow and crashes regularly!")
+                    self.blast_loc = 'remote'
+                else:
+                    print("You did not type yes or no!")
+            else:
+                download_date = os.path.getmtime("{}/nt.01.nhr".format(self.blastdb))
+                download_date = datetime.datetime.fromtimestamp(download_date)
+                today = datetime.datetime.now()
+                time_passed = (today - download_date).days    
+                # debug([download_date, today, time_passed])
+                if time_passed >= 60: 
+                    print("Your databases might not be uptodate anymore. You downloaded them {} days ago. "
+                          "Do you want to update the blast databases from ncbi? Note: This is a US government website! "
+                      "You agree to their terms".format(time_passed))
+                is_valid = 0
+                while not is_valid:
+                    try:
+                        x = str(raw_input("Please write either 'yes' or 'no': "))
+                        if x == "yes" or x == "no":
+                            is_valid = 1 ## set it to 1 to validate input and to terminate the while..not loop
+                    except ValueError, e:
+                        print ("'%s' is not a valid answer." % e.args[0].split(": ")[1])
+                    # x = sys.argv[1]
+                    if x == "yes":
+                        os.system('update_blastdb nt') 
+                        os.system("perl update_blastdb.pl taxdb")
+                    elif x == "no":
+                        print("You did not agree to update data from ncbi. Old database files will be used.")
+                    else:
+                        print("You did not type 'yes' or 'no'!")
+
+    def _download_ncbi_parser(self):
+        """Check if files are present and if they are uptodate.
+        If not files will be downloaded. 
+        """
+        if self.blast_loc == 'local':
+            if not os.path.isfile(self.ncbi_parser_nodes_fn):
+                print("Do you want to download taxonomy databases from ncbi? Note: This is a US government website! "
+                      "You agree to their terms")
+                is_valid = 0
+                while not is_valid:
+                    try:
+                        x = str(raw_input("Please write either 'yes' or 'no': ") )
+                        if x == "yes" or x == "no":
+                            is_valid = 1 ## set it to 1 to validate input and to terminate the while..not loop
+                    except ValueError, e:
+                        print ("'%s' is not a valid answer." % e.args[0].split(": ")[1])
+                # x = raw_input()
+                if x == "yes":
+                    os.system("rsync -av ftp://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdump.tar.gz" 
+                              "./tests/data/taxdump.tar.gz")
+                    os.system("gunzip - cd ./tests/data/taxdump.tar.gz | (tar xvf - names.dmp nodes.dmp)")
+                elif x == "no":
+                    print("You did not agree to download data from ncbi. Programm will default to blast web-queries.")
+                    print("This is slow and crashes regularly!")
+                    self.blast_loc = 'remote'
+                else:
+                    print("You did not type yes or no!")
+            else:
+                download_date = os.path.getmtime(self.ncbi_parser_nodes_fn)
+                download_date = datetime.datetime.fromtimestamp(download_date)
+                today = datetime.datetime.now()
+                time_passed = (today - download_date).days    
+                # debug([download_date, today, time_passed])
+                if time_passed >= 60: 
+                    print("Do you want to update taxonomy databases from ncbi? Note: This is a US government website! "
+                      "You agree to their terms")
+                    is_valid = 0
+                    while not is_valid:
+                        try:
+                            x = str(raw_input("Please write either 'yes' or 'no': ") )
+                            if x == "yes" or x == "no":
+                                is_valid = 1 ## set it to 1 to validate input and to terminate the while..not loop
+                        except ValueError, e:
+                            print ("'%s' is not a valid answer." % e.args[0].split(": ")[1])
+                    if x == "yes":
+                        os.system("rsync -av ftp://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdump.tar.gz" 
+                                  "./tests/data/taxdump.tar.gz")
+                        os.system("gunzip - cd ./tests/data/taxdump.tar.gz | (tar xvf - names.dmp nodes.dmp)")
+                    elif x == "no":
+                        print("You did not agree to update data from ncbi. Old database files will be used.")
+                    else:
+                        print("You did not type yes or no!")
 
 
 # ATT is a dumb acronym for Alignment Tree Taxa object
@@ -238,7 +353,13 @@ def generate_ATT_from_phylesystem(aln,
                                subtree_id="ingroup",
                                return_format="ottid")
     if ingroup_mrca:
-        ott_mrca = int(ingroup_mrca)
+        if type(ingroup_mrca) == list:
+            ott_ids = set(ingroup_mrca)
+            # debug(ott_ids)
+
+            ott_mrca = get_mrca_ott(ott_ids)
+        else:
+            ott_mrca = int(ingroup_mrca)
     else:
         ott_mrca = get_mrca_ott(ott_ids)
     newick = extract_tree(nexson,
@@ -421,6 +542,7 @@ def OtuJsonDict(id_to_spn, id_dict):
     """
     sys.stdout.write("Set up OtuJsonDict \n")
     sp_info_dict = {}
+    nosp = []
     with open(id_to_spn, mode='r') as infile:
         for lin in infile:
             ottid, ottname, ncbiid = None, None, None
@@ -430,26 +552,31 @@ def OtuJsonDict(id_to_spn, id_dict):
             assert clean_lab not in sp_info_dict
             otu_id = "otu{}".format(clean_lab)
             spn = species.replace("_", " ")
+            debug(spn)
+
             info = get_ott_taxon_info(spn)
             if info:
                 ottid, ottname, ncbiid = info
             if not info:
-                if _DEBUG:
-                    sys.stdout.write("match to taxon {} not found in open tree taxonomy. "
-                                     "Trying NCBI next.\n".format(spn))
+                # if _DEBUG:
+                #     sys.stdout.write("match to taxon {} not found in open tree taxonomy. "
+                #                      "Trying NCBI next.\n".format(spn))
                 ncbi = NCBITaxa()
                 name2taxid = ncbi.get_name_translator([spn])
                 # debug(name2taxid)
                 if len(name2taxid.items()) >= 1:
-                    if _DEBUG:
-                        sys.stdout.write("found taxon {} in ncbi".format(spn))
+                    # if _DEBUG:
+                    #     sys.stdout.write("found taxon {} in ncbi".format(spn))
                     ncbiid = name2taxid.items()[0][1][0]
                 else:
                     sys.stderr.write("match to taxon {} not found in open tree taxonomy or NCBI. "
                                      "Proceeding without taxon info\n".format(spn))
+                    nosp.append(spn)
             sp_info_dict[otu_id] = {'^ncbi:taxon': ncbiid, '^ot:ottTaxonName': ottname, '^ot:ottId': ottid,
                                     '^ot:originalLabel': tipname, '^user:TaxonName': species,
                                     '^physcraper:status': 'original', '^physcraper:last_blasted': "1900/01/01"}
+    print(nosp)
+    # print(some)
     return sp_info_dict
 
 
@@ -541,6 +668,7 @@ class AlignTreeTax(object):
                                 schema=schema,
                                 preserve_underscores=True,
                                 taxon_namespace=self.aln.taxon_namespace)
+        # debug(self.tre.taxon_namespace)
         assert (self.tre.taxon_namespace is self.aln.taxon_namespace)
         assert isinstance(self.aln, datamodel.charmatrixmodel.DnaCharacterMatrix)
         # self.tre = Tree.get(data=newick,
@@ -600,6 +728,8 @@ class AlignTreeTax(object):
             self.aln.taxon_namespace.remove_taxon(tax)
         assert (self.aln.taxon_namespace == self.tre.taxon_namespace)
         for tax in self.aln.taxon_namespace:
+            # debug(self.otu_dict.keys())
+            # debug(tax.label)
             if tax.label in self.otu_dict.keys():
                 pass
             else:
@@ -610,12 +740,15 @@ class AlignTreeTax(object):
                     newname = tax.label[2:]
                     newname = newname[:-1]
                 for otu in self.otu_dict:
+                    # debug(self.otu_dict[otu].get('^ot:originalLabel'))
                     if self.otu_dict[otu].get('^ot:originalLabel') == tax.label or self.otu_dict[otu].get('^ot:originalLabel') == newname:
                         tax.label = otu
                         found_label = 1
                 if found_label == 0:
                     sys.stderr.write("could not match tiplabel {} or {} to an OTU\n".format(tax.label, newname))
+                # debug(some)
                 # assert tax.label in self.otu_dict
+        # debug(some)
     # TODO - make sure all taxon labels are unique OTU ids.
 
     def prune_short(self, min_seqlen=0):
@@ -698,6 +831,8 @@ class AlignTreeTax(object):
         for leaf in self.tre.leaf_nodes():
             treed_taxa.add(leaf.taxon.label)
             if leaf.taxon.label not in aln_ids:
+                debug(self.otu_dict.keys())
+                debug(leaf.taxon.label)
                 self.otu_dict[leaf.taxon.label]['^physcraper:status'] = "deleted due to presence in tree but not aln ?!"
                 orphaned_leafs.add(leaf)
                 # TODO figure out why sometimes one of them works and not the other and vice versa
@@ -1138,7 +1273,7 @@ class IdDicts(object):
     """
 
     # TODO - could - should be shared acrosss runs?! .... nooo.
-    def __init__(self, config_obj, workdir):
+    def __init__(self, config_obj, workdir, mrca):
         """Generates a series of name disambiguation dicts"""
         self.workdir = workdir  # TODO: Not needed. only used for dump and map_gi. map_gi file does not exists. dump is only used in wrapper, and we have the information of workdir available in wrapper functions anyways
         self.config = config_obj
@@ -1149,6 +1284,8 @@ class IdDicts(object):
         self.gi_ncbi_dict = {}  # file id_map doesn't exist (see below), is only filled by ncbi_parser (by subprocess in earlier versions of the code).
         self.spn_to_ncbiid = {}  # spn to ncbi_id, it's only fed by the ncbi_data_parser, but makes it faster
         self.ncbiid_to_spn = {}
+        self.mrca_ott = mrca  # mrca_list
+        self.mrca_ncbi = set()  # corresponding ids for mrca_ott list
         fi = open(config_obj.ott_ncbi)  # TODO need to keep updated, where does the file come from?
         for lin in fi:  # TODO This is insanely memory inefficient, how about using a pandas dataframe?
             lii = lin.split(",")
@@ -1177,7 +1314,49 @@ class IdDicts(object):
             self.otu_rank = {}  # used only for web queries - contains taxonomic hierarchy information
         else:  # ncbi parser contains information about spn, tax_id, and ranks
             self.ncbi_parser = ncbi_data_parser.Parser(names_file=self.config.ncbi_parser_names_fn,
-                                                   nodes_file=self.config.ncbi_parser_nodes_fn)
+                                                       nodes_file=self.config.ncbi_parser_nodes_fn)
+        self.get_ncbi_mrca()
+
+    def get_ncbi_mrca(self):
+        """ get the ncbi tax ids from a list of mrca.
+        """
+        debug(type(self.mrca_ott))
+        if type(self.mrca_ott) is not int:
+            for ott_id in self.mrca_ott:
+                debug(ott_id)
+                debug(type(ott_id))
+                self.ott_id_to_ncbiid(ott_id)
+        else:
+            self.ott_id_to_ncbiid(self.mrca_ott)
+        debug(self.mrca_ncbi)
+
+    def ott_id_to_ncbiid(self, ott_id):
+        """ Find ncbi Id for ott id. Is only used for the mrca list thing.
+        """
+        if ott_id in self.ott_to_name:
+            # debug("get id from ott_to_name")
+            ott_name = self.ott_to_name[ott_id]
+            if self.config.blast_loc == 'remote':
+                debug(ott_name)
+                self.get_rank_info_from_web(taxon_name=ott_name)
+                debug(self.otu_rank.keys())
+                ncbi_id = self.otu_rank[ott_name]["taxon id"]
+            else:
+                ncbi_id = self.ncbi_parser.get_id_from_name(ott_name)
+
+        else:
+            debug("else")
+            tx = APIWrapper().taxomachine
+            nms = tx.taxon(ott_id)
+            debug(nms)
+            ott_name = nms[u'unique_name']
+            debug(ott_name)
+            ncbi_id = None
+            if u'ncbi' in nms[u'tax_sources']:
+                ncbi_id = nms[u'tax_sources'][u'ncbi']
+                debug(ncbi_id)
+        if ncbi_id is not None:
+            self.mrca_ncbi.add(ncbi_id)
 
     def get_ncbiid_from_tax_name(self, tax_name):
         """Get the ncbi_id from the species name using ncbi web query.
@@ -1508,6 +1687,10 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
         self.path_to_local_seq = False  # path to unpublished seq.
         self.backbone = False
         self.OToL_unmapped_tips()  # added to remove un-mapped tips from OToL
+        self.ids.ingroup_mrca = data_obj.ott_mrca
+
+###############################3
+
 
         if _deep_debug == 1:
             self.newadd_gi_otu = {}  # search for doubles!
@@ -1709,8 +1892,23 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
                                 # os.chdir(cwd)
                                 # self.data.otu_dict[otu_id]['^physcraper:last_blasted'] = today
                             if self.config.blast_loc == 'remote':
-                                equery = "txid{}[orgn] AND {}:{}[mdat]".format(self.mrca_ncbi, last_blast, today)
-                                self.run_web_blast_query(query, equery, fn_path)
+                                debug(len(self.ids.mrca_ncbi))
+
+                                if len(self.ids.mrca_ncbi) >=2:
+                                    len_ncbi = len(self.ids.mrca_ncbi)
+                                    equery = ''
+                                    for ncbi_id in self.ids.mrca_ncbi:
+                                        if len_ncbi >= 2:
+                                            equery = equery + "txid{}[orgn] OR ".format(ncbi_id)
+                                            len_ncbi = len_ncbi - 1
+                                        else:
+                                            equery = equery + "txid{}[orgn]) ".format(ncbi_id)
+                                    debug(equery)
+                                    equery = "(" + equery + "AND {}:{}[mdat]".format(last_blast, today)
+                                    debug(equery)
+                                else:
+                                    equery = "txid{}[orgn] AND {}:{}[mdat]".format(self.mrca_ncbi, last_blast, today)
+                                    self.run_web_blast_query(query, equery, fn_path)
                                 # if self.config.url_base:
                                 #     result_handle = AWSWWW.qblast("blastn",
                                 #                                   "nt",
@@ -1759,7 +1957,19 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
         debug("get_all_gi_mrca")
         Entrez.email = self.config.email
 ### NOTE MK> if mrca ingroup is list, use the list not the mrca_ncbi/ott
-        handle = Entrez.esearch(db="nucleotide", term="txid{}[Orgn]".format(self.mrca_ncbi),
+        if len(self.ids.mrca_ncbi) >=2:
+            len_ncbi = len(self.ids.mrca_ncbi)
+            equery = '('
+            for ncbi_id in self.ids.mrca_ncbi:
+                if len_ncbi >= 2:
+                    equery = equery + "txid{}[orgn] OR ".format(ncbi_id)
+                    len_ncbi = len_ncbi - 1
+                else:
+                    equery = equery + "txid{}[orgn])".format(ncbi_id)
+            debug(equery)
+        else:
+            equery = "txid{}[orgn]".format(self.mrca_ncbi)
+        handle = Entrez.esearch(db="nucleotide", term=equery,
                                 usehistory='n', RetMax=100000000)
         records = Entrez.read(handle)
         id_list = records['IdList']
@@ -2769,6 +2979,8 @@ class FilterBlast(PhyscraperScrape):
                     debug("tax_name is None")
                     # debug(self.data.otu_dict[key])
                     gi_id = self.data.otu_dict[key]['^ncbi:gi']
+                    if gi_id == None:
+                        gi_id = self.data.otu_dict[key]['^ncbi:accession']
                     # debug(gi_id)
                     # debug(type(gi_id))
                     tax_name = self.ids.find_name(gi=gi_id)
@@ -2872,6 +3084,8 @@ class FilterBlast(PhyscraperScrape):
                             # debug("gi in otu_id")
                             # gi_num = int(otu_id['^ncbi:gi'])
                             gi_num = otu_id['^ncbi:gi']
+                            if gi_num == None:
+                                gi_num = otu_id['^ncbi:accession']
                             if gi_num in self.new_seqs.keys():
                                 seq = self.new_seqs[gi_num]
                                 seq = seq.replace("-", "")
@@ -2982,6 +3196,8 @@ class FilterBlast(PhyscraperScrape):
                 if otu_id['^physcraper:status'].split(' ')[0] not in self.seq_filter:
                     if otu_id['^physcraper:last_blasted'] == '1800/01/01':
                         gi_num = otu_id['^ncbi:gi']
+                        if gi_num == None:
+                            gi_num = otu_id['^ncbi:accession']
                         # debug(gi_num)
                         seq = self.new_seqs[gi_num]
                         self.filtered_seq[gi_num] = seq
@@ -3059,6 +3275,8 @@ class FilterBlast(PhyscraperScrape):
                     # debug("make gilist as local blast database")
                     if "^ncbi:gi" in otu_id:
                         gi_num = int(otu_id['^ncbi:gi'])
+                        if gi_num == None:
+                            gi_num = otu_id['^ncbi:accession']
                         # debug(gi_num)
                         # debug("new")
                         file_present = False
