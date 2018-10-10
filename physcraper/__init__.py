@@ -739,113 +739,135 @@ class AlignTreeTax(object):
         # debug(some)
     # TODO - make sure all taxon labels are unique OTU ids.
 
-    def prune_short(self, min_seqlen=0):
-        #TODODELETE I think this overlaps with reconcile?
-        """Sometimes in the de-concatenating of the original alignment
-        taxa with no sequence are generated.
-        This gets rid of those from both the tre and the alignment. MUTATOR
+    def prune_short(self, min_seqlen_perc=0.75):
+        """Prunes sequences from alignment if they are shorter than 75%, or if tip is only present in tre.
+
+        Sometimes in the de-concatenating of the original alignment
+        taxa with no sequence are generated or in general if certain sequences are really short. In other cases there might be too many tips in the tre
+        This gets rid of those from both the tre and the alignment.
 
         has test: test_prune_short.py
+
+        :param min_seqlen_perc: minimum length of seq
+        :return: prunes aln and tre
         """
         # TODO: is this not half the part of _reconcile_names? 
-
+        print(sum(self.orig_seqlen), len(self.orig_seqlen))
+        if sum(self.orig_seqlen) != 0:
+            avg_seqlen = sum(self.orig_seqlen) / len(self.orig_seqlen)
+            seq_len_cutoff = avg_seqlen * min_seqlen_perc
+        else:
+            for tax, seq in self.aln.items():
+                seqlen = len(self.aln[tax].symbols_as_string())
+                break
+            seq_len_cutoff = seqlen * min_seqlen_perc
         prune = []
+        aln_ids = set()
         for tax, seq in self.aln.items():
-            if len(seq.symbols_as_string().translate(None, "-?")) <= min_seqlen:
+            aln_ids.add(tax.label)
+
+            if len(seq.symbols_as_string().translate(None, "-?")) <= seq_len_cutoff:
                 prune.append(tax)
+        treed_taxa = set()
+        for leaf in self.tre.leaf_nodes():
+            treed_taxa.add(leaf.taxon.label)
+        print(prune)
         if prune:
             # debug(prune)
-            self.aln.remove_sequences(prune)
-            self.tre.prune_taxa(prune)
-            self.tre.prune_taxa_with_labels(prune)  # sometimes it does not delete it with the statement before. Tried to figure out why, have no clue yet.
+
+            # self.tre.prune_taxa(prune)
             # self.aln.taxon_namespace.remove_taxon_label(tax)
             fi = open("{}/pruned_taxa".format(self.workdir), 'a')
             fi.write("Taxa pruned from tree and alignment in prune short "
-                     "step due to sequence shorter than {}\n".format(min_seqlen))
+                     "step due to sequence shorter than {}\n".format(seq_len_cutoff))
             for tax in prune:
+                # self.aln.remove_sequences(prune)
+                # self.tre.prune_taxa_with_labels(prune)  # sometimes it does not delete it with the statement before. Tried to figure out why, have no clue yet.
+                self.remove_taxa_aln_tre(tax.label)
                 fi.write("{}, {}\n".format(tax.label, self.otu_dict[tax.label].get('^ot:originalLabel')))
             fi.close()
+        debug(self.aln.taxon_namespace)
         for tax in prune:
             self.otu_dict[tax.label]['^physcraper:status'] = "deleted in prune short"
-            self.aln.taxon_namespace.remove_taxon_label(tax.label)  # raises error if not found, instead of remove_taxon
+            # self.aln.taxon_namespace.remove_taxon(tax.label)  # remove_taxon:raises no error, remove_taxon_label: raises error
+            # self.tre.taxon_namespace.remove_taxon(tax.label)  # raises error if not found, instead of remove_taxon
+
+            # self.remove_taxa_aln_tre(tax.label)
+        debug([self.aln.taxon_namespace, len(self.aln.taxon_namespace)])
+        debug([self.tre.taxon_namespace, len(self.tre.taxon_namespace)])
         assert self.aln.taxon_namespace == self.tre.taxon_namespace
-        self.orig_seqlen = [len(self.aln[tax].symbols_as_string().replace("-", "").replace("N", "")) for tax in self.aln]
-        self.reconcile()
-
-    def reconcile(self, seq_len_perc=0.75):
-        #TODO RENAME This is pruning short seqs - not reconciling!
-        """Removes sequences from data if seq is to short.
-
-        all missing data seqs are sneaking in, but from where?!
-
-        not only used in the beginning...is used to remove sequences that are shorter than 75%"""
-        # TODO: How is this different from prune_short/ reconcile names?
-        # debug("reconcile")
-        prune = []
-        # debug(self.orig_seqlen)
-        avg_seqlen = sum(self.orig_seqlen) / len(self.orig_seqlen)
-        # debug(avg_seqlen)
-        seq_len_cutoff = avg_seqlen * seq_len_perc
-        # debug(seq_len_cutoff)
-        for tax, seq in self.aln.items():
-            if len(seq.symbols_as_string().translate(None, "-?")) < seq_len_cutoff:
-                prune.append(tax)
-        if prune:
-            # debug(prune)
-            fi = open("{}/pruned_taxa".format(self.workdir), 'a')
-            fi.write("Taxa pruned from tree and aln in reconcilation step "
-                     "due to sequence shorter than {}\n".format(seq_len_cutoff))
-            for tax in prune:
-                fi.write("{}, {}\n".format(tax.label, self.otu_dict.get(tax.label).get('^ot:originalLabel')))
-            fi.close()
-        for tax in prune:
-            # debug(tax)
-            # debug(tax.label)
-            # debug(self.otu_dict[tax.label])
-            self.otu_dict[tax.label]['^physcraper:status'] = "deleted in reconcile"
-            # TODO: line above is unnecessary? get's overwritten in next line by remove_taxa_aln_tre
-            self.remove_taxa_aln_tre(tax.label)
-        aln_ids = set()
-        for tax in self.aln:
-            aln_ids.add(tax.label)
-        # debug(len(self.otu_dict.keys()))
-        debug(len(aln_ids))
-        debug([item for item in self.otu_dict.keys() if item not in aln_ids])
-        debug([item for item in aln_ids if item not in self.otu_dict.keys()])
-        assert aln_ids.issubset(self.otu_dict.keys())
-        treed_taxa = set()
-        orphaned_leafs = set()
-        # here leaf_nodes have taxa that were dropped before. Why do we have this anyways?
-        for leaf in self.tre.leaf_nodes():
-            treed_taxa.add(leaf.taxon.label)
-            if leaf.taxon.label not in aln_ids:
-                debug(self.otu_dict.keys())
-                debug(leaf.taxon.label)
-                self.otu_dict[leaf.taxon.label]['^physcraper:status'] = "deleted due to presence in tree but not aln ?!"
-                orphaned_leafs.add(leaf)
-                # TODO figure out why sometimes one of them works and not the other and vice versa
-                self.tre.prune_taxa([leaf])
-                # self.tre.prune_taxa_with_labels([leaf.taxon.label])
-                self.tre.prune_taxa_with_labels([leaf.taxon.label])
-                self.tre.prune_taxa_with_labels([leaf])
-                treed_taxa.remove(leaf.taxon.label)
-                # debug(self.otu_taxonlabel_problem.keys())
-            # else:
-            #     treed_taxa.add(leaf.taxon.label)
-        # debug('treed_taxa')
-        # debug(treed_taxa)
-        # debug('aln_ids')
-        # debug(aln_ids)
-        # debug([item for item in treed_taxa if item not in aln_ids])
-        # #debug([item for item in aln_ids if item not in treed_taxa])
-        # debug(self.tre.taxon_namespace) # otu is gone from namespace, but in treed
-        # debug(self.tre.as_string(schema="newick")) # otu is in tre, thus  not removed in remove_taxa_aln_tre
+        # debug([treed_taxa, len(treed_taxa)])
+        # debug([aln_ids, len(aln_ids)])
+        debug([item for item in treed_taxa if item not in aln_ids])
+        debug([item for item in aln_ids if item not in treed_taxa])
         assert treed_taxa.issubset(aln_ids)
+
+        self.orig_seqlen = [len(self.aln[tax].symbols_as_string().replace("-", "").replace("N", "")) for tax in self.aln]
+        # self.reconcile()
         # for key in  self.otu_dict.keys():
         #      if key not in aln_ids:
         #           sys.stderr.write("{} was in otu dict but not alignment. it should be in new seqs...\n".format(key)
         self.trim()
         self._reconciled = 1
+
+    # def reconcile(self, seq_len_perc=0.75):
+    #     #TODO RENAME This is pruning short seqs - not reconciling!
+    #     """Removes sequences from data if seq is to short.
+    #
+    #     all missing data seqs are sneaking in, but from where?!
+    #
+    #     not only used in the beginning...is used to remove sequences that are shorter than 75%"""
+    #     # TODO: How is this different from prune_short/ reconcile names?
+    #     if prune:
+    #         # debug(prune)
+    #     for tax in prune:
+    #         # debug(tax)
+    #         # debug(tax.label)
+    #         # debug(self.otu_dict[tax.label])
+    #         self.otu_dict[tax.label]['^physcraper:status'] = "deleted in reconcile"
+    #         # TODO: line above is unnecessary? get's overwritten in next line by remove_taxa_aln_tre
+    #         self.remove_taxa_aln_tre(tax.label)
+    #     aln_ids = set()
+    #     for tax in self.aln:
+    #         aln_ids.add(tax.label)
+    #     # debug(len(self.otu_dict.keys()))
+    #     debug(len(aln_ids))
+    #     debug([item for item in self.otu_dict.keys() if item not in aln_ids])
+    #     debug([item for item in aln_ids if item not in self.otu_dict.keys()])
+    #     assert aln_ids.issubset(self.otu_dict.keys())
+    #     treed_taxa = set()
+    #     orphaned_leafs = set()
+    #     # here leaf_nodes have taxa that were dropped before. Why do we have this anyways?
+    #     for leaf in self.tre.leaf_nodes():
+    #         treed_taxa.add(leaf.taxon.label)
+    #         if leaf.taxon.label not in aln_ids:
+    #             debug(self.otu_dict.keys())
+    #             debug(leaf.taxon.label)
+    #             self.otu_dict[leaf.taxon.label]['^physcraper:status'] = "deleted due to presence in tree but not aln ?!"
+    #             orphaned_leafs.add(leaf)
+    #             # TODO figure out why sometimes one of them works and not the other and vice versa
+    #             self.tre.prune_taxa([leaf])
+    #             # self.tre.prune_taxa_with_labels([leaf.taxon.label])
+    #             self.tre.prune_taxa_with_labels([leaf.taxon.label])
+    #             self.tre.prune_taxa_with_labels([leaf])
+    #             treed_taxa.remove(leaf.taxon.label)
+    #             # debug(self.otu_taxonlabel_problem.keys())
+    #         # else:
+    #         #     treed_taxa.add(leaf.taxon.label)
+    #     # debug('treed_taxa')
+    #     # debug(treed_taxa)
+    #     # debug('aln_ids')
+    #     # debug(aln_ids)
+    #     # debug([item for item in treed_taxa if item not in aln_ids])
+    #     # #debug([item for item in aln_ids if item not in treed_taxa])
+    #     # debug(self.tre.taxon_namespace) # otu is gone from namespace, but in treed
+    #     # debug(self.tre.as_string(schema="newick")) # otu is in tre, thus  not removed in remove_taxa_aln_tre
+    #     assert treed_taxa.issubset(aln_ids)
+    #     # for key in  self.otu_dict.keys():
+    #     #      if key not in aln_ids:
+    #     #           sys.stderr.write("{} was in otu dict but not alignment. it should be in new seqs...\n".format(key)
+    #     self.trim()
+    #     self._reconciled = 1
 
     def trim(self, taxon_missingness=0.75):
         """ It removes bases at the start and end of alignments, if they are represented by less than 75%
