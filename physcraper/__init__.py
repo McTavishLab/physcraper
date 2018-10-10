@@ -444,8 +444,6 @@ def OtuJsonDict(id_to_spn, id_dict):
                     if _DEBUG:
                         sys.stdout.write("found taxon {} in ncbi".format(spn))
                     ncbiid = name2taxid.items()[0][1][0]
-                    ottid = id_dict.ncbi_to_ott[ncbiid]
-                    ottname = id_dict.ott_to_name[ottid]
                 else:
                     sys.stderr.write("match to taxon {} not found in open tree taxonomy or NCBI. "
                                      "Proceeding without taxon info\n".format(spn))
