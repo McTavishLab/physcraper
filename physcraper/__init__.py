@@ -1170,7 +1170,7 @@ class AlignTreeTax(object):
             # debug(len(self.tre.taxon_namespace))
             self.otu_dict[tax.label]['^physcraper:status'] = "deleted"
         else:
-            self.otu_dict[taxon_label]['^physcraper:status'] = "deleted, updated otu_dict entry but was never in tre or aln!"
+            self.otu_dict[taxon_label]['^physcraper:status'] = "deleted, updated otu_dict but was never in tre or aln!"
 
     def dump(self, filename=None):
         """writes pickled files from att class"""
@@ -1696,7 +1696,7 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
         self.blacklist = []  # remove sequences by default
         self.gi_list_mrca = []  # all gi_ids of a given mrca. Used to limit possible seq to add. 
         if self.config.blast_loc == 'local' and len(self.gi_list_mrca) == 0:
-           self.gi_list_mrca = self.get_all_gi_mrca()
+            self.gi_list_mrca = self.get_all_gi_mrca()
             # debug(self.gi_list_mrca)
         self.seq_filter = ['deleted', 'subsequence,', 'not', "removed", "deleted,", "local"]  # TODO MK: try to move completely to FilterBlast class
         self.reset_markers()
@@ -1705,10 +1705,7 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
         self.backbone = False
         self.OToL_unmapped_tips()  # added to remove un-mapped tips from OToL
         self.ids.ingroup_mrca = data_obj.ott_mrca
-
-###############################3
-
-
+        # ##############################3
         if _deep_debug == 1:
             self.newadd_gi_otu = {}  # search for doubles!
 
@@ -1863,7 +1860,7 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
                     blastcmd = "blastn -query {}/tmp.fas -db {} -out output_{}.xml " \
                                "-outfmt 5".format(self.blast_subdir, blast_db, output)
                     os.system(blastcmd)
-                    if self.backbone == True:
+                    if self.backbone is True:
                         self.data.otu_dict[otu_id]['^physcraper:last_blasted'] = today
                     # self.data.otu_dict[otu_id]['^physcraper:last_blasted'] = today
                 else:
@@ -2035,7 +2032,7 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
         for key in query_dict.keys():
             if float(query_dict[key]['evalue']) < float(self.config.e_value_thresh):
                 gi_id = query_dict[key]['^ncbi:gi']
-                if gi_id == None:
+                if gi_id is None:
                     gi_id = query_dict[key]['accession']
 
                 # debug(type(gi_id))
@@ -3003,7 +3000,7 @@ class FilterBlast(PhyscraperScrape):
                     debug("tax_name is None")
                     # debug(self.data.otu_dict[key])
                     gi_id = self.data.otu_dict[key]['^ncbi:gi']
-                    if gi_id == None:
+                    if gi_id is None:
                         gi_id = self.data.otu_dict[key]['^ncbi:accession']
                     # debug(gi_id)
                     # debug(type(gi_id))
