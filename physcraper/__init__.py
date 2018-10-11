@@ -3579,6 +3579,10 @@ class FilterBlast(PhyscraperScrape):
                     if self.data.otu_dict[key]['^ncbi:accession'] == gi_id:
                         self.data.otu_dict[key]['^physcraper:last_blasted'] = "1900/01/01"
                         self.data.otu_dict[key]['^physcraper:status'] = 'not added, there are enough seq per sp in tre'
+                if '^ncbi:accession' in self.data.otu_dict[key]:
+                    if self.data.otu_dict[key]['^ncbi:accession'] == gi_id:
+                        self.data.otu_dict[key]['^physcraper:last_blasted'] = "1900/01/01"
+                        self.data.otu_dict[key]['^physcraper:status'] = 'not added, there are enough seq per sp in tre'
         for gi_id in keylist:
             # for key in self.data.otu_dict.keys():
             #     # debug(self.data.otu_dict[key])
