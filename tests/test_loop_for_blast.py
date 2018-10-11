@@ -92,4 +92,4 @@ try:
 except:
     sys.stderr.write("\ntest failed\n")
 
-shutil.rmtree('{}/blast'.format(filteredScrape.workdir))
+# shutil.rmtree('{}/blast'.format(filteredScrape.workdir))
