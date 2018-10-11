@@ -673,7 +673,7 @@ class AlignTreeTax(object):
         assert int(ingroup_mrca)
         self.ott_mrca = ingroup_mrca  # TODO: we only use .ott_mrca to infer mrca_ncbi. Why not using the ncbi one directly?
         self.orig_seqlen = []  # FIXME
-        self.gi_dict = {}  # has all info about new blast seq  TODODELTE (should maybe go anyhow due to gi switch?): Should this not be part of physcraper class instead? it has all blast information. Blast is not part of this class.
+        self.gi_dict = {}  # has all info about new blast seq TODO: Cannot be deleted. Is used frequently! TODODELTE (should maybe go anyhow due to gi switch?): Should this not be part of physcraper class instead? it has all blast information. Blast is not part of this class.
         # self.orig_aln = alignment  # TODODELETE: we never do anything with it.
         # self.orig_newick = newick  # TODODELETE: we never do anything with it.
         self._reconciled = False  # TODO: for what do we want to use it? .... it was checking to see if name reconcilation has ahappened yet. Should get flipped to true when done. MK: Yes, but we never do anything with the information
@@ -1517,7 +1517,28 @@ class IdDicts(object):
                 if ncbi_id in self.ncbiid_to_spn.keys():
                     tax_name = self.ncbiid_to_spn[ncbi_id]
                 else:
-                    tax_name = self.ncbi_parser.get_name_from_id(ncbi_id)
+                    tries = 10
+                    Entrez.email = self.config.email
+                    for i in range(tries):
+                        try:
+                            # debug("find name efetch")
+                            handle = Entrez.efetch(db="nucleotide", id=gi_id, retmode="xml")
+                        except IndexError:
+                            # debug("except efetch")
+                            if i < tries - 1:  # i is zero indexed
+                                continue
+                            else:
+                                raise
+                        break
+                    read_handle = Entrez.read(handle)
+                    handle.close()
+                    tax_name = get_ncbi_tax_name(read_handle)
+                    ncbi_id = get_ncbi_tax_id(read_handle)
+                    self.ncbiid_to_spn[ncbi_id] = tax_name
+                    self.gi_ncbi_dict[gi_id] = ncbi_id
+                    if sp_dict:
+                        sp_dict['^ot:ottTaxonName'] = tax_name
+                        sp_dict['^ncbi:taxon'] = ncbi_id             
                     self.ncbiid_to_spn[ncbi_id] = tax_name
             else:  # usually being used for web-queries, local blast searches should have the information
                 # debug(gi_id)
@@ -3465,6 +3486,10 @@ class FilterBlast(PhyscraperScrape):
                     if self.data.otu_dict[key]['^ncbi:gi'] == gi_id:
                         self.data.otu_dict[key]['^physcraper:last_blasted'] = "1900/01/01"
                         self.data.otu_dict[key]['^physcraper:status'] = 'not added, there are enough seq per sp in tre'
+                if '^ncbi:accession' in self.data.otu_dict[key]:
+                    if self.data.otu_dict[key]['^ncbi:accession'] == gi_id:
+                        self.data.otu_dict[key]['^physcraper:last_blasted'] = "1900/01/01"
+                        self.data.otu_dict[key]['^physcraper:status'] = 'not added, there are enough seq per sp in tre'
         for gi_id in keylist:
             for key in self.data.otu_dict.keys():
                 # debug(self.data.otu_dict[key])
@@ -3474,6 +3499,12 @@ class FilterBlast(PhyscraperScrape):
                         self.data.otu_dict[key]['^physcraper:last_blasted'] = "1900/01/01"
                         self.data.otu_dict[key]['^physcraper:status'] = 'added, as representative of taxon'
                         # self.data.otu_dict[otu_id]['^ncbi:gi'] = gi_id
+                if '^ncbi:accession' in self.data.otu_dict[key]:
+                    if self.data.otu_dict[key]['^ncbi:accession'] == gi_id:
+                        self.data.otu_dict[key]['^physcraper:last_blasted'] = "1900/01/01"
+                        self.data.otu_dict[key]['^physcraper:status'] = 'not added, there are enough seq per sp in tre'
+
+
         # might not be necessary, I was missing some gi's when I was replacing the original one.
         # i leave the code here for now
         # reduced_gi_dict = {k: self.data.gi_dict[k] for k in keylist}
