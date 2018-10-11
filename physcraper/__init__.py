@@ -962,6 +962,7 @@ class AlignTreeTax(object):
         ncbi_id = None
         tax_name = None
         ott_id = None
+        debug(gi_id)
         # if type(gi_id) == int:
         # if (self.otu_dict[label]['^physcraper:status'].split(' ')[0] in self.seq_filter):
         #     if (self.otu_dict[label]['^physcraper:last_blasted'] == '1800/01/01'):
@@ -1436,7 +1437,7 @@ class IdDicts(object):
                         tax_name = "'{}'".format(tax_name)
                         tax_info = ncbi.get_name_translator([tax_name])
                     ncbi_id = int(tax_info.items()[0][1][0])
-          	except: 
+                except: 
                     sys.stderr.write("Taxon name does not match any name in ncbi. Check that name is written "
                                      "correctly: {}! We set it to unidentified".format(tax_name))
                     tax_name = 'Eukaryota'
@@ -2051,6 +2052,7 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
         :param fn_path: path to file containing the local blast searches
         :return: updated self.new_seqs and self.data.gi_dict dictionaries
         """
+        debug("read_local_blast")
         query_dict = {}
         with open(fn_path, mode='r') as infile:
             for lin in infile:
@@ -2084,6 +2086,7 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
                     query_dict[gi_id] = {'^ncbi:gi': gi_id, 'accession': gi_acc, 'staxids': staxids,
                                          'sscinames': sscinames, 'pident': pident, 'evalue': evalue,
                                          'bitscore': bitscore, 'sseq': sseq, 'title': stitle}
+        debug("key in query")
         for key in query_dict.keys():
             # print(self.gi_list_mrca)
             if float(query_dict[key]['evalue']) < float(self.config.e_value_thresh):
@@ -2121,8 +2124,8 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
                 for alignment in blast_record.alignments:
                     for hsp in alignment.hsps:
                         if float(hsp.expect) < float(self.config.e_value_thresh):
-                            gi_id = int(alignment.title.split('|')[1])
-                            assert type(gi_id) is int
+                            gi_id = int(alignment.title.split('|')[3])  # 1 is for gi
+                            # assert type(gi_id) is int
                             if len(self.gi_list_mrca) >= 1 and (gi_id not in self.gi_list_mrca):
                                 pass
                             else:
@@ -3001,12 +3004,12 @@ class FilterBlast(PhyscraperScrape):
 
     existing self objects are:
         self.sp_d: dictionary
-                key = species name
+                key = species name/id
                 value = dictionary:
                     key = otuID
                     value = otu_dict entry
         self.sp_seq_d: dictionary
-                key = species name
+                key = species name/id
                 value = dictionary (Is overwritten every 'round')
                     key = otuID
                     value = seq.
@@ -3085,7 +3088,7 @@ class FilterBlast(PhyscraperScrape):
                     downtorank_id = None
                     tax_name = str(tax_name).replace(" ", "_")
                     if self.config.blast_loc == 'remote':
-                        self.ids.get_rank_info_from_web(taxon_name=tax_name)
+                        tax_name = self.ids.get_rank_info_from_web(taxon_name=tax_name)
                         tax_id = self.ids.otu_rank[tax_name]["taxon id"]
                         lineage2ranks = self.ids.otu_rank[str(tax_name).replace(" ", "_")]["rank"]
                         ncbi = NCBITaxa()
@@ -3223,7 +3226,7 @@ class FilterBlast(PhyscraperScrape):
         if len(random_seq_ofsp) > 0:
             for key, val in random_seq_ofsp.items():
                 self.filtered_seq[key] = val
-        debug(self.filtered_seq)
+        # debug(self.filtered_seq)
         # debug(some)
         return self.filtered_seq
 
@@ -3415,40 +3418,56 @@ class FilterBlast(PhyscraperScrape):
         seq_present = 0
         if tax_id in self.sp_seq_d.keys():
             debug(tax_id)
+            debug(len(self.sp_seq_d[tax_id]))
+            debug(self.sp_seq_d[tax_id])
             for sp_keys in self.sp_seq_d[tax_id].keys():
                 print(sp_keys)
-                debug(self.sp_d[tax_id])
-                for item in self.sp_d[tax_id]:
-                    debug(item)
-                    if item['^physcraper:last_blasted'] != '1800/01/01':
-                        if u'^user:TaxonName' in item:
-                            if item[u'^ncbi:taxon'] == tax_id:
-                                if item['^physcraper:status'].split(' ')[0] not in self.seq_filter:
-                                
-                                    seq_present += 1
+                seq_present += 1
 
-                        elif '^ncbi:accession' in item:
-                            if item['^ncbi:accession'] == sp_keys:
+                # debug(self.sp_d[tax_id])
+                # debug(spme)
+                # for item in self.sp_d[tax_id]:
+                #     debug(item)
+                #     debug(some)
+                #     if item['^physcraper:status'].split(' ')[0] not in self.seq_filter:
+                #         if item['^ncbi:taxon'] == tax_id:
+                #             debug("considered")
+                #             seq_present += 1
 
-                                if item['^physcraper:status'] != "query":
-                                    if item['^physcraper:status'].split(' ')[0] not in self.seq_filter:
-                            
-                                        if isinstance(sp_keys, str):
-                                            seq_present += 1
-                                        if isinstance(sp_keys, unicode):
-                                            seq_present += 1
+                    # if item['^physcraper:last_blasted'] != '1800/01/01':
+                    #     if u'^user:TaxonName' in item:
+                    #         if item[u'^ncbi:taxon'] == tax_id:
+                    #             if item['^physcraper:status'].split(' ')[0] not in self.seq_filter:
+                    #                 debug("original")
+                    #                 seq_present += 1
+
+                    #     elif '^ncbi:accession' in item:
+                    #         if item['^ncbi:accession'] == sp_keys:
+
+                    #             if item['^physcraper:status'] != "query":
+                    #                 if item['^physcraper:status'].split(' ')[0] not in self.seq_filter:
+                    #                     debug(type(sp_keys))
+                    #                     if isinstance(sp_keys, str):
+                    #                         seq_present += 1
+                    #                     if isinstance(sp_keys, unicode):
+                    #                         seq_present += 1
+                    #     else:
+                    #         debug("something is going wrong")
+                    #         debug(spme)
 
         # this determines if a taxonomic name / otu is already present in the aln and how many new seqs were found
         new_taxon = True
         query_count = 0
         for item in self.sp_d[tax_id]:
+            # print(item)
             if '^physcraper:status' in item and item['^physcraper:status'].split(' ')[0] not in self.seq_filter:
+                print("decision")
                 if item['^physcraper:last_blasted'] != '1800/01/01':
                     new_taxon = False
                 if item['^physcraper:status'] == "query":
                     query_count += 1
         count_dict = {'seq_present': seq_present, 'query_count': query_count, 'new_taxon': new_taxon}
-        # debug(count_dict)
+        debug(count_dict)
         # debug(some)
         return count_dict
 
@@ -3567,22 +3586,6 @@ class FilterBlast(PhyscraperScrape):
                     if self.data.otu_dict[key]['^ncbi:accession'] == gi_id:
                         self.data.otu_dict[key]['^physcraper:last_blasted'] = "1900/01/01"
                         self.data.otu_dict[key]['^physcraper:status'] = 'not added, there are enough seq per sp in tre'
-                if '^ncbi:accession' in self.data.otu_dict[key]:
-                    if self.data.otu_dict[key]['^ncbi:accession'] == gi_id:
-                        self.data.otu_dict[key]['^physcraper:last_blasted'] = "1900/01/01"
-                        self.data.otu_dict[key]['^physcraper:status'] = 'not added, there are enough seq per sp in tre'
-                if '^ncbi:accession' in self.data.otu_dict[key]:
-                    if self.data.otu_dict[key]['^ncbi:accession'] == gi_id:
-                        self.data.otu_dict[key]['^physcraper:last_blasted'] = "1900/01/01"
-                        self.data.otu_dict[key]['^physcraper:status'] = 'not added, there are enough seq per sp in tre'
-                if '^ncbi:accession' in self.data.otu_dict[key]:
-                    if self.data.otu_dict[key]['^ncbi:accession'] == gi_id:
-                        self.data.otu_dict[key]['^physcraper:last_blasted'] = "1900/01/01"
-                        self.data.otu_dict[key]['^physcraper:status'] = 'not added, there are enough seq per sp in tre'
-                if '^ncbi:accession' in self.data.otu_dict[key]:
-                    if self.data.otu_dict[key]['^ncbi:accession'] == gi_id:
-                        self.data.otu_dict[key]['^physcraper:last_blasted'] = "1900/01/01"
-                        self.data.otu_dict[key]['^physcraper:status'] = 'not added, there are enough seq per sp in tre'
         for gi_id in keylist:
             # for key in self.data.otu_dict.keys():
             #     # debug(self.data.otu_dict[key])
@@ -3592,11 +3595,6 @@ class FilterBlast(PhyscraperScrape):
             #             self.data.otu_dict[key]['^physcraper:last_blasted'] = "1900/01/01"
             #             self.data.otu_dict[key]['^physcraper:status'] = 'added, as representative of taxon'
             #             # self.data.otu_dict[otu_id]['^ncbi:gi'] = gi_id
-                if '^ncbi:accession' in self.data.otu_dict[key]:
-                    if self.data.otu_dict[key]['^ncbi:accession'] == gi_id:
-                        self.data.otu_dict[key]['^physcraper:last_blasted'] = "1900/01/01"
-                        self.data.otu_dict[key]['^physcraper:status'] = 'added, as representative of taxon'
-                        # self.data.otu_dict[otu_id]['^ncbi:gi'] = gi_id
                 if '^ncbi:accession' in self.data.otu_dict[key]:
                     if self.data.otu_dict[key]['^ncbi:accession'] == gi_id:
                         self.data.otu_dict[key]['^physcraper:last_blasted'] = "1900/01/01"
