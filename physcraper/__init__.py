@@ -1031,7 +1031,7 @@ class AlignTreeTax(object):
         # debug(self.gi_dict[gi_id].keys())
 
         self.otu_dict[otu_id] = {}
-        self.otu_dict[otu_id]['^ncbi:gi'] = gi_id
+        self.otu_dict[otu_id]['^ncbi:gi'] = self.gi_dict[gi_id]['^ncbi:gi']
         self.otu_dict[otu_id]['^ncbi:accession'] = self.gi_dict[gi_id]['accession']
         self.otu_dict[otu_id]['^ncbi:title'] = self.gi_dict[gi_id]['title']
         self.otu_dict[otu_id]['^ncbi:taxon'] = ncbi_id
@@ -3217,16 +3217,21 @@ class FilterBlast(PhyscraperScrape):
         if (threshold - count) <= 0:
             debug("already too many samples of sp in aln, skip adding more.")
         elif len(seq_blast_score.keys()) == (threshold - count):
+            debug("add exact number")
             random_seq_ofsp = seq_blast_score
         elif len(seq_blast_score.keys()) > (threshold - count):
+            debug("choose random")
             random_seq_ofsp = random.sample(seq_blast_score.items(), (threshold - count))
             random_seq_ofsp = dict(random_seq_ofsp)
         elif len(seq_blast_score.keys()) < (threshold - count):
+            debug("add all avail")
             random_seq_ofsp = seq_blast_score
+        debug("length of new seq per tax id")
+        debug(len(random_seq_ofsp))
         if len(random_seq_ofsp) > 0:
             for key, val in random_seq_ofsp.items():
                 self.filtered_seq[key] = val
-        # debug(self.filtered_seq)
+        debug(self.filtered_seq)
         # debug(some)
         return self.filtered_seq
 
@@ -3377,11 +3382,13 @@ class FilterBlast(PhyscraperScrape):
                     #     if gi_num is None:
                     #         gi_num = otu_id['^ncbi:accession']
                     if '^ncbi:accession' in otu_id:
-                        gi_num = int(otu_id['^ncbi:accession'])
+                        gi_num = otu_id['^ncbi:accession']
                         # debug(gi_num)
                         # debug("new")
                         file_present = False
                         # debug(gi_num)
+                        # debug( self.new_seqs.keys())
+                        # debug(some)
                         if gi_num in self.new_seqs.keys():
                             file_present = True
                         if file_present:  # short for if file_present == True
@@ -3415,14 +3422,15 @@ class FilterBlast(PhyscraperScrape):
         :return: dict which contains information of how many seq are already present in aln, how many new seq have been
                 found and if the taxon is a new taxon or if seq are already present
         """
+        debug("count_num_seq")
         seq_present = 0
         if tax_id in self.sp_seq_d.keys():
-            debug(tax_id)
-            debug(len(self.sp_seq_d[tax_id]))
-            debug(self.sp_seq_d[tax_id])
+            # debug(tax_id)
+            # debug(len(self.sp_seq_d[tax_id]))
+            # debug(self.sp_seq_d[tax_id])
             for sp_keys in self.sp_seq_d[tax_id].keys():
-                print(sp_keys)
-                seq_present += 1
+                if len(sp_keys.split('.')) == 1:
+                    seq_present += 1
 
                 # debug(self.sp_d[tax_id])
                 # debug(spme)
@@ -3461,13 +3469,14 @@ class FilterBlast(PhyscraperScrape):
         for item in self.sp_d[tax_id]:
             # print(item)
             if '^physcraper:status' in item and item['^physcraper:status'].split(' ')[0] not in self.seq_filter:
-                print("decision")
+                # print("decision")
                 if item['^physcraper:last_blasted'] != '1800/01/01':
                     new_taxon = False
                 if item['^physcraper:status'] == "query":
                     query_count += 1
         count_dict = {'seq_present': seq_present, 'query_count': query_count, 'new_taxon': new_taxon}
-        debug(count_dict)
+        # debug(tax_id)
+        # debug(count_dict)
         # debug(some)
         return count_dict
 
@@ -3485,6 +3494,8 @@ class FilterBlast(PhyscraperScrape):
         debug("length of sp_d")
         debug(len(self.sp_d))
         for tax_id in self.sp_d:
+            debug("tax_id")
+
             debug(tax_id)
             count_dict = self.count_num_seq(tax_id)
             seq_present = count_dict["seq_present"]
@@ -3502,7 +3513,7 @@ class FilterBlast(PhyscraperScrape):
                     elif selectby == "blast":
                         # if seq_present >= 1 and seq_present < threshold and count_dict["new_taxon"] == False and query_count != 0:
                         if 1 <= seq_present < threshold and count_dict["new_taxon"] is False and query_count != 0:
-                            # debug("seq_present>0")
+                            debug("seq_present>0")
                             # species is not new in alignment, make blast with existing seq
                             if query_count + seq_present > threshold:
                                 taxonfn = self.loop_for_write_blast_files(tax_id)
@@ -3519,7 +3530,7 @@ class FilterBlast(PhyscraperScrape):
                                 self.add_all(tax_id)
                         # species is completely new in alignment
                         elif seq_present == 0 and count_dict["new_taxon"] is True and query_count >= 1:
-                            # debug("completely new taxon to blast")
+                            debug("completely new taxon to blast")
                             # species is completely new in alignment, make blast with random species
                             # debug(count_dict)
                             # debug(tax_id)
