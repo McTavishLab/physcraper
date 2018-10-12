@@ -24,7 +24,7 @@ ingroup_mrca = 723076
 if not os.path.exists("{}".format(workdir)):
         os.makedirs("{}".format(workdir))
 
-conf = ConfigObj(configfi)
+conf = ConfigObj(configfi, interactive=False)
 ids = IdDicts(conf, workdir=workdir, mrca=ingroup_mrca)
 
 

@@ -17,7 +17,7 @@ absworkdir = os.path.abspath(noblack)
 if not os.path.exists(os.path.join(absworkdir, "current_blast_run/")):
     os.makedirs(os.path.join(absworkdir, "current_blast_run/"))
 try:
-    conf = ConfigObj(configfi)
+    conf = ConfigObj(configfi, interactive=False)
     data_obj = pickle.load(open("tests/data/precooked/tiny_dataobj.p", 'rb'))
     data_obj.workdir = absworkdir
     ids = IdDicts(conf, workdir=data_obj.workdir)

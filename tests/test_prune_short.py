@@ -20,7 +20,7 @@ otu_jsonfi = "{}/otu_dict.json".format(workdir)
 if not os.path.exists("{}".format(workdir)):
         os.makedirs("{}".format(workdir))
 
-conf = physcraper.ConfigObj(configfi) 
+conf = ConfigObj(configfi, interactive=False)
 ids = physcraper.IdDicts(conf, workdir=workdir)
 
 if os.path.exists(otu_jsonfi):

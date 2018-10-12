@@ -20,7 +20,7 @@ otu_jsonfi = "{}/otu_dict.json".format(workdir)
 if not os.path.exists("{}".format(workdir)):
 	os.makedirs("{}".format(workdir))
 
-conf = ConfigObj(configfi)
+conf = ConfigObj(configfi, interactive=False)
 ids = IdDicts(conf, workdir=workdir)
 
 otu_json = OtuJsonDict(id_to_spn, ids)

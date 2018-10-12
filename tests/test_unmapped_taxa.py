@@ -17,7 +17,7 @@ configfi = "tests/data/test.config"
 
 try:
     # physcraper.debug(os.getcwd())
-    conf = physcraper.ConfigObj(configfi)
+    conf = ConfigObj(configfi, interactive=False)
     # physcraper.debug("conf")
     conf.unmapped = 'keep'
     # physcraper.debug("set unmapped")

@@ -18,7 +18,7 @@ downtorank = None
 absworkdir = os.path.abspath(workdir)
 
 try:
-    conf = physcraper.ConfigObj(configfi)
+    conf = ConfigObj(configfi, interactive=False)
     data_obj = pickle.load(open("tests/data/precooked/tiny_dataobj.p", 'rb'))
     data_obj.workdir = absworkdir
     ids = physcraper.IdDicts(conf, workdir=data_obj.workdir)
