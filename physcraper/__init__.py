@@ -156,7 +156,8 @@ class ConfigObj(object):
         assert (self.phylesystem_loc in ['local', 'api'])  # default is api, but can run on local version of OpenTree datastore
         self.ott_ncbi = config['taxonomy']['ott_ncbi']
         assert os.path.isfile(self.ott_ncbi)
-        self.id_pickle = os.path.abspath(config['taxonomy']['id_pickle'])  # rewrites the relative path as an absolute path so that it behaves when changing dirs
+        # rewrites relative path to absolute path so that it behaves when changing dirs
+        self.id_pickle = os.path.abspath(config['taxonomy']['id_pickle'])
         self.email = config['blast']['Entrez.email']
         assert '@' in self.email
         self.blast_loc = config['blast']['location']
@@ -190,7 +191,6 @@ class ConfigObj(object):
             if self.blast_loc == 'local':
                 sys.stdout.write("local blast db {}\n".format(self.blastdb))
 
-
     def _download_localblastdb(self):
         """Check if files are present and if they are uptodate.
         If not files will be downloaded. 
@@ -216,7 +216,7 @@ class ConfigObj(object):
                     os.system("gunzip -cd taxdb.tar.gz | (tar xvf - )")
                     os.chdir(cwd)
                 elif x == "no":
-                    print("You did not agree to download data from ncbi. Programm will default to blast web-queries.")
+                    print("You did not agree to download data from ncbi. Program will default to blast web-queries.")
                     print("This is slow and crashes regularly!")
                     self.blast_loc = 'remote'
                 else:
@@ -254,7 +254,7 @@ class ConfigObj(object):
                               "./tests/data/taxdump.tar.gz")
                     os.system("gunzip - cd ./tests/data/taxdump.tar.gz | (tar xvf - names.dmp nodes.dmp)")
                 elif x == "no":
-                    print("You did not agree to download data from ncbi. Programm will default to blast web-queries.")
+                    print("You did not agree to download data from ncbi. Program will default to blast web-queries.")
                     print("This is slow and crashes regularly!")
                     self.blast_loc = 'remote'
                 else:
@@ -312,13 +312,15 @@ def generate_ATT_from_phylesystem(aln,
     """gathers together tree, alignment, and study info - forces names to otu_ids.
     Outputs AlignTreeTax object.
 
-    Input can be either a study ID and tree ID from OpenTree  
-    # TODO: Is there another way to get those data, than actually going to the OToL website, 
-    or can I query the internet for a desired part of the tree and corresponding studies?TODO MK: write script to easily get those information: Yes it can, use peyotl find_trees
-     
-     According to code it cannot be either, but must be both
+    Input can be either a study ID and tree ID from OpenTree
+    # TODO: According to code it cannot be either, but must be both
 
-    Alignemnt need to be a Dendropy DNA character matrix!
+    # TODO: Is there another way to get those data, than actually going to the OToL website.
+    # TODO MK: write script to easily get those information: Yes it can, use peyotl find_trees
+
+
+
+    Alignment need to be a Dendropy DNA character matrix!
 
     :param aln: dendropy alignment object
     :param workdir: path to working directory
@@ -634,7 +636,7 @@ class AlignTreeTax(object):
         self.unpubl_otu_json: optional, will contain the OTU-dict for unpublished data, if that option is used
 
     Following functions are called during the init-process:
-        self._reconcile_names(): ## TODO: removes taxa, that are not found in both, the phylogeny and the aln and changes their names????
+        self._reconcile_names(): removes taxa that are not found in both, the phylogeny and the aln.
 
     The physcraper class is then updating: self.aln, self.tre and self.otu_dict, self.ps_otu, self.gb_dict
     """
@@ -675,10 +677,11 @@ class AlignTreeTax(object):
         self.unpubl_otu_json = None
     
     def _reconcile_names(self):
-        """This checks that the tree "original labels" from phylsystem
+        """Taxa that are only found in the tree, or only in the alignment are deleted.
+
+        This checks that the tree "original labels" from phylsystem
         align with those found in the alignment. Spaces vs underscores
         kept being an issue, so all spaces are coerced to underscores throughout!
-        Taxa that are only found in the tree, or only in the alignment are deleted.
         """
         treed_tax = set()
         for leaf in self.tre.leaf_nodes():
@@ -700,7 +703,7 @@ class AlignTreeTax(object):
             if taxon in treed_tax:
                 self.tre.prune_taxa(prune)
         for tax in prune:
-            #potentially slow at large number of taxa and large numbers to be pruned
+            # potentially slow at large number of taxa and large numbers to be pruned
             found = 0
             for otu in self.otu_dict:
                 if self.otu_dict[otu][u'^ot:originalLabel'] == tax.label:
@@ -724,7 +727,8 @@ class AlignTreeTax(object):
                     newname = newname[:-1]
                 for otu in self.otu_dict:
                     # debug(self.otu_dict[otu].get('^ot:originalLabel'))
-                    if self.otu_dict[otu].get('^ot:originalLabel') == tax.label or self.otu_dict[otu].get('^ot:originalLabel') == newname:
+                    original = self.otu_dict[otu].get('^ot:originalLabel')
+                    if original == tax.label or original == newname:
                         tax.label = otu
                         found_label = 1
                 if found_label == 0:
@@ -737,9 +741,8 @@ class AlignTreeTax(object):
     def prune_short(self, min_seqlen_perc=0.75):
         """Prunes sequences from alignment if they are shorter than 75%, or if tip is only present in tre.
 
-        Sometimes in the de-concatenating of the original alignment
-        taxa with no sequence are generated or in general if certain sequences are really short. In other cases there might be too many tips in the tre
-        This gets rid of those from both the tre and the alignment.
+        Sometimes in the de-concatenating of the original alignment taxa with no sequence are generated
+        or in general if certain sequences are really short. This removes those from both the tre and the alignment.
 
         has test: test_prune_short.py
 
@@ -760,7 +763,6 @@ class AlignTreeTax(object):
         aln_ids = set()
         for tax, seq in self.aln.items():
             aln_ids.add(tax.label)
-
             if len(seq.symbols_as_string().translate(None, "-?")) <= seq_len_cutoff:
                 prune.append(tax)
         treed_taxa = set()
@@ -774,17 +776,17 @@ class AlignTreeTax(object):
             fi.write("Taxa pruned from tree and alignment in prune short "
                      "step due to sequence shorter than {}\n".format(seq_len_cutoff))
             for tax in prune:
+                # sometimes it does not delete it with the statement below. Tried to figure out why, have no clue yet.
                 # self.aln.remove_sequences(prune)
-                # self.tre.prune_taxa_with_labels(prune)  # sometimes it does not delete it with the statement before. Tried to figure out why, have no clue yet.
+                # self.tre.prune_taxa_with_labels(prune)
                 self.remove_taxa_aln_tre(tax.label)
                 fi.write("{}, {}\n".format(tax.label, self.otu_dict[tax.label].get('^ot:originalLabel')))
             fi.close()
         # debug(self.aln.taxon_namespace)
         for tax in prune:
             self.otu_dict[tax.label]['^physcraper:status'] = "deleted in prune short"
-            # self.aln.taxon_namespace.remove_taxon(tax.label)  # remove_taxon:raises no error, remove_taxon_label: raises error
+            # self.aln.taxon_namespace.remove_taxon(tax.label)  # remove_taxon: raises no error, remove_taxon_label: raises error
             # self.tre.taxon_namespace.remove_taxon(tax.label)  # raises error if not found, instead of remove_taxon
-
             # self.remove_taxa_aln_tre(tax.label)
         # debug([self.aln.taxon_namespace, len(self.aln.taxon_namespace)])
         # debug([self.tre.taxon_namespace, len(self.tre.taxon_namespace)])
@@ -794,7 +796,6 @@ class AlignTreeTax(object):
         # debug([item for item in treed_taxa if item not in aln_ids])
         # debug([item for item in aln_ids if item not in treed_taxa])
         assert treed_taxa.issubset(aln_ids)
-
         self.orig_seqlen = [len(self.aln[tax].symbols_as_string().replace("-", "").replace("N", "")) for tax in self.aln]
         # self.reconcile()
         # for key in  self.otu_dict.keys():
@@ -1237,7 +1238,7 @@ class IdDicts(object):
     """
 
     # TODO - could - should be shared acrosss runs?! .... nooo.
-    def __init__(self, config_obj, workdir, mrca = None):
+    def __init__(self, config_obj, workdir, mrca=None):
         """Generates a series of name disambiguation dicts"""
         self.workdir = workdir  # TODO: Not needed. only used for dump and map_gi. map_gi file does not exists. dump is only used in wrapper, and we have the information of workdir available in wrapper functions anyways
         self.config = config_obj
@@ -1281,7 +1282,7 @@ class IdDicts(object):
         else:  # ncbi parser contains information about spn, tax_id, and ranks
             self.ncbi_parser = ncbi_data_parser.Parser(names_file=self.config.ncbi_parser_names_fn,
                                                        nodes_file=self.config.ncbi_parser_nodes_fn)
-        if self.mrca_ott != None:
+        if self.mrca_ott is not None:
             self.get_ncbi_mrca()
 
     def get_ncbi_mrca(self):
@@ -1351,7 +1352,7 @@ class IdDicts(object):
                             ncbi_id = Entrez.read(Entrez.esearch(db="taxonomy", term=tax_name, RetMax=100))['IdList'][0]
 
                         ncbi_id = int(ncbi_id)
-                    except:  # TODO: is either IndexError or rllib2.HTTPError: HTTP Error 400: Bad Request
+                    except:  # TODO: is either IndexError or urllib2.HTTPError: HTTP Error 400: Bad Request
                         # debug("except esearch/read")
                         if i < tries - 1:  # i is zero indexed
                             continue
@@ -1360,7 +1361,7 @@ class IdDicts(object):
                     break
                 # debug(ncbi_id)
                 # debug(type(ncbi_id))
-            except:  # TODO: is either IndexError or rllib2.HTTPError: HTTP Error 400: Bad Request
+            except:  # TODO: is either IndexError or urllib2.HTTPError: HTTP Error 400: Bad Request
                 debug("except")
                 try:
                     ncbi = NCBITaxa()
@@ -1376,7 +1377,7 @@ class IdDicts(object):
                     tax_name = 'unidentified'
                     # ncbi_id = Entrez.read(Entrez.esearch(db="taxonomy", term=tax_name, RetMax=100))['IdList'][0]
                     ncbi_id = 0
-                    ###TODO: ADD otudict entries....
+                    # TODO: ADD otudict entries....
                     ncbi_id = int(ncbi_id)
         assert type(ncbi_id) is int
         self.spn_to_ncbiid[tax_name] = ncbi_id
@@ -1430,6 +1431,8 @@ class IdDicts(object):
             debug(tax_name)
             assert type(ncbi_id) == int
             self.otu_rank[tax_name] = {"taxon id": ncbi_id, "lineage": lineage, "rank": lineage2ranks}
+            if ncbi_id == 0:
+                self.otu_rank[tax_name] = {"taxon id": ncbi_id, "lineage": 'life', "rank": 'unassigned'}
         return tax_name
 
     def find_name(self, sp_dict=None, acc=None):
