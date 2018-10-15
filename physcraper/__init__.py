@@ -1301,6 +1301,8 @@ class IdDicts(object):
     def ott_id_to_ncbiid(self, ott_id):
         """ Find ncbi Id for ott id. Is only used for the mrca list thing.
         """
+        debug('ottid to ncbiid')
+        debug(ott_id)
         if ott_id in self.ott_to_name:
             # debug("get id from ott_to_name")
             ott_name = self.ott_to_name[ott_id]
@@ -1316,7 +1318,7 @@ class IdDicts(object):
             # debug("else")
             tx = APIWrapper().taxomachine
             nms = tx.taxon(ott_id)
-            # debug(nms)
+            debug(nms)
             ott_name = nms[u'unique_name']
             # debug(ott_name)
             ncbi_id = None
@@ -1950,7 +1952,7 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
         # TODO MK: gi list limited to 100000000, for huge trees that is a problem. Think of what to do...
         debug("get_all_acc_mrca")
         Entrez.email = self.config.email
-        ### NOTE MK> if mrca ingroup is list, use the list not the mrca_ncbi/ott
+        ### NOTE MK: if mrca ingroup is list, use the list not the mrca_ncbi/ott
         if len(self.ids.mrca_ncbi) >=2:
             len_ncbi = len(self.ids.mrca_ncbi)
             equery = '('
@@ -1963,13 +1965,13 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
             # debug(equery)
         else:
             equery = "txid{}[orgn]".format(self.mrca_ncbi)
-        # debug(equery)
+        debug(equery)
         handle = Entrez.esearch(db="nucleotide", term=equery, idtype='acc',
                                 usehistory='n', RetMax=100000000)
         records = Entrez.read(handle)
-        # print(records)
+        print(records)
         id_list = records['IdList']
-        # print(id_list)
+        print(id_list)
         acc_l = []
         for acc_id in id_list:
             # debug(acc_id)
