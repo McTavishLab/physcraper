@@ -25,7 +25,7 @@ try:
     data_obj.workdir = absworkdir
     # physcraper.debug("dataobj loaded")
     ids = physcraper.IdDicts(conf, workdir=data_obj.workdir)
-    ids.gi_ncbi_dict = pickle.load(open("tests/data/precooked/otol_tiny_gi_map.p", "rb"))
+    ids.acc_ncbi_dict = pickle.load(open("tests/data/precooked/otol_tiny_gi_map.p", "rb"))
     # physcraper.debug("ids loaded")
     scraper = pickle.load(open("tests/data/precooked/otol_scraper.p", "rb"))
     # physcraper.debug("scraper loaded")
@@ -48,7 +48,7 @@ except:
     pickle.dump(data_obj, open("tests/data/precooked/otol_tiny_dataobj.p", "wb" ))
     ids =  physcraper.IdDicts(conf, workdir=workdir)
     # physcraper.debug(os.getcwd())
-    pickle.dump(ids.gi_ncbi_dict, open("tests/data/precooked/otol_tiny_gi_map.p", "wb" ))
+    pickle.dump(ids.acc_ncbi_dict, open("tests/data/precooked/otol_tiny_gi_map.p", "wb"))
     data_obj.write_files()
     scraper = physcraper.PhyscraperScrape(data_obj, ids)
     # physcraper.debug(len(scraper.data.aln.taxon_namespace))

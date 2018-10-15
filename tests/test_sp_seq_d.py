@@ -20,7 +20,7 @@ try:
     data_obj = pickle.load(open("tests/data/precooked/tiny_dataobj.p", 'rb'))
     data_obj.workdir = absworkdir
     ids = IdDicts(conf, workdir=data_obj.workdir)
-    ids.gi_ncbi_dict = pickle.load(open("tests/data/precooked/tiny_gi_map.p", "rb"))
+    ids.acc_ncbi_dict = pickle.load(open("tests/data/precooked/tiny_gi_map.p", "rb"))
 except:
     sys.stdout.write("\n\nTest FAILED\n\n")
     sys.exit()
@@ -29,7 +29,7 @@ filteredScrape =  FilterBlast(data_obj, ids)
 
 filteredScrape._blasted = 1
 blast_dir = "tests/data/precooked/fixed/tte_blast_files"
-filteredScrape.gi_list_mrca = pickle.load(open("tests/data/precooked/gi_list_mrca.p", 'rb'))
+filteredScrape.acc_list_mrca = pickle.load(open("tests/data/precooked/acc_list_mrca.p", 'rb'))
 filteredScrape.read_blast(blast_dir=blast_dir)
 filteredScrape.remove_identical_seqs()
 filteredScrape.sp_dict(downtorank)
@@ -44,7 +44,7 @@ try:
                 not_added = ['deleted', 'subsequence,', 'not']
                 if v2['^physcraper:status'].split(' ')[0] not in not_added: 
                     if '^ncbi:gi' in v2:
-                        gi_sp_d.append(v2['^ncbi:gi'])
+                        gi_sp_d.append(v2['^ncbi:accession'])
     user_sp_d = []
     for v in filteredScrape.sp_d.values():
         for v2 in v:
@@ -60,9 +60,12 @@ try:
     ott_sp_seq_d = []
     for v in filteredScrape.sp_seq_d.values():
         for k in v.keys():
-            if type(k) == int:
+            # print(k)
+            if  len(k.split('.')) >=2:
+            # if type(k) == int:
                 gi_sp_seq_d.append(k)
-            if type(k) == str or type(k) == unicode:
+            else:
+            # if type(k) == str or type(k) == unicode:
                 ott_sp_seq_d.append(k)
     # print(len(ott_sp_seq_d), len(user_sp_d), len(gi_sp_seq_d), len(gi_sp_d))
     assert len(ott_sp_seq_d) == len(user_sp_d)

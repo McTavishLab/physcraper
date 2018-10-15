@@ -12,7 +12,7 @@ from physcraper import ConfigObj, PhyscraperScrape, IdDicts
 sys.stdout.write("Running test remove_identical_seqs\n\n")
 workdir="tests/data/tmp/owndata"
 absworkdir = os.path.abspath(workdir)
-conf = ConfigObj("tests/data/test.config")
+conf = ConfigObj("tests/data/test.config", interactive=False)
 
 
 
@@ -20,7 +20,7 @@ try:
    data_obj = pickle.load(open("tests/data/precooked/tiny_dataobj.p", 'rb'))
    data_obj.workdir = absworkdir
    ids = IdDicts(conf, workdir=data_obj.workdir)
-   ids.gi_ncbi_dict = pickle.load(open("tests/data/precooked/tiny_gi_map.p", "rb" ))
+   ids.acc_ncbi_dict = pickle.load(open("tests/data/precooked/tiny_gi_map.p", "rb"))
 except:
    sys.stderr.write("run 'python tests/testfilesetup.py' to setup data files for tests. EXITING")
    sys.stdout.write("\n\nTest `remove_identical_seqs' FAILED\n\n")
@@ -34,7 +34,7 @@ scraper.config.gifilename = False
 
 scraper._blasted = 1
 blast_dir = "tests/data/precooked/fixed/tte_blast_files"
-scraper.gi_list_mrca = pickle.load(open("tests/data/precooked/gi_list_mrca.p", 'rb'))
+scraper.acc_list_mrca = pickle.load(open("tests/data/precooked/acc_list_mrca.p", 'rb'))
 scraper.read_blast(blast_dir=blast_dir)
 
 a = len(scraper.new_seqs) == 40
@@ -63,7 +63,7 @@ scraper2.ids.otu_rank = {}
 
 scraper2.config.gifilename = False
 j = len(scraper2.data.aln) == 5
-scraper2.gi_list_mrca = pickle.load(open("tests/data/precooked/gi_list_mrca.p", 'rb'))
+scraper2.acc_list_mrca = pickle.load(open("tests/data/precooked/acc_list_mrca.p", 'rb'))
 scraper2.read_blast(blast_dir="tests/data/precooked/fixed/tte_blast_files")
 scraper2.config.seq_len_perc = 0.998 #Change seq len percentage from default of 75%
 
