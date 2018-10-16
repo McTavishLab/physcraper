@@ -2949,7 +2949,7 @@ class FilterBlast(PhyscraperScrape):
                 if self.config.blast_loc == 'remote':
                     tax_name = self.ids.get_rank_info_from_web(taxon_name=tax_name)
                     debug(tax_name)
-                    debug(self.ids.otu_rank.keys())
+                    # debug(self.ids.otu_rank.keys())
                     tax_id = self.ids.otu_rank[tax_name]["taxon id"]
                 else:
                     tax_id = self.ids.ncbi_parser.get_id_from_name(tax_name)
@@ -2963,17 +2963,16 @@ class FilterBlast(PhyscraperScrape):
                         lineage2ranks = self.ids.otu_rank[str(tax_name).replace(" ", "_")]["rank"]
                         debug(lineage2ranks)
                         ncbi = NCBITaxa()
-                        for key_rank, val in lineage2ranks.iteritems():
-                            debug([key_rank, val])
-                            # if 
-
-                            #     self.otu_rank[tax_name] = {"taxon id": ncbi_id, "lineage": 'life', "rank": 'unassigned'}
-
-
-                            if val == downtorank:
-                                downtorank_id = key_rank
-                                value_d = ncbi.get_taxid_translator([downtorank_id])
-                                downtorank_name = value_d[int(downtorank_id)]
+                        if lineage2ranks == 'unassigned':
+                            downtorank_id = tax_id
+                            downtorank_name = tax_name
+                        else:
+                            for key_rank, val in lineage2ranks.iteritems():
+                                debug([key_rank, val])
+                                if val == downtorank:
+                                    downtorank_id = key_rank
+                                    value_d = ncbi.get_taxid_translator([downtorank_id])
+                                    downtorank_name = value_d[int(downtorank_id)]
                     else:
                         tax_id = self.ids.ncbi_parser.get_id_from_name(tax_name)
                         downtorank_id = self.ids.ncbi_parser.get_downtorank_id(tax_id, self.downtorank)
