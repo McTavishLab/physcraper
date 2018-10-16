@@ -1440,10 +1440,11 @@ class IdDicts(object):
         return tax_name
 
     def find_name(self, sp_dict=None, acc=None):
-        """ Find the taxon name in the sp_dict or of a Genbank accession number.
+        """ Find the taxon name in the sp_dict (= otu_dict entry) or of a Genbank accession number.
         If not already known it will ask ncbi using the accession number
 
-        :param acc: Genbankaccession number
+        :param sp_dict: otu_dict entry
+        :param acc: Genbank accession number
         :return: ncbi taxon id
         """
         # debug("find_name")
@@ -1619,9 +1620,10 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
                     * 'accession':Genbank accession number
                     * 'length': length of sequence
                     * 'title': string combination of hit_id and hit_def
-                    * 'hit_id': string combination of gi id and accession number
+                   # * 'hit_id': string combination of gi id and accession number
                     * 'hsps': Bio.Blast.Record.HSP object
-                    * 'hit_def': title from GenBank sequence
+                   # * 'hit_def': title from GenBank sequence
+                    * '^ncbi:gi': gi_id
             self.otu_by_gi: dictionary that contains ????:   # TODO> should be renamed to otu_to_acc if we are using it.
                         key:
                         value:
@@ -1954,8 +1956,8 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
         # TODO MK: gi list limited to 100000000, for huge trees that is a problem. Think of what to do...
         debug("get_all_acc_mrca")
         Entrez.email = self.config.email
-        ### NOTE MK: if mrca ingroup is list, use the list not the mrca_ncbi/ott
-        if len(self.ids.mrca_ncbi) >=2:
+        # NOTE MK: if mrca ingroup is list, use the list not the mrca_ncbi/ott
+        if len(self.ids.mrca_ncbi) >= 2:
             len_ncbi = len(self.ids.mrca_ncbi)
             equery = '('
             for ncbi_id in self.ids.mrca_ncbi:
@@ -2073,7 +2075,8 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
                                     stitle = alignment.__dict__['title']
                                     hsps = alignment.__dict__['hsps']
                                     length = alignment.__dict__['length']
-                                    query_dict = {'^ncbi:gi': gi_id, 'accession': gb_acc, 'title': stitle, 'length': length, 'hsps': hsps}
+                                    query_dict = {'^ncbi:gi': gi_id, 'accession': gb_acc, 'title': stitle, 
+                                                  'length': length, 'hsps': hsps}
                                     self.data.gb_dict[gb_id] = query_dict
                                     # print(alignment.__dict__)
                                     # self.data.gb_dict[gb_id] = alignment.__dict__
@@ -2124,7 +2127,8 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
                                 # print(self.data.unpubl_otu_json.keys())
 
                                 # print(self.data.unpubl_otu_json['otu{}'.format(gi_id)])
-                                self.data.gb_dict[fake_gi] = {'accession': "000000{}.0".format(gb_counter), '^ncbi:gi': "000000{}".format(gb_counter),
+                                self.data.gb_dict[fake_gi] = {'accession': "000000{}.0".format(gb_counter), 
+                                                              '^ncbi:gi': "000000{}".format(gb_counter),
                                                               'title': "unpublished", 'localID': gi_id}
                                 self.data.gb_dict[fake_gi].update(self.data.unpubl_otu_json['otu{}'.format(gi_id)])
                                 gb_counter += 1
@@ -2555,9 +2559,8 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
         Just for placement, to use as starting tree."""
 
         # TODO MK: if statement is not yet working, as it contains a path not the number of seqs
-        #if len(self.newseqs_file) <= 500:
+        # if len(self.newseqs_file) <= 500:
         if self.backbone is not True:
-
             if os.path.exists("RAxML_labelledTree.PLACE"):
                 os.rename("RAxML_labelledTree.PLACE", "RAxML_labelledTreePLACE.tmp")
             if _VERBOSE:
@@ -2592,7 +2595,7 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
         else:
             cwd = (os.getcwd())
             os.chdir(self.workdir)
-            backbonetre = self.orig_newick
+            backbonetre = self.data.orig_newick
             backbonetre.resolve_polytomies()
             backbonetre.write(path="backbone.tre", schema="newick", unquoted_underscores=True)
             os.chdir(cwd)
