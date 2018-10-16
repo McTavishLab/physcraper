@@ -2961,8 +2961,15 @@ class FilterBlast(PhyscraperScrape):
                         tax_name = self.ids.get_rank_info_from_web(taxon_name=tax_name)
                         tax_id = self.ids.otu_rank[tax_name]["taxon id"]
                         lineage2ranks = self.ids.otu_rank[str(tax_name).replace(" ", "_")]["rank"]
+                        debug(lineage2ranks)
                         ncbi = NCBITaxa()
                         for key_rank, val in lineage2ranks.iteritems():
+                            debug([key_rank, val])
+                            # if 
+
+                            #     self.otu_rank[tax_name] = {"taxon id": ncbi_id, "lineage": 'life', "rank": 'unassigned'}
+
+
                             if val == downtorank:
                                 downtorank_id = key_rank
                                 value_d = ncbi.get_taxid_translator([downtorank_id])
