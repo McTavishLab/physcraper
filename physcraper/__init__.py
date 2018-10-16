@@ -1428,6 +1428,7 @@ class IdDicts(object):
             #     tax_id = int(tax_info.items()[0][1][0])
             ncbi = NCBITaxa()
             lineage = ncbi.get_lineage(ncbi_id)
+            debug([ncbi_id, lineage])
             lineage2ranks = ncbi.get_rank(lineage)
             tax_name = str(tax_name).replace(" ", "_")
             debug(tax_name)
