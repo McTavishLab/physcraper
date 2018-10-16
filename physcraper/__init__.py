@@ -966,7 +966,8 @@ class AlignTreeTax(object):
         # debug(self.gb_dict[gb_id].keys())
         self.otu_dict[otu_id] = {}
         self.otu_dict[otu_id]['^ncbi:gi'] = self.gb_dict[gb_id]['^ncbi:gi']
-        self.otu_dict[otu_id]['^ncbi:accession'] = self.gb_dict[gb_id]['accession']
+        # self.otu_dict[otu_id]['^ncbi:accession'] = self.gb_dict[gb_id]['accession']
+        self.otu_dict[otu_id]['^ncbi:accession'] = gb_id
         self.otu_dict[otu_id]['^ncbi:title'] = self.gb_dict[gb_id]['title']
         self.otu_dict[otu_id]['^ncbi:taxon'] = ncbi_id
         self.otu_dict[otu_id]['^ot:ottId'] = ott_id
