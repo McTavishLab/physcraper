@@ -1426,16 +1426,17 @@ class IdDicts(object):
             #     if tax_info == {}:
             #         print("Taxon name does not match any species name in ncbi. Check that name is written correctly!")
             #     tax_id = int(tax_info.items()[0][1][0])
-            ncbi = NCBITaxa()
-            lineage = ncbi.get_lineage(ncbi_id)
-            debug([ncbi_id, lineage])
-            lineage2ranks = ncbi.get_rank(lineage)
-            tax_name = str(tax_name).replace(" ", "_")
-            debug(tax_name)
-            assert type(ncbi_id) == int
-            self.otu_rank[tax_name] = {"taxon id": ncbi_id, "lineage": lineage, "rank": lineage2ranks}
             if ncbi_id == 0:
                 self.otu_rank[tax_name] = {"taxon id": ncbi_id, "lineage": 'life', "rank": 'unassigned'}
+            else:
+                ncbi = NCBITaxa()
+                lineage = ncbi.get_lineage(ncbi_id)
+                debug([ncbi_id, lineage])
+                lineage2ranks = ncbi.get_rank(lineage)
+                tax_name = str(tax_name).replace(" ", "_")
+                debug(tax_name)
+                assert type(ncbi_id) == int
+                self.otu_rank[tax_name] = {"taxon id": ncbi_id, "lineage": lineage, "rank": lineage2ranks}
         return tax_name
 
     def find_name(self, sp_dict=None, acc=None):
