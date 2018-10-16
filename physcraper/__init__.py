@@ -3023,6 +3023,9 @@ class FilterBlast(PhyscraperScrape):
         return: self.sp_seq_d
         """
         debug("make_sp_seq_dict")
+        debug('self.new_seqs.keys()')
+
+        debug(self.new_seqs.keys())
         for key in self.sp_d:
             # loop to populate dict. key1 = sp name, key2= gb id, value = seq,
             # number of items in key2 will be filtered according to threshold and already present seq
