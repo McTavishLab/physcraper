@@ -539,7 +539,7 @@ def OtuJsonDict(id_to_spn, id_dict):
             assert clean_lab not in sp_info_dict
             otu_id = "otu{}".format(clean_lab)
             spn = species.replace("_", " ")
-            debug(spn)
+            # debug(spn)
 
             info = get_ott_taxon_info(spn)
             if info:
