@@ -101,7 +101,7 @@ def standard_run(study_id,
         scraper.blast_subdir = shared_blast_folder
     else:
         shared_blast_folder = None
-    scraper.run_blast()
+    scraper.run_blast(delay=14)
     scraper.read_blast(blast_dir=shared_blast_folder)
     scraper.remove_identical_seqs()
     scraper.generate_streamed_alignment()
@@ -112,7 +112,7 @@ def standard_run(study_id,
             scraper.blast_subdir = shared_blast_folder
         else:
             shared_blast_folder = None
-        scraper.run_blast()
+        scraper.run_blast(delay=14)
         scraper.read_blast(blast_dir=shared_blast_folder)
         scraper.remove_identical_seqs()
         scraper.generate_streamed_alignment()
@@ -182,12 +182,12 @@ def own_data_run(seqaln,
         else:
             shared_blast_folder = None
         # run the analyses
-        scraper.run_blast()
+        scraper.run_blast(delay=14)
         scraper.read_blast(blast_dir=shared_blast_folder)
         scraper.remove_identical_seqs()
         scraper.generate_streamed_alignment()
     while scraper.repeat == 1: 
-        scraper.run_blast()
+        scraper.run_blast(delay=14)
         if shared_blast_folder:
             scraper.blast_subdir = shared_blast_folder
         else:
@@ -241,7 +241,7 @@ def filter_OTOL(study_id,
         # This is particularly important when using loci that have been de-concatenated, as some are 0 length which causes problems.
         data_obj.prune_short()
         data_obj.write_files()
-        data_obj.write_labelled(label='^ot:ottTaxonName', gb_id=True)
+        data_obj.write_labelled(label='^ot:ottTaxonName', add_gb_id=True)
         data_obj.write_otus("otu_info", schema='table')
         data_obj.dump()
 
@@ -261,7 +261,7 @@ def filter_OTOL(study_id,
             filteredScrape.unpublished = True
             filteredScrape.write_unpubl_blastdb(add_unpubl_seq)
             # filteredScrape.make_otu_dict_entry_unpubl()
-            filteredScrape.run_blast()
+            filteredScrape.run_blast(delay=14)
             debug(id_to_spn_addseq_json)
             filteredScrape.data.local_otu_json = id_to_spn_addseq_json
             filteredScrape.read_blast()
@@ -270,7 +270,7 @@ def filter_OTOL(study_id,
             filteredScrape.unpublished = False
         else:
             sys.stdout.write("BLASTing input sequences\n")
-            filteredScrape.run_blast()
+            filteredScrape.run_blast(delay=14)
             filteredScrape.read_blast(blast_dir=shared_blast_folder)
             filteredScrape.remove_identical_seqs()
             filteredScrape.dump()
@@ -285,10 +285,10 @@ def filter_OTOL(study_id,
             filteredScrape.generate_streamed_alignment()
             filteredScrape.dump()
     while filteredScrape.repeat == 1:
-        filteredScrape.data.write_labelled(label='^ot:ottTaxonName', gb_id=True)
+        filteredScrape.data.write_labelled(label='^ot:ottTaxonName', add_gb_id=True)
         filteredScrape.data.write_otus("otu_info", schema='table')
         sys.stdout.write("BLASTing input sequences\n")
-        filteredScrape.run_blast()
+        filteredScrape.run_blast(delay=14)
         filteredScrape.read_blast(blast_dir=shared_blast_folder)
         filteredScrape.remove_identical_seqs()
         sys.stdout.write("Filter the sequences\n")
@@ -351,7 +351,7 @@ def add_unpubl_to_backbone(seqaln,
         # This is particularly important when using loci that have been de-concatenated, as some are 0 length which causes problems.
         data_obj.prune_short()
         data_obj.write_files()
-        data_obj.write_labelled(label='^ot:ottTaxonName', gb_id=True)
+        data_obj.write_labelled(label='^ot:ottTaxonName', add_gb_id=True)
         data_obj.write_otus("otu_info", schema='table')
         data_obj.dump()
 
@@ -373,7 +373,7 @@ def add_unpubl_to_backbone(seqaln,
             #filteredScrape.config.e_value_thresh = config['blast']['e_value_thresh']
             filteredScrape.backbone = True
             filteredScrape.write_unpubl_blastdb(add_unpubl_seq)
-            filteredScrape.run_blast()
+            filteredScrape.run_blast(delay=14)
             debug(id_to_spn_addseq_json)
             filteredScrape.local_otu_json = id_to_spn_addseq_json
             filteredScrape.read_blast()
@@ -388,7 +388,7 @@ def add_unpubl_to_backbone(seqaln,
                 filteredScrape.blast_subdir = shared_blast_folder
             else:
                 shared_blast_folder = None
-            filteredScrape.run_blast()
+            filteredScrape.run_blast(delay=14)
             filteredScrape.read_blast(blast_dir=shared_blast_folder)
             filteredScrape.remove_identical_seqs()
             filteredScrape.dump()
@@ -405,14 +405,14 @@ def add_unpubl_to_backbone(seqaln,
             
     while filteredScrape.repeat == 1:
         # number_rounds += 1
-        filteredScrape.data.write_labelled(label='^ot:ottTaxonName', gb_id=True)
+        filteredScrape.data.write_labelled(label='^ot:ottTaxonName', add_gb_id=True)
         filteredScrape.data.write_otus("otu_info", schema='table')
         sys.stdout.write("BLASTing input sequences\n")
         if shared_blast_folder:
             filteredScrape.blast_subdir = shared_blast_folder
         else:
             shared_blast_folder = None
-        filteredScrape.run_blast()
+        filteredScrape.run_blast(delay=14)
         filteredScrape.read_blast(blast_dir=shared_blast_folder)
         filteredScrape.remove_identical_seqs()
         sys.stdout.write("Filter the sequences\n")
@@ -493,7 +493,7 @@ def filter_data_run(seqaln,
         # This is particularly important when using loci that have been de-concatenated, as some are 0 length which causes problems.
         data_obj.prune_short()
         data_obj.write_files()
-        data_obj.write_labelled(label='^ot:ottTaxonName', gb_id=True)
+        data_obj.write_labelled(label='^ot:ottTaxonName', add_gb_id=True)
         data_obj.write_otus("otu_info", schema='table')
         data_obj.dump()
 
@@ -513,7 +513,7 @@ def filter_data_run(seqaln,
             sys.stdout.write("Blasting against local unpublished data")
             filteredScrape.unpublished = True
             filteredScrape.write_unpubl_blastdb(add_unpubl_seq)
-            filteredScrape.run_blast()
+            filteredScrape.run_blast(delay=14)
             debug(id_to_spn_addseq_json)
             filteredScrape.local_otu_json = id_to_spn_addseq_json
             filteredScrape.read_blast()
@@ -529,7 +529,7 @@ def filter_data_run(seqaln,
                 filteredScrape.blast_subdir = shared_blast_folder
             else:
                 shared_blast_folder = None
-            filteredScrape.run_blast()
+            filteredScrape.run_blast(delay=14)
             filteredScrape.read_blast(blast_dir=shared_blast_folder)
             filteredScrape.remove_identical_seqs()
             filteredScrape.dump()
@@ -550,14 +550,14 @@ def filter_data_run(seqaln,
             
     while filteredScrape.repeat == 1:
         # number_rounds += 1
-        filteredScrape.data.write_labelled(label='^ot:ottTaxonName', gb_id=True)
+        filteredScrape.data.write_labelled(label='^ot:ottTaxonName', add_gb_id=True)
         filteredScrape.data.write_otus("otu_info", schema='table')
         sys.stdout.write("BLASTing input sequences\n")
         if shared_blast_folder:
             filteredScrape.blast_subdir = shared_blast_folder
         else:
             shared_blast_folder = None
-        filteredScrape.run_blast()
+        filteredScrape.run_blast(delay=14)
         filteredScrape.read_blast(blast_dir=shared_blast_folder)
         filteredScrape.remove_identical_seqs()
         sys.stdout.write("Filter the sequences\n")
@@ -631,7 +631,7 @@ def run_with_settings(settings):
         data_obj.prune_short()
         data_obj.write_files()
 
-        data_obj.write_labelled(label='^ot:ottTaxonName', gb_id=True)
+        data_obj.write_labelled(label='^ot:ottTaxonName', add_gb_id=True)
         data_obj.write_otus("otu_info", schema='table')
         data_obj.dump()
         
@@ -667,7 +667,7 @@ def run_with_settings(settings):
             filteredScrape.generate_streamed_alignment()
             filteredScrape.dump()
     while filteredScrape.repeat is 1:
-        filteredScrape.data.write_labelled(label='^ot:ottTaxonName', gb_id=True)
+        filteredScrape.data.write_labelled(label='^ot:ottTaxonName', add_gb_id=True)
         filteredScrape.data.write_otus("otu_info", schema='table')
         filteredScrape.run_blast(settings.delay)
         filteredScrape.read_blast(blast_dir=settings.shared_blast_folder)
