@@ -235,8 +235,13 @@ class ConfigObj(object):
                           "You agree to their terms".format(time_passed))
                     x = get_raw_input()
                     if x == "yes":
-                        os.system('update_blastdb nt') 
-                        os.system("perl update_blastdb.pl taxdb")
+                        # cwd = os.getcwd()
+                        os.chdir(self.blastdb)
+                        os.system('update_blastdb nt')
+                        os.system('cat *.tar.gz | tar -xvzf - -i') 
+                        os.system("update_blastdb taxdb")
+                        os.system("gunzip -cd taxdb.tar.gz | (tar xvf - )")
+                        os.chdir(cwd)
                     elif x == "no":
                         print("You did not agree to update data from ncbi. Old database files will be used.")
                     else:
@@ -252,9 +257,9 @@ class ConfigObj(object):
                       "You agree to their terms")
                 x = get_raw_input()
                 if x == "yes":
-                    os.system("rsync -av ftp://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdump.tar.gz" 
-                              "./tests/data/taxdump.tar.gz")
-                    os.system("gunzip - cd ./tests/data/taxdump.tar.gz | (tar xvf - names.dmp nodes.dmp)")
+
+                    os.system(" wget 'ftp://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdump.tar.gz' -P physcraper-git/physcraper/tests/data/")
+                    os.system("gunzip -cd ./tests/data/taxdump.tar.gz | (tar xvf - names.dmp nodes.dmp)")
                 elif x == "no":
                     print("You did not agree to download data from ncbi. Program will default to blast web-queries.")
                     print("This is slow and crashes regularly!")
