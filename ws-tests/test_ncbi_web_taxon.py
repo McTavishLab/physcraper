@@ -21,6 +21,7 @@ ids =  physcraper.IdDicts(conf, workdir=workdir)
 
 otu_dict = json.loads(open("tests/data/tmp/otu_info.json").read())
 
+#erase taxon info before search, for test
 for item in otu_dict:
     try:
         del otu_dict[item]["^ncbi:taxon"]
@@ -54,6 +55,6 @@ for item in otu_dict:
                 otu_dict[item]["^ot:ottId"] = None
                 otu_dict[item]["ncbi:taxon"] = tax_name
         except urllib2.HTTPError, err:
-            print err
+            sys.stderr.write(err)
     else:
         sys.stderr.write("no taxon and no accession number\n")
