@@ -1499,7 +1499,7 @@ class IdDicts(object):
                             # debug("find name efetch")
                             debug(gb_id)
                             handle = Entrez.efetch(db="nucleotide", id=gb_id, retmode="xml")
-                        except IndexError, urllib2.HTTPError:
+                        except (IndexError, urllib2.HTTPError) as e:
                             # debug("except efetch")
                             if i < tries - 1:  # i is zero indexed
                                 continue
@@ -1525,7 +1525,7 @@ class IdDicts(object):
                     try:
                         # debug("find name efetch")
                         handle = Entrez.efetch(db="nucleotide", id=gb_id, retmode="xml")
-                    except IndexError, urllib2.HTTPError:
+                    except (IndexError, urllib2.HTTPError) as e:
                         # debug("except efetch")
                         if i < tries - 1:  # i is zero indexed
                             continue
