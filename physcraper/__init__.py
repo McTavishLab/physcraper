@@ -1367,7 +1367,7 @@ class IdDicts(object):
                             ncbi_id = Entrez.read(Entrez.esearch(db="taxonomy", term=tax_name, RetMax=100))['IdList'][0]
 
                         ncbi_id = int(ncbi_id)
-                    except urllib2.HTTPError, err:  # TODO: is either IndexError or urllib2.HTTPError: HTTP Error 400: Bad Request
+                    except (IndexError, urllib2.HTTPError), err:  # TODO: is either IndexError or urllib2.HTTPError: HTTP Error 400: Bad Request
                         # debug("except esearch/read")
                         if i < tries - 1:  # i is zero indexed
                             continue
@@ -1376,7 +1376,7 @@ class IdDicts(object):
                     break
                 # debug(ncbi_id)
                 # debug(type(ncbi_id))
-            except urllib2.HTTPError, err:  # TODO: is either IndexError or urllib2.HTTPError: HTTP Error 400: Bad Request
+            except (IndexError, urllib2.HTTPError), err:  # TODO: is either IndexError or urllib2.HTTPError: HTTP Error 400: Bad Request
                 debug("except")
                 try:
                     ncbi = NCBITaxa()
@@ -1484,10 +1484,10 @@ class IdDicts(object):
             #     gb_id = sp_dict['^ncbi:acc']
             #     if gb_id is None:
             #         gb_id = sp_dict['^ncbi:accession']
-            if gb_id.split(".") == 1:
-                debug(gb_id)
             else:
                 sys.stderr.write("There is no name supplied and no acc available. This should not happen! Check name!")
+            if gb_id.split(".") == 1:
+                debug(gb_id)
             if gb_id in self.acc_ncbi_dict:
                 ncbi_id = self.acc_ncbi_dict[gb_id]
                 # # deprecated for ncbi_parser
@@ -2956,7 +2956,7 @@ class FilterBlast(PhyscraperScrape):
                 tax_name = self.ids.find_name(sp_dict=self.data.otu_dict[key])
                 if tax_name is None:
                     debug("tax_name is None")
-                    # debug(self.data.otu_dict[key])
+                    debug(self.data.otu_dict[key])
                     gb_id = self.data.otu_dict[key]['^ncbi:accession']
                     if gb_id.split(".") == 1:
                         debug(gb_id)
