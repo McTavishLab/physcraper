@@ -2968,17 +2968,17 @@ class FilterBlast(PhyscraperScrape):
                         sys.stderr.write("{} has no corresponding tax_name! Check what is wrong!".format(key))
                 tax_name = str(tax_name).replace(" ", "_")
                 if self.config.blast_loc == 'remote':
-                    debug(self.data.otu_dict[key])
-                    gb_id = self.data.otu_dict[key]['^ncbi:accession']
-                    if gb_id.split(".") == 1:
-                        debug(gb_id)
-                    if gb_id in self.ids.acc_ncbi_dict:
-                        tax_id = self.ids.acc_ncbi_dict[gb_id]
-                    else:
-                        tax_name = self.ids.get_rank_info_from_web(taxon_name=tax_name)
-                        debug(tax_name)
-                        # debug(self.ids.otu_rank.keys())
-                        tax_id = self.ids.otu_rank[tax_name]["taxon id"]
+                    if '^ncbi:accession' in self.data.otu_dict[key]:
+                        debug(self.data.otu_dict[key])
+                        gb_id = self.data.otu_dict[key]['^ncbi:accession']
+                        if gb_id.split(".") == 1:
+                            debug(gb_id)
+                        if gb_id in self.ids.acc_ncbi_dict:
+                            tax_id = self.ids.acc_ncbi_dict[gb_id]
+                    tax_name = self.ids.get_rank_info_from_web(taxon_name=tax_name)
+                    debug(tax_name)
+                    # debug(self.ids.otu_rank.keys())
+                    tax_id = self.ids.otu_rank[tax_name]["taxon id"]
                 else:
                     tax_id = self.ids.ncbi_parser.get_id_from_name(tax_name)
                 if self.downtorank is not None:
