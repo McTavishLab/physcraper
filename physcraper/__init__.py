@@ -2968,6 +2968,7 @@ class FilterBlast(PhyscraperScrape):
                         sys.stderr.write("{} has no corresponding tax_name! Check what is wrong!".format(key))
                 tax_name = str(tax_name).replace(" ", "_")
                 if self.config.blast_loc == 'remote':
+                    debug(self.data.otu_dict[key])
                     gb_id = self.data.otu_dict[key]['^ncbi:accession']
                     if gb_id.split(".") == 1:
                         debug(gb_id)
