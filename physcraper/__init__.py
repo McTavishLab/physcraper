@@ -175,10 +175,12 @@ class ConfigObj(object):
                 self.gb_id_filename = True
             else:
                 self.gb_id_filename = False
+        debug("shared blast folder?")
+        debug(self.gb_id_filename)
         if self.blast_loc != 'remote':
             self.ncbi_parser_nodes_fn = config['ncbi_parser']["nodes_fn"]
             self.ncbi_parser_names_fn = config['ncbi_parser']["names_fn"]
-        debug("check file status")
+        debug("check db file status?")
         debug(interactive)
         if interactive is True:
             self._download_ncbi_parser()
@@ -321,13 +323,10 @@ def generate_ATT_from_phylesystem(aln,
     """gathers together tree, alignment, and study info - forces names to otu_ids.
     Outputs AlignTreeTax object.
 
+    Study and tree ID's can be obtained by using scripts/find_trees.py LINEAGE_NAME
+
     Input can be either a study ID and tree ID from OpenTree
     # TODO: According to code it cannot be either, but must be both
-
-    # TODO: Is there another way to get those data, than actually going to the OToL website.
-    # TODO MK: write script to easily get those information: Yes it can, use peyotl find_trees
-
-
 
     Alignment need to be a Dendropy DNA character matrix!
 
@@ -370,7 +369,7 @@ def generate_ATT_from_phylesystem(aln,
                    preserve_underscores=True,
                    taxon_namespace=aln.taxon_namespace)
     # print("get_subtree_otus")
-    otus = get_subtree_otus(nexson, tree_id=tree_id) #this gets the taxa that are in the subtree with all of their info - ott_id, original name,
+    otus = get_subtree_otus(nexson, tree_id=tree_id) # this gets the taxa that are in the subtree with all of their info - ott_id, original name,
     # print(otus)
     otu_dict = {}
     orig_lab_to_otu = {}
@@ -394,7 +393,6 @@ def generate_ATT_from_phylesystem(aln,
     otu_newick = tre.as_string(schema="newick")
     workdir = os.path.abspath(workdir)
     # print(treed_taxa)
-    # print(some)
     return AlignTreeTax(otu_newick, otu_dict, aln, ingroup_mrca=ott_mrca, workdir=workdir)
     # newick should be bare, but alignment should be DNACharacterMatrix
 
@@ -498,6 +496,9 @@ def standardize_label(item):
 def get_ott_taxon_info(spp_name):
     """get ottid, taxon name, and ncbid (if present) from Open Tree Taxonomy.
     ONLY works with version 3 of Open tree APIs
+
+    :param spp_name: species name
+    :return: 
     """
     debug(spp_name)
     try:
@@ -573,7 +574,6 @@ def OtuJsonDict(id_to_spn, id_dict):
                                     '^ot:originalLabel': tipname, '^user:TaxonName': species,
                                     '^physcraper:status': 'original', '^physcraper:last_blasted': "1900/01/01"}
     print(nosp)
-    # print(some)
     return sp_info_dict
 
 
@@ -822,7 +822,7 @@ class AlignTreeTax(object):
         Used in prune_short()
         has test: test_trim.py
 
-        :taxon_missingness: defines how much longer sequence can be in percent
+        :taxon_missingness: defines how many sequences need to have a base at the start/end of an alignment
         """
         # debug('in trim')
         i = 0
@@ -1175,7 +1175,7 @@ def get_mrca_ott(ott_ids):
         try:
             tree_of_life.mrca(ott_ids=[ott], wrap_response=False)
             synth_tree_ott_ids.append(ott)
-        except urllib2.HTTPError, err:  # TODO: seems to be requests.exceptions.HTTPError: 500, don't know how to implement them
+        except:  # TODO: urllib2.HTTPError, err      seems to be requests.exceptions.HTTPError: 500, don't know how to implement them
             debug("except")
             ott_ids_not_in_synth.append(ott)
             # drop_tip.append(ott)
@@ -1708,8 +1708,8 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
         self.unpublished = False  # used to look for local unpublished seq that shall be added.
         self.path_to_local_seq = False  # path to unpublished seq.
         self.backbone = False
-        self.OToL_unmapped_tips()  # added to remove un-mapped tips from OToL
-        self.ids.ingroup_mrca = data_obj.ott_mrca
+        self.OToL_unmapped_tips()  # added to do stuff with un-mapped tips from OToL
+        self.ids.ingroup_mrca = data_obj.ott_mrca  # added for mrca ingroup list
         # ##############################3
         if _deep_debug == 1:
             self.newadd_gi_otu = {}  # search for doubles!
@@ -2571,7 +2571,6 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
         # added another reconcile step, maybe that helps with the alien taxa problem
         # self.data.reconcile()
         self.data.prune_short()
-
 
     def place_query_seqs(self):
         """runs raxml on the tree, and the combined alignment including the new query seqs.
