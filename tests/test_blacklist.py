@@ -45,7 +45,7 @@ print("run with blacklist")
 blacklist = [429489230]
 absworkdir = os.path.abspath(workdir)
 try:
-    conf = ConfigObj(configfi)
+    conf = ConfigObj(configfi, interactive=False)
     data_obj = pickle.load(open("tests/data/precooked/tiny_dataobj.p", 'rb'))
     data_obj.workdir = absworkdir
     ids = IdDicts(conf, workdir=data_obj.workdir)

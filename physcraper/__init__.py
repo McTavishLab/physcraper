@@ -79,7 +79,7 @@ def get_raw_input():
     while not is_valid:
         try:
             x = raw_input("Please write either 'yes' or 'no': ")
-            print(x)
+            # print(x)
             if x == "yes" or x == "no":
                 is_valid = 1  # set it to 1 to validate input and to terminate the while..not loop
         except ValueError, e:
