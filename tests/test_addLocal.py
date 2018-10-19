@@ -54,7 +54,7 @@ sys.stdout.write("\ntest addLocal\n")
 # Prune sequences below a certain length threshold
 data_obj.prune_short()
 data_obj.write_files()
-data_obj.write_labelled(label='^ot:ottTaxonName', gb_id=True)
+data_obj.write_labelled(label='^ot:ottTaxonName', add_gb_id=True)
 data_obj.write_otus("otu_info", schema='table')
 data_obj.dump()
 
