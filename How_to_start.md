@@ -114,15 +114,6 @@ There is an example config file in `tests/data/localblast.config`
      * **seq_len_perc**: 
      Here you can specify the minimum percentage length of newly found sequences to be added in comparison to the original alignment.
 
-      * **email**: please specify your email address, this is recommended/required by ncbi
-      * **evalue threshold**: depending on your dataset and what you want to do, it might be worse checking if the e-value threshold is how you want it.
-        This is the e-value that can be retrieved from BLAST searches and is used to limit the BLAST results to sequences that are similar to the search input sequence.
-      * **hitlist_size**: this is the amount of sequences being returned from a BLAST research. If your phylogeny does not contain a lot of nodes, it can be a low value. If the sampled lineage contains many sequences with low sequence divergence it is better to increase it to be able to retrieve all similar sequences.
-      * **location**: this defines which kind of BLAST service is used
-         * **remote**: either ncbi (default) or amazon cloud service (website needs to be defined using `url_base`)
-         * **local**: will look for a local database under the path specified under localblastdb, `num_threads` defines how many cores shall be used for the blasting (the more the faster).
-      * **gifilename**: if you plan to run different settings for the same phylogeny or several runs with similar phylogenies, where there might be overlap between BLAST searches, set it to true und specify the blastsubdir to be equal among runs (see next section). This will share BLAST searches between runs and thus speeds up the run time of the BLAST search.
-      * **seq_len_perc**: here you can specify the minimum percentage length of newly found sequences to be added in comparison to the original alignment.
 
 **2. write your analysis file**
 1. standard run 
