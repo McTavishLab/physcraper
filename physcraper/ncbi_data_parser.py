@@ -15,8 +15,6 @@ def debug(msg):
     """
     if _DEBUG_MK == 1:
         print(msg)
-    # with open("debugging.txt", "a") as debugf:
-    #     debugf.write("{}\n".format(msg))
 
 debug("Current ncbi_parser version number: 10172018.0")
 
@@ -83,7 +81,6 @@ def load_synonyms(names_file):
     """Loads names.dmp and converts it into a pandas.DataFrame.
         Includes only names which are viewed as synonym by ncbi.
     """
-
     assert os.path.exists(names_file)
     # print("load synonyms")
     df = pd.read_csv(names_file, sep='|', header=None, index_col=False,
@@ -96,7 +93,6 @@ def load_synonyms(names_file):
     df['name_txt'] = df['name_txt'].apply(strip)
     df['unique_name'] = df['unique_name'].apply(strip)
     df['name_class'] = df['name_class'].apply(strip)
-    # print(df)
     sci_df = df[df['name_class'] == 'synonym']
     sci_df.reset_index(drop=True, inplace=True)
     return sci_df
@@ -111,8 +107,6 @@ class Parser:
     The files need to be updated regularly, best way to always do it when a new blast database was loaded.
     """
     def __init__(self, names_file, nodes_file):
-        # self.nodes = self.load_nodes(nodes_file)
-        # self.names = self.load_names(names_file)
         self.names_file = names_file
         self.nodes_file = nodes_file
         self.initialize()
@@ -134,8 +128,6 @@ class Parser:
         """
         if nodes is None:
            self.initialize()
-        # print(tax_id)
-        # print(nodes[nodes["tax_id"] == tax_id])
         rank = nodes[nodes["tax_id"] == tax_id]["rank"].values[0]
         return rank
 
@@ -144,20 +136,15 @@ class Parser:
         """ Recursive function to find the parent id of a taxon as defined by downtorank.
         """ 
         debug("get downtorank")
-        debug(tax_id)
-        # print(type(tax_id))
-        debug(downtorank)
         if nodes is None:
             self.initialize()
         # following statement is to get id of taxa if taxa is higher ranked than specified
-        debug(nodes[nodes["tax_id"] == tax_id]["rank"].values[0])
         if nodes[nodes["tax_id"] == tax_id]["rank"].values[0] != "species":
             if downtorank == "species":
                 return tax_id
         if type(tax_id) != int:
             sys.stdout.write("WARNING: tax_id {} is no integer. Will convert value to int\n".format(tax_id))
             tax_id = int(tax_id)
-        # assert type(tax_id) is int()
         if nodes[nodes["tax_id"] == tax_id]["rank"].values[0] == downtorank:
             return tax_id
         else:
@@ -177,27 +164,18 @@ class Parser:
         if names is None:
             self.initialize()
         tax_name = tax_name.replace("_", " ")
-        debug(tax_name)
-        debug(tax_name.split(" "))
-        debug(len(tax_name.split(" ")))
         if len(tax_name.split(" ")) >= 2:
             if tax_name.split(" ")[1] == "sp.":
                 tax_name = "{}".format(tax_name.split(" ")[0])
-        debug(tax_name)
-
         try:
             tax_id = names[names["name_txt"] == tax_name]["tax_id"].values[0]
         except IndexError:
             if len(tax_name.split(" ")) == 3:
                 tax_name = "{} {}-{}".format(tax_name.split(" ")[0], tax_name.split(" ")[1], tax_name.split(" ")[2])
-                # print(tax_name)
                 tax_id = names[names["name_txt"] == tax_name]["tax_id"].values[0]
             else:
                 sys.stdout.write("Are you sure, its an accepted name and not a synonym?I look in the synonym table now")
                 tax_id = self.get_id_from_synonym(tax_name)
-
-        # print(names[names["name_txt"] == tax_name])
-        # print(names[names["name_txt"] == tax_name]["tax_id"])
         tax_id = int(tax_id)
         return tax_id
 
@@ -207,20 +185,13 @@ class Parser:
         if names is None:
             self.initialize()
         tax_name = tax_name.replace("_", " ")
-        debug(tax_name)
-        # print(tax_name.split(" "))
-        # print(len(tax_name.split(" ")))
         try:
             tax_id = synonyms[synonyms["name_txt"] == tax_name]["tax_id"].values[0]
         except IndexError:
             if len(tax_name.split(" ")) == 3:
                 tax_name = "{} {}-{}".format(tax_name.split(" ")[0], tax_name.split(" ")[1], tax_name.split(" ")[2])
-                # print(tax_name)
                 tax_id = names[names["name_txt"] == tax_name]["tax_id"].values[0]
             else:
                 print("something else is going wrong: {}".format(tax_name))
-
-        # print(synonyms[synonyms["name_txt"] == tax_name])
-        # print(names[names["name_txt"] == tax_name]["tax_id"])
         return tax_id
 

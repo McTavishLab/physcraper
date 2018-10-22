@@ -1665,9 +1665,7 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
                                             len_ncbi = len_ncbi - 1
                                         else:
                                             equery = equery + "txid{}[orgn]) ".format(ncbi_id)
-                                    debug(equery)
                                     equery = "(" + equery + "AND {}:{}[mdat]".format(last_blast, today)
-                                    debug(equery)
                                 else:
                                     equery = "txid{}[orgn] AND {}:{}[mdat]".format(self.mrca_ncbi, last_blast, today)
                                     self.run_web_blast_query(query, equery, fn_path)
@@ -1754,7 +1752,7 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
             if float(query_dict[key]['evalue']) < float(self.config.e_value_thresh):
                 gb_acc = query_dict[key]['accession']
                 if len(self.acc_list_mrca) >= 1 and (gb_acc not in self.acc_list_mrca):
-                    debug("pass")
+                    # debug("pass")
                     pass
                 else:
                     if gb_acc not in self.data.gb_dict:  # skip ones we already have
@@ -1778,7 +1776,7 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
                         if float(hsp.expect) < float(self.config.e_value_thresh):
                             gb_id = alignment.title.split('|')[3]  # 1 is for gi
                             if gb_id.split(".") == 1:
-                                debug(gb_id)
+                                # debug(gb_id)
                             if len(self.acc_list_mrca) >= 1 and (gb_id not in self.acc_list_mrca):
                                 pass
                             else:
@@ -2441,8 +2439,6 @@ class FilterBlast(PhyscraperScrape):
             if self.data.otu_dict[key]['^physcraper:status'].split(' ')[0] not in self.seq_filter:
                 tax_name = self.ids.find_name(sp_dict=self.data.otu_dict[key])
                 if tax_name is None:
-                    debug("tax_name is None")
-                    debug(self.data.otu_dict[key])
                     gb_id = self.data.otu_dict[key]['^ncbi:accession']
                     if gb_id.split(".") == 1:
                         debug(gb_id)
@@ -2453,14 +2449,12 @@ class FilterBlast(PhyscraperScrape):
                 tax_name = str(tax_name).replace(" ", "_")
                 if self.config.blast_loc == 'remote':
                     if '^ncbi:accession' in self.data.otu_dict[key]:
-                        debug(self.data.otu_dict[key])
                         gb_id = self.data.otu_dict[key]['^ncbi:accession']
                         if gb_id.split(".") == 1:
                             debug(gb_id)
                         if gb_id in self.ids.acc_ncbi_dict:
                             tax_id = self.ids.acc_ncbi_dict[gb_id]
                     tax_name = self.ids.get_rank_info_from_web(taxon_name=tax_name)
-                    debug(tax_name)
                     tax_id = self.ids.otu_rank[tax_name]["taxon id"]
                 else:
                     tax_id = self.ids.ncbi_parser.get_id_from_name(tax_name)
@@ -2472,14 +2466,12 @@ class FilterBlast(PhyscraperScrape):
                         tax_name = self.ids.get_rank_info_from_web(taxon_name=tax_name)
                         tax_id = self.ids.otu_rank[tax_name]["taxon id"]
                         lineage2ranks = self.ids.otu_rank[str(tax_name).replace(" ", "_")]["rank"]
-                        debug(lineage2ranks)
                         ncbi = NCBITaxa()
                         if lineage2ranks == 'unassigned':
                             downtorank_id = tax_id
                             downtorank_name = tax_name
                         else:
                             for key_rank, val in lineage2ranks.iteritems():
-                                debug([key_rank, val])
                                 if val == downtorank:
                                     downtorank_id = key_rank
                                     value_d = ncbi.get_taxid_translator([downtorank_id])
@@ -2512,9 +2504,6 @@ class FilterBlast(PhyscraperScrape):
         return: self.sp_seq_d
         """
         debug("make_sp_seq_dict")
-        debug('self.new_seqs.keys()')
-
-        debug(self.new_seqs.keys())
         for key in self.sp_d:
             # loop to populate dict. key1 = sp name, key2= gb id, value = seq,
             # number of items in key2 will be filtered according to threshold and already present seq
@@ -2775,21 +2764,17 @@ class FilterBlast(PhyscraperScrape):
         debug("length of sp_d")
         debug(len(self.sp_d))
         for tax_id in self.sp_d:
-            debug("tax_id")
-            debug(tax_id)
             count_dict = self.count_num_seq(tax_id)
             seq_present = count_dict["seq_present"]
             query_count = count_dict["query_count"]
             if len(self.sp_d[tax_id]) <= threshold:  # add all stuff to self.filtered_seq[gi_n]
                 self.add_all(tax_id)
             elif len(self.sp_d[tax_id]) > threshold:  # filter number of sequences
-                debug("filter number of sequences")
                 if tax_id in self.sp_seq_d.keys():
                     if selectby == "length":
                         self.select_seq_by_length(tax_id, threshold, seq_present)
                     elif selectby == "blast":
                         if 1 <= seq_present < threshold and count_dict["new_taxon"] is False and query_count != 0:
-                            debug("seq_present>0")
                             # species is not new in alignment, make blast with existing seq
                             if query_count + seq_present > threshold:
                                 taxonfn = self.loop_for_write_blast_files(tax_id)
@@ -2801,7 +2786,6 @@ class FilterBlast(PhyscraperScrape):
                                 self.add_all(tax_id)
                         # species is completely new in alignment
                         elif seq_present == 0 and count_dict["new_taxon"] is True and query_count >= 1:
-                            debug("completely new taxon to blast")
                             blast_seq = self.sp_seq_d[tax_id].keys()[0]
                             if self.downtorank is not None:
                                 str_db = tax_id
@@ -2835,11 +2819,9 @@ class FilterBlast(PhyscraperScrape):
         """
         debug("replace new seq")
         keylist = self.filtered_seq.keys()
-        debug(keylist)
         if not self.unpublished:
             keylist = [x for x in keylist if x[:6] != "unpubl"]
         seq_not_added = self.new_seqs.keys()
-        debug(seq_not_added)
         reduced_new_seqs_dic = {}
         for gb_id in seq_not_added:
             if gb_id.split(".") == 1:
@@ -2858,9 +2840,6 @@ class FilterBlast(PhyscraperScrape):
                         reduced_new_seqs_dic[key] = self.filtered_seq[gb_id]
                         self.data.otu_dict[key]['^physcraper:last_blasted'] = "1900/01/01"
                         self.data.otu_dict[key]['^physcraper:status'] = 'added, as representative of taxon'
-        debug(reduced_new_seqs_dic)
-        debug(keylist)
-        debug(self.filtered_seq)
         reduced_new_seqs = {k: self.filtered_seq[k] for k in keylist}
         # debug(reduced_new_seqs_dic)
         with open(self.logfile, "a") as log:
@@ -2868,10 +2847,6 @@ class FilterBlast(PhyscraperScrape):
                                                                                             len(self.new_seqs_otu_id)))
         self.new_seqs = deepcopy(reduced_new_seqs)
         self.new_seqs_otu_id = deepcopy(reduced_new_seqs_dic)
-        debug("self.new_seqs")
-        debug(self.new_seqs)
-        debug(len(self.new_seqs))
-        debug(self.new_seqs_otu_id)
         # set back to empty dict
         self.sp_d.clear()
         self.filtered_seq.clear()
