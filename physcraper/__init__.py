@@ -273,7 +273,9 @@ def get_dataset_from_treebase(study_id,
     """
     try:
         nexson = get_nexson(study_id, phylesystem_loc)
-    except:  # TODO: seems to be an http error. Did not fgure out how to handle them (requests.exceptions.HTTPError)
+    except urllib2.HTTPError, err:
+        sys.stderr.write(err)
+    # except:  # TODO: seems to be an http error. Did not fgure out how to handle them (requests.exceptions.HTTPError)
         sys.stderr.write("couldn't find study id {} in phylesystem location {}\n".format(study_id, phylesystem_loc))
     treebase_url = nexson['nexml'][u'^ot:dataDeposit'][u'@href']
     if 'treebase' not in nexson['nexml'][u'^ot:dataDeposit'][u'@href']:

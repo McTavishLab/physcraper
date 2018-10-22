@@ -13,25 +13,19 @@ expected_tree_path_ottid = "tests/data/expected_output/labelled_ottid.tre"
 expected_aln_path_ottid = "tests/data/expected_output/labelled_ottid.fas"
 
 try:
-   data_obj = pickle.load(open("tests/data/precooked/tiny_dataobj.p", 'rb'))
+	data_obj = pickle.load(open("tests/data/precooked/tiny_dataobj.p", 'rb'))
 except:
-   print("run 'python tests/testfilesetup.py' to setup data files for tests")
+	print("run 'python tests/testfilesetup.py' to setup data files for tests")
 
 treepath = 'tests/data/tmp/labelled.tre'
 alnpath = "tests/data/tmp/labelled.fas"
 
-data_obj.write_labelled(label='^user:TaxonName', treepath=treepath, alnpath=alnpath, norepeats = True)
+data_obj.write_labelled(label='^user:TaxonName', treepath=treepath, alnpath=alnpath, norepeats = False)
 
 a =  os.path.isfile(treepath)
-# print(os.path.isfile(treepath))
-# print(a)
 b = os.path.isfile(alnpath)
 c = filecmp.cmp(treepath, expected_tree_path)
 d = filecmp.cmp(alnpath, expected_aln_path)
-
-
-# print(treepath, expected_tree_path)
-# print(alnpath, expected_aln_path)
 
 treepath_ottid = 'tests/data/tmp/labelled_ottid.tre'
 alnpath_ottid = "tests/data/tmp/labelled_ottid.fas"
@@ -42,7 +36,7 @@ e = os.path.isfile(treepath_ottid)
 f = os.path.isfile(alnpath_ottid)
 g = filecmp.cmp(treepath_ottid, expected_tree_path_ottid)
 h = filecmp.cmp(alnpath_ottid, expected_aln_path_ottid)
-# print(a,b,c,d,e,f,g,h)
+
 count = 0
 if a*b*c*d*e*f*g*h:
 	sys.stdout.write("Test write_lablled passed\n\n")

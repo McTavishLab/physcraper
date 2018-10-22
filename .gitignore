@@ -13,3 +13,6 @@ standard-RAxML
 *.log
 build/
 tests/data/precooked/fixed/local-blast/*.nin
+tests/output/*
+tests/data/precooked/fixed/local-blast/Senecio_scopolii_subsp._scopolii_db.nhr
+tests/data/precooked/fixed/local-blast/Senecio_scopolii_subsp._scopolii_db.nsq

@@ -1,4 +1,3 @@
-import os
 import pickle
 import sys
 import os
@@ -15,6 +14,8 @@ workdir="tests/output/test_trim"
 configfi = "tests/data/test.config"
 id_to_spn = r"tests/data/tiny_test_example/test_nicespl.csv"
 otu_jsonfi = "{}/otu_dict.json".format(workdir)
+
+
 
 if not os.path.exists("{}".format(workdir)):
         os.makedirs("{}".format(workdir))
