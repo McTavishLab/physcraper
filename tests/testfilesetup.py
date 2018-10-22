@@ -4,6 +4,7 @@ import pickle
 from physcraper import OtuJsonDict, generate_ATT_from_files, ConfigObj, IdDicts, PhyscraperScrape
 #
 
+
 seqaln= "tests/data/tiny_test_example/test.fas"
 mattype="fasta"
 trfn= "tests/data/tiny_test_example/test.tre"
@@ -28,7 +29,7 @@ with open(otu_jsonfi,"w") as outfile:
 
 
 
-data_obj = generate_ATT_from_files(seqaln=seqaln,
+data_obj = generate_ATT_from_files(seqaln=seqaln, 
                              mattype=mattype, 
                              workdir=workdir,
                              treefile=trfn,

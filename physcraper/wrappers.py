@@ -11,7 +11,7 @@ from concat import Concat
 print("Current Version number: 09142018.0")
 
 # TODO: we never do anything with the function nor the file
-def sync_ncbi(configfi):
+def sync_ncbi(configfi): 
     conf = ConfigObj(configfi)
     subprocess.call(["rsync", "av", "ftp.ncbi.nih.gov::pub/taxonomy/gi_taxid_nucl.dmp.gz", "{}/gi_taxid_nucl.dmp.gz".format(conf.ncbi_dmp)])
     subprocess.call(["gunzip", "{}/gi_taxid_nucl.dmp.gz".format(dir)])
@@ -152,7 +152,7 @@ def own_data_run(seqaln,
         sys.stdout.write("Reloading from pickled scrapefile: ATT\n")
         scraper = pickle.load(open("{}/scrape_checkpoint.p".format(workdir), 'rb'))
         scraper.repeat = 1    
-    else:
+    else:   
         sys.stdout.write("setting up Data Object\n")
         sys.stdout.flush()
         # read the config file into a configuration object
@@ -195,7 +195,7 @@ def own_data_run(seqaln,
         scraper.read_blast(blast_dir=shared_blast_folder)
         scraper.remove_identical_seqs()
         scraper.generate_streamed_alignment()
-    return 1
+    return 1 
 
 
 def filter_OTOL(study_id,
@@ -212,17 +212,19 @@ def filter_OTOL(study_id,
                 ingroup_mrca=None,
                 shared_blast_folder=None):
     """looks for pickeled file to continue run, or builds and runs
-    new analysis for as long as new seqs are found.
+    new analysis for as long as new seqs are found. 
     This uses the FilterBlast subclass to be able to filter the blast output."""
     debug('Debugging mode is on')
 
+    # debug(shared_blast_folder)
+    # debug(some)
     # if _DEBUG_MK == 1:
     #     random.seed(3269235691)
     print(workdir)
-    if os.path.isfile("{}/scrape_checkpoint.p".format(workdir)):
+    if os.path.isfile("{}/scrape_checkpoint.p".format(workdir)): 
         sys.stdout.write("Reloading from pickled scrapefile: scrape\n")
         filteredScrape = pickle.load(open("{}/scrape_checkpoint.p".format(workdir), 'rb'))
-        filteredScrape.repeat = 1
+        filteredScrape.repeat = 1   
     else:   
         # sync_names()
         sys.stdout.write("setting up Data Object\n")
@@ -236,7 +238,6 @@ def filter_OTOL(study_id,
                                                  tree_id,
                                                  phylesystem_loc='api',
                                                  ingroup_mrca=ingroup_mrca)
-
         # Prune sequnces below a certain length threshold
         # This is particularly important when using loci that have been de-concatenated, as some are 0 length which causes problems.
         data_obj.prune_short()
@@ -248,7 +249,7 @@ def filter_OTOL(study_id,
         sys.stdout.write("setting up id dictionaries\n")
         sys.stdout.flush()
 
-        ids = IdDicts(conf, workdir=workdir)
+        ids = IdDicts(conf, workdir=workdir, mrca=ingroup_mrca)
 
         # Now combine the data, the ids, and the configuration into a single physcraper scrape object
         filteredScrape = FilterBlast(data_obj, ids)
@@ -305,6 +306,140 @@ def filter_OTOL(study_id,
         return filteredScrape
 
 
+def add_unpubl_to_backbone(seqaln,
+                        mattype,
+                        trfn,
+                        schema_trf,
+                        workdir,
+                        threshold,
+                        spInfoDict,
+                        configfi,
+                        selectby="blast",
+                        downtorank="species",
+                        blacklist=None,
+                        add_unpubl_seq=None,
+                        id_to_spn_addseq_json=None,
+                        ingroup_mrca=None,
+                        shared_blast_folder=None):
+    """looks for pickeled file to continue run, or builds and runs 
+    new analysis for as long as new seqs are found. 
+    This uses the FilterBlast subclass to be able to filter the blast output.
+    It adds unpublished data to an input tree (evalue should be higher than usual).
+    Backbone will not be updated
+    """
+    debug('Debugging mode is on')
+    if os.path.isfile("{}/scrape_checkpoint.p".format(workdir)): 
+        sys.stdout.write("Reloading from pickled scrapefile: scrape\n")
+        filteredScrape = pickle.load(open("{}/scrape_checkpoint.p".format(workdir), 'rb'))
+        filteredScrape.repeat = 1   
+    else:   
+        sys.stdout.write("setting up Data Object\n")
+        sys.stdout.flush()
+        # read the config file into a configuration object
+        conf = ConfigObj(configfi, interactive=False)
+
+       
+        # Generate an linked Alignment-Tree-Taxa object
+        data_obj = generate_ATT_from_files(seqaln=seqaln, 
+                                           mattype=mattype,
+                                           workdir=workdir,
+                                           treefile=trfn,
+                                           schema_trf=schema_trf,
+                                           otu_json=spInfoDict,
+                                           ingroup_mrca=ingroup_mrca)
+
+        # Prune sequnces below a certain length threshold
+        # This is particularly important when using loci that have been de-concatenated, as some are 0 length which causes problems.
+        data_obj.prune_short()
+        data_obj.write_files()
+        data_obj.write_labelled(label='^ot:ottTaxonName', add_gb_id=True)
+        data_obj.write_otus("otu_info", schema='table')
+        data_obj.dump()
+
+        sys.stdout.write("setting up id dictionaries\n")
+        sys.stdout.flush()
+
+        ids = IdDicts(conf, workdir=workdir)
+
+        # Now combine the data, the ids, and the configuration into a single physcraper scrape object
+        filteredScrape = FilterBlast(data_obj, ids)
+        filteredScrape.blacklist = blacklist
+        debug(add_unpubl_seq)
+        if add_unpubl_seq is not None:
+            filteredScrape.unpublished = True
+            debug(filteredScrape.unpublished)
+        if filteredScrape.unpublished is True:  # use unpublished data
+            sys.stdout.write("Blasting against local unpublished data")
+            filteredScrape.unpublished = True
+            #filteredScrape.config.e_value_thresh = config['blast']['e_value_thresh']
+            filteredScrape.backbone = True
+            filteredScrape.write_unpubl_blastdb(add_unpubl_seq)
+            filteredScrape.run_blast(delay=14)
+            debug(id_to_spn_addseq_json)
+            filteredScrape.local_otu_json = id_to_spn_addseq_json
+            filteredScrape.read_blast()
+            filteredScrape.remove_identical_seqs()
+            filteredScrape.generate_streamed_alignment()
+            filteredScrape.unpublished = False
+        else:
+            # run the analysis
+            sys.stdout.write("BLASTing input sequences\n")
+            print(shared_blast_folder)
+            if shared_blast_folder:
+                filteredScrape.blast_subdir = shared_blast_folder
+            else:
+                shared_blast_folder = None
+            filteredScrape.run_blast(delay=14)
+            filteredScrape.read_blast(blast_dir=shared_blast_folder)
+            filteredScrape.remove_identical_seqs()
+            filteredScrape.dump()
+            debug(threshold)
+            sys.stdout.write("Filter the sequences\n")
+            if threshold is not None:
+                filteredScrape.sp_dict(downtorank)
+                filteredScrape.make_sp_seq_dict()
+                filteredScrape.how_many_sp_to_keep(threshold=threshold, selectby=selectby)
+                filteredScrape.replace_new_seq()
+            sys.stdout.write("Calculate the phylogeny\n")
+            filteredScrape.generate_streamed_alignment()
+            filteredScrape.dump()
+    while filteredScrape.repeat == 1:
+        # number_rounds += 1
+        filteredScrape.data.write_labelled(label='^ot:ottTaxonName', add_gb_id=True)
+        filteredScrape.data.write_otus("otu_info", schema='table')
+        sys.stdout.write("BLASTing input sequences\n")
+        if shared_blast_folder:
+            filteredScrape.blast_subdir = shared_blast_folder
+        else:
+            shared_blast_folder = None
+        filteredScrape.run_blast(delay=14)
+        filteredScrape.read_blast(blast_dir=shared_blast_folder)
+        filteredScrape.remove_identical_seqs()
+        sys.stdout.write("Filter the sequences\n")
+        if threshold is not None:
+            filteredScrape.sp_dict(downtorank)
+            filteredScrape.make_sp_seq_dict()
+            filteredScrape.how_many_sp_to_keep(threshold=threshold, selectby=selectby)
+            filteredScrape.replace_new_seq()
+        filteredScrape.data.prune_short(0.75)
+        sys.stdout.write("calculate the phylogeny\n")
+        # with open("debug_PS_instances_w1", "a") as PS:
+        #     PS.write("{}".format(filteredScrape.__dict__))
+        # with open("debug_ATT_instances_w1", "a") as ATT:
+        #     ATT.write("{}".format(filteredScrape.data.__dict__))
+        filteredScrape.generate_streamed_alignment()
+        filteredScrape.dump()
+
+    filteredScrape.write_otu_info(downtorank)
+    filteredScrape.print_sp_d_recalc(downtorank)
+    filteredScrape.print_sp_d_as_is()
+    # with open("debug_PS_instances_f", "a") as PS:
+    #     PS.write("{}".format(filteredScrape.__dict__))
+    # with open("debug_ATT_instances_f", "a") as ATT:
+    #     ATT.write("{}".format(filteredScrape.data.__dict__))
+    return filteredScrape
+
+
 def filter_data_run(seqaln,
                     mattype,
                     trfn,
@@ -320,7 +455,7 @@ def filter_data_run(seqaln,
                     id_to_spn_addseq_json=None,
                     ingroup_mrca=None,
                     shared_blast_folder=None):
-    """looks for pickeled file to continue run, or builds and runs
+    """looks for pickeled file to continue run, or builds and runs 
     new analysis for as long as new seqs are found. 
     This uses the FilterBlast subclass to be able to filter the blast output.
     """
@@ -335,7 +470,7 @@ def filter_data_run(seqaln,
         sys.stdout.write("Reloading from pickled scrapefile: scrape\n")
         filteredScrape = pickle.load(open("{}/scrape_checkpoint.p".format(workdir), 'rb'))
         filteredScrape.repeat = 1   
-    else:
+    else:   
         sys.stdout.write("setting up Data Object\n")
         sys.stdout.flush()
         # read the config file into a configuration object
@@ -406,8 +541,13 @@ def filter_data_run(seqaln,
                 filteredScrape.how_many_sp_to_keep(threshold=threshold, selectby=selectby)
                 filteredScrape.replace_new_seq()
             sys.stdout.write("Calculate the phylogeny\n")
+            # with open("debug_PS_instances_r1", "a") as PS:
+            #     PS.write("{}".format(filteredScrape.__dict__))
+            # with open("debug_ATT_instances_r1", "a") as ATT:
+            #     ATT.write("{}".format(filteredScrape.data.__dict__))
             filteredScrape.generate_streamed_alignment()
             filteredScrape.dump()
+            
     while filteredScrape.repeat == 1:
         # number_rounds += 1
         filteredScrape.data.write_labelled(label='^ot:ottTaxonName', add_gb_id=True)
@@ -428,10 +568,22 @@ def filter_data_run(seqaln,
             filteredScrape.replace_new_seq()
         filteredScrape.data.prune_short(0.75)
         sys.stdout.write("calculate the phylogeny\n")
+        # with open("debug_PS_instances_w1", "a") as PS:
+        #     PS.write("{}".format(filteredScrape.__dict__))
+        # with open("debug_ATT_instances_w1", "a") as ATT:
+        #     ATT.write("{}".format(filteredScrape.data.__dict__))
         filteredScrape.generate_streamed_alignment()
         filteredScrape.dump()
+
     filteredScrape.write_otu_info(downtorank)
+    filteredScrape.print_sp_d_recalc(downtorank)
+    filteredScrape.print_sp_d_as_is()
+    # with open("debug_PS_instances_f", "a") as PS:
+    #     PS.write("{}".format(filteredScrape.__dict__))
+    # with open("debug_ATT_instances_f", "a") as ATT:
+    #     ATT.write("{}".format(filteredScrape.data.__dict__))
     return filteredScrape
+
 
 
 # # # # # # # # # # # # # # # # # # # # # # #

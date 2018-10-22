@@ -40,6 +40,8 @@ noblackScrape.remove_identical_seqs()
 noblackScrape.generate_streamed_alignment()
 
 # one run with blacklist
+print("run with blacklist")
+
 blacklist = [429489230]
 absworkdir = os.path.abspath(workdir)
 try:
