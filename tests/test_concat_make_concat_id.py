@@ -1,9 +1,10 @@
 import sys
+import os
 from physcraper.concat import Concat
 
 #
-workdir_its = "tiny_comb_its"
-workdir_ets = "tiny_comb_ets"
+workdir_its = "runs/tiny_comb_its"
+workdir_ets = "runs/tiny_comb_ets"
 email = "martha.kandziora@yahoo.com"
 pickle_fn = "scrape_checkpoint.p"
 
@@ -16,8 +17,9 @@ sys.stdout.write("\ntests Concat func make_concat_id_dict\n")
 
 
 concat = Concat(workdir_comb, email)
+print(os.getcwd())
 for item in genelist.keys():
-    concat.load_single_genes(genelist[item]["pickle"], item)
+    concat.load_single_genes(genelist[item]['workdir'], genelist[item]["pickle"], item)
 
 concat.combine()
 spnl = []

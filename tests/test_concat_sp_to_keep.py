@@ -1,11 +1,11 @@
 from physcraper.concat import Concat
 
 #
-workdir_its = "data/tests/tiny_comb_its"
-workdir_ets = "data/tests/tiny_comb_ets"
+workdir_its = "runs/tiny_comb_its"
+workdir_ets = "runs/tiny_comb_ets"
 email = "martha.kandziora@yahoo.com"
-
 pickle_fn = "scrape_checkpoint.p"
+
 
 workdir_comb = "tests/output/impl_concat"
 genelist = {"its": {"workdir": workdir_its, "pickle": pickle_fn}, "ets": {"workdir": workdir_ets, "pickle": pickle_fn}}
@@ -19,7 +19,7 @@ genelist = {"its": {"workdir": workdir_its, "pickle": pickle_fn}, "ets": {"workd
 
 concat = Concat(workdir_comb, email)
 for item in genelist.keys():
-    concat.load_single_genes(genelist[item]["pickle"], item)
+    concat.load_single_genes(genelist[item]['workdir'], genelist[item]["pickle"], item)
 
 concat.combine()
 concat.sp_seq_counter()
