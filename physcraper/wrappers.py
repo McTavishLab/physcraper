@@ -216,6 +216,8 @@ def filter_OTOL(study_id,
     This uses the FilterBlast subclass to be able to filter the blast output."""
     debug('Debugging mode is on')
 
+    # debug(shared_blast_folder)
+    # debug(some)
     # if _DEBUG_MK == 1:
     #     random.seed(3269235691)
     print(workdir)
@@ -236,7 +238,6 @@ def filter_OTOL(study_id,
                                                  tree_id,
                                                  phylesystem_loc='api',
                                                  ingroup_mrca=ingroup_mrca)
-
         # Prune sequnces below a certain length threshold
         # This is particularly important when using loci that have been de-concatenated, as some are 0 length which causes problems.
         data_obj.prune_short()
@@ -248,7 +249,7 @@ def filter_OTOL(study_id,
         sys.stdout.write("setting up id dictionaries\n")
         sys.stdout.flush()
 
-        ids = IdDicts(conf, workdir=workdir)
+        ids = IdDicts(conf, workdir=workdir, mrca=ingroup_mrca)
 
         # Now combine the data, the ids, and the configuration into a single physcraper scrape object
         filteredScrape = FilterBlast(data_obj, ids)
@@ -402,7 +403,6 @@ def add_unpubl_to_backbone(seqaln,
             sys.stdout.write("Calculate the phylogeny\n")
             filteredScrape.generate_streamed_alignment()
             filteredScrape.dump()
-            
     while filteredScrape.repeat == 1:
         # number_rounds += 1
         filteredScrape.data.write_labelled(label='^ot:ottTaxonName', add_gb_id=True)
@@ -585,6 +585,7 @@ def filter_data_run(seqaln,
     return filteredScrape
 
 
+
 # # # # # # # # # # # # # # # # # # # # # # #
 def make_settings_class(seqaln, mattype, trfn, schema_trf, workdir, 
                         threshold=None, selectby=None, downtorank=None, spInfoDict=None, add_unpubl_seq=None, 
@@ -639,7 +640,7 @@ def run_with_settings(settings):
 
         filteredScrape = FilterBlast(data_obj, ids, settings)
         filteredScrape.write_otu_info(settings.downtorank)
-        
+
         if settings.add_unpubl_seq is not None:
             filteredScrape.unpublished = True
         if filteredScrape.unpublished is True:  # use unpublished data

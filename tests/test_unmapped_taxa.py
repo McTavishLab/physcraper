@@ -76,6 +76,25 @@ try:
         if '^ot:ottId' in scraper.data.otu_dict[tax.label]:
             dict_id = dict_id + 1
     # physcraper.debug(num_keep,num_remove, dict_id)
+
+
+    pickle.dump(data_obj, open("tests/data/precooked/otol_tiny_dataobj.p", "wb" ))
+    ids =  physcraper.IdDicts(conf, workdir=workdir)
+    pickle.dump(ids.acc_ncbi_dict, open("tests/data/precooked/otol_tiny_gi_map.p", "wb"))
+    data_obj.write_files()
+    scraper = physcraper.PhyscraperScrape(data_obj, ids)
+    pickle.dump(scraper.config, open("tests/data/precooked/otol_conf.p", "wb"))
+    pickle.dump(scraper, open("tests/data/precooked/otol_scraper.p", "wb"))
+    num_keep = len(scraper.data.aln.taxon_namespace)
+try:
+    # get length of aln, remove should have less than keep
+    ids.config.unmapped = 'remove'
+    scraper2 = physcraper.PhyscraperScrape(data_obj, ids)
+    num_remove = len(scraper2.data.aln.taxon_namespace)
+    dict_id = 0
+    for tax in scraper.data.aln.taxon_namespace:
+        if '^ot:ottId' in scraper.data.otu_dict[tax.label]:
+            dict_id = dict_id + 1
     assert num_remove <= num_keep - 1
     assert num_keep == dict_id
     sys.stdout.write("\nTest passed\n")

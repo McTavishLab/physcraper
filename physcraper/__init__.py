@@ -27,7 +27,6 @@ from peyotl.nexson_syntax import extract_tree, \
     get_subtree_otus, \
     extract_otu_nexson, \
     PhyloSchema
-
 # extension functions
 import concat  # is the local concat class
 import ncbi_data_parser  # is the ncbi data parser class and associated functions
@@ -105,7 +104,7 @@ class ConfigObj(object):
         self.phylesystem_loc: Default is to run on remote, github phylesystem, can be set to 'local'
                               to access files from local clone
         self.ott_ncbi: path to file containing OTT id, ncbi and taxon name
-        self.id_pickle: path to pickle file 
+        self.id_pickle: path to pickle file
         self.email: email address used for blast queries
         self.blast_loc: defines which blasting method to use, either web-query (=remote) or from a local
                         blast database (=local)
@@ -180,7 +179,8 @@ class ConfigObj(object):
 
     def _download_localblastdb(self):
         """Check if files are present and if they are uptodate.
-        If not files will be downloaded. 
+
+        If not files will be downloaded.
         """
         if self.blast_loc == 'local':
             if not os.path.isfile("{}/nt.01.nhr".format(self.blastdb)):
@@ -208,7 +208,7 @@ class ConfigObj(object):
                 download_date = os.path.getmtime("{}/nt.01.nhr".format(self.blastdb))
                 download_date = datetime.datetime.fromtimestamp(download_date)
                 today = datetime.datetime.now()
-                time_passed = (today - download_date).days    
+                time_passed = (today - download_date).days
                 if time_passed >= 60:
                     print("Your databases might not be uptodate anymore. You downloaded them {} days ago. "
                           "Do you want to update the blast databases from ncbi? Note: This is a US government website! "
@@ -218,7 +218,7 @@ class ConfigObj(object):
                         cwd = os.getcwd()
                         os.chdir(self.blastdb)
                         os.system('update_blastdb nt')
-                        os.system('cat *.tar.gz | tar -xvzf - -i') 
+                        os.system('cat *.tar.gz | tar -xvzf - -i')
                         os.system("update_blastdb taxdb")
                         os.system("gunzip -cd taxdb.tar.gz | (tar xvf - )")
                         os.chdir(cwd)
@@ -250,6 +250,42 @@ class ConfigObj(object):
                 download_date = datetime.datetime.fromtimestamp(download_date)
                 today = datetime.datetime.now()
                 time_passed = (today - download_date).days    
+                if time_passed >= 60:
+                    print("Do you want to update taxonomy databases from ncbi? Note: This is a US government website! "
+                          "You agree to their terms")
+                    x = get_raw_input()
+                    if x == "yes":
+                        os.system("rsync -av ftp://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdump.tar.gz" 
+                                  "./tests/data/taxdump.tar.gz")
+                        os.system("gunzip - cd ./tests/data/taxdump.tar.gz | (tar xvf - names.dmp nodes.dmp)")
+                    elif x == "no":
+                        print("You did not agree to update data from ncbi. Old database files will be used.")
+                    else:
+                        print("You did not type yes or no!")
+
+    def _download_ncbi_parser(self):
+        """Check if files are present and if they are uptodate.
+        If not files will be downloaded.
+        """
+        if self.blast_loc == 'local':
+            if not os.path.isfile(self.ncbi_parser_nodes_fn):
+                print("Do you want to download taxonomy databases from ncbi? Note: This is a US government website! "
+                      "You agree to their terms")
+                x = get_raw_input()
+                if x == "yes":
+                    os.system(" wget 'ftp://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdump.tar.gz' -P physcraper-git/physcraper/tests/data/")
+                    os.system("gunzip -cd ./tests/data/taxdump.tar.gz | (tar xvf - names.dmp nodes.dmp)")
+                elif x == "no":
+                    print("You did not agree to download data from ncbi. Program will default to blast web-queries.")
+                    print("This is slow and crashes regularly!")
+                    self.blast_loc = 'remote'
+                else:
+                    print("You did not type yes or no!")
+            else:
+                download_date = os.path.getmtime(self.ncbi_parser_nodes_fn)
+                download_date = datetime.datetime.fromtimestamp(download_date)
+                today = datetime.datetime.now()
+                time_passed = (today - download_date).days
                 if time_passed >= 60:
                     print("Do you want to update taxonomy databases from ncbi? Note: This is a US government website! "
                           "You agree to their terms")
@@ -432,8 +468,6 @@ def standardize_label(item):
 
     Function is only used if own files are used for the OtuJsonDict() function.
 
-    # Note: has test -> test_edit_dict_key.py; had test sometime, not sure where it went...
-
     :param item: original tipname
     :return: tipname in unicode
     """
@@ -450,7 +484,7 @@ def get_ott_taxon_info(spp_name):
     ONLY works with version 3 of Open tree APIs
 
     :param spp_name: species name
-    :return: 
+    :return:
     """
     debug(spp_name)
     try:
@@ -582,8 +616,6 @@ class AlignTreeTax(object):
                             'hit_def': title from GenBank sequence
                         optional key - value pairs for unpublished option:
                             'localID': local sequence identifier
-        # self.orig_aln: original input alignment
-        # self.orig_newick: original input phylogeny
         self._reconciled = True/False,
         self.unpubl_otu_json: optional, will contain the OTU-dict for unpublished data, if that option is used
 
@@ -622,7 +654,7 @@ class AlignTreeTax(object):
         self.gb_dict = {}  # has all info about new blast seq TODO: Cannot be deleted. Is used frequently! TODODELTE (should maybe go anyhow due to gi switch?): Should this not be part of physcraper class instead? it has all blast information. Blast is not part of this class.
         self._reconciled = False  # TODO: for what do we want to use it? .... it was checking to see if name reconcilation has ahappened yet. Should get flipped to true when done. MK: Yes, but we never do anything with the information
         self.unpubl_otu_json = None
-    
+
     def _reconcile_names(self):
         """Taxa that are only found in the tree, or only in the alignment are deleted.
 
@@ -1966,6 +1998,11 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
         with new name as gi_ott_id.
         """
         debug("remove identical seqs")
+        if len(self.new_seqs_otu_id) > 0:
+            if _DEBUG:
+                sys.stdout.write("running remove identical twice in a row"
+                                "without generating new alignment will cause errors. skipping\n")
+            return
         tmp_dict = dict((taxon.label, self.data.aln[taxon].symbols_as_string()) for taxon in self.data.aln)
         old_seqs = tmp_dict.keys()
         # Adding seqs that are different, but needs to be maintained as diff than aln that the tree has been run on
@@ -2057,7 +2094,6 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
         self.data.write_papara_files()
         os.chdir(self.workdir)  # Clean up dir moving
         try:
-            debug("I call papara")
             assert self.data.aln.taxon_namespace == self.data.tre.taxon_namespace
             subprocess.call(["papara",
                              "-t", "random_resolve.tre",
@@ -2154,7 +2190,6 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
         os.chdir(self.workdir)
         for filename in glob.glob('{}/RAxML*'.format(self.workdir)):
             os.rename(filename, "{}/{}_tmp".format(self.workdir, filename.split("/")[-1]))
-
         # TODO MK: work on it, first step of not using starting tree was wrong, if that is working un-comment the following stuff
         if self.backbone is not True:
             subprocess.call(["raxmlHPC", "-m", "GTRCAT",
@@ -2186,7 +2221,6 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
         -#: bootstrap stopping criteria
         """
         os.chdir(self.workdir)
-        
         # run bootstrap
         subprocess.call(["raxmlHPC", "-m", "GTRCAT",
                          "-s", "papara_alignment.extended",
@@ -2386,7 +2420,7 @@ class FilterBlast(PhyscraperScrape):
         self.sp_seq_d = {}
         self.filtered_seq = {}
         self.downtorank = None
-        
+
     def sp_dict(self, downtorank=None):
         """Takes the information from the Physcraper otu_dict and makes a dict with species name as key and
         the corresponding seq information from aln and blast seq, it returns self.sp_d.
@@ -2971,4 +3005,3 @@ def get_ncbi_tax_name(handle):
             ncbi_sp = str(item[u'GBQualifier_value'])
             ncbi_sp = ncbi_sp.replace(" ", "_")
     return ncbi_sp
-

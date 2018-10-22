@@ -139,10 +139,6 @@ class Parser:
         rank = nodes[nodes["tax_id"] == tax_id]["rank"].values[0]
         return rank
 
-    # def check_rank(self, tax_id):
-    #     print(nodes[nodes["tax_id"] == tax_id])
-    #     parent_id = int(nodes[nodes["tax_id"] == tax_id]["parent_tax_id"])
-    #     print(parent_id)
 
     def get_downtorank_id(self, tax_id, downtorank="species"):
         """ Recursive function to find the parent id of a taxon as defined by downtorank.
@@ -153,7 +149,6 @@ class Parser:
         debug(downtorank)
         if nodes is None:
             self.initialize()
-
         # following statement is to get id of taxa if taxa is higher ranked than specified
         debug(nodes[nodes["tax_id"] == tax_id]["rank"].values[0])
         if nodes[nodes["tax_id"] == tax_id]["rank"].values[0] != "species":

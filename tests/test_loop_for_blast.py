@@ -45,13 +45,6 @@ for key in filteredScrape.sp_d:
                                 
 # MAKE TEST FOR loop_for_write_blast_files
 
-
-#########################333
-
-#################################
-
-
-
 try:
     for key in filteredScrape.sp_d:
         count = 0

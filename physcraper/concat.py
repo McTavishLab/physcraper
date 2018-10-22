@@ -8,7 +8,7 @@ import random
 
 from copy import deepcopy
 from dendropy import Tree, DnaCharacterMatrix
-from Bio import Entrez 
+from Bio import Entrez
 
 from __init__ import debug
 
@@ -52,7 +52,7 @@ def remove_aln_tre_leaf(scrape):
 
 
 def add_to_del_gi(del_gi, gene, spn, random_gen):
-    """Adds gi number to del_gi. 
+    """Adds gi number to del_gi.
     Del_gi is used to remove gi's from tmp_dict, so that they will
     not be added to the concat dict twice.
     """
@@ -69,13 +69,12 @@ def add_to_del_gi(del_gi, gene, spn, random_gen):
 
 class Concat(object):
     """Combines several physcraper runs into a concatenated alignment and calculates a phylogeny.
-    
     There are two options available, either data will be concatenated by random (per taxon name) or the 
     user provides a file which say, which sequences shall be concatenated.
 
     User need to make sure, that there are at least some overlapping lineages.
     Do not concatenate data from the same loci (if you want to expand an alignment, run physcraper!).
-    
+
     To build the class the following is needed:
         workdir_comb: the path to your directory where the data shall be stored
         email: your email address, currently used to retrieve missing taxon information
@@ -154,7 +153,8 @@ class Concat(object):
         self.concat_tips = {}
 
     def load_single_genes(self, workdir, pickle_fn, genename):
-        """load PhyScraper class objects and make a single dict per run.
+        """Load PhyScraper class objects and make a single dict per run.
+
         Removes abandoned nodes first.
 
         :param workdir: directory of single gene run
@@ -173,19 +173,16 @@ class Concat(object):
         """Combines several PhyScraper objects to make a concatenated run dict.
 
         Is a wrapper function around make_concat_id_dict(). It produces the parameters needed for the function.
-
         """
         debug("combine")
         self.num_of_genes = len(self.single_runs)
         concat_id_counter = 1
         for genename in self.single_runs:
             self.genes_present.append(genename)
-            # debug(genename)
             for otu in self.single_runs[genename].data.aln.taxon_namespace:
                 concat_id = "concat_{}".format(concat_id_counter)
                 self.make_concat_id_dict(otu.label, genename, concat_id)
                 concat_id_counter += 1
-        # debug(self.sp_gi_comb)
         return
 
     def make_concat_id_dict(self, otu, genename, concat_id):
@@ -248,12 +245,10 @@ class Concat(object):
             self.sp_gi_comb[spn][genename][concat_id] = concat_dict
         else:
             debug("something goes wrong, you should not try to add the same id several times....")
-
         if concat_dict['spn'] is None:
             # we should never get here....
             sys.stderr.write("There is no species name for the seq. Do not know how to concatenate then. Please remove seq from aln: {}.".format(data['^ncbi:gi']))
             debug("THERE IS A SERIOUS PROBLEM....spn is none")
-
             spn = self.get_taxon_info('^ot:ottTaxonName', data)
             self.sp_gi_comb[spn] = self.sp_gi_comb[gi_id]
             del self.sp_gi_comb[gi_id]
@@ -358,7 +353,6 @@ class Concat(object):
                 # debug("start of while loop")
                 del_gi = {}
                 for spn in self.tmp_dict.keys():
-
                     sp_to_keep_list = sp_to_keep.keys()
                     if spn.replace(" ", "_") in sp_to_keep_list:
                         # debug("in sp_to_keep_list")
@@ -693,7 +687,6 @@ class Concat(object):
             tax.label = tax.label.replace(" ", "_")
         # debug(self.concatenated_aln.taxon_namespace)
         self.concatenated_aln.write(path="{}/{}".format(self.workdir, "concat_red.fasta"), schema="fasta")
-
         tre_ids = set()
         for tax in self.tre_as_start.taxon_namespace:
             tre_ids.add(tax.label)
