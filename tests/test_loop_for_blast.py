@@ -15,16 +15,16 @@ downtorank = None
 absworkdir = os.path.abspath(workdir)
 
 try:
-    conf = ConfigObj(configfi)
+    conf = ConfigObj(configfi, interactive=False)
     data_obj = pickle.load(open("tests/data/precooked/tiny_dataobj.p", 'rb'))
     data_obj.workdir = absworkdir
     ids = IdDicts(conf, workdir=data_obj.workdir)
-    ids.gi_ncbi_dict = pickle.load(open("tests/data/precooked/tiny_gi_map.p", "rb"))
+    ids.acc_ncbi_dict = pickle.load(open("tests/data/precooked/tiny_gi_map.p", "rb"))
 except:
     sys.stdout.write("\n\nTest FAILED\n\n")
     sys.exit()
 filteredScrape = FilterBlast(data_obj, ids)
-filteredScrape.gi_list_mrca = pickle.load(open("tests/data/precooked/gi_list_mrca.p", 'rb'))
+filteredScrape.acc_list_mrca = pickle.load(open("tests/data/precooked/acc_list_mrca.p", 'rb'))
 filteredScrape.read_blast(blast_dir="tests/data/precooked/fixed/tte_blast_files")
 filteredScrape.remove_identical_seqs()
 filteredScrape.sp_dict(downtorank)
@@ -62,15 +62,16 @@ try:
                     count_int += 1
             folder = '{}/blast/'.format(filteredScrape.workdir)
             for the_file in os.listdir(folder):
-                spn = "_".join(the_file.split("_")[1:-1])
-                file_type = the_file.split("_")[-1]
-                if spn == "_".join(key.split("_")[1:]) and file_type == "db":
+                spn = the_file.split("_")[0]
+                spn = "_".join(the_file.split("_")[0])
+                file_type = the_file.split("_")[1]
+                if spn == key and file_type == "db": # 
                     db = True
                     f = open('{}/blast/{}'.format(filteredScrape.workdir, the_file))
                     for line in iter(f):
                         if line[0] == ">":
                             count_gi_file += 1
-                if spn == "_".join(key.split("_")[1:]) and file_type == "tobeblasted":
+                if spn == key and file_type == "tobeblasted":
                     blasted = True
                     count_str_file += 1
             if blasted:
@@ -83,4 +84,4 @@ try:
 except:
     sys.stderr.write("\ntest failed\n")
 
-shutil.rmtree('{}/blast'.format(filteredScrape.workdir))
+# shutil.rmtree('{}/blast'.format(filteredScrape.workdir))

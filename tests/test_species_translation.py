@@ -31,7 +31,7 @@ otu_jsonfi = "{}/otu_dict.json".format(workdir)
 """Tests if your own input files will generate a data object of class AlignTreeTax
 """
 
-conf = ConfigObj(configfi)
+conf = ConfigObj(configfi, interactive=False)
 ids = IdDicts(conf, workdir=workdir)
 
 otu_json = OtuJsonDict(id_to_spn, ids)

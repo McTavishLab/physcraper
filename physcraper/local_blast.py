@@ -1,6 +1,5 @@
 """functions to write/run/read files using the BLAST+ and a local database.
 """
-print("Current local_blast version number: 09142018.0")
 
 import os
 import sys
@@ -18,6 +17,9 @@ def debug(msg):
         print(msg)
     # with open("debugging.txt", "a") as debugf:
     #     debugf.write("{}\n".format(msg))
+
+
+debug("Current local_blast version number: 09142018.0")
 
 
 def run_local_blast(workdir, blast_seq, blast_db, output=None):

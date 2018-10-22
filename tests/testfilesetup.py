@@ -19,14 +19,16 @@ otu_jsonfi = "{}/otu_dict.json".format(workdir)
 if not os.path.exists("{}".format(workdir)):
 	os.makedirs("{}".format(workdir))
 
-conf = ConfigObj(configfi)
+conf = ConfigObj(configfi, interactive=False)
 ids = IdDicts(conf, workdir=workdir)
 
 otu_json = OtuJsonDict(id_to_spn, ids)
 with open(otu_jsonfi,"w") as outfile:
     json.dump(otu_json, outfile)
 
-data_obj = generate_ATT_from_files(seqaln=seqaln, 
+
+
+data_obj = generate_ATT_from_files(seqaln=seqaln,
                              mattype=mattype, 
                              workdir=workdir,
                              treefile=trfn,
@@ -42,6 +44,6 @@ scraper._blasted = 1
 scraper.read_blast(blast_dir="tests/data/precooked/fixed/tte_blast_files")
 scraper.remove_identical_seqs()
 
-pickle.dump(ids.gi_ncbi_dict, open("tests/data/precooked/tiny_gi_map.p", "wb" ))
-pickle.dump(scraper.gi_list_mrca, open("tests/data/precooked/gi_list_mrca.p", "wb"))
+pickle.dump(ids.acc_ncbi_dict, open("tests/data/precooked/tiny_gi_map.p", "wb"))
+pickle.dump(scraper.acc_list_mrca, open("tests/data/precooked/acc_list_mrca.p", "wb"))
 

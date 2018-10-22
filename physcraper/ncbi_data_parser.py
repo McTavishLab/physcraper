@@ -2,7 +2,6 @@
 
 parts are altered from https://github.com/zyxue/ncbitax2lin/blob/master/ncbitax2lin.py
 """
-print("Current ncbi_parser version number: 09142018.0")
 
 import os
 import sys
@@ -19,6 +18,7 @@ def debug(msg):
     # with open("debugging.txt", "a") as debugf:
     #     debugf.write("{}\n".format(msg))
 
+debug("Current ncbi_parser version number: 10172018.0")
 
 nodes = None
 names = None
@@ -128,6 +128,16 @@ class Parser:
         names = load_names(self.names_file)
         global synonyms
         synonyms = load_synonyms(self.names_file)
+
+    def get_rank(self, tax_id):
+        """ Get rank for given ncbi tax id.
+        """
+        if nodes is None:
+           self.initialize()
+        # print(tax_id)
+        # print(nodes[nodes["tax_id"] == tax_id])
+        rank = nodes[nodes["tax_id"] == tax_id]["rank"].values[0]
+        return rank
 
     def get_downtorank_id(self, tax_id, downtorank="species"):
         """ Recursive function to find the parent id of a taxon as defined by downtorank.

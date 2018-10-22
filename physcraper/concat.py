@@ -14,7 +14,7 @@ from __init__ import debug
 
 """Code used to concatenate different single PhyScraper runs into a concatenated one.
 """
-print("Current Version number: 09172018.0")
+debug("Current Version number: 09172018.0")
 
 def remove_aln_tre_leaf(scrape):
     """Attempt to remove all occurrences in aln and tre of otu,
@@ -147,6 +147,7 @@ class Concat(object):
         """Load PhyScraper class objects and make a single dict per run.
         Removes abandoned nodes first.
 
+        :param workdir: directory of single gene run
         :param pickle_fn: path to pickled file of the Physcraper run
         :param genename: string, name for locus provided by user
         :return: self.single_runs
@@ -506,7 +507,7 @@ class Concat(object):
             del self.tmp_dict[del_sp]
 
     def make_alns_dict(self):
-        """Makes dendropy aln out of dicts for all genes.
+        """Makes dendropy aln out of dict self.comb_seq for all genes.
         """
         debug("make_alns_dict")
         firstelement = True
@@ -742,7 +743,7 @@ class Concat(object):
         # -z specifies file with multiple trees
         subprocess.call(["raxmlHPC", "-m", "GTRCAT",
                          "-s", aln,  "-q", partition,
-                         # "-t", "place_resolve.tre",
+                         # "-t", "place_resolve.tre", 
                          "-p", "1", "-b", "1", "-#", "autoMRE",
                          "-n", "autoMRE"])
         # debug("2b")

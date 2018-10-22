@@ -30,11 +30,11 @@ id_to_spn_addseq = "tests/data/tipnTOspn_localAdd.csv"
 ###################
 
 try:
-    conf = ConfigObj(configfi)
+    conf = ConfigObj(configfi, interactive=False)
     data_obj = pickle.load(open("tests/data/precooked/tiny_dataobj.p", 'rb'))
     data_obj.workdir = absworkdir
     ids = IdDicts(conf, workdir=data_obj.workdir)
-    ids.gi_ncbi_dict = pickle.load(open("tests/data/precooked/tiny_gi_map.p", "rb"))
+    ids.acc_ncbi_dict = pickle.load(open("tests/data/precooked/tiny_gi_map.p", "rb"))
 except:
     sys.stdout.write("\n\nTest setup failed\n\n")
     sys.exit()
@@ -57,7 +57,7 @@ sys.stdout.write("\ntest addLocal\n")
 # Prune sequences below a certain length threshold
 data_obj.prune_short()
 data_obj.write_files()
-data_obj.write_labelled(label='^ot:ottTaxonName', gi_id=True)
+data_obj.write_labelled(label='^ot:ottTaxonName', add_gb_id=True)
 data_obj.write_otus("otu_info", schema='table')
 data_obj.dump()
 

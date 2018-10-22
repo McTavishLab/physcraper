@@ -18,18 +18,18 @@ downtorank = None
 absworkdir = os.path.abspath(workdir)
 
 try:
-    conf = physcraper.ConfigObj(configfi)
+    conf = physcraper.ConfigObj(configfi, interactive=False)
     data_obj = pickle.load(open("tests/data/precooked/tiny_dataobj.p", 'rb'))
     data_obj.workdir = absworkdir
     ids = physcraper.IdDicts(conf, workdir=data_obj.workdir)
-    ids.gi_ncbi_dict = pickle.load(open("tests/data/precooked/tiny_gi_map.p", "rb"))
+    ids.acc_ncbi_dict = pickle.load(open("tests/data/precooked/tiny_gi_map.p", "rb"))
 except:
     sys.stdout.write("\n\nTest FAILED\n\n")
     sys.exit()
 filteredScrape = physcraper.FilterBlast(data_obj, ids)
 filteredScrape._blasted = 1
 blast_dir = "tests/data/precooked/fixed/tte_blast_files"
-filteredScrape.gi_list_mrca = pickle.load(open("tests/data/precooked/gi_list_mrca.p", 'rb'))
+filteredScrape.acc_list_mrca = pickle.load(open("tests/data/precooked/acc_list_mrca.p", 'rb'))
 filteredScrape.read_blast(blast_dir=blast_dir)
 filteredScrape.remove_identical_seqs()
 filteredScrape.sp_dict(downtorank)
@@ -49,9 +49,9 @@ for taxonID in filteredScrape.sp_d:
         break
 
 # test starts here:
-blast_db = "Senecio_lagascanus"
-blast_seq = "Senecio_lagascanus"
-key = 'Senecio_lagascanus'
+blast_db = 1268580
+blast_seq = 1268580
+key = 1268580
 
 local_blast.run_local_blast(filteredScrape.workdir, blast_seq, blast_db)
 local_blast.read_local_blast(filteredScrape.workdir, filteredScrape.sp_seq_d[key], blast_db)

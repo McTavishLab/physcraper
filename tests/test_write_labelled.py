@@ -20,12 +20,18 @@ except:
 treepath = 'tests/data/tmp/labelled.tre'
 alnpath = "tests/data/tmp/labelled.fas"
 
-data_obj.write_labelled(label='^user:TaxonName', treepath=treepath, alnpath=alnpath)
+data_obj.write_labelled(label='^user:TaxonName', treepath=treepath, alnpath=alnpath, norepeats = True)
 
 a =  os.path.isfile(treepath)
+# print(os.path.isfile(treepath))
+# print(a)
 b = os.path.isfile(alnpath)
 c = filecmp.cmp(treepath, expected_tree_path)
 d = filecmp.cmp(alnpath, expected_aln_path)
+
+
+# print(treepath, expected_tree_path)
+# print(alnpath, expected_aln_path)
 
 treepath_ottid = 'tests/data/tmp/labelled_ottid.tre'
 alnpath_ottid = "tests/data/tmp/labelled_ottid.fas"
@@ -36,11 +42,16 @@ e = os.path.isfile(treepath_ottid)
 f = os.path.isfile(alnpath_ottid)
 g = filecmp.cmp(treepath_ottid, expected_tree_path_ottid)
 h = filecmp.cmp(alnpath_ottid, expected_aln_path_ottid)
-
-
+# print(a,b,c,d,e,f,g,h)
+count = 0
 if a*b*c*d*e*f*g*h:
-	sys.stdout.write("Test write_lablled passed\n\n") 
+	sys.stdout.write("Test write_lablled passed\n\n")
 else:
-   sys.stderr.write("Test write_labelled FAILED\n\n") 
+	sys.stderr.write("Test write_labelled FAILED\n\n")
+	for var in [a,b,c,d,e,f,g,h]:
+		if var != 1:
+			trials = ['a','b','c','d','e','f','g','h']
+			sys.stdout.write("{} is not true\n".format(trials[count]))
+	count += 1
 	
 

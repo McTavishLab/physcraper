@@ -20,11 +20,11 @@ absworkdir = os.path.abspath(workdir)
 
 
 try:
-    conf = physcraper.ConfigObj(configfi)
+    conf = physcraper.ConfigObj(configfi, interactive=False)
     data_obj = pickle.load(open("tests/data/precooked/tiny_dataobj.p", 'rb'))
     data_obj.workdir = absworkdir
     ids = physcraper.IdDicts(conf, workdir=data_obj.workdir)
-    ids.gi_ncbi_dict = pickle.load(open("tests/data/precooked/tiny_gi_map.p", "rb"))
+    ids.acc_ncbi_dict = pickle.load(open("tests/data/precooked/tiny_gi_map.p", "rb"))
 except:
     sys.stdout.write("\n\nTest FAILED\n\n")
     sys.exit()
@@ -32,7 +32,7 @@ except:
 filteredScrape =  physcraper.FilterBlast(data_obj, ids)
 filteredScrape._blasted = 1
 blast_dir = "tests/data/precooked/fixed/tte_blast_files"
-filteredScrape.gi_list_mrca = pickle.load(open("tests/data/precooked/gi_list_mrca.p", 'rb'))
+# filteredScrape.acc_list_mrca = pickle.load(open("tests/data/precooked/acc_list_mrca.p", 'rb'))
 filteredScrape.read_blast(blast_dir=blast_dir)
 filteredScrape.remove_identical_seqs()
 filteredScrape.sp_dict(downtorank)
@@ -41,73 +41,35 @@ filteredScrape.make_sp_seq_dict()
 ##this is the code of the first part of how many seq to keep. if threshold is bigger than number of seq for sp, just add all
 # print("start test")
 count = 0
-for giID in filteredScrape.sp_d:
-    if len(filteredScrape.sp_d[giID]) > treshold:
-        count_dict = filteredScrape.count_num_seq(giID)
-        # print(count_dict)
-        if count_dict["new_taxon"]:
-            if count_dict["query_count"] < treshold:
-                count += count_dict["query_count"]
-            if count_dict["query_count"] > treshold:
-                count += treshold
-        if count_dict["new_taxon"] is False:
+for tax_id in filteredScrape.sp_d:
+    # print(filteredScrape.sp_d[tax_id])
+    # print(tax_id)
+    # if len(filteredScrape.sp_d[tax_id]) > treshold:
+    count_dict = filteredScrape.count_num_seq(tax_id)
+    # print(count_dict)
+    if count_dict["new_taxon"]:
+        # print("new stuff")
+        if count_dict["query_count"] < treshold:
+            count += count_dict["query_count"]
+        if count_dict["query_count"] > treshold:
+            count += treshold
+    if count_dict["new_taxon"] is False:
+        # print("old guy")
+        if count_dict["query_count"] >= 1:
             if count_dict["seq_present"] < treshold:
                 count += treshold-count_dict["seq_present"]
             if count_dict["seq_present"] > treshold:
                 count += 0
-        if giID in filteredScrape.sp_seq_d.keys():
-            # print(giID in filteredScrape.sp_seq_d.keys())
-            seq_present = count_dict["seq_present"]
-            query_count = count_dict["query_count"]
-            # for item in filteredScrape.sp_d[giID]:
-            if seq_present >= 1 and seq_present < treshold and count_dict["new_taxon"] == False and query_count != 0:
-                if query_count + seq_present > treshold:
-                    taxonfn = filteredScrape.loop_for_write_blast_files(giID)
-                    for element in filteredScrape.sp_d[giID]:
-                        if '^ot:ottTaxonName' in element:
-                            blast_seq = "{}".format(element['^ot:ottTaxonName'])
-                            blast_seq = blast_seq.replace(" ", "_")
-                            blast_db = "{}".format(element['^ot:ottTaxonName'])
-                            blast_db = blast_db.replace(" ", "_")
-                            # print(blast_db, blast_seq)
-                    if filteredScrape.downtorank is not None:
-                        taxonfn = giID
-                    print('taxonfn')
-                    print(taxonfn)
-                    local_blast.run_local_blast(filteredScrape.data.workdir, taxonfn, taxonfn)
-                    filteredScrape.select_seq_by_local_blast(filteredScrape.sp_seq_d[giID], taxonfn, treshold, seq_present)
-            elif seq_present == 0 and count_dict["new_taxon"] == True and query_count>=1:
+    # print(count)
 
-                for item in filteredScrape.sp_d[giID]:
-                    if '^ncbi:gi' in item:
-                        filteredScrape.data.add_otu(item['^ncbi:gi'], filteredScrape.ids)
-                blast_seq = filteredScrape.sp_seq_d[giID].keys()[0]
-                if type(blast_seq) == int:
-                    str_db = str(giID)
-                else:
-                    str_db = str(blast_seq)
-                blast_db = filteredScrape.sp_seq_d[giID].keys()[1:]
-                # write files for local blast first:
-                seq = filteredScrape.sp_seq_d[giID][blast_seq]
-                print('str_db')
-                print(str_db)
+filteredScrape.how_many_sp_to_keep(treshold, selectby)
 
-                local_blast.write_blast_files(filteredScrape.data.workdir, str_db, seq) #blast qguy
-                # print(blast_db)
-                for blast_key in blast_db:
-                    seq = filteredScrape.sp_seq_d[giID][blast_key]
-                    local_blast.write_blast_files(filteredScrape.data.workdir, blast_key, seq, db=True, fn=str_db) #local db
-                # make local blast of sequences
-                if filteredScrape.downtorank is not None:
-                    str_db = giID
-                print(str_db)
-                local_blast.run_local_blast(filteredScrape.data.workdir, str_db, str_db)
-                if len(filteredScrape.sp_seq_d[giID]) + seq_present >= treshold:
-                    filteredScrape.select_seq_by_local_blast(filteredScrape.sp_seq_d[giID], str_db, treshold, seq_present)
-                elif len(filteredScrape.sp_seq_d[giID]) + seq_present < treshold:
-                    filteredScrape.add_all(giID)
+# print("filteredScrape.filtered_seq")
+# print(filteredScrape.filtered_seq)
+ 
 # print(count, len(filteredScrape.filtered_seq) )
 # print(filteredScrape.filtered_seq.keys())
+# print(filteredScrape.sp_d)
 
 
 try:
@@ -115,3 +77,16 @@ try:
     sys.stdout.write("\ntest passed\n")
 except:
     sys.stderr.write("\ntest failed\n")
+
+# #added before
+# #[429489224, 429489233, 429489188]
+# {'^ncbi:taxon': 1268591, '^ncbi:title': 'Senecio scopolii subsp. scopolii clone JC4715-6 18S ribosomal RNA gene, partial sequence; internal transcribed spacer 1, 5.8S ribosomal RNA gene, and internal transcribed spacer 2, complete sequence; and 28S ribosomal RNA gene, partial sequence', '^ot:ottTaxonName': 'Senecio_scopolii_subsp._scopolii', '^physcraper:status': 'query', '^ot:ottId': 114544, '^ncbi:accession': 'JX895389.1', '^ncbi:gi': 429489224, '^physcraper:last_blasted': '1800/01/01'}
+# {'^ncbi:taxon': 1268591, '^ncbi:title': 'Senecio scopolii subsp. scopolii clone JC4715-15 18S ribosomal RNA gene, partial sequence; internal transcribed spacer 1, 5.8S ribosomal RNA gene, and internal transcribed spacer 2, complete sequence; and 28S ribosomal RNA gene, partial sequence', '^ot:ottTaxonName': 'Senecio_scopolii_subsp._scopolii', '^physcraper:status': 'query', '^ot:ottId': 114544, '^ncbi:accession': 'JX895398.1', '^ncbi:gi': 429489233, '^physcraper:last_blasted': '1800/01/01'}
+# {'^ncbi:taxon': 1268580, '^ncbi:title': 'Senecio lagascanus clone JC5600-6 18S ribosomal RNA gene, partial sequence; internal transcribed spacer 1, 5.8S ribosomal RNA gene, and internal transcribed spacer 2, complete sequence; and 28S ribosomal RNA gene, partial sequence', '^ot:ottTaxonName': 'Senecio_lagascanus', '^physcraper:status': 'query', '^ot:ottId': 640718, '^ncbi:accession': 'JX895353.1', '^ncbi:gi': 429489188, '^physcraper:last_blasted': '1800/01/01'}
+
+
+# [u'JX895398.1', u'JX895353.1', u'JX895392.1', 'JX895513.1', 'JX895264.1']
+
+# ## now only one scopolii
+# 1268590: [{'^ncbi:taxon': 1268590, '^ncbi:title': 'Senecio scopolii subsp. floccosus 18S ribosomal RNA gene, partial sequence; internal transcribed spacer 1, 5.8S ribosomal RNA gene, and internal transcribed spacer 2, complete sequence; and 28S ribosomal RNA gene, partial sequence', '^ot:ottTaxonName': 'Senecio_scopolii_subsp._floccosus', '^physcraper:status': 'query', '^ot:ottId': 114541, '^ncbi:accession': 'JX895513.1', '^ncbi:gi': 429489348, '^physcraper:last_blasted': '1800/01/01'}],
+# 1268581: {'^ncbi:taxon': 1268581, '^ncbi:title': 'Senecio lopezii clone JC3604-12 18S ribosomal RNA gene, partial sequence; internal transcribed spacer 1, 5.8S ribosomal RNA gene, and internal transcribed spacer 2, complete sequence; and 28S ribosomal RNA gene, partial sequence', '^ot:ottTaxonName': 'Senecio_lopezii', '^physcraper:status': 'query', '^ot:ottId': 688688, '^ncbi:accession': 'JX895264.1', '^ncbi:gi': 429489099, '^physcraper:last_blasted': '1800/01/01'}

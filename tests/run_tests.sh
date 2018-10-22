@@ -3,6 +3,7 @@ if [ -f output/owndata/ ]; then echo 'Found some!'; fi
 python tests/test_remove_identical_seqs.py
 python tests/test_fromfile.py
 python tests/test_configread.py
+python tests/test_reconcile.py
 python tests/test_species_translation.py
 python tests/test_write_labelled.py
 python tests/test_add_all.py
