@@ -12,7 +12,7 @@ from physcraper import ConfigObj, PhyscraperScrape, IdDicts
 sys.stdout.write("Running test remove_identical_seqs\n\n")
 workdir = "tests/data/tmp/owndata"
 absworkdir = os.path.abspath(workdir)
-conf = ConfigObj("tests/data/test.config")
+conf = ConfigObj("tests/data/test.config", interactive=False)
 
 try:
     data_obj = pickle.load(open("tests/data/precooked/tiny_dataobj.p", 'rb'))
