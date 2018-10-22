@@ -42,35 +42,19 @@ filteredScrape.make_sp_seq_dict()
 # print("start test")
 count = 0
 for tax_id in filteredScrape.sp_d:
-    # print(filteredScrape.sp_d[tax_id])
-    # print(tax_id)
-    # if len(filteredScrape.sp_d[tax_id]) > treshold:
     count_dict = filteredScrape.count_num_seq(tax_id)
-    # print(count_dict)
     if count_dict["new_taxon"]:
-        # print("new stuff")
         if count_dict["query_count"] < treshold:
             count += count_dict["query_count"]
         if count_dict["query_count"] > treshold:
             count += treshold
     if count_dict["new_taxon"] is False:
-        # print("old guy")
         if count_dict["query_count"] >= 1:
             if count_dict["seq_present"] < treshold:
                 count += treshold-count_dict["seq_present"]
             if count_dict["seq_present"] > treshold:
                 count += 0
-    # print(count)
-
 filteredScrape.how_many_sp_to_keep(treshold, selectby)
-
-# print("filteredScrape.filtered_seq")
-# print(filteredScrape.filtered_seq)
- 
-# print(count, len(filteredScrape.filtered_seq) )
-# print(filteredScrape.filtered_seq.keys())
-# print(filteredScrape.sp_d)
-
 
 try:
     assert count == len(filteredScrape.filtered_seq) and count>0

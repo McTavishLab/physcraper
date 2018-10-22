@@ -26,7 +26,7 @@ sys.stdout.write("\ntests Concat func select_rnd_seq\n")
 
 concat = Concat(workdir_comb, email)
 for item in genelist.keys():
-    concat.load_single_genes(genelist[item]["pickle"], item)
+    concat.load_single_genes(genelist[item]['workdir'], genelist[item]["pickle"], item)
 
 
 concat.combine()
