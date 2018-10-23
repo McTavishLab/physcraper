@@ -5,40 +5,28 @@ import re
 import os
 import csv
 import subprocess
-# import time
 import datetime
 import glob
 import json
-# import unicodedata
 import configparser
 import pickle
-# import inspect
 import random
 import urllib2
-# import logging
-# import collections
 from copy import deepcopy
 from ete2 import NCBITaxa
-# from urllib2 import URLError
 import physcraper.AWSWWW as AWSWWW
-# import numpy
-from Bio.Blast import NCBIXML  # , NCBIWWW
-# from Bio.Blast.Applications import NcbiblastxCommandline
-from Bio import Entrez  # , SeqIO
-# from Bio.SeqRecord import SeqRecord
-# from Bio.Seq import Seq
+from Bio.Blast import NCBIXML
+from Bio import Entrez
 from dendropy import Tree, \
     DnaCharacterMatrix, \
     DataSet, \
     datamodel
 from peyotl.api.phylesystem_api import PhylesystemAPI, APIWrapper
-from peyotl.sugar import tree_of_life, taxomachine  # taxonomy,
+from peyotl.sugar import tree_of_life, taxomachine
 from peyotl.nexson_syntax import extract_tree, \
     get_subtree_otus, \
     extract_otu_nexson, \
-    PhyloSchema  # extract_tree_nexson, \
-# from peyotl.api import APIWrapper
-
+    PhyloSchema
 # extension functions
 import concat  # is the local concat class
 import ncbi_data_parser  # is the ncbi data parser class and associated functions
@@ -57,8 +45,6 @@ def debug(msg):
     """
     if _DEBUG_MK == 1:
         print(msg)
-    # with open("debugging.txt", "a") as debugf:
-    #     debugf.write("{}\n".format(msg))
 
 
 def deep_debug(msg):
@@ -66,8 +52,6 @@ def deep_debug(msg):
     """
     if _deep_debug == 1:
         print(msg)
-    # with open("debugging.txt", "a") as debugf:
-    #     debugf.write("{}\n".format(msg))
 
 
 def is_number(s):
@@ -81,7 +65,6 @@ def is_number(s):
 
 # which python physcraper file do I use?
 debug("Current --init-- version number: 10-15-2018.0")
-
 debug(os.path.realpath(__file__))
 
 
@@ -122,7 +105,7 @@ class ConfigObj(object):
         self.phylesystem_loc: Default is to run on remote, github phylesystem, can be set to 'local'
                               to access files from local clone
         self.ott_ncbi: path to file containing OTT id, ncbi and taxon name
-        self.id_pickle: path to pickle file 
+        self.id_pickle: path to pickle file
         self.email: email address used for blast queries
         self.blast_loc: defines which blasting method to use, either web-query (=remote) or from a local
                         blast database (=local)
@@ -153,7 +136,6 @@ class ConfigObj(object):
         self.hitlist_size = int(config['blast']['hitlist_size'])
         self.seq_len_perc = float(config['physcraper']['seq_len_perc'])
         assert 0 < self.seq_len_perc < 1
-        # gi_id to taxid (according to GenBank it's not updated since 2016, even though the files seems to be newer)
         self.phylesystem_loc = config['phylesystem']['location']
         assert (self.phylesystem_loc in ['local', 'api'])  # default is api, but can run on local version of OpenTree datastore
         self.ott_ncbi = config['taxonomy']['ott_ncbi']
@@ -198,21 +180,20 @@ class ConfigObj(object):
 
     def _download_localblastdb(self):
         """Check if files are present and if they are uptodate.
-        If not files will be downloaded. 
+        If not files will be downloaded.
         """
         if self.blast_loc == 'local':
             debug(self.ncbi_parser_nodes_fn)
             debug(os.path.isfile(self.ncbi_parser_nodes_fn))
-
             debug(os.path.isfile("{}/nt.01.nhr".format(self.blastdb)))
             if not os.path.isfile("{}/nt.01.nhr".format(self.blastdb)):
                 print("Do you want to download the blast nt databases from ncbi? Note: "
                       "This is a US government website! You agree to their terms")
                 x = get_raw_input()
                 if x == "yes":
-                    os.system("rsync -av ftp://ftp.ncbi.nlm.nih.gov/blast/db/nt.*" 
+                    os.system("wget 'ftp://ftp.ncbi.nlm.nih.gov/blast/db/nt.*'" 
                               "{}/".format(self.blastdb))
-                    os.system("rsync -av ftp://ftp.ncbi.nlm.nih.gov/blast/db/taxdb.tar.gz" 
+                    os.system("wget 'ftp://ftp.ncbi.nlm.nih.gov/blast/db/taxdb.tar.gz'" 
                               "{}/".format(self.blastdb))
                     cwd = os.getcwd()
                     os.chdir(self.blastdb)
@@ -230,18 +211,18 @@ class ConfigObj(object):
                 download_date = os.path.getmtime("{}/nt.01.nhr".format(self.blastdb))
                 download_date = datetime.datetime.fromtimestamp(download_date)
                 today = datetime.datetime.now()
-                time_passed = (today - download_date).days    
+                time_passed = (today - download_date).days
                 # debug([download_date, today, time_passed])
-                if time_passed >= 90: 
+                if time_passed >= 90:
                     print("Your databases might not be uptodate anymore. You downloaded them {} days ago. "
                           "Do you want to update the blast databases from ncbi? Note: This is a US government website! "
                           "You agree to their terms".format(time_passed))
                     x = get_raw_input()
                     if x == "yes":
-                        # cwd = os.getcwd()
+                        cwd = os.getcwd()
                         os.chdir(self.blastdb)
                         os.system('update_blastdb nt')
-                        os.system('cat *.tar.gz | tar -xvzf - -i') 
+                        os.system('cat *.tar.gz | tar -xvzf - -i')
                         os.system("update_blastdb taxdb")
                         os.system("gunzip -cd taxdb.tar.gz | (tar xvf - )")
                         os.chdir(cwd)
@@ -260,7 +241,6 @@ class ConfigObj(object):
                       "You agree to their terms")
                 x = get_raw_input()
                 if x == "yes":
-
                     os.system(" wget 'ftp://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdump.tar.gz' -P physcraper-git/physcraper/tests/data/")
                     os.system("gunzip -cd ./tests/data/taxdump.tar.gz | (tar xvf - names.dmp nodes.dmp)")
                 elif x == "no":
@@ -275,12 +255,12 @@ class ConfigObj(object):
                 today = datetime.datetime.now()
                 time_passed = (today - download_date).days    
                 # debug([download_date, today, time_passed])
-                if time_passed >= 90: 
+                if time_passed >= 90:
                     print("Do you want to update taxonomy databases from ncbi? Note: This is a US government website! "
                           "You agree to their terms")
                     x = get_raw_input()
                     if x == "yes":
-                        os.system("rsync -av ftp://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdump.tar.gz" 
+                        os.system("wget 'ftp://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdump.tar.gz'" 
                                   "./tests/data/taxdump.tar.gz")
                         os.system("gunzip - cd ./tests/data/taxdump.tar.gz | (tar xvf - names.dmp nodes.dmp)")
                     elif x == "no":
@@ -307,7 +287,6 @@ def get_dataset_from_treebase(study_id,
     else:
         tb_id = treebase_url.split(':S')[1]
         url = "https://treebase.org/treebase-web/search/downloadAStudy.html?id={}&format=nexus".format(tb_id)
-        # url = "http://treebase.org/treebase-web/phylows/study/TB2:S{}?format=nexml".format(tb_id)
         if _DEBUG:
             sys.stderr.write(url + "\n")
         dna = DataSet.get(url=url,
@@ -352,7 +331,6 @@ def generate_ATT_from_phylesystem(aln,
         if type(ingroup_mrca) == list:
             ott_ids = set(ingroup_mrca)
             # debug(ott_ids)
-
             ott_mrca = get_mrca_ott(ott_ids)
         else:
             ott_mrca = int(ingroup_mrca)
@@ -459,12 +437,10 @@ def generate_ATT_from_files(seqaln,
     otu_dict = json.load(open(otu_json, "r"))
     debug("get mrca")
     debug(ingroup_mrca)
-    # debug(some)
     if ingroup_mrca:
         if type(ingroup_mrca) == list:
             ott_ids = set(ingroup_mrca)
             # debug(ott_ids)
-
             ott_mrca = get_mrca_ott(ott_ids)
         else:
             ott_mrca = int(ingroup_mrca)
@@ -499,7 +475,7 @@ def get_ott_taxon_info(spp_name):
     ONLY works with version 3 of Open tree APIs
 
     :param spp_name: species name
-    :return: 
+    :return:
     """
     debug(spp_name)
     try:
@@ -654,7 +630,7 @@ class AlignTreeTax(object):
 
     def __init__(self, newick, otu_dict, alignment, ingroup_mrca, workdir, schema=None, taxon_namespace=None):
         # TODO add assertions that inputs are correct type!!!
-        print("build ATT class")
+        debug("build ATT class")
         self.aln = alignment
         if schema is None:
             self.tre = Tree.get(data=newick,
@@ -686,7 +662,7 @@ class AlignTreeTax(object):
         self.gb_dict = {}  # has all info about new blast seq TODO: Cannot be deleted. Is used frequently! TODODELTE (should maybe go anyhow due to gi switch?): Should this not be part of physcraper class instead? it has all blast information. Blast is not part of this class.
         self._reconciled = False  # TODO: for what do we want to use it? .... it was checking to see if name reconcilation has ahappened yet. Should get flipped to true when done. MK: Yes, but we never do anything with the information
         self.unpubl_otu_json = None
-    
+
     def _reconcile_names(self):
         """Taxa that are only found in the tree, or only in the alignment are deleted.
 
@@ -820,7 +796,7 @@ class AlignTreeTax(object):
         Used in prune_short()
         has test: test_trim.py
 
-        :taxon_missingness: defines how many sequences need to have a base at the start/end of an alignment
+        :param taxon_missingness: defines how many sequences need to have a base at the start/end of an alignment
         """
         # debug('in trim')
         i = 0
@@ -944,7 +920,6 @@ class AlignTreeTax(object):
             if gb_id in currentgilist:
                 exit(-1)
         # ############################
-
         if ncbi_id is None:
             debug("ncbi_id is none")
 
@@ -957,7 +932,6 @@ class AlignTreeTax(object):
             ids_obj.acc_ncbi_dict[gb_id] = ncbi_id
             ids_obj.ncbiid_to_spn[ncbi_id] = tax_name
             ids_obj.spn_to_ncbiid[tax_name] = ncbi_id
-
         if ncbi_id in ids_obj.ncbi_to_ott.keys():
             # ncbi_id = int(ids_obj.map_acc_ncbi(gb_id))
             ott_id = int(ids_obj.ncbi_to_ott[ncbi_id])
@@ -1169,15 +1143,17 @@ def get_mrca_ott(ott_ids):
     synth_tree_ott_ids = []
     ott_ids_not_in_synth = []
     for ott in ott_ids:
-        # debug(ott)
+        debug(ott)
         try:
+            # debug("try")
             tree_of_life.mrca(ott_ids=[ott], wrap_response=False)
             synth_tree_ott_ids.append(ott)
-        except:  # TODO: urllib2.HTTPError, err      seems to be requests.exceptions.HTTPError: 500, don't know how to implement them
+        except:  # TODO: urllib2.HTTPError, err. Seems to be requests.exceptions.HTTPError: 500, don't know how to implement them
             debug("except")
             ott_ids_not_in_synth.append(ott)
             # drop_tip.append(ott)
     # debug(synth_tree_ott_ids)
+    # debug("continue in get_mrca_ott")
     if len(synth_tree_ott_ids) == 0:
         sys.stderr.write('No sampled taxa were found in the current synthetic tree. '
                          'Please find and input and appropriate OTT id as ingroup mrca in generate_ATT_from_files')
@@ -1209,7 +1185,6 @@ def get_ott_ids_from_otu_dict(otu_dict):  # TODO put into data obj?
             ott_ids.append(otu['^ot:ottId'])
         except KeyError:
             pass
-
 
 #####################################
 
@@ -1261,6 +1236,7 @@ class IdDicts(object):
         self.spn_to_ncbiid = {}  # spn to ncbi_id, it's only fed by the ncbi_data_parser, but makes it faster
         self.ncbiid_to_spn = {}
         self.mrca_ott = mrca  # mrca_list
+        # debug(type(self.mrca_ott))
         # debug((self.mrca_ott))
         assert type(self.mrca_ott) in [int, list] or self.mrca_ott is None
         self.mrca_ncbi = set()  # corresponding ids for mrca_ott list
@@ -1289,7 +1265,6 @@ class IdDicts(object):
             for lin in fi:
                 self.acc_ncbi_dict[int(lin.split(",")[0])] = lin.split(",")[1]
                 debug("where do we have the id_map.txt?")
-                debug(some)
         if config_obj.blast_loc == 'remote':
             self.otu_rank = {}  # used only for web queries - contains taxonomic hierarchy information
         else:  # ncbi parser contains information about spn, tax_id, and ranks
@@ -1326,7 +1301,6 @@ class IdDicts(object):
                 ncbi_id = self.otu_rank[ott_name]["taxon id"]
             else:
                 ncbi_id = self.ncbi_parser.get_id_from_name(ott_name)
-
         else:
             # debug("else")
             tx = APIWrapper().taxomachine
@@ -1351,7 +1325,6 @@ class IdDicts(object):
         if tax_name in self.spn_to_ncbiid:
             ncbi_id = self.spn_to_ncbiid[tax_name]
         else:
-            
             debug(tax_name)
             try:
                 debug("try2")
@@ -1821,6 +1794,9 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
                                           num_threads=self.config.num_threads)
         else:
             debug("use BLAST webservice")
+            # debug(query)
+            # debug(equery)
+            # debug(self.config.hitlist_size)
             result_handle = AWSWWW.qblast("blastn",
                                           "nt",
                                           query,
@@ -1989,17 +1965,20 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
         handle = Entrez.esearch(db="nucleotide", term=equery, idtype='acc',
                                 usehistory='n', RetMax=100000000)
         records = Entrez.read(handle)
-        print(records)
+        debug(records)
         id_list = records['IdList']
-        print(id_list)
+        debug(id_list)
         acc_l = []
         for acc_id in id_list:
             # debug(acc_id)
             # debug(type(acc_id))
             # debug(acc_id.split(".")[0])
-            acc_l.append(str(acc_id))
+            # back to int for now
+            acc_l.append(int(acc_id))
+            # acc_l.append(str(acc_id))
         # id_list = [int(x) for x in id_list]
         # debug(acc_l)
+        # debug(some)
         return acc_l
 
     def read_local_blast(self, fn_path):
@@ -2048,7 +2027,6 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
             if float(query_dict[key]['evalue']) < float(self.config.e_value_thresh):
                 gb_acc = query_dict[key]['accession']
                 # gi_id = query_dict[key]['^ncbi:gi']
-
                 # debug(type(gi_id))
                 # debug(gb_acc)
                 # debug(len(self.acc_list_mrca) >= 1)
@@ -2565,7 +2543,7 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
         self.data.write_papara_files()
         os.chdir(self.workdir)  # Clean up dir moving
         try:
-            debug("I call papara")
+            # debug("I call papara")
             assert self.data.aln.taxon_namespace == self.data.tre.taxon_namespace
             # debug(self.newseqs_file)
             subprocess.call(["papara",
@@ -2769,8 +2747,7 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
                 self.data.otu_dict[tax.label]['^physcraper:status'] = "deleted, Genbank identifier is part of blacklist"
         # self.data.reconcile()
         self.data.prune_short()
-
-        debug(self.data.tre.as_string(schema='newick'))
+        # debug(self.data.tre.as_string(schema='newick'))
 
     def generate_streamed_alignment(self):
         """runs the key steps and then replaces the tree and alignment with the expanded ones"""
@@ -2786,7 +2763,6 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
                 self.align_query_seqs()
                 # self.data.reconcile()
                 # self.data.prune_short()  # cannot happen here, as aln has new seq but tre not
-
                 self.place_query_seqs()
                 self.est_full_tree()
                 self.data.tre = Tree.get(path="{}/RAxML_bestTree.{}".format(self.workdir, self.date),
@@ -3077,7 +3053,6 @@ class FilterBlast(PhyscraperScrape):
                     tax_name = downtorank_name
                     tax_id = downtorank_id
                 tax_name = tax_name.replace(" ", "_")
-
                 self.ids.spn_to_ncbiid[tax_name] = tax_id
                 self.ids.ncbiid_to_spn[tax_id] = tax_name
                 # change to tax_id
@@ -3103,9 +3078,8 @@ class FilterBlast(PhyscraperScrape):
         return: self.sp_seq_d
         """
         debug("make_sp_seq_dict")
-        debug('self.new_seqs.keys()')
-
-        debug(self.new_seqs.keys())
+        # debug('self.new_seqs.keys()')
+        # debug(self.new_seqs.keys())
         for key in self.sp_d:
             # loop to populate dict. key1 = sp name, key2= gb id, value = seq,
             # number of items in key2 will be filtered according to threshold and already present seq
