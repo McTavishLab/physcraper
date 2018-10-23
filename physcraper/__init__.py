@@ -241,7 +241,7 @@ class ConfigObj(object):
                       "You agree to their terms")
                 x = get_raw_input()
                 if x == "yes":
-                    os.system(" wget 'ftp://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdump.tar.gz' -P physcraper-git/physcraper/tests/data/")
+                    os.system("wget 'ftp://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdump.tar.gz' -P ./tests/data/")
                     os.system("gunzip -cd ./tests/data/taxdump.tar.gz | (tar xvf - names.dmp nodes.dmp)")
                 elif x == "no":
                     print("You did not agree to download data from ncbi. Program will default to blast web-queries.")
@@ -261,7 +261,7 @@ class ConfigObj(object):
                     x = get_raw_input()
                     if x == "yes":
                         os.system("wget 'ftp://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdump.tar.gz'" 
-                                  "./tests/data/taxdump.tar.gz")
+                                  "./tests/data/")
                         os.system("gunzip - cd ./tests/data/taxdump.tar.gz | (tar xvf - names.dmp nodes.dmp)")
                     elif x == "no":
                         print("You did not agree to update data from ncbi. Old database files will be used.")
