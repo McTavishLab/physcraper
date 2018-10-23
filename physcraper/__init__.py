@@ -78,7 +78,6 @@ def get_raw_input():
     while not is_valid:
         try:
             x = raw_input("Please write either 'yes' or 'no': ")
-            # print(x)
             if x == "yes" or x == "no":
                 is_valid = 1  # set it to 1 to validate input and to terminate the while..not loop
         except ValueError, e:
@@ -139,7 +138,7 @@ class ConfigObj(object):
         assert (self.phylesystem_loc in ['local', 'api'])  # default is api, but can run on local version of OpenTree datastore
         self.ott_ncbi = config['taxonomy']['ott_ncbi']
         assert os.path.isfile(self.ott_ncbi)
-        # following rewrites relative path to absolute path so that it behaves when changing dirs (using pickle files)
+        # rewrites relative path to absolute path so that it behaves when changing dirs
         self.id_pickle = os.path.abspath(config['taxonomy']['id_pickle'])
         self.email = config['blast']['Entrez.email']
         assert '@' in self.email
@@ -179,7 +178,6 @@ class ConfigObj(object):
 
     def _download_localblastdb(self):
         """Check if files are present and if they are uptodate.
-
         If not files will be downloaded.
         """
         if self.blast_loc == 'local':
@@ -188,9 +186,9 @@ class ConfigObj(object):
                       "This is a US government website! You agree to their terms")
                 x = get_raw_input()
                 if x == "yes":
-                    os.system("rsync -av ftp://ftp.ncbi.nlm.nih.gov/blast/db/nt.*" 
+                    os.system("wget 'ftp://ftp.ncbi.nlm.nih.gov/blast/db/nt.*'" 
                               "{}/".format(self.blastdb))
-                    os.system("rsync -av ftp://ftp.ncbi.nlm.nih.gov/blast/db/taxdb.tar.gz" 
+                    os.system("wget 'ftp://ftp.ncbi.nlm.nih.gov/blast/db/taxdb.tar.gz'" 
                               "{}/".format(self.blastdb))
                     cwd = os.getcwd()
                     os.chdir(self.blastdb)
@@ -209,7 +207,7 @@ class ConfigObj(object):
                 download_date = datetime.datetime.fromtimestamp(download_date)
                 today = datetime.datetime.now()
                 time_passed = (today - download_date).days
-                if time_passed >= 60:
+                if time_passed >= 90:
                     print("Your databases might not be uptodate anymore. You downloaded them {} days ago. "
                           "Do you want to update the blast databases from ncbi? Note: This is a US government website! "
                           "You agree to their terms".format(time_passed))
@@ -228,7 +226,7 @@ class ConfigObj(object):
                         print("You did not type 'yes' or 'no'!")
 
     def _download_ncbi_parser(self):
-        """Check if files are present and if they are uptodate.
+        """Check if files are present and if they are up to date.
         If not files will be downloaded. 
         """
         if self.blast_loc == 'local':
@@ -250,48 +248,12 @@ class ConfigObj(object):
                 download_date = datetime.datetime.fromtimestamp(download_date)
                 today = datetime.datetime.now()
                 time_passed = (today - download_date).days    
-                if time_passed >= 60:
+                if time_passed >= 90:
                     print("Do you want to update taxonomy databases from ncbi? Note: This is a US government website! "
                           "You agree to their terms")
                     x = get_raw_input()
                     if x == "yes":
-                        os.system("rsync -av ftp://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdump.tar.gz" 
-                                  "./tests/data/taxdump.tar.gz")
-                        os.system("gunzip - cd ./tests/data/taxdump.tar.gz | (tar xvf - names.dmp nodes.dmp)")
-                    elif x == "no":
-                        print("You did not agree to update data from ncbi. Old database files will be used.")
-                    else:
-                        print("You did not type yes or no!")
-
-    def _download_ncbi_parser(self):
-        """Check if files are present and if they are uptodate.
-        If not files will be downloaded.
-        """
-        if self.blast_loc == 'local':
-            if not os.path.isfile(self.ncbi_parser_nodes_fn):
-                print("Do you want to download taxonomy databases from ncbi? Note: This is a US government website! "
-                      "You agree to their terms")
-                x = get_raw_input()
-                if x == "yes":
-                    os.system(" wget 'ftp://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdump.tar.gz' -P physcraper-git/physcraper/tests/data/")
-                    os.system("gunzip -cd ./tests/data/taxdump.tar.gz | (tar xvf - names.dmp nodes.dmp)")
-                elif x == "no":
-                    print("You did not agree to download data from ncbi. Program will default to blast web-queries.")
-                    print("This is slow and crashes regularly!")
-                    self.blast_loc = 'remote'
-                else:
-                    print("You did not type yes or no!")
-            else:
-                download_date = os.path.getmtime(self.ncbi_parser_nodes_fn)
-                download_date = datetime.datetime.fromtimestamp(download_date)
-                today = datetime.datetime.now()
-                time_passed = (today - download_date).days
-                if time_passed >= 60:
-                    print("Do you want to update taxonomy databases from ncbi? Note: This is a US government website! "
-                          "You agree to their terms")
-                    x = get_raw_input()
-                    if x == "yes":
-                        os.system("rsync -av ftp://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdump.tar.gz" 
+                        os.system("wget 'ftp://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdump.tar.gz'" 
                                   "./tests/data/taxdump.tar.gz")
                         os.system("gunzip - cd ./tests/data/taxdump.tar.gz | (tar xvf - names.dmp nodes.dmp)")
                     elif x == "no":
@@ -722,7 +684,6 @@ class AlignTreeTax(object):
         :param min_seqlen_perc: minimum length of seq
         :return: prunes aln and tre
         """
-        # TODO: is this not half the part of _reconcile_names? 
         if sum(self.orig_seqlen) != 0:
             avg_seqlen = sum(self.orig_seqlen) / len(self.orig_seqlen)
             seq_len_cutoff = avg_seqlen * min_seqlen_perc
@@ -829,7 +790,7 @@ class AlignTreeTax(object):
 
     def add_otu(self, gb_id, ids_obj):
         """ Generates an otu_id for new sequences and adds them into self.otu_dict.
-        Needs to be passed an IdDict to do the mapping
+        Needs to be passed an IdDict to do the mapping.
 
         :param gb_id: the Genbank identifier
         :param ids_obj: needs to IDs class to have access to the taxonomic information
@@ -1057,7 +1018,7 @@ def get_mrca_ott(ott_ids):
         try:
             tree_of_life.mrca(ott_ids=[ott], wrap_response=False)
             synth_tree_ott_ids.append(ott)
-        except:  # TODO: urllib2.HTTPError, err      seems to be requests.exceptions.HTTPError: 500, don't know how to implement them
+        except:  # TODO: urllib2.HTTPError, err. Seems to be requests.exceptions.HTTPError: 500, don't know how to implement them
             debug("except")
             ott_ids_not_in_synth.append(ott)
     if len(synth_tree_ott_ids) == 0:
@@ -1493,9 +1454,9 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
         self.repeat = 1  # used to determine if we continue updating the tree
         self.newseqs_acc = []  # all ever added Genbank accession numbers during any PhyScraper run, used to speed up adding process
         self.blacklist = []  # remove sequences by default
-        self.acc_list_mrca = []  # all gb_ids of a given mrca. Used to limit possible seq to add.
-        if self.config.blast_loc == 'local' and len(self.acc_list_mrca) == 0:
-            self.acc_list_mrca = self.get_all_acc_mrca()
+        # self.acc_list_mrca = []  # all gb_ids of a given mrca. Used to limit possible seq to add.
+        # if self.config.blast_loc == 'local' and len(self.acc_list_mrca) == 0:
+        #     self.acc_list_mrca = self.get_all_acc_mrca()
             # debug(self.acc_list_mrca)
         self.seq_filter = ['deleted', 'subsequence,', 'not', "removed", "deleted,", "local"]  # TODO MK: try to move completely to FilterBlast class
         self.reset_markers()
@@ -1751,13 +1712,9 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
         for key in query_dict.keys():
             if float(query_dict[key]['evalue']) < float(self.config.e_value_thresh):
                 gb_acc = query_dict[key]['accession']
-                if len(self.acc_list_mrca) >= 1 and (gb_acc not in self.acc_list_mrca):
-                    # debug("pass")
-                    pass
-                else:
-                    if gb_acc not in self.data.gb_dict:  # skip ones we already have
-                        self.new_seqs[gb_acc] = query_dict[key]['sseq']
-                        self.data.gb_dict[gb_acc] = query_dict[key]
+                gb_acc not in self.data.gb_dict:  # skip ones we already have
+                    self.new_seqs[gb_acc] = query_dict[key]['sseq']
+                    self.data.gb_dict[gb_acc] = query_dict[key]
 
     def read_webbased_blast_query(self, fn_path):
         """ Implementation to read in results of web blast searches.
@@ -1776,20 +1733,17 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
                         if float(hsp.expect) < float(self.config.e_value_thresh):
                             gb_id = alignment.title.split('|')[3]  # 1 is for gi
                             if gb_id.split(".") == 1:
-                                # debug(gb_id)
-                            if len(self.acc_list_mrca) >= 1 and (gb_id not in self.acc_list_mrca):
-                                pass
-                            else:
-                                if gb_id not in self.data.gb_dict:  # skip ones we already have
-                                    self.new_seqs[gb_id] = hsp.sbjct
-                                    gi_id = alignment.title.split('|')[1]
-                                    gb_acc = alignment.__dict__['accession']
-                                    stitle = alignment.__dict__['title']
-                                    hsps = alignment.__dict__['hsps']
-                                    length = alignment.__dict__['length']
-                                    query_dict = {'^ncbi:gi': gi_id, 'accession': gb_acc, 'title': stitle, 
-                                                  'length': length, 'hsps': hsps}
-                                    self.data.gb_dict[gb_id] = query_dict
+                                debug(gb_id)
+                            if gb_id not in self.data.gb_dict:  # skip ones we already have
+                                self.new_seqs[gb_id] = hsp.sbjct
+                                gi_id = alignment.title.split('|')[1]
+                                gb_acc = alignment.__dict__['accession']
+                                stitle = alignment.__dict__['title']
+                                hsps = alignment.__dict__['hsps']
+                                length = alignment.__dict__['length']
+                                query_dict = {'^ncbi:gi': gi_id, 'accession': gb_acc, 'title': stitle,
+                                              'length': length, 'hsps': hsps}
+                                self.data.gb_dict[gb_id] = query_dict
         except ValueError:
             sys.stderr.write("Problem reading {}, skipping\n".format(fn_path))
 
@@ -2018,9 +1972,45 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
                 pass
             else:
                 if len(seq.replace("-", "").replace("N", "")) > seq_len_cutoff:
-                    self.newseqs_acc.append(gb_id)
-                    otu_id = self.data.add_otu(gb_id, self.ids)
-                    self.seq_dict_build(seq, otu_id, tmp_dict)
+                    if self.config.blast_loc != 'remote':
+                        tax_name = None
+                        # ######################################################
+                        # ### new implementation of rank for delimitation
+                        if type(self.mrca_ncbi) is int:
+                            mrca_ncbi = self.mrca_ncbi
+                        elif len(self.mrca_ncbi) == 1:
+                            mrca_ncbi = list(self.mrca_ncbi)[0]
+                        else:
+                            debug(self.mrca_ncbi)
+                            debug("think about something to do!")
+                        rank_mrca_ncbi = self.ids.ncbi_parser.get_rank(mrca_ncbi)
+                        # get rank to delimit seq to ingroup_mrca
+                        # get name first
+                        if gb_id[:6] == "unpubl":
+                            tax_name = self.data.gb_dict[gb_id]['^ot:ottTaxonName']
+                            ncbi_id = self.data.gb_dict[gb_id]['^ncbi:taxon']
+                        elif len(gb_id.split(".")) >= 2:
+                            if gb_id in self.data.gb_dict.keys() and 'staxids' in self.data.gb_dict[gb_id].keys():
+                                tax_name = self.data.gb_dict[gb_id]['sscinames']
+                                ncbi_id = self.data.gb_dict[gb_id]['staxids']
+                            else:
+                                tax_name = self.ids.find_name(acc=gb_id)
+                                if tax_name is None:
+                                    sys.stderr.write("no species name returned for {}".format(gb_id))
+                                ncbi_id = self.ids.map_acc_ncbi(gb_id)
+                        assert tax_name is not None
+                        tax_name = str(tax_name).replace(" ", "_")
+                        input_rank_id = self.ids.ncbi_parser.get_downtorank_id(ncbi_id, rank_mrca_ncbi)
+                        # #######################################################
+                        if input_rank_id == mrca_ncbi:  # belongs to ingroup mrca -> add to data, if not, leave it out
+                            debug("input belongs to same mrca")
+                            self.newseqs_acc.append(gb_id)
+                            otu_id = self.data.add_otu(gb_id, self.ids)
+                            self.seq_dict_build(seq, otu_id, tmp_dict)
+                    else:
+                        self.newseqs_acc.append(gb_id)
+                        otu_id = self.data.add_otu(gb_id, self.ids)
+                        self.seq_dict_build(seq, otu_id, tmp_dict)
         old_seqs_ids = set()
         for tax in old_seqs:
             old_seqs_ids.add(tax)
@@ -2201,11 +2191,6 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
                              "-r", "backbone.tre",
                              "-p", "1",
                              "-n", "{}".format(self.date)])
-        # else:
-        #     subprocess.call(["raxmlHPC", "-m", "GTRCAT",
-        #                      "-s", "papara_alignment.extended",
-        #                      "-p", "1",
-        #                      "-n", "{}".format(self.date)])
         os.chdir(cwd)
         self._full_tree_est = 1  # TODO: Currently not used, do we want to use it somewhere?
 
@@ -2561,21 +2546,15 @@ class FilterBlast(PhyscraperScrape):
         if (threshold - count) <= 0:
             debug("already too many samples of sp in aln, skip adding more.")
         elif len(seq_blast_score.keys()) == (threshold - count):
-            debug("add exact number")
             random_seq_ofsp = seq_blast_score
         elif len(seq_blast_score.keys()) > (threshold - count):
-            debug("choose random")
             random_seq_ofsp = random.sample(seq_blast_score.items(), (threshold - count))
             random_seq_ofsp = dict(random_seq_ofsp)
         elif len(seq_blast_score.keys()) < (threshold - count):
-            debug("add all avail")
             random_seq_ofsp = seq_blast_score
-        debug("length of new seq per tax id")
-        debug(len(random_seq_ofsp))
         if len(random_seq_ofsp) > 0:
             for key, val in random_seq_ofsp.items():
                 self.filtered_seq[key] = val
-        debug(self.filtered_seq)
         return self.filtered_seq
 
     def select_seq_by_length(self, taxon_id, threshold, count):
@@ -2761,8 +2740,6 @@ class FilterBlast(PhyscraperScrape):
                 sequences that shall be added.
         """
         debug("how_many_sp_to_keep")
-        debug("length of sp_d")
-        debug(len(self.sp_d))
         for tax_id in self.sp_d:
             count_dict = self.count_num_seq(tax_id)
             seq_present = count_dict["seq_present"]
