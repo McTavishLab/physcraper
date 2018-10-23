@@ -92,6 +92,7 @@ def get_raw_input():
     """
     debug("get raw input")
     is_valid = 0
+    x = None
     while not is_valid:
         try:
             x = raw_input("Please write either 'yes' or 'no': ")
@@ -231,7 +232,7 @@ class ConfigObj(object):
                 today = datetime.datetime.now()
                 time_passed = (today - download_date).days    
                 # debug([download_date, today, time_passed])
-                if time_passed >= 60: 
+                if time_passed >= 90: 
                     print("Your databases might not be uptodate anymore. You downloaded them {} days ago. "
                           "Do you want to update the blast databases from ncbi? Note: This is a US government website! "
                           "You agree to their terms".format(time_passed))
@@ -250,7 +251,7 @@ class ConfigObj(object):
                         print("You did not type 'yes' or 'no'!")
 
     def _download_ncbi_parser(self):
-        """Check if files are present and if they are uptodate.
+        """Check if files are present and if they are up to date.
         If not files will be downloaded. 
         """
         if self.blast_loc == 'local':
@@ -274,7 +275,7 @@ class ConfigObj(object):
                 today = datetime.datetime.now()
                 time_passed = (today - download_date).days    
                 # debug([download_date, today, time_passed])
-                if time_passed >= 60: 
+                if time_passed >= 90: 
                     print("Do you want to update taxonomy databases from ncbi? Note: This is a US government website! "
                           "You agree to their terms")
                     x = get_raw_input()
@@ -759,7 +760,6 @@ class AlignTreeTax(object):
         :param min_seqlen_perc: minimum length of seq
         :return: prunes aln and tre
         """
-        # TODO: is this not half the part of _reconcile_names? 
         # debug(sum(self.orig_seqlen), len(self.orig_seqlen))
         if sum(self.orig_seqlen) != 0:
             avg_seqlen = sum(self.orig_seqlen) / len(self.orig_seqlen)
@@ -786,17 +786,15 @@ class AlignTreeTax(object):
             fi.write("Taxa pruned from tree and alignment in prune short "
                      "step due to sequence shorter than {}\n".format(seq_len_cutoff))
             for tax in prune:
-                # sometimes it does not delete it with the statement below. Tried to figure out why, have no clue yet.
-                # self.aln.remove_sequences(prune)
-                # self.tre.prune_taxa_with_labels(prune)
                 self.remove_taxa_aln_tre(tax.label)
                 fi.write("{}, {}\n".format(tax.label, self.otu_dict[tax.label].get('^ot:originalLabel')))
             fi.close()
         # debug(self.aln.taxon_namespace)
         for tax in prune:
             self.otu_dict[tax.label]['^physcraper:status'] = "deleted in prune short"
-            # self.aln.taxon_namespace.remove_taxon(tax.label)  # remove_taxon: raises no error, remove_taxon_label: raises error
-            # self.tre.taxon_namespace.remove_taxon(tax.label)  # raises error if not found, instead of remove_taxon
+            # Note: remove_taxon: raises no error, remove_taxon_label: raises error
+            # self.aln.taxon_namespace.remove_taxon(tax.label)
+            # self.tre.taxon_namespace.remove_taxon(tax.label)
             # self.remove_taxa_aln_tre(tax.label)
         # debug([self.aln.taxon_namespace, len(self.aln.taxon_namespace)])
         # debug([self.tre.taxon_namespace, len(self.tre.taxon_namespace)])
@@ -892,7 +890,7 @@ class AlignTreeTax(object):
 
     def add_otu(self, gb_id, ids_obj):
         """ Generates an otu_id for new sequences and adds them into self.otu_dict.
-        Needs to be passed an IdDict to do the mapping
+        Needs to be passed an IdDict to do the mapping.
 
         :param gb_id: the Genbank identifier
         :param ids_obj: needs to IDs class to have access to the taxonomic information
@@ -1263,6 +1261,8 @@ class IdDicts(object):
         self.spn_to_ncbiid = {}  # spn to ncbi_id, it's only fed by the ncbi_data_parser, but makes it faster
         self.ncbiid_to_spn = {}
         self.mrca_ott = mrca  # mrca_list
+        # debug((self.mrca_ott))
+        assert type(self.mrca_ott) in [int, list] or self.mrca_ott is None
         self.mrca_ncbi = set()  # corresponding ids for mrca_ott list
         fi = open(config_obj.ott_ncbi)  # TODO need to keep updated, where does the file come from?
         for lin in fi:  # TODO This is insanely memory inefficient, how about using a pandas dataframe?
@@ -1699,9 +1699,9 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
         self.repeat = 1  # used to determine if we continue updating the tree
         self.newseqs_acc = []  # all ever added Genbank accession numbers during any PhyScraper run, used to speed up adding process
         self.blacklist = []  # remove sequences by default
-        self.acc_list_mrca = []  # all gb_ids of a given mrca. Used to limit possible seq to add.
-        if self.config.blast_loc == 'local' and len(self.acc_list_mrca) == 0:
-            self.acc_list_mrca = self.get_all_acc_mrca()
+        # self.acc_list_mrca = []  # all gb_ids of a given mrca. Used to limit possible seq to add.
+        # if self.config.blast_loc == 'local' and len(self.acc_list_mrca) == 0:
+        #     self.acc_list_mrca = self.get_all_acc_mrca()
             # debug(self.acc_list_mrca)
         self.seq_filter = ['deleted', 'subsequence,', 'not', "removed", "deleted,", "local"]  # TODO MK: try to move completely to FilterBlast class
         self.reset_markers()
@@ -2047,20 +2047,28 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
             # print(self.acc_list_mrca)
             if float(query_dict[key]['evalue']) < float(self.config.e_value_thresh):
                 gb_acc = query_dict[key]['accession']
+                # gi_id = query_dict[key]['^ncbi:gi']
+
                 # debug(type(gi_id))
                 # debug(gb_acc)
                 # debug(len(self.acc_list_mrca) >= 1)
                 # debug (gb_acc not in self.acc_list_mrca)
                 # debug(self.acc_list_mrca)
-                if len(self.acc_list_mrca) >= 1 and (gb_acc not in self.acc_list_mrca):
-                    debug("pass")
-                    pass
-                else:
+                # debug(gi_id)
+                # debug(some)
+                # # currently back to gi id as acc results in timeout
+                # # removed to see if new implementation of rank info does the same
+                # if len(self.acc_list_mrca) >= 1 and (gi_id not in self.acc_list_mrca):
+
+                # # if len(self.acc_list_mrca) >= 1 and (gb_acc not in self.acc_list_mrca):
+                #     debug("pass")
+                #     pass
+                # else:
                     # debug("try to add to new seqs")
-                    if gb_acc not in self.data.gb_dict:  # skip ones we already have
-                        # debug("added")
-                        self.new_seqs[gb_acc] = query_dict[key]['sseq']
-                        self.data.gb_dict[gb_acc] = query_dict[key]
+                if gb_acc not in self.data.gb_dict:  # skip ones we already have
+                    # debug("added")
+                    self.new_seqs[gb_acc] = query_dict[key]['sseq']
+                    self.data.gb_dict[gb_acc] = query_dict[key]
 
     def read_webbased_blast_query(self, fn_path):
         """ Implementation to read in results of web blast searches.
@@ -2082,22 +2090,23 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
                                 debug(gb_id)
                             # gb_id = int(alignment.title.split('|')[1])  # 1 is for gi
                             # assert type(gb_id) is int
-                            if len(self.acc_list_mrca) >= 1 and (gb_id not in self.acc_list_mrca):
-                                pass
-                            else:
-                                if gb_id not in self.data.gb_dict:  # skip ones we already have
-                                    # debug("add gb_id to new seqs")
-                                    self.new_seqs[gb_id] = hsp.sbjct
-                                    gi_id = alignment.title.split('|')[1]
-                                    gb_acc = alignment.__dict__['accession']
-                                    stitle = alignment.__dict__['title']
-                                    hsps = alignment.__dict__['hsps']
-                                    length = alignment.__dict__['length']
-                                    query_dict = {'^ncbi:gi': gi_id, 'accession': gb_acc, 'title': stitle, 
-                                                  'length': length, 'hsps': hsps}
-                                    self.data.gb_dict[gb_id] = query_dict
-                                    # print(alignment.__dict__)
-                                    # self.data.gb_dict[gb_id] = alignment.__dict__
+                            # SHOULD NOT BE NECESSARY....IS WEBBLAST HAS THE TAXON ALREADY LIMITED
+                            # if len(self.acc_list_mrca) >= 1 and (gb_id not in self.acc_list_mrca):
+                            #     pass
+                            # else:
+                            if gb_id not in self.data.gb_dict:  # skip ones we already have
+                                # debug("add gb_id to new seqs")
+                                self.new_seqs[gb_id] = hsp.sbjct
+                                gi_id = alignment.title.split('|')[1]
+                                gb_acc = alignment.__dict__['accession']
+                                stitle = alignment.__dict__['title']
+                                hsps = alignment.__dict__['hsps']
+                                length = alignment.__dict__['length']
+                                query_dict = {'^ncbi:gi': gi_id, 'accession': gb_acc, 'title': stitle, 
+                                              'length': length, 'hsps': hsps}
+                                self.data.gb_dict[gb_id] = query_dict
+                                # print(alignment.__dict__)
+                                # self.data.gb_dict[gb_id] = alignment.__dict__
 
         except ValueError:
             sys.stderr.write("Problem reading {}, skipping\n".format(fn_path))
@@ -2392,6 +2401,50 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
             else:
                 # debug("add to aln if no similar seq exists")
                 if len(seq.replace("-", "").replace("N", "")) > seq_len_cutoff:
+                    if self.config.blast_loc != 'remote':
+                        tax_name = None
+                        debug("go to add and seq_built")
+                        # ######################################################
+                        # ### new implementation of rank for delimitation
+                        if type(self.mrca_ncbi) is int:
+                            mrca_ncbi = self.mrca_ncbi
+                        elif len(self.mrca_ncbi) == 1:
+                            mrca_ncbi = list(self.mrca_ncbi)[0]
+                        else:
+                            debug(self.mrca_ncbi)
+                            debug("think about something to do!")
+                        rank_mrca_ncbi = self.ids.ncbi_parser.get_rank(mrca_ncbi)
+                        # debug(mrca_ncbi, rank_mrca_ncbi)
+                        # get rank to delimit seq to ingroup_mrca
+                        # get name first
+                        if gb_id[:6] == "unpubl":
+                            tax_name = self.data.gb_dict[gb_id]['^ot:ottTaxonName']
+                            ncbi_id = self.data.gb_dict[gb_id]['^ncbi:taxon']
+                        elif len(gb_id.split(".")) >= 2:
+                            if gb_id in self.data.gb_dict.keys() and 'staxids' in self.data.gb_dict[gb_id].keys():
+                                tax_name = self.data.gb_dict[gb_id]['sscinames']
+                                ncbi_id = self.data.gb_dict[gb_id]['staxids']
+                                # debug(ncbi_id)
+                            else:
+                                tax_name = self.ids.find_name(acc=gb_id)
+                                if tax_name is None:
+                                    sys.stderr.write("no species name returned for {}".format(gb_id))
+                                ncbi_id = self.ids.map_acc_ncbi(gb_id)
+                        assert tax_name is not None
+                        tax_name = str(tax_name).replace(" ", "_")
+                        # debug([tax_name, ncbi_id])
+                        input_rank_id = self.ids.ncbi_parser.get_downtorank_id(ncbi_id, rank_mrca_ncbi)
+                        # debug([input_rank_id, mrca_ncbi])
+                        # #######################################################
+                        if input_rank_id == mrca_ncbi:  # belongs to ingroup mrca -> add to data, if not, leave it out
+                            debug("input belongs to same mrca")
+                            self.newseqs_acc.append(gb_id)
+                            otu_id = self.data.add_otu(gb_id, self.ids)
+                            # debug(otu_id)
+                            # debug("go to seq_dict_build")
+                            # debug(self.data.otu_dict[otu_id])
+                            self.seq_dict_build(seq, otu_id, tmp_dict)
+                    else:
                     # if type(gb_id) == int or gb_id.isdigit():
                     #     # debug("gb_id is digit")
                     #     if type(gb_id) != int:
@@ -2405,14 +2458,14 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
                     #             debug(currentgilist)
                     #             if gb_id in currentgilist:
                     #                 exit(-1)
-                    #                 ####################
-                    self.newseqs_acc.append(gb_id)
-                    otu_id = self.data.add_otu(gb_id, self.ids)
-                    # debug(otu_id)
-                    # debug("go to seq_dict_build")
-                    # debug(self.data.otu_dict[otu_id])
+                    #                 ####################                    
+                        self.newseqs_acc.append(gb_id)
+                        otu_id = self.data.add_otu(gb_id, self.ids)
+                        # debug(otu_id)
+                        # debug("go to seq_dict_build")
+                        # debug(self.data.otu_dict[otu_id])
 
-                    self.seq_dict_build(seq, otu_id, tmp_dict)
+                        self.seq_dict_build(seq, otu_id, tmp_dict)
             # else:
             #     debug("gi was already compared")
         old_seqs_ids = set()
