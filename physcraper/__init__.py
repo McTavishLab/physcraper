@@ -75,6 +75,7 @@ def get_raw_input():
     """
     debug("get raw input")
     is_valid = 0
+    x = None
     while not is_valid:
         try:
             x = raw_input("Please write either 'yes' or 'no': ")
@@ -235,8 +236,10 @@ class ConfigObj(object):
                       "You agree to their terms")
                 x = get_raw_input()
                 if x == "yes":
-                    os.system(" wget 'ftp://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdump.tar.gz' -P physcraper-git/physcraper/tests/data/")
-                    os.system("gunzip -cd ./tests/data/taxdump.tar.gz | (tar xvf - names.dmp nodes.dmp)")
+                    os.system("wget 'ftp://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdump.tar.gz' -P ./tests/data/")
+                    os.system("gunzip -f -cd ./tests/data/taxdump.tar.gz | (tar xvf - names.dmp nodes.dmp)")
+                    os.system("mv nodes.dmp ./tests/data/")
+                    os.system("mv names.dmp ./tests/data/")
                 elif x == "no":
                     print("You did not agree to download data from ncbi. Program will default to blast web-queries.")
                     print("This is slow and crashes regularly!")
@@ -248,14 +251,16 @@ class ConfigObj(object):
                 download_date = datetime.datetime.fromtimestamp(download_date)
                 today = datetime.datetime.now()
                 time_passed = (today - download_date).days    
+                # debug([download_date, today, time_passed])
                 if time_passed >= 90:
                     print("Do you want to update taxonomy databases from ncbi? Note: This is a US government website! "
                           "You agree to their terms")
                     x = get_raw_input()
                     if x == "yes":
-                        os.system("wget 'ftp://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdump.tar.gz'" 
-                                  "./tests/data/taxdump.tar.gz")
-                        os.system("gunzip - cd ./tests/data/taxdump.tar.gz | (tar xvf - names.dmp nodes.dmp)")
+                        os.system("wget 'ftp://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdump.tar.gz' -P ./tests/data/")
+                        os.system("gunzip -f -cd ./tests/data/taxdump.tar.gz | (tar xvf - names.dmp nodes.dmp)")
+                        os.system("mv nodes.dmp ./tests/data/")
+                        os.system("mv names.dmp ./tests/data/")
                     elif x == "no":
                         print("You did not agree to update data from ncbi. Old database files will be used.")
                     else:
@@ -1514,21 +1519,22 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
 
         :return: runs local blast query and writes it to file
         """
-        cwd = os.getcwd()
-        os.chdir(self.config.blastdb)
-        toblast = open("{}/tmp.fas".format(self.blast_subdir), 'w')
+        abs_blastdir = os.path.abspath(self.blast_subdir)
+        abs_fn = os.path.abspath(fn_path)
+        toblast = open("{}/tmp.fas".format(os.path.abspath(self.blast_subdir)), 'w+')
         toblast.write(">{}\n".format(taxon_label))
         toblast.write("{}\n".format(query))
         toblast.close()
+        cwd = os.getcwd()
+        os.chdir(self.config.blastdb)
         # this formats allows to get the taxonomic information at the same time
         outfmt = " -outfmt '6 sseqid staxids sscinames pident evalue bitscore sseq stitle'"
         # outfmt = " -outfmt 5"  # format for xml file type
         # TODO query via stdin
-        # TODO MK: update to blast+ v. 2.8 - then we can limit search to taxids: -taxids self.mrca_ncbi
         blastcmd = "blastn -query " + \
-                   "{}/tmp.fas".format(self.blast_subdir) + \
+                   "{}/tmp.fas".format(abs_blastdir) + \
                    " -db {}nt -out ".format(self.config.blastdb) + \
-                   fn_path + \
+                   abs_fn + \
                    " {} -num_threads {}".format(outfmt, self.config.num_threads) + \
                    " -max_target_seqs {} -max_hsps {}".format(self.config.hitlist_size,
                                                               self.config.hitlist_size)
