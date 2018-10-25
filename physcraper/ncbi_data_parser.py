@@ -147,6 +147,9 @@ class Parser:
             tax_id = int(tax_id)
         if nodes[nodes["tax_id"] == tax_id]["rank"].values[0] == downtorank:
             return tax_id
+        elif nodes[nodes['tax_id'] == tax_id]['rank'].values[0] == "superkingdom":
+            tax_id = 0
+            return tax_id
         else:
             parent_id = int(nodes[nodes["tax_id"] == tax_id]["parent_tax_id"].values[0])
             return self.get_downtorank_id(parent_id, downtorank)

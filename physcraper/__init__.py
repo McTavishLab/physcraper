@@ -1797,12 +1797,15 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
             assert os.path.exists(self.blast_subdir)
             for taxon in self.data.aln:
                 debug(self.config.blast_loc)
+                fn = None
                 if self.config.blast_loc == 'local':
                     file_ending = "txt"
                 else:
                     file_ending = "xml"
                 if self.config.gb_id_filename is True:
                     fn = self.data.otu_dict[taxon.label].get('^ncbi:accession', taxon.label)
+                    if fn == None:
+                        fn = self.data.otu_dict[taxon.label].get('^user:TaxonName', taxon.label)
                     fn_path = "{}/{}.{}".format(self.blast_subdir, fn, file_ending)
                 else:
                     fn_path = "{}/{}.{}".format(self.blast_subdir, taxon.label, file_ending)
