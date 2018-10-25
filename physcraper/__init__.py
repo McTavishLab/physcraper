@@ -33,11 +33,11 @@ import ncbi_data_parser  # is the ncbi data parser class and associated function
 import local_blast
 
 
-_DEBUG = 0
-_DEBUG_MK = 0
+_DEBUG = 1
+_DEBUG_MK = 1
 _deep_debug = 0
 
-_VERBOSE = 0
+_VERBOSE = 1
 
 
 def debug(msg):
@@ -2006,6 +2006,7 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
                                 ncbi_id = self.ids.map_acc_ncbi(gb_id)
                         assert tax_name is not None
                         tax_name = str(tax_name).replace(" ", "_")
+                        debug(ncbi_id, rank_mrca_ncbi)
                         input_rank_id = self.ids.ncbi_parser.get_downtorank_id(ncbi_id, rank_mrca_ncbi)
                         # #######################################################
                         if input_rank_id == mrca_ncbi:  # belongs to ingroup mrca -> add to data, if not, leave it out
