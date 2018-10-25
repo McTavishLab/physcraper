@@ -69,15 +69,12 @@ Hypothetically, all the keys in the  otu_dict should be clean.
             * 'hit_def': title from GenBank sequence
         * optional key - value pairs for unpublished option:
             * 'localID': local sequence identifier
-  * **self.orig_aln**: original input alignment
-  * **self.orig_newick**: original input phylogeny
   * **self._reconciled**: True/False,
   * **self.unpubl_otu_json**: optional, will contain the OTU-dict for unpublished data, if that option is used
 
 ####Following functions are called during the init-process:
 
   * **self._reconcile_names()**: 
-  
         removes taxa, that are not found in both, the phylogeny and the aln and changes their names????
 
 ####The physcraper class is then updating: 
