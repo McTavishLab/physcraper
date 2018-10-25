@@ -2006,7 +2006,7 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
                                 ncbi_id = self.ids.map_acc_ncbi(gb_id)
                         assert tax_name is not None
                         tax_name = str(tax_name).replace(" ", "_")
-                        debug(ncbi_id, rank_mrca_ncbi)
+                        debug([ncbi_id, rank_mrca_ncbi])
                         input_rank_id = self.ids.ncbi_parser.get_downtorank_id(ncbi_id, rank_mrca_ncbi)
                         # #######################################################
                         if input_rank_id == mrca_ncbi:  # belongs to ingroup mrca -> add to data, if not, leave it out
