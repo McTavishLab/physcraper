@@ -1756,21 +1756,26 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
 
         :return: runs local blast query and writes it to file
         """
-        cwd = os.getcwd()
-        os.chdir(self.config.blastdb)
-        toblast = open("{}/tmp.fas".format(self.blast_subdir), 'w')
+        abs_blastdir = os.path.abspath(self.blast_subdir)
+        abs_fn = os.path.abspath(fn_path)
+        toblast = open("{}/tmp.fas".format(os.path.abspath(self.blast_subdir)), 'w+')
         toblast.write(">{}\n".format(taxon_label))
         toblast.write("{}\n".format(query))
         toblast.close()
+
+        cwd = os.getcwd()
+        # debug(cwd)
+        # debug(soe)
+        os.chdir(self.config.blastdb)
         # this formats allows to get the taxonomic information at the same time
         outfmt = " -outfmt '6 sseqid staxids sscinames pident evalue bitscore sseq stitle'"
         # outfmt = " -outfmt 5"  # format for xml file type
         # TODO query via stdin
         # TODO MK: update to blast+ v. 2.8 - then we can limit search to taxids: -taxids self.mrca_ncbi
         blastcmd = "blastn -query " + \
-                   "{}/tmp.fas".format(self.blast_subdir) + \
+                   "{}/tmp.fas".format(abs_blastdir) + \
                    " -db {}nt -out ".format(self.config.blastdb) + \
-                   fn_path + \
+                   abs_fn + \
                    " {} -num_threads {}".format(outfmt, self.config.num_threads) + \
                    " -max_target_seqs {} -max_hsps {}".format(self.config.hitlist_size,
                                                               self.config.hitlist_size)
