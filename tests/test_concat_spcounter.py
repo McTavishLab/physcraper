@@ -2,19 +2,14 @@ import sys
 from physcraper.concat import Concat
 
 #
-workdir_its = "tiny_comb_its"
-workdir_ets = "tiny_comb_ets"
+workdir_its = "runs/tiny_comb_its"
+workdir_ets = "runs/tiny_comb_ets"
 email = "martha.kandziora@yahoo.com"
 pickle_fn = "scrape_checkpoint.p"
 
 workdir_comb = "tests/output/impl_concat"
 genelist = {"its": {"workdir": workdir_its, "pickle": pickle_fn}, "ets": {"workdir": workdir_ets, "pickle": pickle_fn}}
 
-##############
-# print("{}/{}".format(workdir, pickle_fn))
-# scrape = pickle.load(open("{}/{}".format(workdir, pickle_fn),'rb'))
-# print(scrape)
-#############
 # get to test status
 
 sys.stdout.write("\ntests Concat func sp_counter\n")
