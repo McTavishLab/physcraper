@@ -42,7 +42,7 @@ data_obj.dump(filename = "tests/data/precooked/tiny_dataobj.p")
 
 scraper =  PhyscraperScrape(data_obj, ids)
 scraper._blasted = 1
-scraper.read_blast(blast_dir="tests/data/precooked/fixed/tte_blast_files")
+scraper.read_blast_wrapper(blast_dir="tests/data/precooked/fixed/tte_blast_files")
 scraper.remove_identical_seqs()
 
 pickle.dump(ids.acc_ncbi_dict, open("tests/data/precooked/tiny_gi_map.p", "wb"))

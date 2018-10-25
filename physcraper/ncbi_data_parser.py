@@ -145,6 +145,8 @@ class Parser:
         if type(tax_id) != int:
             sys.stdout.write("WARNING: tax_id {} is no integer. Will convert value to int\n".format(tax_id))
             tax_id = int(tax_id)
+        # debug(nodes[nodes["tax_id"] == tax_id])
+        # debug(nodes[nodes['tax_id'] == tax_id]['rank'].values[0])
         if nodes[nodes["tax_id"] == tax_id]["rank"].values[0] == downtorank:
             return tax_id
         elif nodes[nodes['tax_id'] == tax_id]['rank'].values[0] == "superkingdom":

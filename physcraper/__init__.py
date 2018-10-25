@@ -1428,7 +1428,7 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
                 adds things to self:  # TODO: I think they are used to make sure certain function run,
                                      if program crashed and pickle file if read in.
                     self._blasted: 0/1, if run_blast() was called, it is set to 1 for the round.
-                    self._blast_read: 0/1, if read_blast() was called, it is set to 1 for the round.
+                    self._blast_read: 0/1, if read_blast_wrapper() was called, it is set to 1 for the round.
                     self._identical_removed: 0
                     self._query_seqs_written: 0/1, if write_query_seqs() was called, it is set to 1 for the round.
                     self._query_seqs_aligned: 0
@@ -1445,7 +1445,7 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
         self.data = data_obj
         self.ids = ids_obj
         self.config = self.ids.config  # TODO: this is already part of self.ids, information are doubled.
-        self.new_seqs = {}  # all new seq after read_blast
+        self.new_seqs = {}  # all new seq after read_blast_wrapper
         self.new_seqs_otu_id = {}  # only new seq which passed remove_identical
         self.otu_by_gi = {}  # TODO: What was this intended for?
         self._to_be_pruned = []  # TODO: What was this intended for? We don't use it
@@ -1753,13 +1753,13 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
         except ValueError:
             sys.stderr.write("Problem reading {}, skipping\n".format(fn_path))
 
-    def read_blast(self, blast_dir=None):
+    def read_blast_wrapper(self, blast_dir=None):
         """reads in and processes the blast xml files
 
         :param blast_dir: path to directory which contains blast files
         :return: fills different dictionaries with information from blast files
         """
-        debug("read blast")
+        debug("read_blast_wrapper")
         if blast_dir:
             if _VERBOSE:
                 sys.stdout.write("blast dir is {}\n".format(blast_dir))
@@ -2009,11 +2009,11 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
                                 ncbi_id = self.ids.map_acc_ncbi(gb_id)
                         assert tax_name is not None
                         tax_name = str(tax_name).replace(" ", "_")
-                        debug([ncbi_id, rank_mrca_ncbi])
+                        # debug([ncbi_id, rank_mrca_ncbi])
                         input_rank_id = self.ids.ncbi_parser.get_downtorank_id(ncbi_id, rank_mrca_ncbi)
                         # #######################################################
                         if input_rank_id == mrca_ncbi:  # belongs to ingroup mrca -> add to data, if not, leave it out
-                            debug("input belongs to same mrca")
+                            # debug("input belongs to same mrca")
                             self.newseqs_acc.append(gb_id)
                             otu_id = self.data.add_otu(gb_id, self.ids)
                             self.seq_dict_build(seq, otu_id, tmp_dict)
@@ -2062,7 +2062,7 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
         """writes out the query sequence file"""
         debug("write query seq")
         if not self._blast_read:
-            self.read_blast()
+            self.read_blast_wrapper()
         self.newseqs_file = "{}.fasta".format(self.date)
         fi = open("{}/{}".format(self.workdir, self.newseqs_file), 'w')
         if _VERBOSE:

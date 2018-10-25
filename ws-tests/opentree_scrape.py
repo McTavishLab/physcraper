@@ -38,7 +38,7 @@ data_obj.write_files()
 
     scraper = physcraper.PhyscraperScrape(data_obj, ids)
     scraper.run_blast()
-    scraper.read_blast()
+    scraper.read_blast_wrapper()
     scraper.remove_identical_seqs()
     scraper.generate_streamed_alignment()
     sys.stdout.write("\nTest opentree_scrape.py (round 1) passed\n")

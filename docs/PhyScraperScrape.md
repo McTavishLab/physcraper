@@ -46,7 +46,7 @@ This is the class that does the perpetual updating
 * **self.reset_markers()**: 
      adds things to self: I think they are used to make sure certain function run, if program crashed and pickle file is read in.
     * self._blasted: 0/1, if run_blast() was called, it is set to 1 for the round.
-    * self._blast_read: 0/1, if read_blast() was called, it is set to 1 for the round.
+    * self._blast_read: 0/1, if read_blast_wrapper() was called, it is set to 1 for the round.
     * self._identical_removed: 0
     * self._query_seqs_written: 0/1, if write_query_seqs() was called, it is set to 1 for the round.
     * self._query_seqs_aligned: 0

@@ -30,7 +30,7 @@ filteredScrape =  FilterBlast(data_obj, ids)
 filteredScrape._blasted = 1
 blast_dir = "tests/data/precooked/fixed/tte_blast_files"
 filteredScrape.acc_list_mrca = pickle.load(open("tests/data/precooked/acc_list_mrca.p", 'rb'))
-filteredScrape.read_blast(blast_dir=blast_dir)
+filteredScrape.read_blast_wrapper(blast_dir=blast_dir)
 filteredScrape.remove_identical_seqs()
 filteredScrape.sp_dict(downtorank)
 filteredScrape.seq_filter = ['deleted', 'subsequence,', 'not', "removed", "deleted,"]

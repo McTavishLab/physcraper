@@ -35,7 +35,7 @@ for file_name in src_files:
     full_file_name = os.path.join(src, file_name)
     if (os.path.isfile(full_file_name)):
         shutil.copy(full_file_name, dest)
-noblackScrape.read_blast()
+noblackScrape.read_blast_wrapper()
 noblackScrape.remove_identical_seqs()
 noblackScrape.generate_streamed_alignment()
 
@@ -66,7 +66,7 @@ for file_name in src_files:
     if (os.path.isfile(full_file_name)):
         shutil.copy(full_file_name, dest)
 filteredScrape.acc_list_mrca = pickle.load(open("tests/data/precooked/acc_list_mrca.p", 'rb'))
-filteredScrape.read_blast()
+filteredScrape.read_blast_wrapper()
 filteredScrape.remove_identical_seqs()
 filteredScrape.generate_streamed_alignment()
 

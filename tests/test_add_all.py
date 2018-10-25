@@ -22,7 +22,7 @@ except:
     sys.exit()
 filteredScrape = FilterBlast(data_obj, ids)
 filteredScrape._blasted = 1
-filteredScrape.read_blast(blast_dir="tests/data/precooked/fixed/tte_blast_files")
+filteredScrape.read_blast_wrapper(blast_dir="tests/data/precooked/fixed/tte_blast_files")
 filteredScrape.sp_dict(downtorank)
 filteredScrape.make_sp_seq_dict()
 filteredScrape.seq_filter = ['deleted', 'subsequence,', 'not', "removed", "deleted,"]

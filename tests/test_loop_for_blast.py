@@ -26,7 +26,7 @@ except:
     sys.exit()
 filteredScrape = FilterBlast(data_obj, ids)
 filteredScrape.acc_list_mrca = pickle.load(open("tests/data/precooked/acc_list_mrca.p", 'rb'))
-filteredScrape.read_blast(blast_dir="tests/data/precooked/fixed/tte_blast_files")
+filteredScrape.read_blast_wrapper(blast_dir="tests/data/precooked/fixed/tte_blast_files")
 filteredScrape.remove_identical_seqs()
 filteredScrape.sp_dict(downtorank)
 filteredScrape.make_sp_seq_dict()

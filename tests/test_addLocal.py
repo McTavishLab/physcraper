@@ -77,7 +77,7 @@ if filteredScrape.unpublished is True:  # use unpublished data
 
     # filteredScrape.make_otu_dict_entry_unpubl()
     filteredScrape.run_blast()
-    filteredScrape.read_blast()
+    filteredScrape.read_blast_wrapper()
     filteredScrape.remove_identical_seqs()
 
 test = False
