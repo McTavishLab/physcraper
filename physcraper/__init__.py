@@ -1701,7 +1701,7 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
         :param fn_path: path to file containing the local blast searches
         :return: updated self.new_seqs and self.data.gb_dict dictionaries
         """
-        debug("read_local_blast")
+        # debug("read_local_blast")
         query_dict = {}
         with open(fn_path, mode='r') as infile:
             for lin in infile:
@@ -1728,7 +1728,7 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
                     query_dict[gb_acc] = {'^ncbi:gi': gi_id, 'accession': gb_acc, 'staxids': staxids,
                                          'sscinames': sscinames, 'pident': pident, 'evalue': evalue,
                                          'bitscore': bitscore, 'sseq': sseq, 'title': stitle}
-        debug("key in query")
+        # debug("key in query")
         for key in query_dict.keys():
             if float(query_dict[key]['evalue']) < float(self.config.e_value_thresh):
                 gb_acc = query_dict[key]['accession']
@@ -1809,7 +1809,7 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
                 self.run_blast()
             assert os.path.exists(self.blast_subdir)
             for taxon in self.data.aln:
-                debug(self.config.blast_loc)
+                # debug(self.config.blast_loc)
                 fn = None
                 if self.config.blast_loc == 'local':
                     file_ending = "txt"

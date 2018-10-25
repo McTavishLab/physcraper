@@ -10,11 +10,13 @@ import pandas as pd
 
 _DEBUG_MK = 0
 
+
 def debug(msg):
     """short debugging command
     """
     if _DEBUG_MK == 1:
         print(msg)
+
 
 debug("Current ncbi_parser version number: 10172018.0")
 
@@ -127,10 +129,9 @@ class Parser:
         """ Get rank for given ncbi tax id.
         """
         if nodes is None:
-           self.initialize()
+            self.initialize()
         rank = nodes[nodes["tax_id"] == tax_id]["rank"].values[0]
         return rank
-
 
     def get_downtorank_id(self, tax_id, downtorank="species"):
         """ Recursive function to find the parent id of a taxon as defined by downtorank.
@@ -199,4 +200,3 @@ class Parser:
             else:
                 print("something else is going wrong: {}".format(tax_name))
         return tax_id
-

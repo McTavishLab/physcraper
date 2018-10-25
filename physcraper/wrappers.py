@@ -293,20 +293,20 @@ def filter_OTOL(study_id,
 
 
 def add_unpubl_to_backbone(seqaln,
-                        mattype,
-                        trfn,
-                        schema_trf,
-                        workdir,
-                        threshold,
-                        spInfoDict,
-                        configfi,
-                        selectby="blast",
-                        downtorank="species",
-                        blacklist=None,
-                        add_unpubl_seq=None,
-                        id_to_spn_addseq_json=None,
-                        ingroup_mrca=None,
-                        shared_blast_folder=None):
+                           mattype,
+                           trfn,
+                           schema_trf,
+                           workdir,
+                           threshold,
+                           spInfoDict,
+                           configfi,
+                           selectby="blast",
+                           downtorank="species",
+                           blacklist=None,
+                           add_unpubl_seq=None,
+                           id_to_spn_addseq_json=None,
+                           ingroup_mrca=None,
+                           shared_blast_folder=None):
     """looks for pickeled file to continue run, or builds and runs 
     new analysis for as long as new seqs are found. 
     This uses the FilterBlast subclass to be able to filter the blast output.
@@ -526,7 +526,6 @@ def filter_data_run(seqaln,
     filteredScrape.print_sp_d_recalc(downtorank)
     filteredScrape.print_sp_d_as_is()
     return filteredScrape
-
 
 
 # # # # # # # # # # # # # # # # # # # # # # #
