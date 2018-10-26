@@ -12,4 +12,10 @@ standard-RAxML
 *.aux
 *.log
 build/
-tests/data/precooked/fixed/local-blast/*.nin
+Physcraper.egg-info/*
+standard-RAxML-master/*
+tests/output/*
+tests/data/precooked/fixed/local-blast/Senecio_scopolii_subsp._scopolii_db.nhr
+tests/data/precooked/fixed/local-blast/Senecio_scopolii_subsp._scopolii_db.nsq
+shared_runs*
+runs/*
