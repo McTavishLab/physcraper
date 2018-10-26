@@ -474,11 +474,14 @@ def OtuJsonDict(id_to_spn, id_dict):
                                                     '^ot:ottTaxonName', '^ot:ottId', '^ot:originalLabel',
                                                     '^user:TaxonName', '^physcraper:status', '^physcraper:last_blasted'
     """
+    sys.stdout.write("Set up OtuJsonDict \n")
+    sp_info_dict = {}
     with open(id_to_spn, mode='r') as infile:
         for lin in infile:
+            ottid, ottname, ncbiid = None, None, None
             tipname, species = lin.strip().split(',')
             clean_lab = standardize_label(tipname)
-            assert clean_lab not in spInfoDict
+            assert clean_lab not in sp_info_dict
             otu_id = "otu{}".format(clean_lab)
             spn = species.replace("_", " ")
             info = get_ott_taxon_info(spn)
@@ -496,10 +499,12 @@ def OtuJsonDict(id_to_spn, id_dict):
                     ottid = id_dict.ncbi_to_ott[ncbiid]
                     ottname = id_dict.ott_to_name[ottid]
                 else:
-                    sys.stderr.write("match to taxon {} not found in open tree taxonomy or NCBI. Proceeding without taxon info\n".format(spn))
-                    ottid, ottname, ncbiid = None, None, None
-            spInfoDict[otu_id] = {'^ncbi:taxon': ncbiid, '^ot:ottTaxonName': ottname, '^ot:ottId': ottid, '^ot:originalLabel': tipname, '^user:TaxonName': species, '^physcraper:status': 'original','^physcraper:last_blasted': "1900/01/01"}
-    return  spInfoDict
+                    sys.stderr.write("match to taxon {} not found in open tree taxonomy or NCBI. "
+                                     "Proceeding without taxon info\n".format(spn))
+            sp_info_dict[otu_id] = {'^ncbi:taxon': ncbiid, '^ot:ottTaxonName': ottname, '^ot:ottId': ottid,
+                                    '^ot:originalLabel': tipname, '^user:TaxonName': species,
+                                    '^physcraper:status': 'original', '^physcraper:last_blasted': "1900/01/01"}
+    return sp_info_dict
 
 
 class AlignTreeTax(object):
@@ -594,49 +599,57 @@ class AlignTreeTax(object):
                                 taxon_namespace=self.aln.taxon_namespace)
         assert (self.tre.taxon_namespace is self.aln.taxon_namespace)
         assert isinstance(self.aln, datamodel.charmatrixmodel.DnaCharacterMatrix)
-        self.tre = Tree.get(data=newick,
-                            schema="newick",
-                            preserve_underscores=True,
-                            taxon_namespace=self.aln.taxon_namespace)
         assert isinstance(otu_dict, dict)
         self.otu_dict = otu_dict
         self.ps_otu = 1  # iterator for new otu IDs
-        # self.otu_taxonlabel_problem = otu_tiplabel(alignment) #Check back - original labels are not stored?
         self._reconcile_names()
-        self.workdir = os.path.abspath(workdir)  # TODO - is this where the workdir should live?
+        self.workdir = os.path.abspath(workdir)  # TODO: is this where the workdir should live?
         if not os.path.exists(self.workdir):
             os.makedirs(self.workdir)
         assert int(ingroup_mrca)
-        self.ott_mrca = ingroup_mrca
+        self.ott_mrca = ingroup_mrca  # TODO: we only use .ott_mrca to infer mrca_ncbi. Why not using the ncbi one directly?
         self.orig_seqlen = []  # FIXME
-        self.gi_dict = {}
-        self.orig_aln = alignment
-        self.orig_newick = newick
+        self.gb_dict = {}  # has all info about new blast seq TODO: Cannot be deleted. Is used frequently! TODODELTE (should maybe go anyhow due to gi switch?): Should this not be part of physcraper class instead? it has all blast information. Blast is not part of this class.
+        self._reconciled = False  # TODO: for what do we want to use it? .... it was checking to see if name reconcilation has ahappened yet. Should get flipped to true when done. MK: Yes, but we never do anything with the information
+        self.unpubl_otu_json = None
 
     def _reconcile_names(self):
-        """This checks that the tree "original labels" from phylsystem
+        """Taxa that are only found in the tree, or only in the alignment are deleted.
+
+        This checks that the tree "original labels" from phylsystem
         align with those found in the alignment. Spaces vs underscores
-        kept being an issue, so all spaces are coerced to underscores throughout!"""
-        treed_taxa = set()
+        kept being an issue, so all spaces are coerced to underscores throughout!
+        """
+        treed_tax = set()
         for leaf in self.tre.leaf_nodes():
-            treed_taxa.add(leaf.taxon)
-        aln_tax = set([tax for tax in self.aln.taxon_namespace])
-        prune = treed_taxa ^ aln_tax
+            treed_tax.add(leaf.taxon)
+        aln_tax = set()
+        for tax, seq in self.aln.items():
+            aln_tax.add(tax)
+        prune = treed_tax ^ aln_tax
         missing = [i.label for i in prune]
         if missing:
-            errmf = 'NAME RECONCILIATION Some of the taxa in the tree are not in the alignment or vice versa and will be pruned. Missing "{}"\n'
+            errmf = 'NAME RECONCILIATION Some of the taxa in the tree are not in the alignment or vice versa' \
+                    ' and will be pruned. Missing "{}"\n'
             errm = errmf.format('", "'.join(missing))
             sys.stderr.write(errm)
-        self.aln.remove_sequences(prune)
-        self.tre.prune_taxa(prune)
+        for taxon in prune:
+            assert (taxon in aln_tax) or (taxon in treed_tax)
+            if taxon in aln_tax:
+                self.aln.remove_sequences(prune)
+            if taxon in treed_tax:
+                self.tre.prune_taxa(prune)
         for tax in prune:
-            try:
-                self.otu_dict[tax.label]['^physcraper:status'] = "deleted in name reconciliation"
-            except:
+            # potentially slow at large number of taxa and large numbers to be pruned
+            found = 0
+            for otu in self.otu_dict:
+                if self.otu_dict[otu][u'^ot:originalLabel'] == tax.label:
+                    self.otu_dict[otu]['^physcraper:status'] = "deleted in name reconciliation"
+                    found = 1
+            if found == 0:
                 sys.stderr.write("lost taxon {} in name reconcilliation".format(tax.label))
             self.aln.taxon_namespace.remove_taxon(tax)
         assert (self.aln.taxon_namespace == self.tre.taxon_namespace)
-        reverse_otu_dict = {}
         for tax in self.aln.taxon_namespace:
             if tax.label in self.otu_dict.keys():
                 pass
@@ -648,81 +661,55 @@ class AlignTreeTax(object):
                     newname = tax.label[2:]
                     newname = newname[:-1]
                 for otu in self.otu_dict:
-                    if self.otu_dict[otu].get('^ot:originalLabel') == tax.label or self.otu_dict[otu].get('^ot:originalLabel') == newname:
+                    original = self.otu_dict[otu].get('^ot:originalLabel')
+                    if original == tax.label or original == newname:
                         tax.label = otu
                         found_label = 1
                 if found_label == 0:
                     sys.stderr.write("could not match tiplabel {} or {} to an OTU\n".format(tax.label, newname))
-                # assert tax.label in self.otu_dict
     # TODO - make sure all taxon labels are unique OTU ids.
 
-    def prune_short(self, min_seqlen=0):
-        """Sometimes in the de-concatenating of the original alignment
-        taxa with no sequence are generated.
-        This gets rid of those from both the tre and the alignement. MUTATOR
+    def prune_short(self, min_seqlen_perc=0.75):
+        """Prunes sequences from alignment if they are shorter than 75%, or if tip is only present in tre.
+
+        Sometimes in the de-concatenating of the original alignment taxa with no sequence are generated
+        or in general if certain sequences are really short. This removes those from both the tre and the alignment.
+
+        has test: test_prune_short.py
+
+        :param min_seqlen_perc: minimum length of seq
+        :return: prunes aln and tre
         """
-        # has test, runs: test_prune_short.py
-        debug("prune short")
+        if sum(self.orig_seqlen) != 0:
+            avg_seqlen = sum(self.orig_seqlen) / len(self.orig_seqlen)
+            seq_len_cutoff = avg_seqlen * min_seqlen_perc
+        else:
+            for tax, seq in self.aln.items():
+                seqlen = len(self.aln[tax].symbols_as_string())
+                break
+            seq_len_cutoff = seqlen * min_seqlen_perc
         prune = []
+        aln_ids = set()
         for tax, seq in self.aln.items():
-            if len(seq.symbols_as_string().translate(None, "-?")) <= min_seqlen:
+            aln_ids.add(tax.label)
+            if len(seq.symbols_as_string().translate(None, "-?")) <= seq_len_cutoff:
                 prune.append(tax)
+        treed_taxa = set()
+        for leaf in self.tre.leaf_nodes():
+            treed_taxa.add(leaf.taxon.label)
         if prune:
-            self.aln.remove_sequences(prune)
-            self.tre.prune_taxa(prune)
-            self.tre.prune_taxa_with_labels(prune)  # sometimes it does not delete it with the statement before. Tried to figure out why, have no clue yet.
-            #self.aln.taxon_namespace.remove_taxon_label(tax)
             fi = open("{}/pruned_taxa".format(self.workdir), 'a')
-            fi.write("Taxa pruned from tree and alignment in prune short step due to sequence shorter than {}\n".format(min_seqlen))
+            fi.write("Taxa pruned from tree and alignment in prune short "
+                     "step due to sequence shorter than {}\n".format(seq_len_cutoff))
             for tax in prune:
+                self.remove_taxa_aln_tre(tax.label)
                 fi.write("{}, {}\n".format(tax.label, self.otu_dict[tax.label].get('^ot:originalLabel')))
             fi.close()
         for tax in prune:
             self.otu_dict[tax.label]['^physcraper:status'] = "deleted in prune short"
-            self.aln.taxon_namespace.remove_taxon_label(tax.label)  # raises error if not found, instead of remove_taxon
         assert self.aln.taxon_namespace == self.tre.taxon_namespace
-        self.orig_seqlen = [len(self.aln[tax].symbols_as_string().replace("-", "").replace("N", "")) for tax in self.aln]
-        self.reconcile()
-
-    def reconcile(self, seq_len_perc=0.75):  #
-        """all missing data seqs are sneaking in, but from where?!"""
-        # not only used in the beginning...is used to remove sequences that are shorter than 75%
-        # assert self.aln.taxon_namespace == self.tre.taxon_namespace
-        # debug("reconcile")
-        prune = []
-        avg_seqlen = sum(self.orig_seqlen) / len(self.orig_seqlen)
-        seq_len_cutoff = avg_seqlen * seq_len_perc
-        for tax, seq in self.aln.items():
-            if len(seq.symbols_as_string().translate(None, "-?")) < seq_len_cutoff:
-                prune.append(tax)
-        if prune:
-            fi = open("{}/pruned_taxa".format(self.workdir), 'a')
-            fi.write("Taxa pruned from tree and aln in reconcilation step due to sequence shorter than {}\n".format(seq_len_cutoff))
-            for tax in prune:
-                fi.write("{}, {}\n".format(tax.label, self.otu_dict.get(tax.label).get('^ot:originalLabel')))
-            fi.close()
-        for tax in prune:
-            self.otu_dict[tax.label]['^physcraper:status'] = "deleted in reconcile"  # unnecessary? get's overwritten in next line
-            self.remove_taxa_aln_tre(tax.label)
-        aln_ids = set()
-        for tax in self.aln:
-            aln_ids.add(tax.label)
-        assert aln_ids.issubset(self.otu_dict.keys())
-        treed_taxa = set()
-        orphaned_leafs = set()
-        # assert self.aln.taxon_namespace == self.tre.taxon_namespace
-        # here leaf_nodes have taxa that were dropped before. Why do we have this anyways?
-        for leaf in self.tre.leaf_nodes():
-            treed_taxa.add(leaf.taxon.label)
-            if leaf.taxon.label not in aln_ids:
-                self.otu_dict[leaf.taxon.label]['^physcraper:status'] = "deleted due to presence in tree but not aln ?!"
-                orphaned_leafs.add(leaf)
-                # TODO fiure out why sometimes one of them works ano not the other and vice versa
-                self.tre.prune_taxa([leaf])
-                self.tre.prune_taxa_with_labels([leaf.taxon.label])
-                self.tre.prune_taxa_with_labels([leaf])
-                treed_taxa.remove(leaf.taxon.label)
         assert treed_taxa.issubset(aln_ids)
+        self.orig_seqlen = [len(self.aln[tax].symbols_as_string().replace("-", "").replace("N", "")) for tax in self.aln]
         self.trim()
         self._reconciled = 1
 
@@ -736,6 +723,12 @@ class AlignTreeTax(object):
 
         :param taxon_missingness: defines how many sequences need to have a base at the start/end of an alignment
         """
+        # debug('in trim')
+        i = 0
+        seqlen = len(self.aln[i])
+        while seqlen == 0: 
+            i = i + 1
+            seqlen = len(self.aln[i])
         for tax in self.aln:
             if len(self.aln[tax]) != seqlen:
                 sys.stderr.write("can't trim un-aligned inputs, moving on")
@@ -752,7 +745,7 @@ class AlignTreeTax(object):
             if counts['?'] + counts['-'] <= cutoff:  # first ok column
                 start = i
                 break
-        for i in range(seqlen, 0, -1):  # seqlen-1 cuts off last character of aln, I changed it.
+        for i in range(seqlen, 0, -1):  # previously seqlen-1, that cuts off last character of aln, I changed it.
             counts = {'?': 0, '-': 0}
             for tax in self.aln:
                 call = self.aln[tax][i - 1].label  # changing seqlen-1 to seqlen requires that we have here i-1
@@ -761,10 +754,24 @@ class AlignTreeTax(object):
             if counts['?'] + counts['-'] <= cutoff:
                 stop = i
                 break
+        aln_ids = set()
         for taxon in self.aln:
             self.aln[taxon] = self.aln[taxon][start:stop]
+            aln_ids.add(taxon.label)
+        assert aln_ids.issubset(self.otu_dict.keys())
+        treed_taxa = set()
+        for leaf in self.tre.leaf_nodes():
+            treed_taxa.add(leaf.taxon)
+        for leaf in self.tre.leaf_nodes():
+            if leaf.taxon not in aln_ids:
+                self.tre.prune_taxa([leaf])
+                self.tre.prune_taxa_with_labels([leaf.taxon])
+                self.tre.prune_taxa_with_labels([leaf])
+                treed_taxa.remove(leaf.taxon)
+        assert treed_taxa.issubset(aln_ids)
         if _VERBOSE:
-            sys.stdout.write("trimmed alignement ends to < {} missing taxa, start {}, stop {}\n".format(taxon_missingness, start, stop))
+            sys.stdout.write("trimmed alignment ends to < {} missing taxa, "
+                             "start {}, stop {}\n".format(taxon_missingness, start, stop))
         return
 
     def add_otu(self, gi, ids_obj):
