@@ -32,7 +32,7 @@ concat.get_largest_tre()
 
 # print("test: select rnd seq")
 count = 2
-concat.tmp_dict = deepcopy(concat.sp_gi_comb)
+concat.tmp_dict = deepcopy(concat.sp_acc_comb)
 # print("while")
 # part of make_sp_gene_dict
 
