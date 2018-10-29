@@ -13,11 +13,11 @@ downtorank = None
 
 
 try:
-    conf = ConfigObj(configfi)
+    conf = ConfigObj(configfi, interactive=False)
     data_obj = pickle.load(open("tests/data/precooked/tiny_dataobj.p", 'rb'))
     data_obj.workdir = absworkdir
     ids = IdDicts(conf, workdir=data_obj.workdir)
-    ids.gi_ncbi_dict = pickle.load(open("tests/data/precooked/tiny_gi_map.p", "rb"))
+    ids.acc_ncbi_dict = pickle.load(open("tests/data/precooked/tiny_gi_map.p", "rb"))
 except:
     # sys.stderr.write("run 'python tests/testfilesetup.py' to setup data files for tests. EXITING")
     sys.stdout.write("\n\nTest FAILED\n\n")
@@ -28,8 +28,8 @@ filteredScrape =  FilterBlast(data_obj, ids)
 try:
     filteredScrape._blasted = 1
     blast_dir = "tests/data/precooked/fixed/tte_blast_files"
-    filteredScrape.gi_list_mrca = pickle.load(open("tests/data/precooked/gi_list_mrca.p", 'rb'))
-    filteredScrape.read_blast(blast_dir=blast_dir)
+    filteredScrape.acc_list_mrca = pickle.load(open("tests/data/precooked/acc_list_mrca.p", 'rb'))
+    filteredScrape.read_blast_wrapper(blast_dir=blast_dir)
     filteredScrape.remove_identical_seqs()
     filteredScrape.sp_dict(downtorank)
     filteredScrape.seq_filter = ['deleted', 'subsequence,', 'not', "removed", "deleted,"]

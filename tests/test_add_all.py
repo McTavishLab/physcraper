@@ -12,17 +12,17 @@ selectby = "blast"
 downtorank = None
 absworkdir = os.path.abspath(workdir)
 try:
-    conf = ConfigObj(configfi)
+    conf = ConfigObj(configfi, interactive=False)
     data_obj = pickle.load(open("tests/data/precooked/tiny_dataobj.p", 'rb'))
     data_obj.workdir = absworkdir
     ids = IdDicts(conf, workdir=data_obj.workdir)
-    ids.gi_ncbi_dict = pickle.load(open("tests/data/precooked/tiny_gi_map.p", "rb"))
+    ids.acc_ncbi_dict = pickle.load(open("tests/data/precooked/tiny_gi_map.p", "rb"))
 except:
     sys.stdout.write("\n\nTest FAILED\n\n")
     sys.exit()
 filteredScrape = FilterBlast(data_obj, ids)
 filteredScrape._blasted = 1
-filteredScrape.read_blast(blast_dir="tests/data/precooked/fixed/tte_blast_files")
+filteredScrape.read_blast_wrapper(blast_dir="tests/data/precooked/fixed/tte_blast_files")
 filteredScrape.sp_dict(downtorank)
 filteredScrape.make_sp_seq_dict()
 filteredScrape.seq_filter = ['deleted', 'subsequence,', 'not', "removed", "deleted,"]

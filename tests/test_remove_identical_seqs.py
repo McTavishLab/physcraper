@@ -3,73 +3,76 @@ import sys
 import os
 from physcraper import ConfigObj, PhyscraperScrape, IdDicts
 
-#Function we want to test is scrape.remove_identical_seqs()
-#What are the inputs?  
-#physracper.scrape object, with new sequences read in.
-#to make that we need: input data, idObject, and a configuration object.
+# Function we want to test is scrape.remove_identical_seqs()
+# What are the inputs?
+# physracper.scrape object, with new sequences read in.
+# to make that we need: input data, idObject, and a configuration object.
 
-##todo Make Sure 
+# todo Make Sure
 sys.stdout.write("Running test remove_identical_seqs\n\n")
-workdir="tests/data/tmp/owndata"
+workdir = "tests/data/tmp/owndata"
 absworkdir = os.path.abspath(workdir)
-conf = ConfigObj("tests/data/test.config")
-
-
+conf = ConfigObj("tests/data/test.config", interactive=False)
 
 try:
-   data_obj = pickle.load(open("tests/data/precooked/tiny_dataobj.p", 'rb'))
-   data_obj.workdir = absworkdir
-   ids = IdDicts(conf, workdir=data_obj.workdir)
-   ids.gi_ncbi_dict = pickle.load(open("tests/data/precooked/tiny_gi_map.p", "rb" ))
-   assert os.path.isfile("tests/data/precooked/gi_list_mrca.p")
+    data_obj = pickle.load(open("tests/data/precooked/tiny_dataobj.p", 'rb'))
+    data_obj.workdir = absworkdir
+    ids = IdDicts(conf, workdir=data_obj.workdir)
+    ids.gi_ncbi_dict = pickle.load(open("tests/data/precooked/tiny_gi_map.p", "rb"))
 except:
-   sys.stderr.write("run 'python tests/testfilesetup.py' to setup data files for tests. EXITING")
-   sys.stdout.write("\n\nTest `remove_identical_seqs' FAILED\n\n")
-   sys.exit()
+    sys.stderr.write("run 'python tests/testfilesetup.py' to setup data files for tests. EXITING")
+    sys.stdout.write("\n\nTest `remove_identical_seqs' FAILED\n\n")
+    sys.exit()
 
 
-scraper =  PhyscraperScrape(data_obj, ids)
+scraper = PhyscraperScrape(data_obj, ids)
+scraper.config.blast_loc = 'remote'
+scraper.ids.otu_rank = {}
+scraper.config.gifilename = False
+
 scraper._blasted = 1
 blast_dir = "tests/data/precooked/fixed/tte_blast_files"
-
 scraper.gi_list_mrca = pickle.load(open("tests/data/precooked/gi_list_mrca.p", 'rb'))
-
-scraper.read_blast(blast_dir=blast_dir)
+scraper.read_blast_wrapper(blast_dir=blast_dir)
 
 a = len(scraper.new_seqs) == 40
 b = len(scraper.data.aln) == 5
-c =  len(scraper.new_seqs_otu_id) == 0
+c = len(scraper.new_seqs_otu_id) == 0
 
 scraper.remove_identical_seqs()
 
 d = len(scraper.new_seqs) == 40
 e = len(scraper.data.aln) == 5
 f = len(scraper.new_seqs_otu_id) == 38
-
 g = 1
 for taxon in scraper.data.tre.taxon_namespace:
     h = taxon.label in scraper.data.otu_dict
     g = g*h
-    status =  scraper.data.otu_dict[taxon.label].get(u'^physcraper:status')
+    status = scraper.data.otu_dict[taxon.label].get(u'^physcraper:status')
     i = status in ('original', 'query')
     g = g*i
 
-#Second test checks that seq len prec is affecting results
+# Second test checks that seq len prec is affecting results
 data_obj = pickle.load(open("tests/data/precooked/tiny_dataobj.p", 'rb')) #reload bc data object is mutable
 data_obj.workdir = absworkdir
 scraper2 = PhyscraperScrape(data_obj, ids)
-j = len(scraper2.data.aln) == 5
+scraper2.config.blast_loc = 'remote'
+scraper2.ids.otu_rank = {}
 
-scraper2.read_blast(blast_dir="tests/data/precooked/fixed/tte_blast_files")
-scraper2.config.seq_len_perc = 0.998 #Change seq len percentage from default of 75%
+scraper2.config.gifilename = False
+j = len(scraper2.data.aln) == 5
+scraper2.gi_list_mrca = pickle.load(open("tests/data/precooked/gi_list_mrca.p", 'rb'))
+scraper2.read_blast_wrapper(blast_dir="tests/data/precooked/fixed/tte_blast_files")
+scraper2.config.seq_len_perc = 0.998  # Change seq len percentage from default of 75%
 
 k = len(scraper2.new_seqs) == 40
 l = len(scraper2.new_seqs_otu_id) == 0
 
 scraper2.remove_identical_seqs()
-
+# print(scraper2.data.otu_dict)
+# print(len(scraper.new_seqs_otu_id), 38)
+# print(len(scraper2.new_seqs_otu_id), 36)
 m = len(scraper2.new_seqs_otu_id) == 36
-
 count = 0
 if a*b*c*d*e*f*g*h*i*j*k*l*m:
     sys.stdout.write("\n\nTest `remove_identical_seqs' passed\n\n")
