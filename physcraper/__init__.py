@@ -774,9 +774,18 @@ class AlignTreeTax(object):
                              "start {}, stop {}\n".format(taxon_missingness, start, stop))
         return
 
-    def add_otu(self, gi, ids_obj):
-        """generates an otu_id for new sequences and adds them into the otu_dict.
-        Needs to be passed an IdDict to do the mapping"""
+
+    def add_otu(self, gb_id, ids_obj):
+        """ Generates an otu_id for new sequences and adds them into self.otu_dict.
+        Needs to be passed an IdDict to do the mapping.
+
+        :param gb_id: the Genbank identifier/ or local unpublished
+        :param ids_obj: needs to IDs class to have access to the taxonomic information
+        :return: the unique otu_id - the key from self.otu_dict of the corresponding sequence
+        """
+        # debug("add_otu function")
+        if gb_id.split(".") == 1:
+            debug(gb_id)
         otu_id = "otuPS{}".format(self.ps_otu)
         self.ps_otu += 1
         ncbi_id = ids_obj.map_gi_ncbi(gi)  # check that try/except is working here
@@ -815,9 +824,12 @@ class AlignTreeTax(object):
         return otu_id
 
     def write_papara_files(self, treefilename="random_resolve.tre", alnfilename="aln_ott.phy"):
-        """Papara is finicky about trees and needs phylip, this writes out needed files for papara
-        (except query sequences)"""
-        # CAN I even evaulte things in the function definitions?
+        """This writes out needed files for papara (except query sequences).
+        Papara is finicky about trees and needs phylip format for the alignment.
+
+        Is only used within func align_query_seqs."""
+        # TODO: CAN I even evaluate things in the function definitions?
+        # TODO: names for tree and aln files should not be changed, as they are hardcoded in align_query_seqs().
         debug('write papara files')
         self.tre.resolve_polytomies()
         self.tre.deroot()
@@ -1051,16 +1063,19 @@ class IdDicts(object):
     # TODO - could - should be shared acrosss runs?! .... nooo.
     def __init__(self, config_obj, workdir):
         """Generates a series of name disambiguation dicts"""
-        self.workdir = workdir
+        self.workdir = workdir  # TODO: Not needed. only used for dump and map_gi. map_gi file does not exists. dump is only used in wrapper, and we have the information of workdir available in wrapper functions anyways
         self.config = config_obj
         assert self.config.email
-        self.ott_to_ncbi = {}
-        self.ncbi_to_ott = {}
-        self.ott_to_name = {}
-        self.gi_ncbi_dict = {}
-        self.otu_rank = {}
-        fi = open(config_obj.ott_ncbi)  # TODO need to keep updated
-        for lin in fi:  # TODO This is insanely memory inefficient
+        self.ott_to_ncbi = {}  # currently only used to find mcra ncbi id from mrca ott_id
+        self.ncbi_to_ott = {}  # used to get ott_id for new Genbank query taxa
+        self.ott_to_name = {}  # used in add_otu to get name from otuId
+        self.acc_ncbi_dict = {}  # filled by ncbi_parser (by subprocess in earlier versions of the code).
+        self.spn_to_ncbiid = {}  # spn to ncbi_id, it's only fed by the ncbi_data_parser, but makes it faster
+        self.ncbiid_to_spn = {}
+        self.mrca_ott = mrca  # mrca_list
+        self.mrca_ncbi = set()  # corresponding ids for mrca_ott list
+        fi = open(config_obj.ott_ncbi)  # TODO need to keep updated, where does the file come from?
+        for lin in fi:  # TODO This is insanely memory inefficient, how about using a pandas dataframe?
             lii = lin.split(",")
             self.ott_to_ncbi[int(lii[0])] = int(lii[1])
             self.ncbi_to_ott[int(lii[1])] = int(lii[0])
@@ -1069,6 +1084,8 @@ class IdDicts(object):
             assert len(self.ncbi_to_ott) > 0
             assert len(self.ott_to_name) > 0
         fi.close()
+        # TODO: pandas solution? requires to rewrite usages of self.ott_to_ncbi, self.ncbi_to_ott, self.ott_to_name
+        # TODO: where do we generate id_map?
         if os.path.isfile("{}/id_map.txt".format(workdir)):  # todo config?!
             fi = open("{}/id_map.txt".format(workdir))
             for lin in fi:
@@ -1202,26 +1219,35 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
         self.logfile = "{}/logfile".format(self.workdir)
         self.data = data_obj
         self.ids = ids_obj
-        self.config = self.ids.config
-        self.new_seqs = {}
-        self.new_seqs_otu_id = {}
-        self.otu_by_gi = {}
-        self._to_be_pruned = []
+        self.config = self.ids.config  # TODO: this is already part of self.ids, information are doubled.
+        self.new_seqs = {}  # all new seq after read_blast_wrapper
+        self.new_seqs_otu_id = {}  # only new seq which passed remove_identical
+        self.otu_by_gi = {}  # TODO: What was this intended for? we don't use it
+        self._to_be_pruned = []  # TODO: What was this intended for? We don't use it
         self.mrca_ncbi = ids_obj.ott_to_ncbi[data_obj.ott_mrca]
-        self.tmpfi = "{}/physcraper_run_in_progress".format(self.workdir)
+        self.tmpfi = "{}/physcraper_run_in_progress".format(self.workdir) # TODO: For what do we want to use this?
         self.blast_subdir = "{}/current_blast_run".format(self.workdir)
         if not os.path.exists(self.workdir):
             os.makedirs(self.workdir)
-        self.newseqs_file = "tmp.fasta"
+        self.newseqs_file = "tmp.fasta"  # TODO: is renamed before using it. Name is easily confused with 'tmp.fas' which is used as temporary file that contains the sequence that is currently blasted
         self.date = str(datetime.date.today())  # Date of the run - may lag behind real date!
-        self.repeat = 1
-        self.newseqsgi = []
-        self.blacklist = []
-        self.gi_list_mrca = []
-        self.seq_filter = ['deleted', 'subsequence,', 'not', "removed", "deleted,"]
+        self.repeat = 1  # used to determine if we continue updating the tree
+        self.newseqs_acc = []  # all ever added Genbank accession numbers during any PhyScraper run, used to speed up adding process
+        self.blacklist = []  # remove sequences by default
+        self.acc_list_mrca = []  # TODO: remove. all gb_ids of a given mrca. Used to limit possible seq to add.
+        # if self.config.blast_loc == 'local' and len(self.acc_list_mrca) == 0:
+        #     self.acc_list_mrca = self.get_all_acc_mrca()
+            # debug(self.acc_list_mrca)
+        self.seq_filter = ['deleted', 'subsequence,', 'not', "removed", "deleted,", "local"]  # TODO MK: try to move completely to FilterBlast class
         self.reset_markers()
-        if self.config.blast_loc == 'local' and len(self.gi_list_mrca) == 0:
-            self.gi_list_mrca = self.get_all_gi_mrca()
+        self.unpublished = False  # used to look for local unpublished seq that shall be added.
+        self.path_to_local_seq = False  # path to unpublished seq.
+        self.backbone = False
+        self.OToL_unmapped_tips()  # added to do stuff with un-mapped tips from OToL
+        self.ids.ingroup_mrca = data_obj.ott_mrca  # added for mrca ingroup list
+        # ##############################3
+        if _deep_debug == 1:
+            self.newadd_gi_otu = {}  # search for doubles!
 
     # TODO is this the right place for this?
     def reset_markers(self):
@@ -1312,12 +1338,16 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
                                           "Use run_blast(delay = 0) to force a search.\n".format(otu_id, last_blast))
         self._blasted = 1
 
-    def get_all_gi_mrca(self):
-        """get all available gi numbers from Genbank for mrca.
+    def get_all_acc_mrca(self):
+        """get all available acc numbers from Genbank for mrca.
+
         The list will be used to filter out sequences from the local Blast search,
-        that do not belong to ingroup."""
-        # gi list limited to 100000000, for huge trees that is a problem
-        debug("get_all_gi_mrca")
+        that do not belong to ingroup
+
+        :return: list of corresponding Genbank identifiers
+        """
+        # TODO MK: gi list limited to 100000000, for huge trees that is a problem. Think of what to do...
+        debug("get_all_acc_mrca")
         Entrez.email = self.config.email
         handle = Entrez.esearch(db="nucleotide", term="txid{}[Orgn]".format(self.mrca_ncbi),
                                 usehistory='n', RetMax=100000000)
@@ -1382,7 +1412,10 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
     # TODO this should go back in the class and should prune the tree
 
     def get_sp_id_of_otulabel(self, label):
-        """gets the species name and the corresponding ncbi id of the otu
+        """Get the species name and the corresponding ncbi id of the otu.
+
+        :param label: otu_label = key from otu_dict
+        :return: ncbi id of corresponding label
         """
         spn_of_label = None
         if '^ot:ottTaxonName' in self.data.otu_dict[label].keys():
@@ -1617,8 +1650,10 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
         self.data.reconcile()
         self._query_seqs_aligned = 1
 
+        self.data.prune_short()
+
     def place_query_seqs(self):
-        """runs raxml on the tree, and the combined alignment including the new quesry seqs
+        """runs raxml on the tree, and the combined alignment including the new query seqs.
         Just for placement, to use as starting tree."""
         if os.path.exists("RAxML_labelledTree.PLACE"):
             os.rename("RAxML_labelledTree.PLACE", "RAxML_labelledTreePLACE.tmp")
@@ -1879,8 +1914,12 @@ class FilterBlast(PhyscraperScrape):
         This is generated to make information for the filtering class more easily available. self.sp_d sums up which
         information are available per taxonomic concept and which have not already been removed during either
         the remove_identical_seq steps or during a filtering run of an earlier cycle.
+
+        Note: has test, test_sp_d.py
+
+        :param downtorank: string defining the level of taxonomic filtering, e.g. "species", "genus"
+        :return: self.sp_d
         """
-        # Note: has test, test_sp_d.py, runs
         self.downtorank = downtorank
         debug("make sp_dict")
         self.sp_d = {}
@@ -2360,10 +2399,15 @@ class FilterBlast(PhyscraperScrape):
         count_dict = {'seq_present': seq_present, 'query_count': query_count, 'new_taxon': new_taxon}
         return count_dict
 
-    def how_many_sp_to_keep(self, treshold, selectby):
-        """Uses the sp_seq_d and places the number of sequences according to threshold into the filterdseq_dict.
+    def how_many_sp_to_keep(self, threshold, selectby):
+        """Uses the sp_seq_d and places the number of sequences according to threshold into the self.filterdseq_dict.
 
-        This is essentially the key function of the Filter-class, it wraps up everything
+        This is essentially the key function of the Filter-class, it wraps up everything.
+
+        :param threshold: threshold value, defined in input
+        :param selectby: mode of sequence selection, defined in input
+        :return: nothing specific, it is the function, that completes the self.filtered_seq, which contains the filtered
+                sequences that shall be added.
         """
         debug("how_many_sp_to_keep")
         for taxon_id in self.sp_d:
@@ -2486,8 +2530,16 @@ class FilterBlast(PhyscraperScrape):
         self.filtered_seq.clear()
         return self.new_seqs
 
-    def write_otu_info(self, downtorank):
-        """Writes a table to file with taxon names and number of representatives.
+    def write_otu_info(self, downtorank=None):
+        """Writes different output tables to file: Makes reading important information less code heavy.
+
+        1. table with taxon names and sampling.
+        2. a file with all relevant GenBank info to file (otu_dict).
+
+        It uses the self.sp_d to get sampling information, that's why the downtorank is required.
+
+        :param downtorank: hierarchical filter
+        :return: writes output to file
         """
         sp_d = self.sp_dict(downtorank)
         sp_info = {}
@@ -2505,24 +2557,29 @@ class FilterBlast(PhyscraperScrape):
 class Settings(object):
     """A class to store all settings for PhyScraper.
     """
-
-    def __init__(self, seqaln, mattype, trfn, schema_trf, workdir, treshold=None,
-                 selectby=None, downtorank=None, spInfoDict=None, add_local_seq=None,
-                 id_to_spn_addseq_json=None, configfi=None, blacklist=None):
+    def __init__(self, seqaln, mattype, trfn, schema_trf, workdir, threshold=None,
+                 selectby=None, downtorank=None, spInfoDict=None, add_unpubl_seq=None,
+                 id_to_spn_addseq_json=None, configfi=None, blacklist=None, shared_blast_folder=None,
+                 delay=None, trim=None):
         """Initialize the settings."""
         self.seqaln = seqaln
         self.mattype = mattype
         self.trfn = trfn
         self.schema_trf = schema_trf
         self.workdir = workdir
-        self.treshold = treshold
+        self.threshold = threshold
         self.selectby = selectby
         self.downtorank = downtorank
         self.spInfoDict = spInfoDict
-        self.add_local_seq = add_local_seq
+        self.add_unpubl_seq = add_unpubl_seq
         self.id_to_spn_addseq_json = id_to_spn_addseq_json
         self.configfi = configfi
         self.blacklist = blacklist
+        self.shared_blast_folder = shared_blast_folder
+        self.delay = delay
+        self.trim = trim
+
+
 ####################
 
 
