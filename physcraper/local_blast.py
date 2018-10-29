@@ -5,6 +5,7 @@ import os
 import sys
 import subprocess
 import numpy
+import shutil
 from Bio.Blast import NCBIXML
 
 _DEBUG_MK = 0
@@ -17,8 +18,12 @@ def debug(msg):
         print(msg)
     
 
-debug("Current local_blast version number: 09142018.0")
+debug("Current local_blast version number: 10252018.0")
 
+def del_blastfiles():
+    """Deletes all files in the local blast folder.
+    """
+    shutil.rmtree(os.path.join(workdir, "blast"))
 
 def run_local_blast(workdir, blast_seq, blast_db, output=None):
     """Runs  a local blast to get measurement of differentiation between available sequences for the same taxon concept.

@@ -33,8 +33,8 @@ for genename in concat.single_runs:
 
 len_single = len(set(spnl))
 # print(set(spnl))
-# print(concat.sp_gi_comb)
-len_concat_id_dict = len(concat.sp_gi_comb)
+# print(concat.sp_acc_comb)
+len_concat_id_dict = len(concat.sp_acc_comb)
 
 
 # print(len_single, len_concat_id_dict)

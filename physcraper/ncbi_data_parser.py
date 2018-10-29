@@ -139,22 +139,24 @@ class Parser:
         debug("get downtorank")
         if nodes is None:
             self.initialize()
-        # following statement is to get id of taxa if taxa is higher ranked than specified
-        if nodes[nodes["tax_id"] == tax_id]["rank"].values[0] != "species":
-            if downtorank == "species":
-                return tax_id
         if type(tax_id) != int:
             sys.stdout.write("WARNING: tax_id {} is no integer. Will convert value to int\n".format(tax_id))
             tax_id = int(tax_id)
-        # debug(nodes[nodes["tax_id"] == tax_id])
-        # debug(nodes[nodes['tax_id'] == tax_id]['rank'].values[0])
+        debug(downtorank)
+        # following statement is to get id of taxa if taxa is higher ranked than specified
+        if nodes[nodes["tax_id"] == tax_id]["rank"].values[0] != "species":
+            if downtorank == "species":
+                if nodes[nodes["tax_id"] == tax_id]["rank"].values[0] != "varietas" and nodes[nodes["tax_id"] == tax_id]["rank"].values[0] != "subspecies":
+                    return tax_id
         if nodes[nodes["tax_id"] == tax_id]["rank"].values[0] == downtorank:
+            # debug("found right rank")
             return tax_id
         elif nodes[nodes['tax_id'] == tax_id]['rank'].values[0] == "superkingdom":
             tax_id = 0
             return tax_id
         else:
             parent_id = int(nodes[nodes["tax_id"] == tax_id]["parent_tax_id"].values[0])
+            # debug(["continue looking for right rank", tax_id, parent_id])
             return self.get_downtorank_id(parent_id, downtorank)
 
     def get_name_from_id(self, tax_id):

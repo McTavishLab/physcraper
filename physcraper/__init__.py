@@ -349,7 +349,8 @@ def generate_ATT_from_phylesystem(aln,
                    schema="newick",
                    preserve_underscores=True,
                    taxon_namespace=aln.taxon_namespace)
-    otus = get_subtree_otus(nexson, tree_id=tree_id) # this gets the taxa that are in the subtree with all of their info - ott_id, original name,
+    # this gets the taxa that are in the subtree with all of their info - ott_id, original name,
+    otus = get_subtree_otus(nexson, tree_id=tree_id)
     otu_dict = {}
     orig_lab_to_otu = {}
     treed_taxa = {}
@@ -544,11 +545,9 @@ class AlignTreeTax(object):
           * **self.aln**: contains the alignment and which will be updated during the run
           * **self.tre**: contains the phylogeny, which will be updated during the run
           * **self.otu_dict**: dictionary with taxon information and physcraper relevant stuff
-                
                * key: a unique identifier (otu plus either "tiplabel of phylogeny" or for newly found sequences
                     PS_number.
                * value: dictionary with the following key:values:
-                      
                     * '^ncbi:gi': GenBank identifier - deprecated by Genbank - only older sequences will have it
                     * '^ncbi:accession': Genbanks accession number
                     * '^ncbi:title': title of Genbank sequence submission
@@ -557,8 +556,7 @@ class AlignTreeTax(object):
                     * '^physcraper:status': contains information if it was 'original', 'queried', 'removed',
                                         'added during filtering process'
                     * '^ot:ottTaxonName': OToL taxon name
-                    * '^physcraper:last_blasted': contains the date when the sequence was blasted.
-                                                
+                    * '^physcraper:last_blasted': contains the date when the sequence was blasted.                
                          If the year is different from the 20th century, it tells us
                          something about the initial status:
                          * 1800 = never blasted, not yet considered to be added
@@ -571,7 +569,6 @@ class AlignTreeTax(object):
           * **self.ott_mrca**: OToL taxon Id for the most recent common ancestor of the ingroup
           * **self.orig_seqlen**: list of the original sequence length of the input data
           * **self.gi_dict**: dictionary, that has all information from sequences found during the blasting.
-                
             * key: GenBank sequence identifier
             * value: dictionary, content depends on blast option, differs between webquery and local blast queries
                 * keys - value pairs for local blast:
@@ -2326,6 +2323,7 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
             self.repeat = 0
             self.calculate_bootstrap()
         self.reset_markers()
+        local_blast.del_blastfiles()  # delete local blast db
         self.data.dump()
         json.dump(self.data.otu_dict, open('{}/otu_dict.json'.format(self.workdir), 'wb'))
 
