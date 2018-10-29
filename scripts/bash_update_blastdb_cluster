@@ -1,0 +1,25 @@
+#!/bin/bash
+
+#SBATCH --job-name=upd_bldb
+#SBATCH --output=upd_bldb
+#SBATCH --error=upd_bldb.err
+##SBATCH --partition=sandyb
+#SBATCH --time=23:10:00
+#SBATCH --nodes=1
+#SBATCH --ntasks=16
+#SBATCH --mail-type=BEGIN,END,FAIL
+#SBATCH --mail-user=mkandziora@ucmerced.edu
+
+
+# Launch the executable 
+cd /home/mkandziora/blastdb_ncbi/
+rsync -av ftp://ftp.ncbi.nlm.nih.gov/blast/db/nt.* ./
+update_blastdb.pl nt
+cat *.tar.gz | tar -xvzf - -i
+gunzip -cd taxdb.tar.gz | (tar xvf - )             
+
+
+cd /home/mkandziora/physcrape_web_dev/physcraper
+rsync -av ftp://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdump.tar.gz ./tests/data/taxdump.tar.gz
+gunzip - cd ./tests/data/taxdump.tar.gz | (tar xvf - names.dmp nodes.dmp)
+                 
