@@ -162,7 +162,12 @@ class Parser:
         """ 
         if names is None:
             self.initialize() 
-        return names[names["tax_id"] == tax_id]["name_txt"].values[0].replace(" ", "_")
+        if tax_id == 0:
+            tax_name = "unidentified"
+        else:
+            tax_name = names[names["tax_id"] == tax_id]["name_txt"]
+            tax_name = tax_name.values[0].replace(" ", "_")
+        return tax_name
 
     def get_id_from_name(self, tax_name):
         """ Find the ID for a given taxonomic name.
