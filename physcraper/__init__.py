@@ -2465,12 +2465,13 @@ class FilterBlast(PhyscraperScrape):
                 else:
                     tax_id = self.ids.ncbi_parser.get_id_from_name(tax_name)
                 if self.downtorank is not None:
+                    debug("get rank ID")
                     downtorank_name = None
                     downtorank_id = None
-                    tax_name = str(tax_name).replace(" ", "_")
+                    # tax_name = str(tax_name).replace(" ", "_")
                     if self.config.blast_loc == 'remote':
                         tax_name = self.ids.get_rank_info_from_web(taxon_name=tax_name)
-                        tax_id = self.ids.otu_rank[tax_name]["taxon id"]
+                        # tax_id = self.ids.otu_rank[tax_name]["taxon id"]
                         lineage2ranks = self.ids.otu_rank[str(tax_name).replace(" ", "_")]["rank"]
                         ncbi = NCBITaxa()
                         if lineage2ranks == 'unassigned':
@@ -2483,7 +2484,7 @@ class FilterBlast(PhyscraperScrape):
                                     value_d = ncbi.get_taxid_translator([downtorank_id])
                                     downtorank_name = value_d[int(downtorank_id)]
                     else:
-                        tax_id = self.ids.ncbi_parser.get_id_from_name(tax_name)
+                        # tax_id = self.ids.ncbi_parser.get_id_from_name(tax_name)
                         downtorank_id = self.ids.ncbi_parser.get_downtorank_id(tax_id, self.downtorank)
                         downtorank_name = self.ids.ncbi_parser.get_name_from_id(downtorank_id)
                     tax_name = downtorank_name
