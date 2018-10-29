@@ -2863,17 +2863,19 @@ class FilterBlast(PhyscraperScrape):
         :return: writes output to file
         """
         debug("write out infos")
-        if len(self.sp_d) == 0:
-            sp_d = self.sp_dict(downtorank)
-        else:
-            sp_d = self.sp_d
+        # if len(self.sp_d) == 0:
+        #     sp_d = self.sp_dict(downtorank)
+        # else:
+        #     sp_d = self.sp_d
+        sp_d = self.sp_dict(downtorank)
         sp_info = {}
         for k in sp_d:
             sp_info[k] = len(sp_d[k])
         with open('taxon_sampling.csv', 'w') as csv_file:
             writer = csv.writer(csv_file)
             for key, value in sp_info.items():
-                writer.writerow([key, value])
+                spn = self.ids.ncbi_parser.get_name_from_id(key)
+                writer.writerow([key, spn, value])
         otu_dict_keys = ['^ot:ottTaxonName', '^ncbi:gi', '^ncbi:accession', '^physcraper:last_blasted',
                          '^physcraper:status', '^ot:ottId', '^ncbi:taxon', '^ncbi:title']
         with open('otu_seq_info.csv', 'w') as output:
@@ -2888,35 +2890,36 @@ class FilterBlast(PhyscraperScrape):
                         rowinfo.append("-")
                 writer.writerow(rowinfo)
 
-    def print_sp_d_as_is(self):
-        if self.sp_d is not None:
-            with open('sp_d_info.csv', 'w') as output:
-                writer = csv.writer(output)
-                for group in self.sp_d.keys():
-                    rowinfo = [group]
-                    for otu in self.sp_d[group]:
-                        for item in otu.keys():
-                            tofile = str(otu[item]).replace("_", " ")
-                            rowinfo.append(tofile)
-                    writer.writerow(rowinfo)
 
-    def print_sp_d_recalc(self, downtorank):
-        if self.sp_d is not None:
-            sp_d = self.sp_dict(downtorank)
-            with open('sp_d_info_recalc.csv', 'w') as output:
-                writer = csv.writer(output)
-                for group in sp_d.keys():
-                    rowinfo = list(str(group))
-                    debug(rowinfo)
-                    debug(sp_d[group])
-                    for otu in sp_d[group]:
-                        debug(otu)
-                        for item in otu.keys():
-                            tofile = str(otu[item]).replace("_", " ")
-                            debug(tofile)
-                            rowinfo.append(otu)
-                            rowinfo.append(tofile)
-                    writer.writerow(rowinfo)
+    # def print_sp_d_as_is(self):
+    #     if self.sp_d is not None:
+    #         with open('sp_d_info.csv', 'w') as output:
+    #             writer = csv.writer(output)
+    #             for group in self.sp_d.keys():
+    #                 rowinfo = [group]
+    #                 for otu in self.sp_d[group]:
+    #                     for item in otu.keys():
+    #                         tofile = str(otu[item]).replace("_", " ")
+    #                         rowinfo.append(tofile)
+    #                 writer.writerow(rowinfo)
+
+    # def print_sp_d_recalc(self, downtorank):
+    #     if self.sp_d is not None:
+    #         sp_d = self.sp_dict(downtorank)
+    #         with open('sp_d_info_recalc.csv', 'w') as output:
+    #             writer = csv.writer(output)
+    #             for group in sp_d.keys():
+    #                 rowinfo = list(str(group))
+    #                 debug(rowinfo)
+    #                 debug(sp_d[group])
+    #                 for otu in sp_d[group]:
+    #                     debug(otu)
+    #                     for item in otu.keys():
+    #                         tofile = str(otu[item]).replace("_", " ")
+    #                         debug(tofile)
+    #                         rowinfo.append(otu)
+    #                         rowinfo.append(tofile)
+    #                 writer.writerow(rowinfo)
 
 
 class Settings(object):

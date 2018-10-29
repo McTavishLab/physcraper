@@ -405,8 +405,8 @@ def add_unpubl_to_backbone(seqaln,
         filteredScrape.dump()
 
     filteredScrape.write_otu_info(downtorank)
-    filteredScrape.print_sp_d_recalc(downtorank)
-    filteredScrape.print_sp_d_as_is()
+    # filteredScrape.print_sp_d_recalc(downtorank)
+   # filteredScrape.print_sp_d_as_is()
     return filteredScrape
 
 
@@ -523,8 +523,8 @@ def filter_data_run(seqaln,
         filteredScrape.dump()
 
     filteredScrape.write_otu_info(downtorank)
-    filteredScrape.print_sp_d_recalc(downtorank)
-    filteredScrape.print_sp_d_as_is()
+    # filteredScrape.print_sp_d_recalc(downtorank)
+   # filteredScrape.print_sp_d_as_is()
     return filteredScrape
 
 
