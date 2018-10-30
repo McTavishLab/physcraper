@@ -2321,7 +2321,7 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
             if _VERBOSE:
                 sys.stdout.write("No new sequences found.\n")
             self.repeat = 0
-            self.calculate_bootstrap()
+        self.calculate_bootstrap()
         self.reset_markers()
         local_blast.del_blastfiles(self.workdir)  # delete local blast db
         self.data.dump()
