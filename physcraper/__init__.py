@@ -34,6 +34,7 @@ import local_blast
 
 
 _DEBUG = 0
+_deep_debug = 0
 _DEBUG_MK = 0
 _deep_debug = 0
 
