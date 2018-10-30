@@ -20,7 +20,7 @@ def debug(msg):
 
 debug("Current local_blast version number: 10252018.0")
 
-def del_blastfiles():
+def del_blastfiles(workdir):
     """Deletes all files in the local blast folder.
     """
     shutil.rmtree(os.path.join(workdir, "blast"))

@@ -2323,7 +2323,7 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
             self.repeat = 0
             self.calculate_bootstrap()
         self.reset_markers()
-        local_blast.del_blastfiles()  # delete local blast db
+        local_blast.del_blastfiles(self.workdir)  # delete local blast db
         self.data.dump()
         json.dump(self.data.otu_dict, open('{}/otu_dict.json'.format(self.workdir), 'wb'))
 
