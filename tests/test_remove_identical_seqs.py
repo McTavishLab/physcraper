@@ -24,7 +24,7 @@ except:
     sys.stdout.write("\n\nTest `remove_identical_seqs' FAILED\n\n")
     sys.exit()
 
-
+print("start")
 scraper = PhyscraperScrape(data_obj, ids)
 scraper.config.blast_loc = 'remote'
 scraper.ids.otu_rank = {}

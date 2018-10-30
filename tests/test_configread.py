@@ -7,7 +7,7 @@ expected_keys = ['seq_len_perc', 'num_threads', 'phylesystem_loc', 'blast_loc', 
 sys.stdout.write("\nTesting configuration object contents\n")
 try:
     configfi = "tests/data/localblast.config"
-    conf = ConfigObj(configfi)
+    conf = ConfigObj(configfi, interactive = False)
     assert conf.email == 'ejmctavish@gmail.com'
     assert conf.url_base == None
     assert conf.__dict__.keys() == expected_keys
