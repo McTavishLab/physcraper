@@ -22,7 +22,7 @@ try:
     data_obj = pickle.load(open("tests/data/precooked/tiny_dataobj.p", 'rb'))
     data_obj.workdir = absworkdir
     ids = physcraper.IdDicts(conf, workdir=data_obj.workdir)
-    ids.acc_ncbi_dict = pickle.load(open("tests/data/precooked/tiny_gi_map.p", "rb"))
+    ids.acc_ncbi_dict = pickle.load(open("tests/data/precooked/tiny_acc_map.p", "rb"))
 except:
     sys.stdout.write("\n\nTest FAILED\n\n")
     sys.exit()
@@ -34,24 +34,24 @@ filteredScrape.remove_identical_seqs()
 filteredScrape.sp_dict(downtorank)
 filteredScrape.make_sp_seq_dict()
 
-# print("prepare test")
+print("prepare test")
 for taxonID in filteredScrape.sp_d:
     if len(filteredScrape.sp_seq_d[taxonID]) > treshold:
-        # print(taxonID)
+        print(taxonID)
         blast_seq = filteredScrape.sp_seq_d[taxonID].keys()[0]
         seq = filteredScrape.sp_seq_d[taxonID][blast_seq]
         local_blast.write_blast_files(filteredScrape.workdir, taxonID, seq)
         blast_db = [item for item in filteredScrape.sp_seq_d[taxonID].keys()[1:] if len(item.split(".")) >= 2]
-        # print(blast_db)
+        print(blast_db)
         for blast_key in blast_db:
             seq = filteredScrape.sp_seq_d[taxonID][blast_key]
             local_blast.write_blast_files(filteredScrape.workdir, blast_key, seq, db=True, fn=str(taxonID))
         break
 
 # test starts here:
-blast_db = 1268580
-blast_seq = 1268580
-key = 1268580
+blast_db = "JX895406.1"
+blast_seq = "JX895406.1"
+key = "JX895406.1"
 
 local_blast.run_local_blast(filteredScrape.workdir, blast_seq, blast_db)
 local_blast.read_local_blast(filteredScrape.workdir, filteredScrape.sp_seq_d[key], blast_db)
