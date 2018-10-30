@@ -139,17 +139,17 @@ class Parser:
         debug("get downtorank")
         if nodes is None:
             self.initialize()
-        
         if type(tax_id) != int:
             sys.stdout.write("WARNING: tax_id {} is no integer. Will convert value to int\n".format(tax_id))
             tax_id = int(tax_id)
+        debug(downtorank)
         # following statement is to get id of taxa if taxa is higher ranked than specified
         if nodes[nodes["tax_id"] == tax_id]["rank"].values[0] != "species":
             if downtorank == "species":
-                return tax_id
-        # debug(nodes[nodes["tax_id"] == tax_id])
-        # debug(nodes[nodes['tax_id'] == tax_id]['rank'].values[0])
+                if nodes[nodes["tax_id"] == tax_id]["rank"].values[0] != "varietas" and nodes[nodes["tax_id"] == tax_id]["rank"].values[0] != "subspecies":
+                    return tax_id
         if nodes[nodes["tax_id"] == tax_id]["rank"].values[0] == downtorank:
+            # debug("found right rank")
             return tax_id
         elif nodes[nodes['tax_id'] == tax_id]['rank'].values[0] == "superkingdom":
             tax_id = 0

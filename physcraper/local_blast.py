@@ -23,7 +23,10 @@ debug("Current local_blast version number: 10252018.0")
 def del_blastfiles(workdir):
     """Deletes all files in the local blast folder.
     """
-    shutil.rmtree(os.path.join(workdir, "blast"))
+    try:
+        shutil.rmtree(os.path.join(workdir, "blast"))
+    except: 
+	      sys.stderr.write("Blast folder was not removed. Maybe it was not present?")
 
 def run_local_blast(workdir, blast_seq, blast_db, output=None):
     """Runs  a local blast to get measurement of differentiation between available sequences for the same taxon concept.

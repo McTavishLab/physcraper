@@ -32,16 +32,25 @@ import concat  # is the local concat class
 import ncbi_data_parser  # is the ncbi data parser class and associated functions
 import local_blast
 
-_DEBUG = 0
-_DEBUG_MK = 0
 
-_VERBOSE = 0
+_DEBUG = 1
+_DEBUG_MK = 1
+_deep_debug = 0
+
+_VERBOSE = 1
 
 
 def debug(msg):
     """short debugging command
     """
     if _DEBUG_MK == 1:
+        print(msg)
+
+
+def deep_debug(msg):
+    """short debugging command
+    """
+    if _deep_debug == 1:
         print(msg)
 
 
@@ -164,6 +173,7 @@ class ConfigObj(object):
         debug(self.gb_id_filename)
         debug("check db file status?")
         debug(interactive)
+
         if _DEBUG:
             sys.stdout.write("{}\n".format(self.email))
             if self.blast_loc == 'remote':
@@ -320,7 +330,14 @@ def generate_ATT_from_phylesystem(aln,
                                tree_id=tree_id,
                                subtree_id="ingroup",
                                return_format="ottid")
-    ott_mrca = get_mrca_ott(ott_ids)
+    if ingroup_mrca:
+        if type(ingroup_mrca) == list:
+            ott_ids = set(ingroup_mrca)
+            ott_mrca = get_mrca_ott(ott_ids)
+        else:
+            ott_mrca = int(ingroup_mrca)
+    else:
+        ott_mrca = get_mrca_ott(ott_ids)
     newick = extract_tree(nexson,
                           tree_id,
                           PhyloSchema('newick',
@@ -402,10 +419,16 @@ def generate_ATT_from_files(seqaln,
                    taxon_namespace=aln.taxon_namespace)
     assert tre.taxon_namespace is aln.taxon_namespace
     otu_newick = tre.as_string(schema=schema_trf)
+    otu_dict = json.load(open(otu_json, "r"))
+    debug("get mrca")
+    debug(ingroup_mrca)
     if ingroup_mrca:
-        ott_mrca = int(ingroup_mrca)
+        if type(ingroup_mrca) == list:
+            ott_ids = set(ingroup_mrca)
+            ott_mrca = get_mrca_ott(ott_ids)
+        else:
+            ott_mrca = int(ingroup_mrca)
     else:
-        otu_dict = json.load(open(otu_json, "r"))
         ott_ids = [otu_dict[otu].get(u'^ot:ottId', ) for otu in otu_dict]
         ott_ids = filter(None, ott_ids)
         ott_ids = set(ott_ids)
@@ -476,6 +499,7 @@ def OtuJsonDict(id_to_spn, id_dict):
     """
     sys.stdout.write("Set up OtuJsonDict \n")
     sp_info_dict = {}
+    # nosp = []
     with open(id_to_spn, mode='r') as infile:
         for lin in infile:
             ottid, ottname, ncbiid = None, None, None
@@ -488,17 +512,14 @@ def OtuJsonDict(id_to_spn, id_dict):
             if info:
                 ottid, ottname, ncbiid = info
             if not info:
-                if _DEBUG:
-                    sys.stdout.write("match to taxon {} not found in open tree taxonomy. Trying NCBI next.\n".format(spn))
                 ncbi = NCBITaxa()
                 name2taxid = ncbi.get_name_translator([spn])
                 if len(name2taxid.items()) >= 1:
-                    if _DEBUG:
-                        sys.stdout.write("found taxon {} in ncbi".format(spn))
                     ncbiid = name2taxid.items()[0][1][0]
                 else:
                     sys.stderr.write("match to taxon {} not found in open tree taxonomy or NCBI. "
                                      "Proceeding without taxon info\n".format(spn))
+                    # nosp.append(spn)
             sp_info_dict[otu_id] = {'^ncbi:taxon': ncbiid, '^ot:ottTaxonName': ottname, '^ot:ottId': ottid,
                                     '^ot:originalLabel': tipname, '^user:TaxonName': species,
                                     '^physcraper:status': 'original', '^physcraper:last_blasted': "1900/01/01"}
@@ -863,6 +884,7 @@ class AlignTreeTax(object):
 
     def write_files(self, treepath="physcraper.tre", treeschema="newick", alnpath="physcraper.fas", alnschema="fasta"):
         """Outputs both the streaming files and a ditechecked"""
+        # TODO: ditchecked?
         # First write rich annotation json file with everything needed for later?
         debug("write_files")
         self.tre.write(path="{}/{}".format(self.workdir, treepath),
@@ -994,6 +1016,7 @@ def get_mrca_ott(ott_ids):
     :return: OToL identifier of most recent common ancestor or ott_ids
     """
     debug("get_mrca_ott")
+    # drop_tip = []
     if None in ott_ids:
         ott_ids.remove(None)
     synth_tree_ott_ids = []
@@ -1002,7 +1025,8 @@ def get_mrca_ott(ott_ids):
         try:
             tree_of_life.mrca(ott_ids=[ott], wrap_response=False)
             synth_tree_ott_ids.append(ott)
-        except:
+        except:  # TODO: urllib2.HTTPError, err. Seems to be requests.exceptions.HTTPError: 500, don't know how to implement them
+            debug("except")
             ott_ids_not_in_synth.append(ott)
     if len(synth_tree_ott_ids) == 0:
         sys.stderr.write('No sampled taxa were found in the current synthetic tree. '
@@ -1027,6 +1051,7 @@ def get_mrca_ott(ott_ids):
 
 def get_ott_ids_from_otu_dict(otu_dict):  # TODO put into data obj?
     """Get the ott ids from an otu dict object"""
+    # TODO: never used
     ott_ids = []
     for otu in otu_dict:
         try:
@@ -1083,7 +1108,7 @@ class IdDicts(object):
     """
 
     # TODO - could - should be shared acrosss runs?! .... nooo.
-    def __init__(self, config_obj, workdir):
+    def __init__(self, config_obj, workdir, mrca=None):
         """Generates a series of name disambiguation dicts"""
         self.workdir = workdir  # TODO: Not needed. only used for dump and map_gi. map_gi file does not exists. dump is only used in wrapper, and we have the information of workdir available in wrapper functions anyways
         self.config = config_obj
@@ -1436,7 +1461,6 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
         self.repeat = 1  # used to determine if we continue updating the tree
         self.newseqs_acc = []  # all ever added Genbank accession numbers during any PhyScraper run, used to speed up adding process
         self.blacklist = []  # remove sequences by default
-        self.acc_list_mrca = []  # TODO: remove. all gb_ids of a given mrca. Used to limit possible seq to add.
         # if self.config.blast_loc == 'local' and len(self.acc_list_mrca) == 0:
         #     self.acc_list_mrca = self.get_all_acc_mrca()
             # debug(self.acc_list_mrca)
@@ -1847,8 +1871,6 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
         """
         # TODO unify spp name somehow?
         id_of_label = self.get_sp_id_of_otulabel(label)
-        if _DEBUG:
-            sys.stdout.write("taxon is ott{}\n".format(id_of_label))
         new_seq = seq.replace("-", "")
         tax_list = deepcopy(seq_dict.keys())
         i = 0
@@ -2013,6 +2035,17 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
             log.write("{} new sequences added from genbank after removing identical seq, "
                       "of {} before filtering\n".format(len(self.new_seqs_otu_id), len(self.new_seqs)))
         self.data.dump()
+
+    def find_otudict_gi(self):
+        """Used to find seqs that were added twice. Debugging function.
+        """
+        debug("find_otudict_gi")
+        ncbigi_list = []
+        for key, val in self.data.otu_dict.items():
+            if '^ncbi:gi' in val:
+                gi_otu_dict = val["^ncbi:gi"]
+                ncbigi_list.append(gi_otu_dict)
+        return ncbigi_list
 
     def dump(self, filename=None):
         """writes out class to pickle file
@@ -2322,6 +2355,26 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
         cmd1 = "makeblastdb -in {}_db -dbtype nucl".format("local_unpubl_seq")
         os.system(cmd1)
 
+    # def make_otu_dict_entry_unpubl(self, key):
+    #     """Adds the local unpublished data to the otu_dict.
+    #
+    #     Information are retrieved from the additional json file/self.unpubl_otu_json.
+    #     I make up accession numbers, which might not be necessary
+    #
+    #     :param key: unique identifier of the unpublished seq
+    #     :return: generates self.data.gb_dict entry for key
+    #     """
+    #     debug("make_otu_dict_entry_unpubl")
+    #     gb_counter = 1
+    #     if key not in self.data.gb_dict.keys():
+    #         # numbers starting with 0000 are unpublished data
+    #         self.data.gb_dict[key] = {'title': "unpublished", 'localID': key[7:]}
+    #         gb_counter += 1
+    #     else:
+    #         self.data.gb_dict[key].update([('accession', "000000{}".format(gb_counter)),
+    #                                        ('title', "unpublished"), ('localID', key[7:])])
+
+
 ###############################
 
 class FilterBlast(PhyscraperScrape):
@@ -2402,12 +2455,13 @@ class FilterBlast(PhyscraperScrape):
                 else:
                     tax_id = self.ids.ncbi_parser.get_id_from_name(tax_name)
                 if self.downtorank is not None:
+                    debug("get rank ID")
                     downtorank_name = None
                     downtorank_id = None
-                    tax_name = str(tax_name).replace(" ", "_")
+                    # tax_name = str(tax_name).replace(" ", "_")
                     if self.config.blast_loc == 'remote':
                         tax_name = self.ids.get_rank_info_from_web(taxon_name=tax_name)
-                        tax_id = self.ids.otu_rank[tax_name]["taxon id"]
+                        # tax_id = self.ids.otu_rank[tax_name]["taxon id"]
                         lineage2ranks = self.ids.otu_rank[str(tax_name).replace(" ", "_")]["rank"]
                         ncbi = NCBITaxa()
                         if lineage2ranks == 'unassigned':
@@ -2420,7 +2474,7 @@ class FilterBlast(PhyscraperScrape):
                                     value_d = ncbi.get_taxid_translator([downtorank_id])
                                     downtorank_name = value_d[int(downtorank_id)]
                     else:
-                        tax_id = self.ids.ncbi_parser.get_id_from_name(tax_name)
+                        # tax_id = self.ids.ncbi_parser.get_id_from_name(tax_name)
                         downtorank_id = self.ids.ncbi_parser.get_downtorank_id(tax_id, self.downtorank)
                         downtorank_name = self.ids.ncbi_parser.get_name_from_id(downtorank_id)
                     tax_name = downtorank_name
@@ -2480,7 +2534,6 @@ class FilterBlast(PhyscraperScrape):
 
     def select_seq_by_local_blast(self, seq_d, fn, threshold, count):
         """Selects number of sequences from local_blast to fill up sequences to the threshold. 
-
         Count is the return value from self.count_num_seq(tax_id)["seq_present"], that tells the program 
         how many sequences for the taxon are already available in the aln.
 
@@ -2663,7 +2716,7 @@ class FilterBlast(PhyscraperScrape):
         during earlier cycles.
 
         Function is only used in how_many_sp_to_keep().
-
+        
         :param tax_id: key from self.sp_seq_d
         :return: dict which contains information of how many seq are already present in aln, how many new seq have been
                 found and if the taxon is a new taxon or if seq are already present
@@ -2825,10 +2878,8 @@ class FilterBlast(PhyscraperScrape):
                         rowinfo.append("-")
                 writer.writerow(rowinfo)
 
-
-
-
-class Settings(object):
+class
+Settings(object):
     """A class to store all settings for PhyScraper.
     """
     def __init__(self, seqaln, mattype, trfn, schema_trf, workdir, threshold=None,
