@@ -29,7 +29,6 @@ except:
 filteredScrape = physcraper.FilterBlast(data_obj, ids)
 filteredScrape._blasted = 1
 blast_dir = "tests/data/precooked/fixed/tte_blast_files"
-filteredScrape.acc_list_mrca = pickle.load(open("tests/data/precooked/acc_list_mrca.p", 'rb'))
 filteredScrape.read_blast_wrapper(blast_dir=blast_dir)
 filteredScrape.remove_identical_seqs()
 filteredScrape.sp_dict(downtorank)
@@ -42,7 +41,8 @@ for taxonID in filteredScrape.sp_d:
         blast_seq = filteredScrape.sp_seq_d[taxonID].keys()[0]
         seq = filteredScrape.sp_seq_d[taxonID][blast_seq]
         local_blast.write_blast_files(filteredScrape.workdir, taxonID, seq)
-        blast_db = [item for item in filteredScrape.sp_seq_d[taxonID].keys()[1:] if type(item) == int]
+        blast_db = [item for item in filteredScrape.sp_seq_d[taxonID].keys()[1:] if len(item.split(".")) >= 2]
+        # print(blast_db)
         for blast_key in blast_db:
             seq = filteredScrape.sp_seq_d[taxonID][blast_key]
             local_blast.write_blast_files(filteredScrape.workdir, blast_key, seq, db=True, fn=str(taxonID))
