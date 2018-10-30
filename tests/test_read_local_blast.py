@@ -49,9 +49,9 @@ for taxonID in filteredScrape.sp_d:
         break
 
 # test starts here:
-blast_db = 1268578
-blast_seq = 1268578
-key = 1268578
+blast_db = 1268580
+blast_seq = 1268580
+key = 1268580
 
 local_blast.run_local_blast(filteredScrape.workdir, blast_seq, blast_db)
 local_blast.read_local_blast(filteredScrape.workdir, filteredScrape.sp_seq_d[key], blast_db)
