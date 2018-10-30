@@ -28,6 +28,7 @@ def del_blastfiles(workdir):
     except: 
 	sys.stderr.write("Blast folder was not removed. Maybe it was not present?")
 
+
 def run_local_blast(workdir, blast_seq, blast_db, output=None):
     """Runs  a local blast to get measurement of differentiation between available sequences for the same taxon concept.
 
