@@ -2880,8 +2880,7 @@ class FilterBlast(PhyscraperScrape):
                         rowinfo.append("-")
                 writer.writerow(rowinfo)
 
-class
-Settings(object):
+class Settings(object):
     """A class to store all settings for PhyScraper.
     """
     def __init__(self, seqaln, mattype, trfn, schema_trf, workdir, threshold=None,
