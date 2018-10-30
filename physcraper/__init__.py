@@ -33,11 +33,11 @@ import ncbi_data_parser  # is the ncbi data parser class and associated function
 import local_blast
 
 
-_DEBUG = 1
-_DEBUG_MK = 1
+_DEBUG = 0
+_DEBUG_MK = 0
 _deep_debug = 0
 
-_VERBOSE = 1
+_VERBOSE = 0
 
 
 def debug(msg):
@@ -499,7 +499,7 @@ def OtuJsonDict(id_to_spn, id_dict):
     """
     sys.stdout.write("Set up OtuJsonDict \n")
     sp_info_dict = {}
-    # nosp = []
+    nosp = []
     with open(id_to_spn, mode='r') as infile:
         for lin in infile:
             ottid, ottname, ncbiid = None, None, None
@@ -519,7 +519,7 @@ def OtuJsonDict(id_to_spn, id_dict):
                 else:
                     sys.stderr.write("match to taxon {} not found in open tree taxonomy or NCBI. "
                                      "Proceeding without taxon info\n".format(spn))
-                    # nosp.append(spn)
+                    nosp.append(spn)
             sp_info_dict[otu_id] = {'^ncbi:taxon': ncbiid, '^ot:ottTaxonName': ottname, '^ot:ottId': ottid,
                                     '^ot:originalLabel': tipname, '^user:TaxonName': species,
                                     '^physcraper:status': 'original', '^physcraper:last_blasted': "1900/01/01"}
@@ -2264,6 +2264,7 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
         if self.blacklist:
             self.remove_blacklistitem()
         debug(len(self.new_seqs))
+        debug(len(self.new_seqs_otu_id))
         if len(self.new_seqs) > 0:
             self.data.write_files()  # should happen before aligning in case of pruning
             if len(self.new_seqs_otu_id) > 0:  # TODO rename to something more intuitive
