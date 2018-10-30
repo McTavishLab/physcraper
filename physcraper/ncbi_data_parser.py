@@ -156,7 +156,6 @@ class Parser:
             return tax_id
         else:
             parent_id = int(nodes[nodes["tax_id"] == tax_id]["parent_tax_id"].values[0])
-            # debug(["continue looking for right rank", tax_id, parent_id])
             return self.get_downtorank_id(parent_id, downtorank)
 
     def get_name_from_id(self, tax_id):
@@ -164,7 +163,7 @@ class Parser:
         """ 
         if names is None:
             self.initialize() 
-	if tax_id == 0:
+        if tax_id == 0:
             tax_name = "unidentified"
         else:
             tax_name = names[names["tax_id"] == tax_id]["name_txt"]

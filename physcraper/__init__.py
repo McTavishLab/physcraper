@@ -173,7 +173,7 @@ class ConfigObj(object):
         debug(self.gb_id_filename)
         debug("check db file status?")
         debug(interactive)
-        
+
         if _DEBUG:
             sys.stdout.write("{}\n".format(self.email))
             if self.blast_loc == 'remote':
@@ -807,7 +807,7 @@ class AlignTreeTax(object):
         """ Generates an otu_id for new sequences and adds them into self.otu_dict.
         Needs to be passed an IdDict to do the mapping.
 
-        :param gb_id: the Genbank identifier
+        :param gb_id: the Genbank identifier/ or local unpublished
         :param ids_obj: needs to IDs class to have access to the taxonomic information
         :return: the unique otu_id - the key from self.otu_dict of the corresponding sequence
         """
@@ -823,7 +823,7 @@ class AlignTreeTax(object):
             tax_name = self.gb_dict[gb_id]['^ot:ottTaxonName']
             ncbi_id = self.gb_dict[gb_id]['^ncbi:taxon']
             ott_id = self.gb_dict[gb_id]['^ot:ottId']
-        elif len(gb_id.split(".")) >= 2:
+        elif len(gb_id.split(".")) >= 2:  # used to figure out if gb_id is from Genbank
             if gb_id in self.gb_dict.keys() and 'staxids' in self.gb_dict[gb_id].keys():
                 tax_name = self.gb_dict[gb_id]['sscinames']
                 ncbi_id = self.gb_dict[gb_id]['staxids']
@@ -1792,14 +1792,14 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
                 for alignment in blast_record.alignments:
                     for hsp in alignment.hsps:
                         if float(hsp.expect) < float(self.config.e_value_thresh):
-                            gi_id = alignment.title.split('|')[-1].split(' ')[-1]
-                            if gi_id not in self.data.gb_dict:  # skip ones we already have
+                            local_id = alignment.title.split('|')[-1].split(' ')[-1]
+                            if local_id not in self.data.gb_dict:  # skip ones we already have
                                 #self.make_otu_dict_entry_unpubl(gi_id)
-                                fake_gi = "unpubl_{}".format(gi_id)
-                                self.new_seqs[fake_gi] = hsp.sbjct
-                                self.data.gb_dict[fake_gi] = {'title': "unpublished", 'localID': gi_id}
+                                unpbl_local_id = "unpubl_{}".format(local_id)
+                                self.new_seqs[unpbl_local_id] = hsp.sbjct
+                                self.data.gb_dict[unpbl_local_id] = {'title': "unpublished", 'localID': local_id}
                                 debug(self.data.unpubl_otu_json)
-                                self.data.gb_dict[fake_gi].update(self.data.unpubl_otu_json['otu{}'.format(gi_id)])
+                                self.data.gb_dict[unpbl_local_id].update(self.data.unpubl_otu_json['otu{}'.format(local_id)])
                                 gb_counter += 1
         else:
             if not self._blasted:
@@ -2321,7 +2321,7 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
             if _VERBOSE:
                 sys.stdout.write("No new sequences found.\n")
             self.repeat = 0
-            self.calculate_bootstrap()
+        self.calculate_bootstrap()
         self.reset_markers()
         local_blast.del_blastfiles(self.workdir)  # delete local blast db
         self.data.dump()
@@ -2490,7 +2490,6 @@ class FilterBlast(PhyscraperScrape):
                     tax_name = downtorank_name
                     tax_id = downtorank_id
                 tax_name = tax_name.replace(" ", "_")
-
                 self.ids.spn_to_ncbiid[tax_name] = tax_id
                 self.ids.ncbiid_to_spn[tax_id] = tax_name
                 if tax_id in self.sp_d:
@@ -2545,7 +2544,6 @@ class FilterBlast(PhyscraperScrape):
 
     def select_seq_by_local_blast(self, seq_d, fn, threshold, count):
         """Selects number of sequences from local_blast to fill up sequences to the threshold. 
-
         Count is the return value from self.count_num_seq(tax_id)["seq_present"], that tells the program 
         how many sequences for the taxon are already available in the aln.
 
@@ -2728,7 +2726,7 @@ class FilterBlast(PhyscraperScrape):
         during earlier cycles.
 
         Function is only used in how_many_sp_to_keep().
-
+        
         :param tax_id: key from self.sp_seq_d
         :return: dict which contains information of how many seq are already present in aln, how many new seq have been
                 found and if the taxon is a new taxon or if seq are already present
@@ -2890,36 +2888,6 @@ class FilterBlast(PhyscraperScrape):
                         rowinfo.append("-")
                 writer.writerow(rowinfo)
 
-
-    # def print_sp_d_as_is(self):
-    #     if self.sp_d is not None:
-    #         with open('sp_d_info.csv', 'w') as output:
-    #             writer = csv.writer(output)
-    #             for group in self.sp_d.keys():
-    #                 rowinfo = [group]
-    #                 for otu in self.sp_d[group]:
-    #                     for item in otu.keys():
-    #                         tofile = str(otu[item]).replace("_", " ")
-    #                         rowinfo.append(tofile)
-    #                 writer.writerow(rowinfo)
-
-    # def print_sp_d_recalc(self, downtorank):
-    #     if self.sp_d is not None:
-    #         sp_d = self.sp_dict(downtorank)
-    #         with open('sp_d_info_recalc.csv', 'w') as output:
-    #             writer = csv.writer(output)
-    #             for group in sp_d.keys():
-    #                 rowinfo = list(str(group))
-    #                 debug(rowinfo)
-    #                 debug(sp_d[group])
-    #                 for otu in sp_d[group]:
-    #                     debug(otu)
-    #                     for item in otu.keys():
-    #                         tofile = str(otu[item]).replace("_", " ")
-    #                         debug(tofile)
-    #                         rowinfo.append(otu)
-    #                         rowinfo.append(tofile)
-    #                 writer.writerow(rowinfo)
 
 
 class Settings(object):
