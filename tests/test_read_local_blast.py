@@ -34,15 +34,15 @@ filteredScrape.remove_identical_seqs()
 filteredScrape.sp_dict(downtorank)
 filteredScrape.make_sp_seq_dict()
 
-print("prepare test")
+# print("prepare test")
 for taxonID in filteredScrape.sp_d:
     if len(filteredScrape.sp_seq_d[taxonID]) > treshold:
-        print(taxonID)
+        # print(taxonID)
         blast_seq = filteredScrape.sp_seq_d[taxonID].keys()[0]
         seq = filteredScrape.sp_seq_d[taxonID][blast_seq]
         local_blast.write_blast_files(filteredScrape.workdir, taxonID, seq)
         blast_db = [item for item in filteredScrape.sp_seq_d[taxonID].keys()[1:] if len(item.split(".")) >= 2]
-        print(blast_db)
+        # print(blast_db)
         for blast_key in blast_db:
             seq = filteredScrape.sp_seq_d[taxonID][blast_key]
             local_blast.write_blast_files(filteredScrape.workdir, blast_key, seq, db=True, fn=str(taxonID))
