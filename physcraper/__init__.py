@@ -2278,7 +2278,7 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
             if _VERBOSE:
                 sys.stdout.write("No new sequences found.\n")
             self.repeat = 0
-            self.calculate_bootstrap()
+        self.calculate_bootstrap()
         self.reset_markers()
         local_blast.del_blastfiles(self.workdir)  # delete local blast db
         self.data.dump()
@@ -2425,12 +2425,9 @@ class FilterBlast(PhyscraperScrape):
                         downtorank_name = self.ids.ncbi_parser.get_name_from_id(downtorank_id)
                     tax_name = downtorank_name
                     tax_id = downtorank_id
-
                 tax_name = tax_name.replace(" ", "_")
-
                 self.ids.spn_to_ncbiid[tax_name] = tax_id
                 self.ids.ncbiid_to_spn[tax_id] = tax_name
-                print(downtorank_id, downtorank_name)
                 if tax_id in self.sp_d:
                     self.sp_d[tax_id].append(self.data.otu_dict[key])
                 else:

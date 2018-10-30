@@ -1,8 +1,8 @@
 if [ -f output/owndata/ ]; then echo 'Found some!'; fi
 
-python tests/remove_identical_seqs.py
-python tests/fromfile.py
-python tests/configread.py
+python tests/test_remove_identical_seqs.py
+python tests/test_fromfile.py
+python tests/test_configread.py
 python tests/test_species_translation.py
 python tests/test_write_labelled.py
 python tests/test_add_all.py
