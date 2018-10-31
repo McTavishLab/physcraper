@@ -32,7 +32,7 @@ scraper.config.gifilename = False
 
 scraper._blasted = 1
 blast_dir = "tests/data/precooked/fixed/tte_blast_files"
-scraper.gi_list_mrca = pickle.load(open("tests/data/precooked/gi_list_mrca.p", 'rb'))
+#scraper.gi_list_mrca = pickle.load(open("tests/data/precooked/gi_list_mrca.p", 'rb'))
 scraper.read_blast_wrapper(blast_dir=blast_dir)
 
 a = len(scraper.new_seqs) == 40
@@ -61,7 +61,7 @@ scraper2.ids.otu_rank = {}
 
 scraper2.config.gifilename = False
 j = len(scraper2.data.aln) == 5
-scraper2.gi_list_mrca = pickle.load(open("tests/data/precooked/gi_list_mrca.p", 'rb'))
+# scraper2.gi_list_mrca = pickle.load(open("tests/data/precooked/gi_list_mrca.p", 'rb'))
 scraper2.read_blast_wrapper(blast_dir="tests/data/precooked/fixed/tte_blast_files")
 scraper2.config.seq_len_perc = 0.998  # Change seq len percentage from default of 75%
 

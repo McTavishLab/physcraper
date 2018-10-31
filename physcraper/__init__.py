@@ -33,11 +33,11 @@ import ncbi_data_parser  # is the ncbi data parser class and associated function
 import local_blast
 
 
-_DEBUG = 1
-_DEBUG_MK = 1
+_DEBUG = 0
+_DEBUG_MK = 0
 _deep_debug = 0
 
-_VERBOSE = 1
+_VERBOSE = 0
 
 
 def debug(msg):
