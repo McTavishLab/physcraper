@@ -6,7 +6,7 @@ import physcraper
 import physcraper.local_blast as local_blast
 
 
-sys.stdout.write("\ntests read_local_blast\n")
+sys.stdout.write("\ntests read_local_blast_query\n")
 
 # tests if I can read a local blast output file
 
@@ -69,4 +69,4 @@ if os.path.exists(blast_out):
         # print("output file exists and is not empty, method can read the blast files and make an output file")
         except:
             sys.stderr.write("\ntest failed\n")
-        # print(" output file of read_local_blast does not exist or is empty, method works not correctly")
+        # print(" output file of read_local_blast_query does not exist or is empty, method works not correctly")

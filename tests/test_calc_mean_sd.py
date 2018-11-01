@@ -27,7 +27,7 @@ filteredScrape = physcraper.FilterBlast(data_obj, ids)
 
 # test begins
 fn = 'Senecio_scopolii_subsp._scopolii'
-# partly copy of read_local_blast
+# partly copy of read_local_blast_query
 general_wd = os.getcwd()
 if not os.path.exists(os.path.join(filteredScrape.workdir, "blast")):
     os.makedirs(os.path.join(filteredScrape.workdir, "blast"))
