@@ -629,7 +629,7 @@ def concat(genelistdict, workdir_comb, email, percentage=0.37, user_concat_fn=No
     concat.combine()
     concat.sp_seq_counter()
     concat.get_largest_tre()
-    concat.make_sp_gene_dict(sp_to_keep)
+    concat.make_sp_gene_dict()
     concat.make_alns_dict()
     concat.concatenate_alns()
     concat.get_short_seq_from_concat(percentage)
