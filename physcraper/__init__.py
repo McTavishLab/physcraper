@@ -2518,7 +2518,7 @@ class FilterBlast(PhyscraperScrape):
                 else:
                     tax_id = self.ids.ncbi_parser.get_id_from_name(tax_name)
                 if self.downtorank is not None:
-                    debug("get rank ID")
+                    # debug("get rank ID")
                     downtorank_name = None
                     downtorank_id = None
                     # tax_name = str(tax_name).replace(" ", "_")
@@ -2614,6 +2614,8 @@ class FilterBlast(PhyscraperScrape):
         """
         # TODO MK: add threshold and downto to self
         debug("select_seq_by_local_blast")
+        self.threshold = threshold
+        # debug([seq_d, fn])
         seq_blast_score = local_blast.read_local_blast(self.workdir, seq_d, fn)
         random_seq_ofsp = {}
         if (threshold - count) <= 0:
@@ -2809,11 +2811,15 @@ class FilterBlast(PhyscraperScrape):
             if '^physcraper:status' in item and item['^physcraper:status'].split(' ')[0] not in self.seq_filter:
                 if item['^physcraper:last_blasted'] != '1800/01/01':
                     new_taxon = False
-                if item['^physcraper:status'] == "query":
+                if item['^physcraper:status'] == "query"  or item['^physcraper:status'].split(' ')[0] == "new":
                     query_count += 1
-                if item['^physcraper:status'] == "added," or item['^physcraper:status'] == "original":
+                if item['^physcraper:status'].split(' ')[0] == "added," or item['^physcraper:status'].split(' ')[0] == "original":
                     seq_present += 1
+        if new_taxon == False:
+            # debug("new taxon vs tax present")
+            assert seq_present != 0
         count_dict = {'seq_present': seq_present, 'query_count': query_count, 'new_taxon': new_taxon}
+        assert seq_present <= self.threshold
         return count_dict
 
     def how_many_sp_to_keep(self, threshold, selectby):
@@ -2827,6 +2833,7 @@ class FilterBlast(PhyscraperScrape):
                 sequences that shall be added.
         """
         debug("how_many_sp_to_keep")
+        self.threshold = threshold
         for tax_id in self.sp_d:
             count_dict = self.count_num_seq(tax_id)
             seq_present = count_dict["seq_present"]
