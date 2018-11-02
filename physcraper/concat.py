@@ -10,7 +10,7 @@ from copy import deepcopy
 from dendropy import Tree, DnaCharacterMatrix
 from Bio import Entrez
 
-from __init__ import debug
+#from __init__ import debug
 
 
 if sys.version_info < (3,):
