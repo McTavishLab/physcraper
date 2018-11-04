@@ -34,7 +34,6 @@ import local_blast
 
 
 _DEBUG = 0
-_deep_debug = 0
 _DEBUG_MK = 0
 _deep_debug = 0
 
@@ -794,6 +793,15 @@ class AlignTreeTax(object):
                              "start {}, stop {}\n".format(taxon_missingness, start, stop))
         return
 
+    def check_double_gi(self):
+        """for deeper debugging to make sure nothing is added twice"""
+        debug("check_double_gi")
+        ncbigi_list = []
+        for key, val in self.otu_dict.items():
+            if '^ncbi:gi' in val:
+                gi_otu_dict = val["^ncbi:gi"]
+                ncbigi_list.append(str(gi_otu_dict))
+        return ncbigi_list
 
     def add_otu(self, gb_id, ids_obj):
         """ Generates an otu_id for new sequences and adds them into self.otu_dict.
@@ -1462,6 +1470,7 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
         self.repeat = 1  # used to determine if we continue updating the tree
         self.newseqs_acc = []  # all ever added Genbank accession numbers during any PhyScraper run, used to speed up adding process
         self.blacklist = []  # remove sequences by default
+        # self.acc_list_mrca = []  # all gb_ids of a given mrca. Used to limit possible seq to add.
         # if self.config.blast_loc == 'local' and len(self.acc_list_mrca) == 0:
         #     self.acc_list_mrca = self.get_all_acc_mrca()
             # debug(self.acc_list_mrca)
@@ -1683,13 +1692,13 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
             acc_l.append(str(acc_id))
         return acc_l
 
-    def read_local_blast(self, fn_path):
+    def read_local_blast_query(self, fn_path):
         """ Implementation to read in results of local blast searches.
 
         :param fn_path: path to file containing the local blast searches
         :return: updated self.new_seqs and self.data.gb_dict dictionaries
         """
-        # debug("read_local_blast")
+        # debug("read_local_blast_query")
         query_dict = {}
         with open(fn_path, mode='r') as infile:
             for lin in infile:
@@ -1814,7 +1823,7 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
                     sys.stdout.write("attempting to read {}\n".format(fn_path))
                 if os.path.isfile(fn_path):
                     if self.config.blast_loc == 'local':  # new method to read in txt format
-                        self.read_local_blast(fn_path)
+                        self.read_local_blast_query(fn_path)
                     else:
                         self.read_webbased_blast_query(fn_path)
         self.date = str(datetime.date.today())
@@ -2098,7 +2107,7 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
             subprocess.call(["papara",
                              "-t", "random_resolve.tre",
                              "-s", "aln_ott.phy",
-                             # "-j", self.config.num_threads,  # TODO MK: gives error, try to implement for speed up
+                             "-j", "{}".format(self.config.num_threads),  # TODO MK: gives error, try to implement for speed up
                              "-q", self.newseqs_file,
                              "-n", papara_runname])  # FIXME directory ugliness
             if _VERBOSE:
@@ -2191,18 +2200,36 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
         for filename in glob.glob('{}/RAxML*'.format(self.workdir)):
             os.rename(filename, "{}/{}_tmp".format(self.workdir, filename.split("/")[-1]))
         # TODO MK: work on it, first step of not using starting tree was wrong, if that is working un-comment the following stuff
-        if self.backbone is not True:
-            subprocess.call(["raxmlHPC", "-m", "GTRCAT",
-                             "-s", "papara_alignment.extended",
-                             "-t", "place_resolve.tre",
-                             "-p", "1",
-                             "-n", "{}".format(self.date)])
-        else:
-            subprocess.call(["raxmlHPC", "-m", "GTRCAT",
-                             "-s", "papara_alignment.extended",
-                             "-r", "backbone.tre",
-                             "-p", "1",
-                             "-n", "{}".format(self.date)])
+        try:
+            num_threads = int(self.config.num_threads)
+
+            if self.backbone is not True:
+                subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(num_threads), "-m", "GTRCAT",
+                                 "-s", "papara_alignment.extended",
+                                 "-t", "place_resolve.tre",
+                                 "-p", "1",
+                                 "-n", "{}".format(self.date)])
+            else:
+                subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(num_threads), "-m", "GTRCAT",
+                                 "-s", "papara_alignment.extended",
+                                 "-r", "backbone.tre",
+                                 "-p", "1",
+                                 "-n", "{}".format(self.date)])
+        except:
+            sys.stderr.write("You do not have the raxmlHPC-PTHREADS installed, will fall down to slow version!")
+
+            if self.backbone is not True:
+                subprocess.call(["raxmlHPC", "-m", "GTRCAT",
+                                 "-s", "papara_alignment.extended",
+                                 "-t", "place_resolve.tre",
+                                 "-p", "1",
+                                 "-n", "{}".format(self.date)])
+            else:
+                subprocess.call(["raxmlHPC", "-m", "GTRCAT",
+                                 "-s", "papara_alignment.extended",
+                                 "-r", "backbone.tre",
+                                 "-p", "1",
+                                 "-n", "{}".format(self.date)])
         os.chdir(cwd)
         self._full_tree_est = 1  # TODO: Currently not used, do we want to use it somewhere?
 
@@ -2216,33 +2243,66 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
         -#: bootstrap stopping criteria
         """
         os.chdir(self.workdir)
-        # run bootstrap
-        subprocess.call(["raxmlHPC", "-m", "GTRCAT",
-                         "-s", "papara_alignment.extended",
-                         "-p", "1", "-b", "1", "-#", "autoMRE",
-                         "-n", "{}".format(self.date)])
-        # make bipartition tree
-        # is the -f b command
-        # -z specifies file with multiple trees
-        subprocess.call(["raxmlHPC", "-m", "GTRCAT",
-                         "-s", "previous_run/papara_alignment.extended",
-                         "-p", "1", "-f", "a", "-x", "1", "-#", "autoMRE",
-                         "-n", "all{}".format(self.date)])
-        # strict consensus:
-        subprocess.call(["raxmlHPC", "-m", "GTRCAT",
-                         "-J", "STRICT",
-                         "-z", "RAxML_bootstrap.all{}".format(self.date),
-                         "-n", "StrictCon{}".format(self.date)])
-        # majority rule:
-        subprocess.call(["raxmlHPC", "-m", "GTRCAT",
-                         "-J", "MR",
-                         "-z", "RAxML_bootstrap.all{}".format(self.date),
-                         "-n", "MR_{}".format(self.date)])
-        # extended majority rule:
-        subprocess.call(["raxmlHPC", "-m", "GTRCAT",
-                         "-J", "MRE",
-                         "-z", "RAxML_bootstrap.all{}".format(self.date),
-                         "-n", "EMR{}".format(self.date)])
+       
+        try:
+            num_threads = int(self.config.num_threads)
+            print(num_threads)
+            # run bootstrap
+            subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(num_threads), "-m", "GTRCAT",
+                             "-s", "papara_alignment.extended",
+                             "-p", "1", "-b", "1", "-#", "autoMRE",
+                             "-n", "{}".format(self.date)])
+            # make bipartition tree
+            # is the -f b command
+            # -z specifies file with multiple trees
+            subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(num_threads), "-m", "GTRCAT",
+                             "-s", "previous_run/papara_alignment.extended",
+                             "-p", "1", "-f", "a", "-x", "1", "-#", "autoMRE",
+                             "-n", "all{}".format(self.date)])
+            # strict consensus:
+            subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(num_threads), "-m", "GTRCAT",
+                             "-J", "STRICT",
+                             "-z", "RAxML_bootstrap.all{}".format(self.date),
+                             "-n", "StrictCon{}".format(self.date)])
+            # majority rule:
+            subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(num_threads), "-m", "GTRCAT",
+                             "-J", "MR",
+                             "-z", "RAxML_bootstrap.all{}".format(self.date),
+                             "-n", "MR_{}".format(self.date)])
+            # extended majority rule:
+            subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(num_threads), "-m", "GTRCAT",
+                             "-J", "MRE",
+                             "-z", "RAxML_bootstrap.all{}".format(self.date),
+                             "-n", "EMR{}".format(self.date)])
+        except:
+            sys.stderr.write("You do not have the raxmlHPC-PTHREADS installed, will fall down to slow version!")
+            # run bootstrap
+            subprocess.call(["raxmlHPC", "-m", "GTRCAT",
+                             "-s", "papara_alignment.extended",
+                             "-p", "1", "-b", "1", "-#", "autoMRE",
+                             "-n", "{}".format(self.date)])
+            # make bipartition tree
+            # is the -f b command
+            # -z specifies file with multiple trees
+            subprocess.call(["raxmlHPC", "-m", "GTRCAT",
+                             "-s", "previous_run/papara_alignment.extended",
+                             "-p", "1", "-f", "a", "-x", "1", "-#", "autoMRE",
+                             "-n", "all{}".format(self.date)])
+            # strict consensus:
+            subprocess.call(["raxmlHPC", "-m", "GTRCAT",
+                             "-J", "STRICT",
+                             "-z", "RAxML_bootstrap.all{}".format(self.date),
+                             "-n", "StrictCon{}".format(self.date)])
+            # majority rule:
+            subprocess.call(["raxmlHPC", "-m", "GTRCAT",
+                             "-J", "MR",
+                             "-z", "RAxML_bootstrap.all{}".format(self.date),
+                             "-n", "MR_{}".format(self.date)])
+            # extended majority rule:
+            subprocess.call(["raxmlHPC", "-m", "GTRCAT",
+                             "-J", "MRE",
+                             "-z", "RAxML_bootstrap.all{}".format(self.date),
+                             "-n", "EMR{}".format(self.date)])
 
     def remove_blacklistitem(self):
         """This removes items from aln, and tree, if the corresponding GEnbank identifer were added to the blacklist.
@@ -2309,11 +2369,13 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
                 if _VERBOSE:
                     sys.stdout.write("No new sequences after filtering.\n")
                 self.repeat = 0
+                self.calculate_bootstrap()
+
         else:
             if _VERBOSE:
                 sys.stdout.write("No new sequences found.\n")
             self.repeat = 0
-        self.calculate_bootstrap()
+            self.calculate_bootstrap()
         self.reset_markers()
         local_blast.del_blastfiles(self.workdir)  # delete local blast db
         self.data.dump()
@@ -2457,7 +2519,7 @@ class FilterBlast(PhyscraperScrape):
                 else:
                     tax_id = self.ids.ncbi_parser.get_id_from_name(tax_name)
                 if self.downtorank is not None:
-                    debug("get rank ID")
+                    # debug("get rank ID")
                     downtorank_name = None
                     downtorank_id = None
                     # tax_name = str(tax_name).replace(" ", "_")
@@ -2540,31 +2602,36 @@ class FilterBlast(PhyscraperScrape):
         how many sequences for the taxon are already available in the aln.
 
         It will only include species which have a blast score of mean plus/minus sd.
-        Uses the information returned by read_local_blast() to select which sequences shall be added in a filtered run.
+        Uses the information returned by read_local_blast_query() to select which sequences shall be added in a filtered run.
 
         Note: has test,test_select_seq_by_local_blast.py
 
         :param seq_d: is the value of self.sp_d (= another dict)
         :param fn: refers to a filename to find the local blast file produced before,
-                    which needs to be read in by read_local_blast()
+                    which needs to be read in by read_local_blast_query()
         :param threshold: threshold
         :param count: self.count_num_seq(tax_id)["seq_present"]
         :return: self.filtered_seq
         """
         # TODO MK: add threshold and downto to self
         debug("select_seq_by_local_blast")
+        self.threshold = threshold
+        # debug([seq_d, fn])
         seq_blast_score = local_blast.read_local_blast(self.workdir, seq_d, fn)
         random_seq_ofsp = {}
         if (threshold - count) <= 0:
             debug("already too many samples of sp in aln, skip adding more.")
-        elif len(seq_blast_score.keys()) == (threshold - count):
+        elif len(seq_blast_score.keys()) == (threshold - count):  # exact amount of seq present which need to be added
             random_seq_ofsp = seq_blast_score
-        elif len(seq_blast_score.keys()) > (threshold - count):
+        elif len(seq_blast_score.keys()) > (threshold - count):  # more seq available than need to be added, choose by random
+            debug("choose random")
+
             random_seq_ofsp = random.sample(seq_blast_score.items(), (threshold - count))
             random_seq_ofsp = dict(random_seq_ofsp)
-        elif len(seq_blast_score.keys()) < (threshold - count):
+        elif len(seq_blast_score.keys()) < (threshold - count):  # less seq available than need to be added, just use all
+            debug("add all")
             random_seq_ofsp = seq_blast_score
-        if len(random_seq_ofsp) > 0:
+        if len(random_seq_ofsp) > 0:  # add everything to filtered seq
             for key, val in random_seq_ofsp.items():
                 self.filtered_seq[key] = val
         return self.filtered_seq
@@ -2661,7 +2728,7 @@ class FilterBlast(PhyscraperScrape):
             assert tax_name is not None  # assert instead of if
             if nametoreturn is None and tax_name is not None:
                 nametoreturn = tax_name.replace(" ", "_")
-        return key
+        return nametoreturn
 
     def loop_for_write_blast_files(self, key):
         """This loop is needed to be able to write the local blast files for the filtering step correctly.
@@ -2673,8 +2740,12 @@ class FilterBlast(PhyscraperScrape):
         :param key: key of self.sp_d (taxon name)
         :return: name of the blast file
         """
-        debug("length of sp_d key")
-        nametoreturn = self.get_name_for_blastfiles(key)
+        debug("loop_for_write_blast_files")
+        # debug("length of sp_d key")
+        # nametoreturn = self.get_name_for_blastfiles(key)
+        nametoreturn = key
+        debug(key)
+        # debug([key, nametoreturn])
         for otu_id in self.sp_d[key]:
             # this if should not be necessary, I leave it in for now
             if '^physcraper:status' in otu_id and otu_id['^physcraper:status'].split(' ')[0] not in self.seq_filter:
@@ -2683,10 +2754,13 @@ class FilterBlast(PhyscraperScrape):
                     for tax_name_aln, seq in self.data.aln.items():
                         otu_dict_name = self.ids.find_name(sp_dict=self.data.otu_dict[tax_name_aln.label])
                         if tax_name == otu_dict_name:
+                            debug(otu_dict_name)
+                            # print(some)
                             filename = nametoreturn
-                            if self.downtorank is not None:
-                                filename = key
-                            local_blast.write_blast_files(self.workdir, filename, seq)
+                            # if self.downtorank is not None:
+                            #     filename = key
+                            debug([tax_name_aln, tax_name_aln.label])
+                            local_blast.write_blast_files(self.workdir, tax_name_aln.label, seq, fn=nametoreturn)
                 else:
                     # debug("make gilist as local blast database")
                     if '^ncbi:accession' in otu_id:
@@ -2701,10 +2775,10 @@ class FilterBlast(PhyscraperScrape):
                                 if otu_id['^physcraper:status'].split(' ')[0] not in self.seq_filter:
                                     filename = gb_id
                                     seq = self.sp_seq_d[key][gb_id]
-                                    if self.downtorank is not None:
-                                        filename = key
-                                        nametoreturn = key
-                                    local_blast.write_blast_files(self.workdir, filename, seq, db=True, fn=nametoreturn)
+                                    # if self.downtorank is not None:
+                                    #     filename = key
+                                    #     nametoreturn = key
+                                    local_blast.write_blast_files(self.workdir, gb_id, seq, db=True, fn=nametoreturn)
                     name_gbid = key
         if self.downtorank is not None:
             nametoreturn = key
@@ -2725,10 +2799,12 @@ class FilterBlast(PhyscraperScrape):
         """
         debug("count_num_seq")
         seq_present = 0
-        if tax_id in self.sp_seq_d.keys():
-            for sp_keys in self.sp_seq_d[tax_id].keys():
-                if len(sp_keys.split('.')) == 1:
-                    seq_present += 1
+        in_data = 0
+        # if tax_id in self.sp_seq_d.keys():
+        #     for sp_keys in self.sp_seq_d[tax_id].keys():   # unique ID's: otu_label/GB id
+        #         print(sp_keys)
+        #         if len(sp_keys.split('.')) == 1:
+        #             seq_present += 1
         # this determines if a taxonomic name / otu is already present in the aln and how many new seqs were found
         new_taxon = True
         query_count = 0
@@ -2736,9 +2812,15 @@ class FilterBlast(PhyscraperScrape):
             if '^physcraper:status' in item and item['^physcraper:status'].split(' ')[0] not in self.seq_filter:
                 if item['^physcraper:last_blasted'] != '1800/01/01':
                     new_taxon = False
-                if item['^physcraper:status'] == "query":
+                if item['^physcraper:status'] == "query"  or item['^physcraper:status'].split(' ')[0] == "new":
                     query_count += 1
+                if item['^physcraper:status'].split(' ')[0] == "added," or item['^physcraper:status'].split(' ')[0] == "original":
+                    seq_present += 1
+        if new_taxon == False:
+            # debug("new taxon vs tax present")
+            assert seq_present != 0
         count_dict = {'seq_present': seq_present, 'query_count': query_count, 'new_taxon': new_taxon}
+        assert seq_present <= self.threshold
         return count_dict
 
     def how_many_sp_to_keep(self, threshold, selectby):
@@ -2752,51 +2834,109 @@ class FilterBlast(PhyscraperScrape):
                 sequences that shall be added.
         """
         debug("how_many_sp_to_keep")
+        self.threshold = threshold
         for tax_id in self.sp_d:
             count_dict = self.count_num_seq(tax_id)
             seq_present = count_dict["seq_present"]
             query_count = count_dict["query_count"]
-            if len(self.sp_d[tax_id]) <= threshold:  # add all stuff to self.filtered_seq[gi_n]
-                self.add_all(tax_id)
-            elif len(self.sp_d[tax_id]) > threshold:  # filter number of sequences
-                if tax_id in self.sp_seq_d.keys():
-                    if selectby == "length":
-                        self.select_seq_by_length(tax_id, threshold, seq_present)
-                    elif selectby == "blast":
-                        if 1 <= seq_present < threshold and count_dict["new_taxon"] is False and query_count != 0:
+            new_taxon = count_dict["new_taxon"]
+            if seq_present <= threshold: # add seq to aln
+                if seq_present + query_count <= threshold:  # add all stuff to self.filtered_seq[gi_n]
+                    self.add_all(tax_id)
+                else:  # filter number of sequences
+                    if tax_id in self.sp_seq_d.keys():
+                        if selectby == "length":
+                            self.select_seq_by_length(tax_id, threshold, seq_present)
+                        elif selectby == "blast":
+                            if seq_present == 0 and new_taxon is True and query_count >= 1:  # if new taxon
+                                debug("new taxon")
+                                blast_seq_id = self.sp_seq_d[tax_id].keys()[0]
+                                # debug(blast_seq_id)
+                                # if self.downtorank is not None:
+                                #     str_db = tax_id
+                                # else:
+                                #     if type(blast_seq_id) == len(blast_seq_id.split(".")) >= 2:
+                                #         str_db = str(tax_id)
+                                #     else:
+                                #         str_db = str(blast_seq_id)
+                                # debug([tax_id, blast_seq_id])
+                                seq = self.sp_seq_d[tax_id][blast_seq_id]
+                                local_blast.write_blast_files(self.workdir, blast_seq_id, seq, fn=tax_id)  # blast qguy
+                                # debug(seome)
+                                blast_db = self.sp_seq_d[tax_id].keys()[1:]
+                                for blast_key in blast_db:
+                                    seq = self.sp_seq_d[tax_id][blast_key]
+                                    local_blast.write_blast_files(self.workdir, blast_key, seq, db=True, fn=tax_id)
+                                # make local blast of sequences
+                                local_blast.run_local_blast(self.workdir, tax_id, tax_id)
+                                if len(self.sp_seq_d[tax_id]) + seq_present >= threshold:
+                                    self.select_seq_by_local_blast(self.sp_seq_d[tax_id], tax_id, threshold, seq_present)
+                                elif len(self.sp_seq_d[tax_id]) + seq_present < threshold:
+                                    self.add_all(tax_id)
+                            elif 1 <= seq_present < threshold and new_taxon is False and query_count != 0:
                             # species is not new in alignment, make blast with existing seq
-                            if query_count + seq_present > threshold:
-                                taxonfn = self.loop_for_write_blast_files(tax_id)
-                                if self.downtorank is not None:
-                                    taxonfn = tax_id
-                                local_blast.run_local_blast(self.workdir, taxonfn, taxonfn)
-                                self.select_seq_by_local_blast(self.sp_seq_d[tax_id], taxonfn, threshold, seq_present)
-                            elif query_count + seq_present <= threshold:
-                                self.add_all(tax_id)
-                        # species is completely new in alignment
-                        elif seq_present == 0 and count_dict["new_taxon"] is True and query_count >= 1:
-                            blast_seq = self.sp_seq_d[tax_id].keys()[0]
-                            if self.downtorank is not None:
-                                str_db = tax_id
-                            else:
-                                if type(blast_seq) == int:
-                                    str_db = str(tax_id)
-                                else:
-                                    str_db = str(blast_seq)
-                            seq = self.sp_seq_d[tax_id][blast_seq]
-                            local_blast.write_blast_files(self.workdir, str_db, seq)  # blast qguy
-                            blast_db = self.sp_seq_d[tax_id].keys()[1:]
-                            for blast_key in blast_db:
-                                seq = self.sp_seq_d[tax_id][blast_key]
-                                local_blast.write_blast_files(self.workdir, blast_key, seq, db=True, fn=str_db)
-                            # make local blast of sequences
-                            local_blast.run_local_blast(self.workdir, str_db, str_db)
-                            if len(self.sp_seq_d[tax_id]) + seq_present >= threshold:
-                                self.select_seq_by_local_blast(self.sp_seq_d[tax_id], str_db, threshold, seq_present)
-                            elif len(self.sp_seq_d[tax_id]) + seq_present < threshold:
-                                self.add_all(tax_id)
-                else:
-                    debug("taxon not in sp_seq_dict")
+                                debug("old_taxon")
+                                debug([seq_present, query_count])
+                                if query_count + seq_present > threshold:
+                                    taxonfn = self.loop_for_write_blast_files(tax_id)
+                                    debug([tax_id,taxonfn])
+                                    if self.downtorank is not None:
+                                        taxonfn = tax_id
+                                    local_blast.run_local_blast(self.workdir, taxonfn, taxonfn)
+                                    self.select_seq_by_local_blast(self.sp_seq_d[tax_id], taxonfn, threshold, seq_present)
+                                    debug([tax_id])
+                                    debug(self.filtered_seq)
+                                    # debug(some)
+                                elif query_count + seq_present <= threshold:
+                                    self.add_all(tax_id)
+
+
+
+
+            # # if len(self.sp_d[tax_id]) <= threshold:  # add all stuff to self.filtered_seq[gi_n]
+            # #     self.add_all(tax_id)
+            # elif len(self.sp_d[tax_id]) > threshold:  # filter number of sequences
+            #     if tax_id in self.sp_seq_d.keys():
+            #         if selectby == "length":
+            #             self.select_seq_by_length(tax_id, threshold, seq_present)
+            #         elif selectby == "blast":
+            #             if 1 <= seq_present < threshold and new_taxon is False and query_count != 0:
+            #                 # species is not new in alignment, make blast with existing seq
+            #                 if query_count + seq_present > threshold:
+            #                     taxonfn = self.loop_for_write_blast_files(tax_id)
+            #                     if self.downtorank is not None:
+            #                         taxonfn = tax_id
+            #                     local_blast.run_local_blast(self.workdir, taxonfn, taxonfn)
+            #                     self.select_seq_by_local_blast(self.sp_seq_d[tax_id], taxonfn, threshold, seq_present)
+            #                 elif query_count + seq_present <= threshold:
+            #                     self.add_all(tax_id)
+            #             # species is completely new in alignment
+            #             elif seq_present == 0 and new_taxon is True and query_count >= 1:
+            #                 blast_seq = self.sp_seq_d[tax_id].keys()[0]
+            #                 print(blast_seq)
+            #                 if self.downtorank is not None:
+            #                     str_db = tax_id
+            #                 else:
+            #                     if type(blast_seq) == int:
+            #                         str_db = str(tax_id)
+            #                     else:
+            #                         str_db = str(blast_seq)
+            #                 seq = self.sp_seq_d[tax_id][blast_seq]
+            #                 local_blast.write_blast_files(self.workdir, str_db, seq)  # blast qguy
+            #                 blast_db = self.sp_seq_d[tax_id].keys()[1:]
+            #                 for blast_key in blast_db:
+            #                     seq = self.sp_seq_d[tax_id][blast_key]
+            #                     local_blast.write_blast_files(self.workdir, blast_key, seq, db=True, fn=str_db)
+            #                 # make local blast of sequences
+            #                 local_blast.run_local_blast(self.workdir, str_db, str_db)
+            #                 if len(self.sp_seq_d[tax_id]) + seq_present >= threshold:
+            #                     self.select_seq_by_local_blast(self.sp_seq_d[tax_id], str_db, threshold, seq_present)
+            #                 elif len(self.sp_seq_d[tax_id]) + seq_present < threshold:
+            #                     self.add_all(tax_id)
+                # else:
+                #     debug("taxon not in sp_seq_dict")
+        # debug(self.filtered_seq)
+        # debug(some)
         return
 
     def replace_new_seq(self):
@@ -2880,6 +3020,7 @@ class FilterBlast(PhyscraperScrape):
                         rowinfo.append("-")
                 writer.writerow(rowinfo)
 
+                
 class Settings(object):
     """A class to store all settings for PhyScraper.
     """

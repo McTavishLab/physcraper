@@ -24,10 +24,9 @@ def del_blastfiles(workdir):
     """Deletes all files in the local blast folder.
     """
     try:    
-	shutil.rmtree(os.path.join(workdir, "blast"))
+	      shutil.rmtree(os.path.join(workdir, "blast"))
     except: 
-	sys.stderr.write("Blast folder was not removed. Maybe it was not present?")
-
+        sys.stderr.write("Blast folder was not removed. Maybe it was not present?")
 
 def run_local_blast(workdir, blast_seq, blast_db, output=None):
     """Runs  a local blast to get measurement of differentiation between available sequences for the same taxon concept.
@@ -138,7 +137,7 @@ def write_blast_files(workdir, file_name, seq, db=False, fn=None):
         fnw = "{}/blast/{}_db".format(workdir, fn)
         fi_o = open(fnw, 'a')
     else:
-        fnw = "{}/blast/{}_tobeblasted".format(workdir, file_name)
+        fnw = "{}/blast/{}_tobeblasted".format(workdir, fn)
         fi_o = open(fnw, 'w')
     fi_o.write(">{}\n".format(file_name))
     fi_o.write("{}\n".format(str(seq).replace("-", "")))

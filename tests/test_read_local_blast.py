@@ -6,7 +6,7 @@ import physcraper
 import physcraper.local_blast as local_blast
 
 
-sys.stdout.write("\ntests read_local_blast\n")
+sys.stdout.write("\ntests read_local_blast_query\n")
 
 # tests if I can read a local blast output file
 
@@ -29,6 +29,7 @@ except:
 filteredScrape = physcraper.FilterBlast(data_obj, ids)
 filteredScrape._blasted = 1
 blast_dir = "tests/data/precooked/fixed/tte_blast_files"
+# filteredScrape.acc_list_mrca = pickle.load(open("tests/data/precooked/acc_list_mrca.p", 'rb'))
 filteredScrape.read_blast_wrapper(blast_dir=blast_dir)
 filteredScrape.remove_identical_seqs()
 filteredScrape.sp_dict(downtorank)
@@ -41,6 +42,7 @@ for taxonID in filteredScrape.sp_d:
         blast_seq = filteredScrape.sp_seq_d[taxonID].keys()[0]
         seq = filteredScrape.sp_seq_d[taxonID][blast_seq]
         local_blast.write_blast_files(filteredScrape.workdir, taxonID, seq)
+        # print(filteredScrape.sp_seq_d[taxonID].keys()[1:] )
         blast_db = [item for item in filteredScrape.sp_seq_d[taxonID].keys()[1:] if len(item.split(".")) >= 2]
         # print(blast_db)
         for blast_key in blast_db:
@@ -67,4 +69,4 @@ if os.path.exists(blast_out):
         # print("output file exists and is not empty, method can read the blast files and make an output file")
         except:
             sys.stderr.write("\ntest failed\n")
-        # print(" output file of read_local_blast does not exist or is empty, method works not correctly")
+        # print(" output file of read_local_blast_query does not exist or is empty, method works not correctly")
