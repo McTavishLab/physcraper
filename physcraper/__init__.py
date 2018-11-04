@@ -2325,6 +2325,7 @@ class PhyscraperScrape(object):  # TODO do I want to be able to instantiate this
         if self.blacklist:
             self.remove_blacklistitem()
         debug(len(self.new_seqs))
+        debug(len(self.new_seqs_otu_id))
         if len(self.new_seqs) > 0:
             self.data.write_files()  # should happen before aligning in case of pruning
             if len(self.new_seqs_otu_id) > 0:  # TODO rename to something more intuitive
@@ -3019,8 +3020,7 @@ class FilterBlast(PhyscraperScrape):
                         rowinfo.append("-")
                 writer.writerow(rowinfo)
 
-
-
+                
 class Settings(object):
     """A class to store all settings for PhyScraper.
     """
