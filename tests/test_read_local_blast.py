@@ -41,7 +41,7 @@ for taxonID in filteredScrape.sp_d:
         # print(taxonID)
         blast_seq = filteredScrape.sp_seq_d[taxonID].keys()[0]
         seq = filteredScrape.sp_seq_d[taxonID][blast_seq]
-        local_blast.write_blast_files(filteredScrape.workdir, taxonID, seq)
+        local_blast.write_blast_files(filteredScrape.workdir, taxonID, seq, fn=str(taxonID))
         # print(filteredScrape.sp_seq_d[taxonID].keys()[1:] )
         blast_db = [item for item in filteredScrape.sp_seq_d[taxonID].keys()[1:] if len(item.split(".")) >= 2]
         # print(blast_db)

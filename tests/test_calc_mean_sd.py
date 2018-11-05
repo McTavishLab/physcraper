@@ -31,8 +31,11 @@ fn = 'Senecio_scopolii_subsp._scopolii'
 general_wd = os.getcwd()
 if not os.path.exists(os.path.join(filteredScrape.workdir, "blast")):
     os.makedirs(os.path.join(filteredScrape.workdir, "blast"))
+
+fn_path = './tests/data/precooked/fixed/local-blast/{}'.format(fn)
+fn_path = os.path.abspath(fn_path)
+print(fn_path)
 os.chdir(os.path.join(filteredScrape.workdir, "blast"))
-fn_path = '/home/blubb/Documents/gitdata/physcraper/tests/data/precooked/fixed/local-blast/{}'.format(fn)
 local_blast.run_local_blast(filteredScrape.workdir, fn_path, fn_path,
                                output=os.path.join(filteredScrape.workdir, "blast/output_{}.xml".format(fn)))
 
