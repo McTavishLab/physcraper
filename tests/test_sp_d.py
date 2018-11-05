@@ -21,7 +21,7 @@ try:
 except:
     # sys.stderr.write("run 'python tests/testfilesetup.py' to setup data files for tests. EXITING")
     sys.stdout.write("\n\nTest FAILED\n\n")
-    sys.exit()
+    sys.exit(-1)
 filteredScrape =  FilterBlast(data_obj, ids)
 
 

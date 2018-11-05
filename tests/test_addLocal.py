@@ -37,7 +37,7 @@ try:
     ids.acc_ncbi_dict = pickle.load(open("tests/data/precooked/tiny_acc_map.p", "rb"))
 except:
     sys.stdout.write("\n\nTest setup failed\n\n")
-    sys.exit()
+    sys.exit(-1)
 
 if not os.path.exists("{}".format(workdir)):
     os.makedirs("{}".format(workdir))

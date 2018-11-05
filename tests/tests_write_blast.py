@@ -27,7 +27,7 @@ try:
 
 except:
     sys.stdout.write("\n\nTest FAILED\n\n")
-    sys.exit()
+    sys.exit(-1)
 filteredScrape = FilterBlast(data_obj, ids)
 filteredScrape._blasted = 1
 blast_dir = "tests/data/precooked/fixed/tte_blast_files"
