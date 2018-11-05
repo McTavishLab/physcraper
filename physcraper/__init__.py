@@ -2197,7 +2197,7 @@ class PhyscraperScrape(object):
             subprocess.call(["papara",
                              "-t", "random_resolve.tre",
                              "-s", "aln_ott.phy",
-                           #  "-j", "{}".format(self.config.num_threads),
+                           #  "-j", "{}".format(self.config.num_threads),  # FIXME: Does not work on some machines
                              "-q", self.newseqs_file,
                              "-n", papara_runname])  # FIXME directory ugliness
             if _VERBOSE:
