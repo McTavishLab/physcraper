@@ -12,7 +12,7 @@ sys.stdout.write("\ntests select_seq_by_local_blast\n")
 # tests if the building of select_seq_from local blast is selecting the right amount of species
 workdir = "tests/output/test_select_seq_local_blast"
 configfi = "tests/data/test.config"
-treshold = 2
+threshold = 2
 selectby = "blast"
 downtorank = None
 
@@ -30,6 +30,8 @@ except:
     sys.exit()
 
 filteredScrape =  physcraper.FilterBlast(data_obj, ids)
+filteredScrape.add_setting_to_self(downtorank, threshold)
+
 filteredScrape._blasted = 1
 blast_dir = "tests/data/precooked/fixed/tte_blast_files"
 # filteredScrape.acc_list_mrca = pickle.load(open("tests/data/precooked/acc_list_mrca.p", 'rb'))
@@ -44,17 +46,17 @@ count = 0
 for tax_id in filteredScrape.sp_d:
     count_dict = filteredScrape.count_num_seq(tax_id)
     if count_dict["new_taxon"]:
-        if count_dict["query_count"] < treshold:
+        if count_dict["query_count"] < threshold:
             count += count_dict["query_count"]
-        if count_dict["query_count"] > treshold:
-            count += treshold
+        if count_dict["query_count"] > threshold:
+            count += threshold
     if count_dict["new_taxon"] is False:
         if count_dict["query_count"] >= 1:
-            if count_dict["seq_present"] < treshold:
-                count += treshold-count_dict["seq_present"]
-            if count_dict["seq_present"] > treshold:
+            if count_dict["seq_present"] < threshold:
+                count += threshold-count_dict["seq_present"]
+            if count_dict["seq_present"] > threshold:
                 count += 0
-filteredScrape.how_many_sp_to_keep(treshold, selectby)
+filteredScrape.how_many_sp_to_keep(threshold, selectby)
 
 try:
     assert count == len(filteredScrape.filtered_seq) and count>0
