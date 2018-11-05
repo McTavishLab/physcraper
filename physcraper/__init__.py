@@ -2478,6 +2478,18 @@ class FilterBlast(PhyscraperScrape):
         self.filtered_seq = {}
         self.downtorank = None
 
+    def add_setting_to_self(self, downtorank, threshold, blacklist = None):
+        """
+
+        :param downtorank:
+        :param threshold:
+        :return:
+        """
+        self.threshold = threshold
+        self.downtorank = downtorank
+        self.blacklist = blacklist
+
+
     def sp_dict(self, downtorank=None):
         """Takes the information from the Physcraper otu_dict and makes a dict with species name as key and
         the corresponding seq information from aln and blast seq, it returns self.sp_d.

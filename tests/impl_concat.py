@@ -18,8 +18,7 @@ pickle_fn = "scrape_checkpoint.p"
 
 workdir_comb = "./tests/output/impl_concat"
 genelist = {"its": {"workdir": workdir_its, "pickle": pickle_fn}, 
-            "ets": {"workdir": workdir_ets, "pickle": pickle_fn}, 
-            # "3": {"workdir": workdir_3, "pickle": pickle_fn}
+            "ets": {"workdir": workdir_ets, "pickle": pickle_fn}
             }
 
 conc = wrappers.concat(genelistdict=genelist, workdir_comb=workdir_comb,
