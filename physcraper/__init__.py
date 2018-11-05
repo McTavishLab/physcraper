@@ -34,11 +34,10 @@ from . import concat  # is the local concat class
 from . import ncbi_data_parser  # is the ncbi data parser class and associated functions
 from . import local_blast
 
-if sys.version_info < (3,):
+if sys.version_info < (3, ):
     from urllib2 import HTTPError
 else:
     from urllib.error import HTTPError
-
 
 _DEBUG = 0
 _DEBUG_MK = 0
@@ -2911,6 +2910,50 @@ class FilterBlast(PhyscraperScrape):
                                     # debug(some)
                                 elif query_count + seq_present <= threshold:
                                     self.add_all(tax_id)
+            # # if len(self.sp_d[tax_id]) <= threshold:  # add all stuff to self.filtered_seq[gi_n]
+            # #     self.add_all(tax_id)
+            # elif len(self.sp_d[tax_id]) > threshold:  # filter number of sequences
+            #     if tax_id in self.sp_seq_d.keys():
+            #         if selectby == "length":
+            #             self.select_seq_by_length(tax_id, threshold, seq_present)
+            #         elif selectby == "blast":
+            #             if 1 <= seq_present < threshold and new_taxon is False and query_count != 0:
+            #                 # species is not new in alignment, make blast with existing seq
+            #                 if query_count + seq_present > threshold:
+            #                     taxonfn = self.loop_for_write_blast_files(tax_id)
+            #                     if self.downtorank is not None:
+            #                         taxonfn = tax_id
+            #                     local_blast.run_local_blast(self.workdir, taxonfn, taxonfn)
+            #                     self.select_seq_by_local_blast(self.sp_seq_d[tax_id], taxonfn, threshold, seq_present)
+            #                 elif query_count + seq_present <= threshold:
+            #                     self.add_all(tax_id)
+            #             # species is completely new in alignment
+            #             elif seq_present == 0 and new_taxon is True and query_count >= 1:
+            #                 blast_seq = self.sp_seq_d[tax_id].keys()[0]
+            #                 print(blast_seq)
+            #                 if self.downtorank is not None:
+            #                     str_db = tax_id
+            #                 else:
+            #                     if type(blast_seq) == int:
+            #                         str_db = str(tax_id)
+            #                     else:
+            #                         str_db = str(blast_seq)
+            #                 seq = self.sp_seq_d[tax_id][blast_seq]
+            #                 local_blast.write_blast_files(self.workdir, str_db, seq)  # blast qguy
+            #                 blast_db = self.sp_seq_d[tax_id].keys()[1:]
+            #                 for blast_key in blast_db:
+            #                     seq = self.sp_seq_d[tax_id][blast_key]
+            #                     local_blast.write_blast_files(self.workdir, blast_key, seq, db=True, fn=str_db)
+            #                 # make local blast of sequences
+            #                 local_blast.run_local_blast(self.workdir, str_db, str_db)
+            #                 if len(self.sp_seq_d[tax_id]) + seq_present >= threshold:
+            #                     self.select_seq_by_local_blast(self.sp_seq_d[tax_id], str_db, threshold, seq_present)
+            #                 elif len(self.sp_seq_d[tax_id]) + seq_present < threshold:
+            #                     self.add_all(tax_id)
+                # else:
+                #     debug("taxon not in sp_seq_dict")
+        # debug(self.filtered_seq)
+        # debug(some)
         return
 
     def replace_new_seq(self):

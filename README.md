@@ -59,7 +59,3 @@ The Documentation about the different classes can be found [here](./docs/).
 ### Tests
 
 There are some tests [here](./test/) and [here](./ws-test/), which test the major functionality of the code. If you want to test if the code works on your machine, please run `python tests/testfilesetup.py` and then `sh tests/run_test.sh`,  `sh ws-tests/run_ws-tests.sh`.
-
-
-
-
