@@ -578,6 +578,8 @@ def run_with_settings(settings):
         ids = IdDicts(conf, workdir=settings.workdir)
 
         filteredScrape = FilterBlast(data_obj, ids, settings)
+        filteredScrape.add_setting_to_self(downtorank, threshold, blacklist)
+
         filteredScrape.write_otu_info(settings.downtorank)
 
         if settings.add_unpubl_seq is not None:
