@@ -2431,8 +2431,9 @@ class FilterBlast(PhyscraperScrape):
         self.filtered_seq = {}
         self.downtorank = None
 
-    def add_setting_to_self(self, downtorank, threshold, blacklist = None):
+    def add_setting_to_self(self, downtorank, threshold):
         """
+        Add FilterBlast items to self.
 
         :param downtorank:
         :param threshold:
@@ -2440,7 +2441,6 @@ class FilterBlast(PhyscraperScrape):
         """
         self.threshold = threshold
         self.downtorank = downtorank
-        self.blacklist = blacklist
 
 
     def sp_dict(self, downtorank=None):
