@@ -8,11 +8,11 @@ Still work in progress (documentation in particular), please contact ejmctavish,
 ## There is a full example python script with comments in docs/example.py 
 (it takes a while long time though)
 
-###Dependencies (need to be in path): 
+### Dependencies (need to be in path):
 - PaPaRa http://sco.h-its.org/exelixis/web/software/papara/index.html 
 - Raxml http://sco.h-its.org/exelixis/web/software/raxml/index.html 
 
-###Python packages: 
+### Python packages:
 These will all be installed if you install physcraper using 
     python setup.py install
 
@@ -35,7 +35,7 @@ and only uses trees from that database.
 Go to https://tree.opentreeoflife.org/curator to find a tree, or upload it!
 You can get the tree ID by clicking on your tree of interest, and looking at the URL.
 
-###Taxon infomation from ncbi
+### Taxon infomation from ncbi
 It is easiest if you keep the taxon information in the included taxonomy folder. (the file is too big for github)
 To get it from the NCBI ftp site
 
