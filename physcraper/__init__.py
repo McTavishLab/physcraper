@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 """Physcraper module"""
+from __future__ import absolute_import
+
 import sys
 import re
 import os
@@ -11,7 +13,6 @@ import json
 import configparser
 import pickle
 import random
-import urllib2
 from copy import deepcopy
 from ete2 import NCBITaxa
 import physcraper.AWSWWW as AWSWWW
@@ -29,8 +30,13 @@ from peyotl.nexson_syntax import extract_tree, \
     PhyloSchema
 # extension functions
 import concat  # is the local concat class
-import ncbi_data_parser  # is the ncbi data parser class and associated functions
-import local_blast
+from . import ncbi_data_parser  # is the ncbi data parser class and associated functions
+from . import local_blast
+
+if sys.version_info < (3, ):
+    from urllib2 import HTTPError
+else:
+    from urllib.error import HTTPError
 
 
 _DEBUG = 0
@@ -81,7 +87,7 @@ def get_raw_input():
             x = raw_input("Please write either 'yes' or 'no': ")
             if x == "yes" or x == "no":
                 is_valid = 1  # set it to 1 to validate input and to terminate the while..not loop
-        except ValueError, e:
+        except ValueError as e:
             print ("'%s' is not a valid answer." % e.args[0].split(": ")[1])
     return x
 
@@ -279,7 +285,7 @@ def get_dataset_from_treebase(study_id,
     """
     try:
         nexson = get_nexson(study_id, phylesystem_loc)
-    except urllib2.HTTPError, err:
+    except HTTPError as err:
         sys.stderr.write(err)
     # except:  # TODO: seems to be an http error. Did not fgure out how to handle them (requests.exceptions.HTTPError)
         sys.stderr.write("couldn't find study id {} in phylesystem location {}\n".format(study_id, phylesystem_loc))
@@ -1209,13 +1215,13 @@ class IdDicts(object):
                             ncbi_id = Entrez.read(Entrez.esearch(db="taxonomy", term=tax_name, RetMax=100))['IdList'][0]
 
                         ncbi_id = int(ncbi_id)
-                    except (IndexError, urllib2.HTTPError), err:  # TODO: is either IndexError or urllib2.HTTPError: HTTP Error 400: Bad Request
+                    except (IndexError, HTTPError) as err:  # TODO: is either IndexError or urllib2.HTTPError: HTTP Error 400: Bad Request
                         if i < tries - 1:  # i is zero indexed
                             continue
                         else:
                             raise
                     break
-            except (IndexError, urllib2.HTTPError), err:  # TODO: is either IndexError or urllib2.HTTPError: HTTP Error 400: Bad Request
+            except (IndexError, HTTPError) as err:  # TODO: is either IndexError or urllib2.HTTPError: HTTP Error 400: Bad Request
                 debug("except")
                 try:
                     ncbi = NCBITaxa()
@@ -1294,7 +1300,7 @@ class IdDicts(object):
                     for i in range(tries):
                         try:
                             handle = Entrez.efetch(db="nucleotide", id=gb_id, retmode="xml")
-                        except (IndexError, urllib2.HTTPError) as e:
+                        except (IndexError, HTTPError) as e:
                             if i < tries - 1:  # i is zero indexed
                                 continue
                             else:
@@ -1316,7 +1322,7 @@ class IdDicts(object):
                 for i in range(tries):
                     try:
                         handle = Entrez.efetch(db="nucleotide", id=gb_id, retmode="xml")
-                    except (IndexError, urllib2.HTTPError) as e:
+                    except (IndexError, HTTPError) as e:
                         if i < tries - 1:  # i is zero indexed
                             continue
                         else:
