@@ -131,25 +131,25 @@ class ConfigObj(object):
             sys.stdout.write("Building config object\n")
         debug(configfi)
         debug(os.path.isfile(configfi))
-        assert os.path.isfile(configfi)
+        assert os.path.isfile(configfi), 'file `%s` does not exists' % configfi
         config = configparser.ConfigParser()
         config.read(configfi)
         self.e_value_thresh = config['blast']['e_value_thresh']
-        assert is_number(self.e_value_thresh)
+        assert is_number(self.e_value_thresh), 'value `%s` does not exists' % self.e_value_thresh
         self.hitlist_size = int(config['blast']['hitlist_size'])
         self.seq_len_perc = float(config['physcraper']['seq_len_perc'])
-        assert 0 < self.seq_len_perc < 1
+        assert 0 < self.seq_len_perc < 1, 'value `%s` is not between 0 and 1' % self.seq_len_perc
         self.phylesystem_loc = config['phylesystem']['location']
         assert (self.phylesystem_loc in ['local', 'api'])  # default is api, but can run on local version of OpenTree datastore
         self.ott_ncbi = config['taxonomy']['ott_ncbi']  # TODO: how do we update the file?
-        assert os.path.isfile(self.ott_ncbi)
+        assert os.path.isfile(self.ott_ncbi), 'file `%s` does not exists' % self.ott_ncbi
         # rewrites relative path to absolute path so that it behaves when changing dirs
         self.id_pickle = os.path.abspath(config['taxonomy']['id_pickle'])
         self.email = config['blast']['Entrez.email']
-        assert '@' in self.email
+        assert '@' in self.email, 'your email `%s` does not have an @ sign' % self.email
         self.blast_loc = config['blast']['location']
         self.num_threads = config['blast'].get('num_threads')
-        assert self.blast_loc in ['local', 'remote']
+        assert self.blast_loc in ['local', 'remote'], 'your blast location `%s` is not remote or local' % self.email
         if self.blast_loc == 'local':
             self.blastdb = config['blast']['localblastdb']
             self.url_base = None
@@ -167,7 +167,7 @@ class ConfigObj(object):
             self._download_ncbi_parser()
             self._download_localblastdb()
         self.unmapped = config['blast']['unmapped']
-        assert self.unmapped in ['remove', 'keep']
+        assert self.unmapped in ['remove', 'keep'], 'your unmapped statement `%s` in the config file is not remove or keep' % self.unmapped
 
         debug("shared blast folder?")
         debug(self.gb_id_filename)
