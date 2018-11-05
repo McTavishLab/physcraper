@@ -35,7 +35,7 @@ def load_nodes(nodes_file):
     Contains the information about the taxonomic hierarchy of names.
     """
     # print(nodes_file)
-    assert os.path.exists(nodes_file)
+    assert os.path.exists(nodes_file), 'file `%s` does not exists' % nodes_file
     df = pd.read_csv(nodes_file, sep='|', header=None, index_col=False,
                      names=[
                          'tax_id',
@@ -63,7 +63,7 @@ def load_names(names_file):
     """ Loads names.dmp and converts it into a pandas.DataFrame.
     Includes only names which are accepted as scientific name by ncbi.
     """
-    assert os.path.exists(names_file)
+    assert os.path.exists(names_file), "file `%s` does nto exist" % names_file
     df = pd.read_csv(names_file, sep='|', header=None, index_col=False,
                      names=[
                          'tax_id',
