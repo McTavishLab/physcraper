@@ -244,6 +244,8 @@ def filter_OTOL(study_id,
 
         # Now combine the data, the ids, and the configuration into a single physcraper scrape object
         filteredScrape = FilterBlast(data_obj, ids)
+        filteredScrape.add_setting_to_self(downtorank, threshold, blacklist)
+
         filteredScrape.blacklist = blacklist
         if add_unpubl_seq is not None:
             filteredScrape.unpublished = True
@@ -348,6 +350,8 @@ def add_unpubl_to_backbone(seqaln,
 
         # Now combine the data, the ids, and the configuration into a single physcraper scrape object
         filteredScrape = FilterBlast(data_obj, ids)
+        filteredScrape.add_setting_to_self(downtorank, threshold, blacklist)
+
         filteredScrape.blacklist = blacklist
         if add_unpubl_seq is not None:
             filteredScrape.unpublished = True
@@ -464,6 +468,7 @@ def filter_data_run(seqaln,
 
         # Now combine the data, the ids, and the configuration into a single physcraper scrape object
         filteredScrape = FilterBlast(data_obj, ids)
+        filteredScrape.add_setting_to_self(downtorank, threshold, blacklist)
         filteredScrape.blacklist = blacklist
         if add_unpubl_seq is not None:
             filteredScrape.unpublished = True
@@ -573,6 +578,8 @@ def run_with_settings(settings):
         ids = IdDicts(conf, workdir=settings.workdir)
 
         filteredScrape = FilterBlast(data_obj, ids, settings)
+        filteredScrape.add_setting_to_self(downtorank, threshold, blacklist)
+
         filteredScrape.write_otu_info(settings.downtorank)
 
         if settings.add_unpubl_seq is not None:

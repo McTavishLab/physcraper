@@ -14,7 +14,7 @@ from __init__ import debug
 
 """Code used to concatenate different single PhyScraper runs into a concatenated one.
 """
-debug("Current Version number: 09172018.0")
+debug("Current concat Version number: 11022018.0")
 
 # def remove_leaf(tre, leaf):
 #     """ Removes a taxon from tre.

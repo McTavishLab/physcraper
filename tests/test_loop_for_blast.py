@@ -10,7 +10,7 @@ sys.stdout.write("\ntests loop_for_write_blast_files\n")
 
 workdir = "tests/output/test_loop_for_write_blast_files"
 configfi = "tests/data/test.config"
-treshold = 2
+threshold = 2
 selectby = "blast"
 downtorank = None
 absworkdir = os.path.abspath(workdir)
@@ -20,11 +20,12 @@ try:
     data_obj = pickle.load(open("tests/data/precooked/tiny_dataobj.p", 'rb'))
     data_obj.workdir = absworkdir
     ids = IdDicts(conf, workdir=data_obj.workdir)
-    ids.acc_ncbi_dict = pickle.load(open("tests/data/precooked/tiny_gi_map.p", "rb"))
+    ids.acc_ncbi_dict = pickle.load(open("tests/data/precooked/tiny_acc_map.p", "rb"))
 except:
     sys.stdout.write("\n\nTest FAILED\n\n")
     sys.exit()
 filteredScrape = FilterBlast(data_obj, ids)
+filteredScrape.add_setting_to_self(downtorank, threshold)
 # filteredScrape.acc_list_mrca = pickle.load(open("tests/data/precooked/acc_list_mrca.p", 'rb'))
 filteredScrape.read_blast_wrapper(blast_dir="tests/data/precooked/fixed/tte_blast_files")
 filteredScrape.remove_identical_seqs()
@@ -34,13 +35,13 @@ filteredScrape.make_sp_seq_dict()
 # this is the code of the first part of how many seq to keep. if threshold is bigger than number of seq for sp, just add all
 # print("run loop which we want to test")
 for key in filteredScrape.sp_d:
-    if len(filteredScrape.sp_d[key]) > treshold:
+    if len(filteredScrape.sp_d[key]) > threshold:
         count_dict = filteredScrape.count_num_seq(key)
         if key in filteredScrape.sp_seq_d.keys():
             seq_present = count_dict["seq_present"]
             query_count = count_dict["query_count"]
-            if seq_present >= 1 and seq_present < treshold and count_dict["new_taxon"] is False and query_count != 0:
-                if query_count + seq_present > treshold:
+            if seq_present >= 1 and seq_present < threshold and count_dict["new_taxon"] is False and query_count != 0:
+                if query_count + seq_present > threshold:
                     taxonfn = filteredScrape.loop_for_write_blast_files(key)
                                 
 # MAKE TEST FOR loop_for_write_blast_files
@@ -53,7 +54,7 @@ try:
         count_str_file = 0
         db = False
         blasted = False
-        if len(filteredScrape.sp_d[key]) > treshold:
+        if len(filteredScrape.sp_d[key]) > threshold:
             for sp_keys in filteredScrape.sp_seq_d[key].keys():
                 if isinstance(sp_keys, str):
                     count += 1
@@ -76,10 +77,10 @@ try:
                     blasted = True
                     count_str_file += 1
             if blasted:
-                if count + count_int != treshold:
+                if count + count_int != threshold:
                     assert count_str_file == count
             if db:
-                if count + count_int != treshold:
+                if count + count_int != threshold:
                     assert count_gi_file == count_int
     sys.stdout.write("\ntest passed\n")
 except:
