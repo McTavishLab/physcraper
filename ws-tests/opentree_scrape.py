@@ -13,7 +13,7 @@ configfi = "tests/data/test.config"
 
 
 sys.stdout.write("\nTesting 'opentree scrape (1 round)'\n")
-conf = physcraper.ConfigObj(configfi)
+conf = physcraper.ConfigObj(configfi, interactive=False)
 print "1. {}".format(conf.email)
       
     
@@ -35,7 +35,7 @@ print "3. {}".format(ids.config.email)
 data_obj.prune_short()
 assert len(data_obj.aln) == 9
 data_obj.write_files()
-
+try:
     scraper = physcraper.PhyscraperScrape(data_obj, ids)
     scraper.run_blast()
     scraper.read_blast_wrapper()

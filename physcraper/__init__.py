@@ -1025,8 +1025,9 @@ def get_mrca_ott(ott_ids):
         try:
             tree_of_life.mrca(ott_ids=[ott], wrap_response=False)
             synth_tree_ott_ids.append(ott)
-        except HTTPError as err:
-            sys.stderr.write(err)
+        except:
+        # except HTTPError as err: # TODO: this is not working, program fails with HTTPError
+            # sys.stderr.write(err)
             debug("except")
             ott_ids_not_in_synth.append(ott)
     if len(synth_tree_ott_ids) == 0:
