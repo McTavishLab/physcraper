@@ -23,8 +23,8 @@ debug("Current local_blast version number: 10252018.0")
 def del_blastfiles(workdir):
     """Deletes all files in the local blast folder.
     """
-    try:
-        shutil.rmtree(os.path.join(workdir, "blast"))
+    try:    
+	      shutil.rmtree(os.path.join(workdir, "blast"))
     except: 
         sys.stderr.write("Blast folder was not removed. Maybe it was not present?")
 
