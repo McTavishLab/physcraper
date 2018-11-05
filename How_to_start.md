@@ -54,7 +54,7 @@ After the single-gene datasets are updated, the data can be concatenated. Either
           * `sudo apt-get install ncbi-blast+` # if not already installed earlier
           * `wget 'ftp://ftp.ncbi.nlm.nih.gov/blast/db/nt.*'`  # this downloads all nt-compressed files
           * `update_blastdb nt`
-          * `cat *.tar.gz | tar -xvzf - -i`
+          * `cat *.tar.gz | tar -xvzf - -i`, macOS `tar` does nto support the `-i` flag,  you need to use homebrew to `brew install gnu-tar` and replace the `tar` command by `gtar`
           * `blastdbcmd -db nt -info`
               
              The last command shows you if it worked correctly. 'nt' means, we are making the nucleotide database.
