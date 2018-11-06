@@ -1667,8 +1667,8 @@ class PhyscraperScrape(object):
                             fn_path = "{}/{}.{}".format(self.blast_subdir, fn, file_ending)
                         else:
                             fn_path = "{}/{}.{}".format(self.blast_subdir, taxon.label, file_ending)
-                        if _DEBUG:
-                            sys.stdout.write("attempting to write {}\n".format(fn_path))
+                        # if _DEBUG:
+                        #     sys.stdout.write("attempting to write {}\n".format(fn_path))
                         if not os.path.isfile(fn_path):
                             if _VERBOSE:
                                 sys.stdout.write("blasting seq {}\n".format(taxon.label))
@@ -1751,7 +1751,7 @@ class PhyscraperScrape(object):
                 pident = float(pident)
                 evalue = float(evalue)
                 bitscore = float(bitscore)
-                # NOTE: sometimes there are seq which are identical and are combined in the local blast db, just get first one
+                # NOTE: sometimes there are seq which are identical & are combined in the local blast db, just get first one
                 if len(staxids.split(";")) > 1:
                     staxids = int(staxids.split(";")[0])
                     sscinames = sscinames.split(";")[0]
@@ -1796,6 +1796,33 @@ class PhyscraperScrape(object):
                 for hsp in alignment.hsps:
                     if float(hsp.expect) < float(self.config.e_value_thresh):
                         local_id = alignment.title.split("|")[-1].split(" ")[-1]
+                        if local_id not in self.data.gb_dict:  # skip ones we already have
+                            unpbl_local_id = "unpubl_{}".format(local_id)
+                            self.new_seqs[unpbl_local_id] = hsp.sbjct
+                            self.data.gb_dict[unpbl_local_id] = {'title': "unpublished", 'localID': local_id}
+                            debug(self.data.unpubl_otu_json)
+                            self.data.gb_dict[unpbl_local_id].update(
+                                self.data.unpubl_otu_json['otu{}'.format(local_id)])
+                            gb_counter += 1
+
+    def read_unpublished_blast_query(self):
+        """
+        Reads in the blast files generated during local_blast_for_unpublished() and adds seq to self.data.gb_dict and
+        self.new_seqs.
+
+        """
+        output_blast = "output_tst_fn.xml"
+        gb_counter = 1
+        general_wd = os.getcwd()
+        os.chdir(os.path.join(self.workdir, "blast"))
+        xml_file = open(output_blast)
+        os.chdir(general_wd)
+        blast_out = NCBIXML.parse(xml_file)
+        for blast_record in blast_out:
+            for alignment in blast_record.alignments:
+                for hsp in alignment.hsps:
+                    if float(hsp.expect) < float(self.config.e_value_thresh):
+                        local_id = alignment.title.split('|')[-1].split(' ')[-1]
                         if local_id not in self.data.gb_dict:  # skip ones we already have
                             unpbl_local_id = "unpubl_{}".format(local_id)
                             self.new_seqs[unpbl_local_id] = hsp.sbjct
@@ -2620,8 +2647,6 @@ class FilterBlast(PhyscraperScrape):
                 # I leave it in for now.
                 if '^physcraper:status' in otu_id and otu_id['^physcraper:status'].split(' ')[0] not in self.seq_filter:
                     # I am using the next if to delimit which seq where already present from an earlier run,
-                    # they will get a sp name (str), in order to distinguish them from newly found seq,
-                    # which will have the gi (int). This differentiation is needed in the filtering blast step.
                     if otu_id['^physcraper:last_blasted'] != '1800/01/01':
                         tax_name = self.ids.find_name(sp_dict=otu_id)
                         for user_name_aln, seq in self.data.aln.items():
@@ -2797,6 +2822,9 @@ class FilterBlast(PhyscraperScrape):
                         if tax_name == otu_dict_name:
                             # debug(otu_dict_name)
                             filename = nametoreturn
+                            # if self.downtorank is not None:
+                            #     filename = key
+                            debug([tax_name_aln, tax_name_aln.label])
                             local_blast.write_filterblast_files(self.workdir, tax_name_aln.label, seq, fn=nametoreturn)
                 else:
                     if '^ncbi:accession' in otu_id:
@@ -2811,6 +2839,9 @@ class FilterBlast(PhyscraperScrape):
                                 if otu_id['^physcraper:status'].split(' ')[0] not in self.seq_filter:
                                     filename = gb_id
                                     seq = self.sp_seq_d[key][gb_id]
+                                    # if self.downtorank is not None:
+                                    #     filename = key
+                                    #     nametoreturn = key
                                     local_blast.write_filterblast_files(self.workdir, gb_id, seq, db=True, fn=nametoreturn)
                     name_gbid = key
         if self.downtorank is not None:

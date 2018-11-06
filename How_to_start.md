@@ -69,7 +69,8 @@ Depending on the size of your tree to be updated, there are things to consider.
     *  install the taxonomy database:
         
         install ncbi taxonomy database to retrieve taxon information from BLAST searches into the same directory as your blastdb from the step before.
-        
+
+                  
           * `cd /to/the/folder/of/your/blastdb`
           * `wget 'ftp://ftp.ncbi.nlm.nih.gov/blast/db/taxdb.tar.gz'` # Download the taxdb archive
           * `gunzip -cd taxdb.tar.gz | (tar xvf - )`  # Install it in the BLASTDB directory

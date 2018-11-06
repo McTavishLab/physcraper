@@ -36,7 +36,6 @@ def test_add_local():
     ids = IdDicts(conf, workdir=data_obj.workdir)
     ids.acc_ncbi_dict = pickle.load(open("tests/data/precooked/tiny_acc_map.p", "rb"))
 
-
     if not os.path.exists("{}".format(workdir)):
         os.makedirs("{}".format(workdir))
 
