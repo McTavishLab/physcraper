@@ -2821,7 +2821,7 @@ class FilterBlast(PhyscraperScrape):
                         otu_dict_name = self.ids.find_name(sp_dict=self.data.otu_dict[tax_name_aln.label])
                         if tax_name == otu_dict_name:
                             # debug(otu_dict_name)
-                            filename = nametoreturn
+                            # filename = nametoreturn
                             # if self.downtorank is not None:
                             #     filename = key
                             debug([tax_name_aln, tax_name_aln.label])
@@ -2837,7 +2837,7 @@ class FilterBlast(PhyscraperScrape):
                         if file_present:  # short for if file_present == True
                             if '^physcraper:status' in otu_id:
                                 if otu_id['^physcraper:status'].split(' ')[0] not in self.seq_filter:
-                                    filename = gb_id
+                                    # filename = gb_id
                                     seq = self.sp_seq_d[key][gb_id]
                                     # if self.downtorank is not None:
                                     #     filename = key

@@ -79,6 +79,7 @@ Depending on the size of your tree to be updated, there are things to consider.
          *  `wget 'ftp://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdump.tar.gz'`
          *  `gunzip  -cd taxdump.tar.gz | (tar xvf - names.dmp nodes.dmp)`  
          *  move files into `tests/data/`
+         
     * updating the databases:
     
          The databases need to be update regularly, the program will check the dates of your databases and will ask you to update the databases after 60 days. If your databases are older, you will be asked for input, if you want to update the databases. 

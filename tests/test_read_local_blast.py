@@ -17,7 +17,7 @@ selectby = None
 downtorank = None
 absworkdir = os.path.abspath(workdir)
 
-def test_red_local_blast():
+def test_read_local_blast():
     conf = physcraper.ConfigObj(configfi, interactive=False)
     data_obj = pickle.load(open("tests/data/precooked/tiny_dataobj.p", 'rb'))
     data_obj.workdir = absworkdir
