@@ -9,7 +9,7 @@ tree_id = "tree1679"
 seqaln = "tests/data/minitest.fas"
 mattype="fasta"
 workdir="tests/output/opentree"
-configfi = "tests/data/test.config"
+configfi = "tests/data/remotencbi.config"
 
 
 sys.stdout.write("\nTesting 'opentree scrape (1 round)'\n")
