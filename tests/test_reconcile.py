@@ -5,7 +5,7 @@ from dendropy import Tree, \
       DataSet, \
       datamodel
 from physcraper import wrappers, generate_ATT_from_files, AlignTreeTax, OtuJsonDict
-#
+
 
 def test_reconcile():
     #------------------------
@@ -27,7 +27,6 @@ def test_reconcile():
                                      schema_trf = schema_trf,
                                      otu_json=otu_jsonfi,
                                      ingroup_mrca=None)
-
 
 
     for otu in data_obj.otu_dict:

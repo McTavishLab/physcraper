@@ -72,6 +72,7 @@ def test_unmapped():
 
     ids = physcraper.IdDicts(conf, workdir=data_obj.workdir)
 
+
     scraper2 = physcraper.PhyscraperScrape(data_obj, ids)
     num_remove = len(scraper2.data.aln.taxon_namespace)
     dict_id = 0

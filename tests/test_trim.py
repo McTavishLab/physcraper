@@ -50,4 +50,3 @@ def test_trim():
 
   assert len_start != len_end
 
-
