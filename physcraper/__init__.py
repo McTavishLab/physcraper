@@ -291,7 +291,7 @@ def get_dataset_from_treebase(study_id,
     treebase_url = nexson['nexml'][u'^ot:dataDeposit'][u'@href']
     if 'treebase' not in nexson['nexml'][u'^ot:dataDeposit'][u'@href']:
         sys.stderr.write("No treebase record associated with study ")
-        sys.exit()
+        sys.exit(-2)
     else:
         tb_id = treebase_url.split(':S')[1]
         url = "https://treebase.org/treebase-web/search/downloadAStudy.html?id={}&format=nexus".format(tb_id)
@@ -1025,14 +1025,15 @@ def get_mrca_ott(ott_ids):
         try:
             tree_of_life.mrca(ott_ids=[ott], wrap_response=False)
             synth_tree_ott_ids.append(ott)
-        except HTTPError as err:
-            sys.stderr.write(err)
+        except:
+        # except HTTPError as err: # TODO: this is not working, program fails with HTTPError
+            # sys.stderr.write(err)
             debug("except")
             ott_ids_not_in_synth.append(ott)
     if len(synth_tree_ott_ids) == 0:
         sys.stderr.write('No sampled taxa were found in the current synthetic tree. '
                          'Please find and input and appropriate OTT id as ingroup mrca in generate_ATT_from_files')
-        sys.exit()
+        sys.exit(-3)
     mrca_node = tree_of_life.mrca(ott_ids=synth_tree_ott_ids, wrap_response=False)  # need to fix wrap eventually
     if u'nearest_taxon' in mrca_node.keys():
         tax_id = mrca_node[u'nearest_taxon'].get(u'ott_id')
@@ -1046,7 +1047,7 @@ def get_mrca_ott(ott_ids):
         # debug(mrca_node.keys())
         sys.stderr.write('(v3) MRCA of sampled taxa not found. Please find and input an '
                          'appropriate OTT id as ingroup mrca in generate_ATT_from_files')
-        sys.exit()
+        sys.exit(-4)
     return tax_id
 
 
@@ -1520,6 +1521,7 @@ class PhyscraperScrape(object):
         toblast.write("{}\n".format(query))
         toblast.close()
         cwd = os.getcwd()
+        assert os.path.isdir(self.config.blastdb)
         os.chdir(self.config.blastdb)
         # this formats allows to get the taxonomic information at the same time
         outfmt = " -outfmt '6 sseqid staxids sscinames pident evalue bitscore sseq stitle'"
@@ -2093,7 +2095,7 @@ class PhyscraperScrape(object):
         except OSError as e:
             if e.errno == os.errno.ENOENT:
                 sys.stderr.write("failed running papara. Is it installed?\n")
-                sys.exit()
+                sys.exit(-5)
             # handle file not found error.
             else:
                 # Something else went wrong while trying to run `wget`
@@ -2147,7 +2149,7 @@ class PhyscraperScrape(object):
             except OSError as e:
                 if e.errno == os.errno.ENOENT:
                     sys.stderr.write("failed running raxmlHPC. Is it installed?")
-                    sys.exit()
+                    sys.exit(-6)
                 # handle file not
                 # handle file not found error.
                 else:
@@ -2430,8 +2432,9 @@ class FilterBlast(PhyscraperScrape):
         self.filtered_seq = {}
         self.downtorank = None
 
-    def add_setting_to_self(self, downtorank, threshold, blacklist = None):
+    def add_setting_to_self(self, downtorank, threshold):
         """
+        Add FilterBlast items to self.
 
         :param downtorank:
         :param threshold:
@@ -2439,7 +2442,6 @@ class FilterBlast(PhyscraperScrape):
         """
         self.threshold = threshold
         self.downtorank = downtorank
-        self.blacklist = blacklist
 
 
     def sp_dict(self, downtorank=None):

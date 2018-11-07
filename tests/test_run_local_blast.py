@@ -22,7 +22,7 @@ try:
     ids.acc_ncbi_dict = pickle.load(open("tests/data/precooked/tiny_acc_map.p", "rb"))
 except:
     sys.stdout.write("\n\nTest FAILED\n\n")
-    sys.exit()
+    sys.exit(-1)
 filteredScrape =  physcraper.FilterBlast(data_obj, ids)
 
 blast_db = "otuSlagascanus"

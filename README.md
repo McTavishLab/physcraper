@@ -1,18 +1,24 @@
 # physcraper
 Continual gene tree updating. 
-Uses a tree from Open tree of Life and an alignment to search for and add homologous sequences to phylogenetic inference. 
+Uses a tree from Open tree of Life (or your own tree) and an alignment to search for and adds homologous sequences to phylogenetic inference. 
 
 ![](https://cdn.rawgit.com/snacktavish/physcraper/master/docs/physcraper.svg)
 
-Still work in progress (documentation in particular), please contact ejmctavish, gmail if you need any help!
-## There is a full example python script with comments in docs/example.py 
-(it takes a while long time though)
 
-### Dependencies (need to be in path):
+The tool is under current development in the McTavish Lab.
+Please contact ejmctavish, gmail if you need any help!
+
+### Requirements
+
+see also [here](./How_to_start.md)
+
+##### Dependencies (need to be in path): 
+
 - PaPaRa http://sco.h-its.org/exelixis/web/software/papara/index.html 
 - Raxml http://sco.h-its.org/exelixis/web/software/raxml/index.html 
+- BLAST+ https://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Web&PAGE_TYPE=BlastDocs&DOC_TYPE=Download
 
-### Python packages:
+##### Python packages: 
 These will all be installed if you install physcraper using 
     python setup.py install
 
@@ -23,44 +29,33 @@ These will all be installed if you install physcraper using
 - Biopython http://biopython.org/wiki/Download
 - ConfigParser 
 
-Inputs needed are:
-- ott_study_id =  OpenTree study identifier  
-- ott_tree_id  = Tree id from that study  
-- seqaln = the sequence alignment that generated that tree  
-- matrix_type = alignment matrix type (only tested with fasta so far)
-- Working directory name (will be created by run)
+##### Databases
 
-Currently Physcraper relies on metadata information from the Open Tree of Life,
-and only uses trees from that database.
-Go to https://tree.opentreeoflife.org/curator to find a tree, or upload it!
-You can get the tree ID by clicking on your tree of interest, and looking at the URL.
-
-### Taxon infomation from ncbi
-It is easiest if you keep the taxon information in the included taxonomy folder. (the file is too big for github)
-To get it from the NCBI ftp site
-
-    rsync -av ftp.ncbi.nih.gov::pub/taxonomy/gi_taxid_nucl.dmp.gz taxonomy/gi_taxid_nucl.dmp.gz  
-    gunzip taxonomy/gi_taxid_nucl.dmp.gz
+The tool uses several databases, which can automatically be downloaded/updated from ncbi. If the tool wants to access the site, you will be asked for input (yes or no), as the tool will then access ncbi, which is a US government website!
 
 
+### Tutorial
+
+For a description of which settings need to be changed and how to set-up a run, see [here](./How_to_start.md).
 
 
-Physcraper generates an ATT (alignment, taxonomy, tree) object.
-This is important because it tracks the shared namespaces across these three data objects, which can otherwise get a bit separated.
+### Example runs and datasets
+
+ There is a full example python script with comments in `docs/example.py`.
+ Some more example files can be found in `docs/example_scripts/`.
+
+ If you want to try running physcraper use the testdata which is in `tests/data/tiny_test_example/`
+
+ More information will follow soon.
 
 
-#### local blast databases
-To initiate a local Blast db run the following commands:
-sudo apt-get install ncbi-blast+
+### Documentation
 
-in the folder of your future blast database run:
-1. update_blastdb nt
-2. cat *.tar.gz | tar -xvzf - -i
-3. blastdbcmd -db nt -info
+The Documentation about the different classes can be found [here](./docs/).
 
-The last command shows you if it worked correctly. 'nt' means, we are making the nucleotide database.
-The database needs to be update regularly.
+### Tests
 
+There are some tests [here](./test/) and [here](./ws-test/), which test the major functionality of the code. If you want to test if the code works on your machine, please run `python tests/testfilesetup.py` and then `sh tests/run_test.sh`,  `sh ws-tests/run_ws-tests.sh`.
 
 
 

@@ -25,8 +25,6 @@ def test_sp_seq_d():
     ids = IdDicts(conf, workdir=data_obj.workdir)
     ids.acc_ncbi_dict = pickle.load(open("tests/data/precooked/tiny_acc_map.p", "rb"))
     filteredScrape =  FilterBlast(data_obj, ids)
-
-
     filteredScrape._blasted = 1
     blast_dir = "tests/data/precooked/fixed/tte_blast_files"
     # filteredScrape.acc_list_mrca = pickle.load(open("tests/data/precooked/acc_list_mrca.p", 'rb'))
