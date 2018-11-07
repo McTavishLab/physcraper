@@ -1766,7 +1766,7 @@ class PhyscraperScrape(object):
                 for hsp in alignment.hsps:
                     if float(hsp.expect) < float(self.config.e_value_thresh):
                         if local_id not in self.data.gb_dict:  # skip ones we already have
-                        local_id = alignment.title.split("|")[-1].split(" ")[-1]
+                            local_id = alignment.title.split("|")[-1].split(" ")[-1]
                             unpbl_local_id = "unpubl_{}".format(local_id)
                             self.new_seqs[unpbl_local_id] = hsp.sbjct
                             self.data.gb_dict[unpbl_local_id] = {'title': "unpublished", 'localID': local_id}
