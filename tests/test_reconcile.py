@@ -28,13 +28,9 @@ def test_reconcile():
                                      otu_json=otu_jsonfi,
                                      ingroup_mrca=None)
 
-
     for otu in data_obj.otu_dict:
         if data_obj.otu_dict[otu][u'^ot:originalLabel'] == '2029_doronicum':
             assert data_obj.otu_dict[otu]['^physcraper:status'] == "deleted in name reconciliation"
-
-
-
 
     #----------------------------------------------------
 
