@@ -22,7 +22,7 @@ try:
 except:
     sys.stderr.write("run 'python tests/testfilesetup.py' to setup data files for tests. EXITING")
     sys.stdout.write("\n\nTest `remove_identical_seqs' FAILED\n\n")
-    sys.exit()
+    sys.exit(-1)
 
 print("start")
 scraper = PhyscraperScrape(data_obj, ids)

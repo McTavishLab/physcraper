@@ -23,7 +23,7 @@ try:
     ids.acc_ncbi_dict = pickle.load(open("tests/data/precooked/tiny_acc_map.p", "rb"))
 except:
     sys.stdout.write("\n\nTest FAILED\n\n")
-    sys.exit()
+    sys.exit(-1)
 filteredScrape = FilterBlast(data_obj, ids)
 filteredScrape.add_setting_to_self(downtorank, threshold)
 # filteredScrape.acc_list_mrca = pickle.load(open("tests/data/precooked/acc_list_mrca.p", 'rb'))
