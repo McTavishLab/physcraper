@@ -17,7 +17,6 @@ downtorank = None
 
 def test_sp_seq_d():
 
-
     absworkdir = os.path.abspath(workdir)
     conf = ConfigObj(configfi, interactive=False)
     data_obj = pickle.load(open("tests/data/precooked/tiny_dataobj.p", 'rb'))

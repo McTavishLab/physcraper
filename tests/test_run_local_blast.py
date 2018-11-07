@@ -6,41 +6,37 @@ import physcraper
 import physcraper.local_blast as local_blast
 
 
-sys.stdout.write("\ntests run_local_blast\n")
+sys.stdout.write("\ntests run_filter_blast\n")
 
 
 # tests if I can run a local blast query
-workdir = "tests/output/test_run_local_blast"
+workdir = "tests/output/test_run_filter_blast"
 configfi = "tests/data/test.config"
 absworkdir = os.path.abspath(workdir)
 
-try:
+def test_run_filter_blast():
     conf = physcraper.ConfigObj(configfi, interactive=False)
     data_obj = pickle.load(open("tests/data/precooked/tiny_dataobj.p", 'rb'))
     data_obj.workdir = absworkdir
     ids = physcraper.IdDicts(conf, workdir=data_obj.workdir)
     ids.acc_ncbi_dict = pickle.load(open("tests/data/precooked/tiny_acc_map.p", "rb"))
-except:
-    sys.stdout.write("\n\nTest FAILED\n\n")
-    sys.exit(-1)
-filteredScrape =  physcraper.FilterBlast(data_obj, ids)
 
-blast_db = "otuSlagascanus"
-blast_seq = "otuSlagascanus"
+    filteredScrape =  physcraper.FilterBlast(data_obj, ids)
 
-if not os.path.exists("{}/blast".format(filteredScrape.data.workdir)):
-    os.makedirs("{}/blast/".format(filteredScrape.data.workdir))
-path1 = '{}/tests/data/precooked/fixed/select-blast/*'.format(os.getcwd())
+    blast_db = "otuSlagascanus"
+    blast_seq = "otuSlagascanus"
 
-path2 = "{}/blast/".format(filteredScrape.data.workdir)
-cmd = 'cp -r ' + path1 + ' ' + path2
-os.system(cmd)
+    if not os.path.exists("{}/blast".format(filteredScrape.data.workdir)):
+        os.makedirs("{}/blast/".format(filteredScrape.data.workdir))
+    path1 = '{}/tests/data/precooked/fixed/select-blast/*'.format(os.getcwd())
 
-local_blast.run_local_blast(filteredScrape.data.workdir, blast_seq, blast_db)
-blast_out = "{}/blast/output_otuSlagascanus_tobeblasted.xml".format(workdir)
+    path2 = "{}/blast/".format(filteredScrape.data.workdir)
+    cmd = 'cp -r ' + path1 + ' ' + path2
+    os.system(cmd)
 
-if os.path.exists(blast_out):
-    open(blast_out)
-    sys.stdout.write("\ntest passed\n")
-else:
-    sys.stderr.write("\ntest failed\n")
+    local_blast.run_filter_blast(filteredScrape.data.workdir, blast_seq, blast_db)
+    blast_out = "{}/blast/output_otuSlagascanus_tobeblasted.xml".format(workdir)
+
+    if os.path.exists(blast_out):
+        open(blast_out)
+  

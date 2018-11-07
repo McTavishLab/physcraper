@@ -11,27 +11,23 @@ treshold = 2
 selectby = "blast"
 downtorank = None
 absworkdir = os.path.abspath(workdir)
-try:
+
+def test_add_all():
     conf = ConfigObj(configfi, interactive=False)
     data_obj = pickle.load(open("tests/data/precooked/tiny_dataobj.p", 'rb'))
     data_obj.workdir = absworkdir
     ids = IdDicts(conf, workdir=data_obj.workdir)
     ids.acc_ncbi_dict = pickle.load(open("tests/data/precooked/tiny_acc_map.p", "rb"))
-except:
-    sys.stdout.write("\n\nTest FAILED\n\n")
-    sys.exit(-1)
-filteredScrape = FilterBlast(data_obj, ids)
-filteredScrape._blasted = 1
-filteredScrape.read_blast_wrapper(blast_dir="tests/data/precooked/fixed/tte_blast_files")
-filteredScrape.sp_dict(downtorank)
-filteredScrape.make_sp_seq_dict()
-filteredScrape.seq_filter = ['deleted', 'subsequence,', 'not', "removed", "deleted,"]
-try:
+
+    filteredScrape = FilterBlast(data_obj, ids)
+    filteredScrape._blasted = 1
+    filteredScrape.read_blast_wrapper(blast_dir="tests/data/precooked/fixed/tte_blast_files")
+    filteredScrape.sp_dict(downtorank)
+    filteredScrape.make_sp_seq_dict()
+    filteredScrape.seq_filter = ['deleted', 'subsequence,', 'not', "removed", "deleted,"]
     for key in filteredScrape.sp_d:
         if len(filteredScrape.sp_d[key]) <= treshold:
             filteredScrape.add_all(key)
-    #############
-    # print('test begins')
     treshold_undermin = 0
     for key in filteredScrape.sp_d:
         for key2 in filteredScrape.sp_d[key]:
@@ -42,7 +38,4 @@ try:
                             treshold_undermin += 1
     add_all_thresholdmin = filteredScrape.filtered_seq
     assert treshold_undermin == len(add_all_thresholdmin)
-    sys.stdout.write("\ntest passes\n")
-
-except:
-    sys.stderr.write("\ntest failed\n")
+    

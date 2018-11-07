@@ -8,22 +8,23 @@ from dendropy import Tree,\
                      datamodel
 
 #Use OpenTree phylesystem identifiers to get study and tree
-seqaln = "tests/data/input.fas"
-mattype="fasta"
-workdir="tests/fromfile"
-treefile = "tests/data/input.tre"
-otu_jsonfi = "tests/data/otu_dict.json"
-schema_trf = "newick"
 
-sys.stdout.write("\nTesting 'generate_ATT_from_files (fromfile.py)'\n")
-data_obj = generate_ATT_from_files(seqaln = seqaln,
-                                   mattype = mattype,
-                                   workdir =workdir,
-                                   treefile = treefile,
-                                   schema_trf = schema_trf,
-                                   otu_json = otu_jsonfi)
+def test_generate_ATT_from_file():
 
-if data_obj:
-    sys.stdout.write("\nTest fromfile.py passed\n")
-else:
-    sys.stdout.write("\nTest fromfile.py FAILED'\n")
+    seqaln = "tests/data/input.fas"
+    mattype="fasta"
+    workdir="tests/fromfile"
+    treefile = "tests/data/input.tre"
+    otu_jsonfi = "tests/data/otu_dict.json"
+    schema_trf = "newick"
+
+    sys.stdout.write("\nTesting 'generate_ATT_from_files (fromfile.py)'\n")
+    data_obj = generate_ATT_from_files(seqaln = seqaln,
+                                       mattype = mattype,
+                                       workdir =workdir,
+                                       treefile = treefile,
+                                       schema_trf = schema_trf,
+                                       otu_json = otu_jsonfi)
+
+    data_obj == True
+      

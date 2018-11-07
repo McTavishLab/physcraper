@@ -7,8 +7,8 @@ from dendropy import DnaCharacterMatrix
 study_id = "pg_873"
 tree_id = "tree1679"
 seqaln = "tests/data/minitest.fas"
-mattype="fasta"
-workdir="tests/output/opentree"
+mattype = "fasta"
+workdir = "tests/output/opentree"
 configfi = "tests/data/remotencbi.config"
 
 
@@ -37,7 +37,7 @@ assert len(data_obj.aln) == 9
 data_obj.write_files()
 try:
     scraper = physcraper.PhyscraperScrape(data_obj, ids)
-    scraper.run_blast()
+    scraper.run_blast_wrapper()
     scraper.read_blast_wrapper()
     scraper.remove_identical_seqs()
     scraper.generate_streamed_alignment()

@@ -7,39 +7,36 @@ expected_json = {'otuSdoronicum': {'^ot:ottTaxonName': u'Senecio doronicum', '^p
 
 sys.stdout.write("test_species_translation.py \n\n")
 
+def test_species_translation():
+	spn = "Mephitis mephitis"
+	info = get_ott_taxon_info(spn)
+	if info:
+	    ottid, ottname, ncbi_id = info
+	a = ottid == 231602
 
-spn = "Mephitis mephitis"
-info = get_ott_taxon_info(spn)
-if info:
-    ottid, ottname, ncbi_id = info
-a = ottid == 231602
-
-tree_of_life.mrca(ott_ids=[ottid], wrap_response=False)
-
-
-ott_ids = [770315, 158484]
-ott_mrca = get_mrca_ott(ott_ids)
-b =  ott_mrca == 312031
+	tree_of_life.mrca(ott_ids=[ottid], wrap_response=False)
 
 
-
-workdir="tests/output/tmp"
-configfi = "tests/data/test.config"
-id_to_spn = r"tests/data/tiny_test_example/test_nicespl.csv"
-otu_jsonfi = "{}/otu_dict.json".format(workdir)
-
-"""Tests if your own input files will generate a data object of class AlignTreeTax
-"""
-
-conf = ConfigObj(configfi, interactive=False)
-ids = IdDicts(conf, workdir=workdir)
-
-otu_json = OtuJsonDict(id_to_spn, ids)
+	ott_ids = [770315, 158484]
+	ott_mrca = get_mrca_ott(ott_ids)
+	b =  ott_mrca == 312031
 
 
 
-c = otu_json == expected_json
-if a*b*c:
-    sys.stdout.write("test_species_translation.py passed\n")
-else:
-    sys.stderr.write("test_species_translation.py FAILED\n")
+	workdir="tests/output/tmp"
+	configfi = "tests/data/test.config"
+	id_to_spn = r"tests/data/tiny_test_example/test_nicespl.csv"
+	otu_jsonfi = "{}/otu_dict.json".format(workdir)
+
+	"""Tests if your own input files will generate a data object of class AlignTreeTax
+	"""
+
+	conf = ConfigObj(configfi, interactive=False)
+	ids = IdDicts(conf, workdir=workdir)
+
+	otu_json = OtuJsonDict(id_to_spn, ids)
+
+
+
+	c = otu_json == expected_json
+	assert a*b*c == 1
