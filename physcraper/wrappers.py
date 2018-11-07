@@ -3,7 +3,13 @@ import pickle
 import sys
 import os
 import subprocess
-from physcraper import generate_ATT_from_phylesystem, generate_ATT_from_files, ConfigObj,  IdDicts, PhyscraperScrape
+from physcraper import (
+    generate_ATT_from_phylesystem,
+    generate_ATT_from_files,
+    ConfigObj,
+    IdDicts,
+    PhyscraperScrape,
+)
 from physcraper import FilterBlast, Settings, debug  # Concat
 from dendropy import DnaCharacterMatrix
 from concat import Concat
@@ -11,9 +17,16 @@ from concat import Concat
 print("Current Version number: 09142018.0")
 
 # TODO: we never do anything with the function nor the file
-def sync_ncbi(configfi): 
+def sync_ncbi(configfi):
     conf = ConfigObj(configfi)
-    subprocess.call(["rsync", "av", "ftp.ncbi.nih.gov::pub/taxonomy/gi_taxid_nucl.dmp.gz", "{}/gi_taxid_nucl.dmp.gz".format(conf.ncbi_dmp)])
+    subprocess.call(
+        [
+            "rsync",
+            "av",
+            "ftp.ncbi.nih.gov::pub/taxonomy/gi_taxid_nucl.dmp.gz",
+            "{}/gi_taxid_nucl.dmp.gz".format(conf.ncbi_dmp),
+        ]
+    )
     subprocess.call(["gunzip", "{}/gi_taxid_nucl.dmp.gz".format(dir)])
 
 
@@ -54,7 +67,7 @@ def standard_run(study_id,
          shared_blast_folder = not necessary, if you want to share blast searches across runs (see documentation),
                                 give the path to the folder with the shared runs.
     """
-    debug('Debugging mode is on')
+    debug("Debugging mode is on")
 
     conf = ConfigObj(configfi, interactive=False)
     if os.path.isfile("{}/att_checkpoint.p".format(workdir)):
@@ -80,8 +93,8 @@ def standard_run(study_id,
         # This is particularly important when using loci that have been de-concatenated, as some are 0 length which causes problems.
         data_obj.prune_short()
         data_obj.write_files()
-        data_obj.write_labelled(label='^ot:ottTaxonName')
-        data_obj.write_otus('otu_info', schema='table')
+        data_obj.write_labelled(label="^ot:ottTaxonName")
+        data_obj.write_otus("otu_info", schema="table")
         data_obj.dump()
         # Mapping identifiers between OpenTree and NCBI requires and identifier dict object
     if os.path.isfile(conf.id_pickle):
@@ -104,8 +117,8 @@ def standard_run(study_id,
     scraper.remove_identical_seqs()
     scraper.generate_streamed_alignment()
     while scraper.repeat == 1:
-        scraper.data.write_labelled(label='^ot:ottTaxonName')
-        scraper.data.write_otus("otu_info", schema='table')
+        scraper.data.write_labelled(label="^ot:ottTaxonName")
+        scraper.data.write_otus("otu_info", schema="table")
         if shared_blast_folder:
             scraper.blast_subdir = shared_blast_folder
         else:
@@ -144,13 +157,13 @@ def own_data_run(seqaln,
                                 give the path to the folder with the shared runs.
     """
 
-    debug('Debugging mode is on')
+    debug("Debugging mode is on")
 
-    if os.path.isfile("{}/scrape_checkpoint.p".format(workdir)): 
+    if os.path.isfile("{}/scrape_checkpoint.p".format(workdir)):
         sys.stdout.write("Reloading from pickled scrapefile: ATT\n")
-        scraper = pickle.load(open("{}/scrape_checkpoint.p".format(workdir), 'rb'))
-        scraper.repeat = 1    
-    else:   
+        scraper = pickle.load(open("{}/scrape_checkpoint.p".format(workdir), "rb"))
+        scraper.repeat = 1
+    else:
         sys.stdout.write("setting up Data Object\n")
         sys.stdout.flush()
         # read the config file into a configuration object
@@ -167,8 +180,8 @@ def own_data_run(seqaln,
         # Prune sequences below a certain length threshold
         data_obj.prune_short()
         data_obj.write_files()
-        data_obj.write_labelled(label='^ot:ottTaxonName')
-        data_obj.write_otus("otu_info", schema='table')
+        data_obj.write_labelled(label="^ot:ottTaxonName")
+        data_obj.write_otus("otu_info", schema="table")
         data_obj.dump()
 
         sys.stdout.write("setting up ID dictionaries\n")
@@ -184,7 +197,7 @@ def own_data_run(seqaln,
         scraper.read_blast_wrapper(blast_dir=shared_blast_folder)
         scraper.remove_identical_seqs()
         scraper.generate_streamed_alignment()
-    while scraper.repeat == 1: 
+    while scraper.repeat == 1:
         scraper.run_blast_wrapper(delay=14)
         if shared_blast_folder:
             scraper.blast_subdir = shared_blast_folder
@@ -193,7 +206,7 @@ def own_data_run(seqaln,
         scraper.read_blast_wrapper(blast_dir=shared_blast_folder)
         scraper.remove_identical_seqs()
         scraper.generate_streamed_alignment()
-    return 1 
+    return 1
 
 
 def filter_OTOL(study_id,
@@ -212,8 +225,8 @@ def filter_OTOL(study_id,
     """looks for pickeled file to continue run, or builds and runs
     new analysis for as long as new seqs are found. 
     This uses the FilterBlast subclass to be able to filter the blast output."""
-    debug('Debugging mode is on')
-    if os.path.isfile("{}/scrape_checkpoint.p".format(workdir)): 
+    debug("Debugging mode is on")
+    if os.path.isfile("{}/scrape_checkpoint.p".format(workdir)):
         sys.stdout.write("Reloading from pickled scrapefile: scrape\n")
         filteredScrape = pickle.load(open("{}/scrape_checkpoint.p".format(workdir), 'rb'))
         filteredScrape.repeat = 1   
@@ -233,8 +246,8 @@ def filter_OTOL(study_id,
         # This is particularly important when using loci that have been de-concatenated, as some are 0 length which causes problems.
         data_obj.prune_short()
         data_obj.write_files()
-        data_obj.write_labelled(label='^ot:ottTaxonName', add_gb_id=True)
-        data_obj.write_otus("otu_info", schema='table')
+        data_obj.write_labelled(label="^ot:ottTaxonName", add_gb_id=True)
+        data_obj.write_otus("otu_info", schema="table")
         data_obj.dump()
 
         sys.stdout.write("setting up id dictionaries\n")
@@ -274,8 +287,8 @@ def filter_OTOL(study_id,
             filteredScrape.generate_streamed_alignment()
             filteredScrape.dump()
     while filteredScrape.repeat == 1:
-        filteredScrape.data.write_labelled(label='^ot:ottTaxonName', add_gb_id=True)
-        filteredScrape.data.write_otus("otu_info", schema='table')
+        filteredScrape.data.write_labelled(label="^ot:ottTaxonName", add_gb_id=True)
+        filteredScrape.data.write_otus("otu_info", schema="table")
         sys.stdout.write("BLASTing input sequences\n")
         filteredScrape.run_blast_wrapper(delay=14)
         filteredScrape.read_blast_wrapper(blast_dir=shared_blast_folder)
@@ -315,8 +328,8 @@ def add_unpubl_to_backbone(seqaln,
     It adds unpublished data to an input tree (evalue should be higher than usual).
     Backbone will not be updated
     """
-    debug('Debugging mode is on')
-    if os.path.isfile("{}/scrape_checkpoint.p".format(workdir)): 
+    debug("Debugging mode is on")
+    if os.path.isfile("{}/scrape_checkpoint.p".format(workdir)):
         sys.stdout.write("Reloading from pickled scrapefile: scrape\n")
         filteredScrape = pickle.load(open("{}/scrape_checkpoint.p".format(workdir), 'rb'))
         filteredScrape.repeat = 1   
@@ -339,8 +352,8 @@ def add_unpubl_to_backbone(seqaln,
         # This is particularly important when using loci that have been de-concatenated, as some are 0 length which causes problems.
         data_obj.prune_short()
         data_obj.write_files()
-        data_obj.write_labelled(label='^ot:ottTaxonName', add_gb_id=True)
-        data_obj.write_otus("otu_info", schema='table')
+        data_obj.write_labelled(label="^ot:ottTaxonName", add_gb_id=True)
+        data_obj.write_otus("otu_info", schema="table")
         data_obj.dump()
 
         sys.stdout.write("setting up id dictionaries\n")
@@ -430,14 +443,14 @@ def filter_data_run(seqaln,
     new analysis for as long as new seqs are found. 
     This uses the FilterBlast subclass to be able to filter the blast output.
     """
-    debug('Debugging mode is on')
+    debug("Debugging mode is on")
 
     # debug(shared_blast_folder)
     # debug(some)
     # if _DEBUG_MK == 1:
     #     random.seed(3269235691)
     print(workdir)
-    if os.path.isfile("{}/scrape_checkpoint.p".format(workdir)): 
+    if os.path.isfile("{}/scrape_checkpoint.p".format(workdir)):
         sys.stdout.write("Reloading from pickled scrapefile: scrape\n")
         filteredScrape = pickle.load(open("{}/scrape_checkpoint.p".format(workdir), 'rb'))
         filteredScrape.repeat = 1   
@@ -459,8 +472,8 @@ def filter_data_run(seqaln,
         # This is particularly important when using loci that have been de-concatenated, as some are 0 length which causes problems.
         data_obj.prune_short()
         data_obj.write_files()
-        data_obj.write_labelled(label='^ot:ottTaxonName', add_gb_id=True)
-        data_obj.write_otus("otu_info", schema='table')
+        data_obj.write_labelled(label="^ot:ottTaxonName", add_gb_id=True)
+        data_obj.write_otus("otu_info", schema="table")
         data_obj.dump()
         sys.stdout.write("setting up id dictionaries\n")
         sys.stdout.flush()
@@ -502,13 +515,13 @@ def filter_data_run(seqaln,
                 filteredScrape.replace_new_seq()
             sys.stdout.write("Calculate the phylogeny\n")
             filteredScrape.generate_streamed_alignment()
-            filteredScrape.data.write_otus("otu_info", schema='table')
+            filteredScrape.data.write_otus("otu_info", schema="table")
             filteredScrape.write_otu_info(downtorank)
 
             filteredScrape.dump()
     while filteredScrape.repeat == 1:
-        filteredScrape.data.write_labelled(label='^ot:ottTaxonName', add_gb_id=True)
-        filteredScrape.data.write_otus("otu_info", schema='table')
+        filteredScrape.data.write_labelled(label="^ot:ottTaxonName", add_gb_id=True)
+        filteredScrape.data.write_otus("otu_info", schema="table")
         sys.stdout.write("BLASTing input sequences\n")
         if shared_blast_folder:
             filteredScrape.blast_subdir = shared_blast_folder
@@ -544,18 +557,20 @@ def make_settings_class(seqaln, mattype, trfn, schema_trf, workdir,
                         add_unpubl_seq=add_unpubl_seq, id_to_spn_addseq_json=id_to_spn_addseq_json, configfi=configfi,
                         blacklist=blacklist, shared_blast_folder=shared_blast_folder, delay=delay, trim=trim)
     return settings
-    
+
 
 def run_with_settings(settings):
     """looks for pickeled file to continue run, or builds and runs
     new analysis for as long as new seqs are found. 
     This uses the FilterBlast subclass to be able to filter the blast output."""
-    debug('Debugging mode is on')
-    if os.path.isfile("{}/scrape_checkpoint.p".format(settings.workdir)): 
+    debug("Debugging mode is on")
+    if os.path.isfile("{}/scrape_checkpoint.p".format(settings.workdir)):
         sys.stdout.write("Reloading from pickled scrapefile: scrape\n")
-        filteredScrape = pickle.load(open("{}/scrape_checkpoint.p".format(settings.workdir), 'rb'))
-        filteredScrape.repeat = 1   
-    else: 
+        filteredScrape = pickle.load(
+            open("{}/scrape_checkpoint.p".format(settings.workdir), "rb")
+        )
+        filteredScrape.repeat = 1
+    else:
         conf = ConfigObj(settings.configfi)
         # print("config")
         debug(dir(conf))
@@ -575,10 +590,10 @@ def run_with_settings(settings):
         data_obj.prune_short()
         data_obj.write_files()
 
-        data_obj.write_labelled(label='^ot:ottTaxonName', add_gb_id=True)
-        data_obj.write_otus("otu_info", schema='table')
+        data_obj.write_labelled(label="^ot:ottTaxonName", add_gb_id=True)
+        data_obj.write_otus("otu_info", schema="table")
         data_obj.dump()
-        
+
         ids = IdDicts(conf, workdir=settings.workdir)
 
         filteredScrape = FilterBlast(data_obj, ids, settings)
@@ -613,8 +628,8 @@ def run_with_settings(settings):
             filteredScrape.generate_streamed_alignment()
             filteredScrape.dump()
     while filteredScrape.repeat is 1:
-        filteredScrape.data.write_labelled(label='^ot:ottTaxonName', add_gb_id=True)
-        filteredScrape.data.write_otus("otu_info", schema='table')
+        filteredScrape.data.write_labelled(label="^ot:ottTaxonName", add_gb_id=True)
+        filteredScrape.data.write_otus("otu_info", schema="table")
         filteredScrape.run_blast_wrapper(settings.delay)
         filteredScrape.read_blast_wrapper(blast_dir=settings.shared_blast_folder)
         filteredScrape.remove_identical_seqs()

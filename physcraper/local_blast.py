@@ -151,10 +151,10 @@ def write_filterblast_files(workdir, file_name, seq, db=False, fn=None):
         os.makedirs("{}/blast/".format(workdir))
     if db:
         fnw = "{}/blast/{}_db".format(workdir, fn)
-        fi_o = open(fnw, 'a')
+        fi_o = open(fnw, "a")
     else:
         fnw = "{}/blast/{}_tobeblasted".format(workdir, fn)
-        fi_o = open(fnw, 'w')
+        fi_o = open(fnw, "w")
     fi_o.write(">{}\n".format(file_name))
     fi_o.write("{}\n".format(str(seq).replace("-", "")))
     fi_o.close()

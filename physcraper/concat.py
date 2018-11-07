@@ -13,7 +13,7 @@ from Bio import Entrez
 from __init__ import debug
 
 
-if sys.version_info < (3, ):
+if sys.version_info < (3,):
     from urllib2 import HTTPError
 else:
     from urllib.error import HTTPError
@@ -168,7 +168,7 @@ class Concat(object):
         :return: self.single_runs
         """
         debug("load_single_genes: {}".format(genename))
-        scrape = pickle.load(open("{}/{}".format(workdir, pickle_fn), 'rb'))
+        scrape = pickle.load(open("{}/{}".format(workdir, pickle_fn), "rb"))
         scrape = remove_aln_tre_leaf(scrape)
         self.single_runs[genename] = deepcopy(scrape)
         return
@@ -202,14 +202,14 @@ class Concat(object):
         data = self.single_runs[genename].data.otu_dict[otu]
         seq = str(self.single_runs[genename].data.aln[otu])
         spn = None
-        if '^ot:ottTaxonName' in data:
-            spn = self.get_taxon_info('^ot:ottTaxonName', data)
+        if "^ot:ottTaxonName" in data:
+            spn = self.get_taxon_info("^ot:ottTaxonName", data)
             if spn not in self.sp_acc_comb:
                 self.sp_acc_comb[spn] = {}
             if genename not in self.sp_acc_comb[spn]:
                 self.sp_acc_comb[spn][genename] = {}
-        elif '^user:TaxonName' in data:
-            spn = self.get_taxon_info('^user:TaxonName', data)
+        elif "^user:TaxonName" in data:
+            spn = self.get_taxon_info("^user:TaxonName", data)
             if spn not in self.sp_acc_comb:
                 self.sp_acc_comb[spn] = {}
             if genename not in self.sp_acc_comb[spn]:
@@ -219,21 +219,30 @@ class Concat(object):
             debug("THERE IS A SERIOUS PROBLEM....")
         assert spn is not None
         if concat_id not in self.sp_acc_comb[spn][genename]:
-            if '^ncbi:accession' in data:
-                unique_id = data['^ncbi:accession']
-            elif u'^ot:originalLabel' in data:
-                unique_id = data[u'^ot:originalLabel']
-            concat_dict = {"unique_id": unique_id, "seq": seq, "spn": spn, "original_PS_id": otu,
-                           "concat:status": "single run"}
+            if "^ncbi:accession" in data:
+                unique_id = data["^ncbi:accession"]
+            elif u"^ot:originalLabel" in data:
+                unique_id = data[u"^ot:originalLabel"]
+            concat_dict = {
+                "unique_id": unique_id,
+                "seq": seq,
+                "spn": spn,
+                "original_PS_id": otu,
+                "concat:status": "single run",
+            }
             self.sp_acc_comb[spn][genename][concat_id] = concat_dict
         else:
-            debug("something goes wrong, you should not try to add the same id several times....")
-        if concat_dict['spn'] is None:
+            debug(
+                "something goes wrong, you should not try to add the same id several times...."
+            )
+        if concat_dict["spn"] is None:
             # we should never get here....
-            sys.stderr.write("There is no species name for the seq. Do not know how to concatenate then. "
-                             "Please remove seq from aln: {}.".format(data['^ncbi:accession']))
+            sys.stderr.write(
+                "There is no species name for the seq. Do not know how to concatenate then. "
+                "Please remove seq from aln: {}.".format(data["^ncbi:accession"])
+            )
             debug("THERE IS A SERIOUS PROBLEM....spn is none")
-            spn = self.get_taxon_info('^ot:ottTaxonName', data)
+            spn = self.get_taxon_info("^ot:ottTaxonName", data)
             self.sp_acc_comb[spn] = self.sp_acc_comb[unique_id]
             del self.sp_acc_comb[unique_id]
 
@@ -250,8 +259,8 @@ class Concat(object):
         tax_name = None
         if key in data:
             if data[key] is None:
-                if '^ncbi:accession' in data:
-                    gb_id = data['^ncbi:accession']
+                if "^ncbi:accession" in data:
+                    gb_id = data["^ncbi:accession"]
                 Entrez.email = self.email
                 tries = 5
                 for i in range(tries):
@@ -271,7 +280,7 @@ class Concat(object):
         assert tax_name is not None
         tax_name = tax_name.replace("_", " ")
         tax_name = tax_name.replace(".", "").replace("'", "")
-        tax_name = tax_name.encode('ascii')
+        tax_name = tax_name.encode("ascii")
         return tax_name
 
     def sp_seq_counter(self):
@@ -302,7 +311,7 @@ class Concat(object):
         """Find the single gene tree with the most tips, which will be used as
         starting tree for concat phylo reconstruction.
         """
-        debug('get_largest_tre')
+        debug("get_largest_tre")
         first = True
         len_all_taxa = {}
         for gene in self.single_runs:
@@ -463,11 +472,11 @@ class Concat(object):
         """
         if self.tre_start_gene == gene:
             spn = spn_.replace("_", " ")
-            former_otu = self.sp_acc_comb[spn][gene][random_gen]['original_PS_id']
+            former_otu = self.sp_acc_comb[spn][gene][random_gen]["original_PS_id"]
             for otu in self.tre_as_start.taxon_namespace:
                 if otu.label == former_otu:
-                    if 'new tipname' in self.sp_acc_comb[spn][gene][random_gen]:
-                        spn_ = self.sp_acc_comb[spn][gene][random_gen]['new tipname']
+                    if "new tipname" in self.sp_acc_comb[spn][gene][random_gen]:
+                        spn_ = self.sp_acc_comb[spn][gene][random_gen]["new tipname"]
                     self.concat_tips[otu.label] = spn_
         return self.concat_tips
 
@@ -588,7 +597,7 @@ class Concat(object):
             total_len = len(seq)
             break
         assert total_len != 0
-        min_len = (total_len * percentage)
+        min_len = total_len * percentage
         prune_shortest = []
         for tax, len_seq in seq_len.items():
             if len_seq < min_len:
@@ -654,7 +663,7 @@ class Concat(object):
                     spn_l[spn].append(unique_id)
                 else:
                     spn_l[spn] = [unique_id]
-        with open('{}/concatenation.csv'.format(self.workdir), 'w') as csv_file:
+        with open("{}/concatenation.csv".format(self.workdir), "w") as csv_file:
             writer = csv.writer(csv_file)
             writer.writerow(genel)
             for key, value in spn_l.items():
@@ -716,7 +725,7 @@ class Concat(object):
         cwd = os.getcwd()
         os.chdir(self.workdir)
         if os.path.exists("place_resolve.tre"):
-            starting_fn = 'place_resolve.tre'
+            starting_fn = "place_resolve.tre"
         else:
             starting_fn = "starting_red.tre"
         if os.path.exists("concat_red.fasta.reduced"):
@@ -777,7 +786,7 @@ class Concat(object):
         (is the replacement function for select_rnd_seq).
         """
         debug("user_defined_concat")
-        with open("{}/{}".format(self.workdir, self.concatfile), mode='r') as infile:
+        with open("{}/{}".format(self.workdir, self.concatfile), mode="r") as infile:
             reader = csv.reader(infile)
             sp_concat = dict((rows[0], rows[1]) for rows in reader)
         for otu in sp_concat.keys():
@@ -795,18 +804,18 @@ class Concat(object):
                     spn = None
                     for key, val in self.single_runs[gene].data.otu_dict.items():
                         if item.isdigit():
-                            if '^ncbi:accession' in val:
-                                if item == val['^ncbi:accession']:
-                                    spn = val['^ot:ottTaxonName']
+                            if "^ncbi:accession" in val:
+                                if item == val["^ncbi:accession"]:
+                                    spn = val["^ot:ottTaxonName"]
                                     gene_l.append(gene)
                         else:
-                            if '^ncbi:accession' in val:
-                                if item == val['^ncbi:accession']:
-                                    spn = val['^ot:ottTaxonName']
+                            if "^ncbi:accession" in val:
+                                if item == val["^ncbi:accession"]:
+                                    spn = val["^ot:ottTaxonName"]
                                     gene_l.append(gene)
-                            elif u'^ot:originalLabel' in val:
-                                if item == val[u'^ot:originalLabel']:
-                                    spn = val['^ot:ottTaxonName']
+                            elif u"^ot:originalLabel" in val:
+                                if item == val[u"^ot:originalLabel"]:
+                                    spn = val["^ot:ottTaxonName"]
                                     gene_l.append(gene)
                         if spn is not None:
                             global_spn = spn.replace(".", "").replace("'", "")
