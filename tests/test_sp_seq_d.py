@@ -1,3 +1,5 @@
+from __future__ import print_function, absolute_import
+
 import sys
 import os
 from physcraper import ConfigObj, IdDicts, FilterBlast
@@ -13,29 +15,24 @@ treshold = 2
 selectby = "blast"
 downtorank = None
 
+def test_sp_seq_d():
 
-absworkdir = os.path.abspath(workdir)
-try:
+
+    absworkdir = os.path.abspath(workdir)
     conf = ConfigObj(configfi, interactive=False)
     data_obj = pickle.load(open("tests/data/precooked/tiny_dataobj.p", 'rb'))
     data_obj.workdir = absworkdir
     ids = IdDicts(conf, workdir=data_obj.workdir)
     ids.acc_ncbi_dict = pickle.load(open("tests/data/precooked/tiny_acc_map.p", "rb"))
-except:
-    sys.stdout.write("\n\nTest FAILED\n\n")
-    sys.exit(-1)
-filteredScrape =  FilterBlast(data_obj, ids)
+    filteredScrape =  FilterBlast(data_obj, ids)
+    filteredScrape._blasted = 1
+    blast_dir = "tests/data/precooked/fixed/tte_blast_files"
+    # filteredScrape.acc_list_mrca = pickle.load(open("tests/data/precooked/acc_list_mrca.p", 'rb'))
+    filteredScrape.read_blast_wrapper(blast_dir=blast_dir)
+    filteredScrape.remove_identical_seqs()
+    filteredScrape.sp_dict(downtorank)
+    filteredScrape.seq_filter = ['deleted', 'subsequence,', 'not', "removed", "deleted,"]
 
-
-filteredScrape._blasted = 1
-blast_dir = "tests/data/precooked/fixed/tte_blast_files"
-# filteredScrape.acc_list_mrca = pickle.load(open("tests/data/precooked/acc_list_mrca.p", 'rb'))
-filteredScrape.read_blast_wrapper(blast_dir=blast_dir)
-filteredScrape.remove_identical_seqs()
-filteredScrape.sp_dict(downtorank)
-filteredScrape.seq_filter = ['deleted', 'subsequence,', 'not', "removed", "deleted,"]
-
-try:
     gi_sp_d = []
     for key in filteredScrape.sp_d:
         v = filteredScrape.sp_d[key]  
@@ -71,7 +68,3 @@ try:
     assert len(ott_sp_seq_d) == len(user_sp_d)
     assert len(gi_sp_seq_d) == len(gi_sp_d)
     # print("The length of the gi and user input names in sp_d and sp_seq_dict are the same")
-    sys.stdout.write("\ntest passed\n")
-except:
-    # print("FAILED:test sp_seq d not working!")
-    sys.stderr.write("\ntest failed\n")
