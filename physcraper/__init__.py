@@ -194,49 +194,52 @@ class ConfigObj(object):
         If not files will be downloaded.
         """
         if self.blast_loc == 'local':
-            if not os.path.isfile("{}/nt.01.nhr".format(self.blastdb)):
-                print("Do you want to download the blast nt databases from ncbi? Note: "
-                      "This is a US government website! You agree to their terms")
-                x = get_raw_input()
-                if x == "yes":
-                    os.system("wget 'ftp://ftp.ncbi.nlm.nih.gov/blast/db/nt.*'" 
-                              "{}/".format(self.blastdb))
-                    os.system("wget 'ftp://ftp.ncbi.nlm.nih.gov/blast/db/taxdb.tar.gz'" 
-                              "{}/".format(self.blastdb))
-                    cwd = os.getcwd()
-                    os.chdir(self.blastdb)
-                    os.system("update_blastdb nt")
-                    os.system("cat *.tar.gz | tar -xvzf - -i")
-                    os.system("gunzip -cd taxdb.tar.gz | (tar xvf - )")
-                    os.chdir(cwd)
-                elif x == "no":
-                    print("You did not agree to download data from ncbi. Program will default to blast web-queries.")
-                    print("This is slow and crashes regularly!")
-                    self.blast_loc = 'remote'
-                else:
-                    print("You did not type yes or no!")
-            else:
-                download_date = os.path.getmtime("{}/nt.01.nhr".format(self.blastdb))
-                download_date = datetime.datetime.fromtimestamp(download_date)
-                today = datetime.datetime.now()
-                time_passed = (today - download_date).days
-                if time_passed >= 90:
-                    print("Your databases might not be uptodate anymore. You downloaded them {} days ago. "
-                          "Do you want to update the blast databases from ncbi? Note: This is a US government website! "
-                          "You agree to their terms".format(time_passed))
+            # nest line of codes exists to have interactive mode enabled while testing
+            # this allows to not actually have a local nsbi database downloaded
+            if not os.path.isfile("{}/empty_local_db_for_testing.nhr".format(self.blastdb)):
+                if not os.path.isfile("{}/nt.01.nhr".format(self.blastdb)):
+                    print("Do you want to download the blast nt databases from ncbi? Note: "
+                          "This is a US government website! You agree to their terms")
                     x = get_raw_input()
                     if x == "yes":
+                        os.system("wget 'ftp://ftp.ncbi.nlm.nih.gov/blast/db/nt.*'" 
+                                  "{}/".format(self.blastdb))
+                        os.system("wget 'ftp://ftp.ncbi.nlm.nih.gov/blast/db/taxdb.tar.gz'" 
+                                  "{}/".format(self.blastdb))
                         cwd = os.getcwd()
                         os.chdir(self.blastdb)
-                        os.system('update_blastdb nt')
-                        os.system('cat *.tar.gz | tar -xvzf - -i')
-                        os.system("update_blastdb taxdb")
+                        os.system("update_blastdb nt")
+                        os.system("cat *.tar.gz | tar -xvzf - -i")
                         os.system("gunzip -cd taxdb.tar.gz | (tar xvf - )")
                         os.chdir(cwd)
                     elif x == "no":
-                        print("You did not agree to update data from ncbi. Old database files will be used.")
+                        print("You did not agree to download data from ncbi. Program will default to blast web-queries.")
+                        print("This is slow and crashes regularly!")
+                        self.blast_loc = 'remote'
                     else:
-                        print("You did not type 'yes' or 'no'!")
+                        print("You did not type yes or no!")
+                else:
+                    download_date = os.path.getmtime("{}/nt.01.nhr".format(self.blastdb))
+                    download_date = datetime.datetime.fromtimestamp(download_date)
+                    today = datetime.datetime.now()
+                    time_passed = (today - download_date).days
+                    if time_passed >= 90:
+                        print("Your databases might not be uptodate anymore. You downloaded them {} days ago. "
+                              "Do you want to update the blast databases from ncbi? Note: This is a US government website! "
+                              "You agree to their terms".format(time_passed))
+                        x = get_raw_input()
+                        if x == "yes":
+                            cwd = os.getcwd()
+                            os.chdir(self.blastdb)
+                            os.system('update_blastdb nt')
+                            os.system('cat *.tar.gz | tar -xvzf - -i')
+                            os.system("update_blastdb taxdb")
+                            os.system("gunzip -cd taxdb.tar.gz | (tar xvf - )")
+                            os.chdir(cwd)
+                        elif x == "no":
+                            print("You did not agree to update data from ncbi. Old database files will be used.")
+                        else:
+                            print("You did not type 'yes' or 'no'!")
 
     def _download_ncbi_parser(self):
         """Check if files are present and if they are up to date.
@@ -1199,7 +1202,7 @@ class IdDicts(object):
                             ncbi_id = Entrez.read(Entrez.esearch(db="taxonomy", term=tax_name, RetMax=100))['IdList'][0]
 
                         ncbi_id = int(ncbi_id)
-                    except (IndexError, HTTPError) as err: 
+                    except (IndexError, HTTPError) as err:
                         if i < tries - 1:  # i is zero indexed
                             continue
                         else:
@@ -1215,7 +1218,7 @@ class IdDicts(object):
                         tax_name = "'{}'".format(tax_name)
                         tax_info = ncbi.get_name_translator([tax_name])
                     ncbi_id = int(tax_info.items()[0][1][0])
-                except: 
+                except (IndexError, HTTPError) as err:
                     sys.stderr.write("Taxon name does not match any name in ncbi. Check that name is written "
                                      "correctly: {}! We set it to unidentified".format(tax_name))
                     tax_name = 'unidentified'
@@ -1326,7 +1329,7 @@ class IdDicts(object):
         return tax_name
 
     def map_acc_ncbi(self, gb_id):
-        """get the ncbi taxon id's for a genbank identifier input.
+        """get the ncbi taxon id's for a Genbank identifier input.
 
         Finds different identifiers and information from a given gb_id and fills the corresponding self.objects
         with the retrieved information.
@@ -1425,7 +1428,7 @@ class PhyscraperScrape(object):
         #### Following functions are called during the init-process:
         * **self.reset_markers()**: 
              adds things to self: I think they are used to make sure certain function run, if program crashed and pickle file is read in.
-            * self._blasted: 0/1, if run_blast() was called, it is set to 1 for the round.
+            * self._blasted: 0/1, if run_blast_wrapper() was called, it is set to 1 for the round.
             * self._blast_read: 0/1, if read_blast_wrapper() was called, it is set to 1 for the round.
             * self._identical_removed: 0
             * self._query_seqs_written: 0/1, if write_query_seqs() was called, it is set to 1 for the round.
@@ -1433,7 +1436,7 @@ class PhyscraperScrape(object):
             * self._query_seqs_placed: 0/1, if place_query_seqs() was called, it is set to 1 for the round.
             * self._reconciled: 0
             * self._full_tree_est: 0/1, if est_full_tree() was called, it is set to 1 for the round.
-        * **self.OToL_unmapped_tips()**: function that either removes or mappes unmapped taxa from OToL studies
+        * **self.OToL_unmapped_tips()**: function that either removes or maps unmapped taxa from OToL studies
     """
 
     def __init__(self, data_obj, ids_obj):
@@ -1527,15 +1530,32 @@ class PhyscraperScrape(object):
         outfmt = " -outfmt '6 sseqid staxids sscinames pident evalue bitscore sseq stitle'"
         # outfmt = " -outfmt 5"  # format for xml file type
         # TODO query via stdin
-        blastcmd = "blastn -query " + \
-                   "{}/tmp.fas".format(abs_blastdir) + \
-                   " -db {}nt -out ".format(self.config.blastdb) + \
-                   abs_fn + \
+        blastcmd = "blastn -query " + "{}/tmp.fas".format(abs_blastdir) + \
+                   " -db {}nt -out ".format(self.config.blastdb) + abs_fn + \
                    " {} -num_threads {}".format(outfmt, self.config.num_threads) + \
                    " -max_target_seqs {} -max_hsps {}".format(self.config.hitlist_size,
                                                               self.config.hitlist_size)
         os.system(blastcmd)
         os.chdir(cwd)
+
+    def local_blast_for_unpublished(self, query, taxon):
+        """
+        Run a local blast search if the data is unpublished.
+
+        :param query: query sequence
+        :param taxon: taxon.label used as identifier for the sequences
+        :return: xml files with the results of the local blast
+        """
+        debug("run against local unpublished data")
+        toblast = open("{}/tmp.fas".format(self.blast_subdir), 'w')
+        toblast.write(">{}\n".format(taxon))
+        toblast.write("{}\n".format(query))
+        toblast.close()
+        blast_db = "local_unpubl_seq_db"
+        output = "tst_fn"
+        blastcmd = "blastn -query {}/tmp.fas -db {} -out output_{}.xml " \
+                   "-outfmt 5".format(self.blast_subdir, blast_db, output)
+        os.system(blastcmd)
 
     def run_web_blast_query(self, query, equery, fn_path):
         """Equivalent to run_local_blast_cmd() but for webqueries, 
@@ -1572,7 +1592,7 @@ class PhyscraperScrape(object):
         :param delay: number that determines when a previously blasted sequence is reblasted - time is in days
         :return: writes blast queries to file
         """
-        debug("run_blast")
+        debug("run_blast_wrapper")
         if not os.path.exists(self.blast_subdir):
             os.makedirs(self.blast_subdir)
         with open(self.logfile, "a") as log:
@@ -1587,16 +1607,7 @@ class PhyscraperScrape(object):
                 time_passed = abs((datetime.datetime.strptime(today, "%Y/%m/%d") - datetime.datetime.strptime(last_blast, "%Y/%m/%d")).days)
                 query = seq.symbols_as_string().replace("-", "").replace("?", "")
                 if self.unpublished:
-                    debug("run against local unpublished data")
-                    toblast = open("{}/tmp.fas".format(self.blast_subdir), 'w')
-                    toblast.write(">{}\n".format(taxon.label))
-                    toblast.write("{}\n".format(query))
-                    toblast.close()
-                    blast_db = "local_unpubl_seq_db"
-                    output = "tst_fn"
-                    blastcmd = "blastn -query {}/tmp.fas -db {} -out output_{}.xml " \
-                               "-outfmt 5".format(self.blast_subdir, blast_db, output)
-                    os.system(blastcmd)
+                    self.local_blast_for_unpublished(query, taxon.label)
                     if self.backbone is True:
                         self.data.otu_dict[otu_id]['^physcraper:last_blasted'] = today
                 else:
@@ -1641,40 +1652,40 @@ class PhyscraperScrape(object):
                     else:
                         if _VERBOSE:
                             sys.stdout.write("otu {} was last blasted {} days ago and is not being re-blasted. "
-                                             "Use run_blast(delay = 0) to force a search.\n".format(otu_id, last_blast))
+                                             "Use run_blast_wrapper(delay = 0) to force a search.\n".format(otu_id, last_blast))
         self._blasted = 1
 
-    def get_all_acc_mrca(self):
-        """get all available acc numbers from Genbank for mrca.
-
-        The list will be used to filter out sequences from the local Blast search,
-        that do not belong to ingroup
-
-        :return: list of corresponding Genbank identifiers
-        """
-        # TODO MK: gi list limited to 100000000, for huge trees that is a problem. Think of what to do...
-        debug("get_all_acc_mrca")
-        Entrez.email = self.config.email
-        # NOTE MK: if mrca ingroup is list, use the list not the mrca_ncbi/ott
-        if len(self.ids.mrca_ncbi) >= 2:
-            len_ncbi = len(self.ids.mrca_ncbi)
-            equery = '('
-            for ncbi_id in self.ids.mrca_ncbi:
-                if len_ncbi >= 2:
-                    equery = equery + "txid{}[orgn] OR ".format(ncbi_id)
-                    len_ncbi = len_ncbi - 1
-                else:
-                    equery = equery + "txid{}[orgn])".format(ncbi_id)
-        else:
-            equery = "txid{}[orgn]".format(self.mrca_ncbi)
-        handle = Entrez.esearch(db="nucleotide", term=equery, idtype='acc',
-                                usehistory='n', RetMax=100000000)
-        records = Entrez.read(handle)
-        id_list = records['IdList']
-        acc_l = []
-        for acc_id in id_list:
-            acc_l.append(str(acc_id))
-        return acc_l
+    # def get_all_acc_mrca(self):
+    #     """get all available acc numbers from Genbank for mrca.
+    #
+    #     The list will be used to filter out sequences from the local Blast search,
+    #     that do not belong to ingroup
+    #
+    #     :return: list of corresponding Genbank identifiers
+    #     """
+    #     # TODO MK: gi list limited to 100000000, for huge trees that is a problem. Think of what to do...
+    #     debug("get_all_acc_mrca")
+    #     Entrez.email = self.config.email
+    #     # NOTE MK: if mrca ingroup is list, use the list not the mrca_ncbi/ott
+    #     if len(self.ids.mrca_ncbi) >= 2:
+    #         len_ncbi = len(self.ids.mrca_ncbi)
+    #         equery = '('
+    #         for ncbi_id in self.ids.mrca_ncbi:
+    #             if len_ncbi >= 2:
+    #                 equery = equery + "txid{}[orgn] OR ".format(ncbi_id)
+    #                 len_ncbi = len_ncbi - 1
+    #             else:
+    #                 equery = equery + "txid{}[orgn])".format(ncbi_id)
+    #     else:
+    #         equery = "txid{}[orgn]".format(self.mrca_ncbi)
+    #     handle = Entrez.esearch(db="nucleotide", term=equery, idtype='acc',
+    #                             usehistory='n', RetMax=100000000)
+    #     records = Entrez.read(handle)
+    #     id_list = records['IdList']
+    #     acc_l = []
+    #     for acc_id in id_list:
+    #         acc_l.append(str(acc_id))
+    #     return acc_l
 
     def read_local_blast_query(self, fn_path):
         """ Implementation to read in results of local blast searches.
@@ -1715,6 +1726,33 @@ class PhyscraperScrape(object):
                 if gb_acc not in self.data.gb_dict:  # skip ones we already have
                     self.new_seqs[gb_acc] = query_dict[key]['sseq']
                     self.data.gb_dict[gb_acc] = query_dict[key]
+
+    def read_unpublished_blast_query(self):
+        """
+        Reads in the blast files generated during local_blast_for_unpublished() and adds seq to self.data.gb_dict and
+        self.new_seqs.
+
+        """
+        output_blast = "output_tst_fn.xml"
+        gb_counter = 1
+        general_wd = os.getcwd()
+        os.chdir(os.path.join(self.workdir, "blast"))
+        xml_file = open(output_blast)
+        os.chdir(general_wd)
+        blast_out = NCBIXML.parse(xml_file)
+        for blast_record in blast_out:
+            for alignment in blast_record.alignments:
+                for hsp in alignment.hsps:
+                    if float(hsp.expect) < float(self.config.e_value_thresh):
+                        local_id = alignment.title.split('|')[-1].split(' ')[-1]
+                        if local_id not in self.data.gb_dict:  # skip ones we already have
+                            unpbl_local_id = "unpubl_{}".format(local_id)
+                            self.new_seqs[unpbl_local_id] = hsp.sbjct
+                            self.data.gb_dict[unpbl_local_id] = {'title': "unpublished", 'localID': local_id}
+                            debug(self.data.unpubl_otu_json)
+                            self.data.gb_dict[unpbl_local_id].update(
+                                self.data.unpubl_otu_json['otu{}'.format(local_id)])
+                            gb_counter += 1
 
     def read_webbased_blast_query(self, fn_path):
         """ Implementation to read in results of web blast searches.
@@ -1764,28 +1802,10 @@ class PhyscraperScrape(object):
             if not os.path.exists(self.blast_subdir):
                 os.mkdir(self.blast_subdir)
         if self.unpublished:
-            output_blast = "output_tst_fn.xml"
-            gb_counter = 1
-            general_wd = os.getcwd()
-            os.chdir(os.path.join(self.workdir, "blast"))
-            xml_file = open(output_blast)
-            os.chdir(general_wd)
-            blast_out = NCBIXML.parse(xml_file)
-            for blast_record in blast_out:
-                for alignment in blast_record.alignments:
-                    for hsp in alignment.hsps:
-                        if float(hsp.expect) < float(self.config.e_value_thresh):
-                            local_id = alignment.title.split('|')[-1].split(' ')[-1]
-                            if local_id not in self.data.gb_dict:  # skip ones we already have
-                                unpbl_local_id = "unpubl_{}".format(local_id)
-                                self.new_seqs[unpbl_local_id] = hsp.sbjct
-                                self.data.gb_dict[unpbl_local_id] = {'title': "unpublished", 'localID': local_id}
-                                debug(self.data.unpubl_otu_json)
-                                self.data.gb_dict[unpbl_local_id].update(self.data.unpubl_otu_json['otu{}'.format(local_id)])
-                                gb_counter += 1
+            self.read_unpublished_blast_query()
         else:
             if not self._blasted:
-                self.run_blast()
+                self.run_blast_wrapper()
             assert os.path.exists(self.blast_subdir)
             for taxon in self.data.aln:
                 # debug(self.config.blast_loc)
@@ -2087,7 +2107,7 @@ class PhyscraperScrape(object):
             subprocess.call(["papara",
                              "-t", "random_resolve.tre",
                              "-s", "aln_ott.phy",
-                             "-j", "{}".format(self.config.num_threads),
+                           #  "-j", "{}".format(self.config.num_threads),
                              "-q", self.newseqs_file,
                              "-n", papara_runname])  # FIXME directory ugliness
             if _VERBOSE:
@@ -2222,7 +2242,6 @@ class PhyscraperScrape(object):
 
         """
         os.chdir(self.workdir)
-       
         try:
             num_threads = int(self.config.num_threads)
             print(num_threads)
@@ -2282,10 +2301,10 @@ class PhyscraperScrape(object):
                              "-n", "EMR{}".format(self.date)])
 
     def remove_blacklistitem(self):
-        """This removes items from aln, and tree, if the corresponding GEnbank identifer were added to the blacklist.
+        """This removes items from aln, and tree, if the corresponding Genbank identifer were added to the blacklist.
 
         Note, that seq that were not added because they were similar to the one being removed here, are lost
-        (that should not be a major issue though, as in a new blast_run, they can be added.)
+        (that should not be a major issue though, as in a new blast_run, new seqs from the taxon can be added.)
         """
         for tax in self.data.aln.taxon_namespace:
             gi_id = self.data.otu_dict[tax.label].get("^ncbi:gi")
@@ -2390,7 +2409,7 @@ class PhyscraperScrape(object):
                 key = gb_id_l[i].replace(">", "")
                 count = count + 1
                 seq = seq_l[i]
-                local_blast.write_blast_files(self.workdir, key, seq, db=True, fn="local_unpubl_seq")
+                local_blast.write_filterblast_files(self.workdir, key, seq, db=True, fn="local_unpubl_seq")
         os.chdir(os.path.join(self.workdir, "blast"))
         cmd1 = "makeblastdb -in {}_db -dbtype nucl".format("local_unpubl_seq")
         os.system(cmd1)
@@ -2436,8 +2455,8 @@ class FilterBlast(PhyscraperScrape):
         """
         Add FilterBlast items to self.
 
-        :param downtorank:
-        :param threshold:
+        :param downtorank: rank which defines your level of Filtering
+        :param threshold: number, defining how many seq per rank do you want to keep
         :return:
         """
         self.threshold = threshold
@@ -2574,10 +2593,11 @@ class FilterBlast(PhyscraperScrape):
         :param count: self.count_num_seq(tax_id)["seq_present"]
         :return: self.filtered_seq
         """
+        # TODO MK: add threshold and downto to self
         debug("select_seq_by_local_blast")
         self.threshold = threshold
         # debug([seq_d, fn])
-        seq_blast_score = local_blast.read_local_blast(self.workdir, seq_d, fn)
+        seq_blast_score = local_blast.read_filter_blast(self.workdir, seq_d, fn)
         random_seq_ofsp = {}
         if (threshold - count) <= 0:
             debug("already too many samples of sp in aln, skip adding more.")
@@ -2585,7 +2605,6 @@ class FilterBlast(PhyscraperScrape):
             random_seq_ofsp = seq_blast_score
         elif len(seq_blast_score.keys()) > (threshold - count):  # more seq available than need to be added, choose by random
             debug("choose random")
-
             random_seq_ofsp = random.sample(seq_blast_score.items(), (threshold - count))
             random_seq_ofsp = dict(random_seq_ofsp)
         elif len(seq_blast_score.keys()) < (threshold - count):  # less seq available than need to be added, just use all
@@ -2694,7 +2713,7 @@ class FilterBlast(PhyscraperScrape):
 
         Function returns a filename for the filter blast, which were generated with 'get_name_for_blastfiles()'.
 
-        Note: has test: test_loop_for_blast.py
+        Note: has test,test_loop_for_blast.py
 
         :param key: key of self.sp_d (taxon name)
         :return: name of the blast file
@@ -2709,10 +2728,9 @@ class FilterBlast(PhyscraperScrape):
                     for tax_name_aln, seq in self.data.aln.items():
                         otu_dict_name = self.ids.find_name(sp_dict=self.data.otu_dict[tax_name_aln.label])
                         if tax_name == otu_dict_name:
-                            debug(otu_dict_name)
+                            # debug(otu_dict_name)
                             filename = nametoreturn
-                            debug([tax_name_aln, tax_name_aln.label])
-                            local_blast.write_blast_files(self.workdir, tax_name_aln.label, seq, fn=nametoreturn)
+                            local_blast.write_filterblast_files(self.workdir, tax_name_aln.label, seq, fn=nametoreturn)
                 else:
                     if '^ncbi:accession' in otu_id:
                         gb_id = otu_id['^ncbi:accession']
@@ -2726,7 +2744,7 @@ class FilterBlast(PhyscraperScrape):
                                 if otu_id['^physcraper:status'].split(' ')[0] not in self.seq_filter:
                                     filename = gb_id
                                     seq = self.sp_seq_d[key][gb_id]
-                                    local_blast.write_blast_files(self.workdir, gb_id, seq, db=True, fn=nametoreturn)
+                                    local_blast.write_filterblast_files(self.workdir, gb_id, seq, db=True, fn=nametoreturn)
                     name_gbid = key
         if self.downtorank is not None:
             nametoreturn = key
@@ -2752,11 +2770,12 @@ class FilterBlast(PhyscraperScrape):
         query_count = 0
         for item in self.sp_d[tax_id]:
             if '^physcraper:status' in item and item['^physcraper:status'].split(' ')[0] not in self.seq_filter:
+                item_split = item['^physcraper:status'].split(' ')[0]
                 if item['^physcraper:last_blasted'] != '1800/01/01':
                     new_taxon = False
-                if item['^physcraper:status'] == "query"  or item['^physcraper:status'].split(' ')[0] == "new":
+                if item['^physcraper:status'] == "query"  or item_split == "new":
                     query_count += 1
-                if item['^physcraper:status'].split(' ')[0] == "added," or item['^physcraper:status'].split(' ')[0] == "original":
+                if item_split == "added," or item_split == "original":
                     seq_present += 1
         if new_taxon == False:
             assert seq_present != 0
@@ -2793,13 +2812,13 @@ class FilterBlast(PhyscraperScrape):
                                 debug("new taxon")
                                 blast_seq_id = self.sp_seq_d[tax_id].keys()[0]
                                 seq = self.sp_seq_d[tax_id][blast_seq_id]
-                                local_blast.write_blast_files(self.workdir, blast_seq_id, seq, fn=tax_id)  # blast qguy
+                                local_blast.write_filterblast_files(self.workdir, blast_seq_id, seq, fn=tax_id)  # blast guy
                                 blast_db = self.sp_seq_d[tax_id].keys()[1:]
                                 for blast_key in blast_db:
                                     seq = self.sp_seq_d[tax_id][blast_key]
-                                    local_blast.write_blast_files(self.workdir, blast_key, seq, db=True, fn=tax_id)
+                                    local_blast.write_filterblast_files(self.workdir, blast_key, seq, db=True, fn=tax_id)
                                 # make local blast of sequences
-                                local_blast.run_local_blast(self.workdir, tax_id, tax_id)
+                                local_blast.run_filter_blast(self.workdir, tax_id, tax_id)
                                 if len(self.sp_seq_d[tax_id]) + seq_present >= threshold:
                                     self.select_seq_by_local_blast(self.sp_seq_d[tax_id], tax_id, threshold, seq_present)
                                 elif len(self.sp_seq_d[tax_id]) + seq_present < threshold:
@@ -2813,7 +2832,7 @@ class FilterBlast(PhyscraperScrape):
                                     debug([tax_id,taxonfn])
                                     if self.downtorank is not None:
                                         taxonfn = tax_id
-                                    local_blast.run_local_blast(self.workdir, taxonfn, taxonfn)
+                                    local_blast.run_filter_blast(self.workdir, taxonfn, taxonfn)
                                     self.select_seq_by_local_blast(self.sp_seq_d[tax_id], taxonfn, threshold, seq_present)
                                     debug([tax_id])
                                     debug(self.filtered_seq)

@@ -10,6 +10,7 @@ from Bio.Blast import NCBIXML
 
 _DEBUG_MK = 0
 
+"""Functions are used within the FilterBlast class to select sequences based on a local blast filtering step."""
 
 def debug(msg):
     """short debugging command
@@ -20,15 +21,17 @@ def debug(msg):
 
 debug("Current local_blast version number: 10252018.0")
 
+
 def del_blastfiles(workdir):
     """Deletes all files in the local blast folder.
     """
-    try:    
+    try:
         shutil.rmtree(os.path.join(workdir, "blast"))
     except: 
         sys.stderr.write("Blast folder was not removed. Maybe it was not present?")
 
-def run_local_blast(workdir, blast_seq, blast_db, output=None):
+
+def run_filter_blast(workdir, blast_seq, blast_db, output=None):
     """Runs  a local blast to get measurement of differentiation between available sequences for the same taxon concept.
 
     The blast run will only be run if there are more sequences found than specified by the threshold value.
@@ -36,13 +39,19 @@ def run_local_blast(workdir, blast_seq, blast_db, output=None):
     The measure of differentiation will then be used to select a random representative from the taxon concept,
     but allows to exclude potential mis-identifications.
     In a later step (select_seq_by_local_blast) sequences will be selected based on the blast results generated here.
-    """
+
     # Note: has test, runs -> test_run_local_blast.py
-    debug("run_local_blast")
+
+    :param blast_seq: Name of the file which contains the query seq
+    :param blast_db:  Name of the file which contains the seq that shall be blasted against - Note, file needs to be in fasta format
+    :param output: Optional outpu filename
+    """
+
+    debug("run_filter_blast")
     general_wd = os.getcwd()
     os.chdir(os.path.join(workdir, "blast"))
     out_fn = "{}_tobeblasted".format(str(blast_seq))
-    cmd1 = "makeblastdb -in {}_db -dbtype nucl".format(blast_seq)
+    cmd1 = "makeblastdb -in {}_db -dbtype nucl".format(blast_db)
     os.system(cmd1)
     if output is None:
         cmd2 = "blastn -query {} -db {}_db -out output_{}.xml -outfmt 5".format(out_fn, blast_db, out_fn)
@@ -53,12 +62,17 @@ def run_local_blast(workdir, blast_seq, blast_db, output=None):
 
 
 def calculate_mean_sd(hsp_scores):
-    """Calculates standard deviation, mean of scores which are used as a measure of sequence differentiation
+    """Calculates standard deviation and mean of scores which are used as a measure of sequence differentiation
     for a given taxon.
 
     This is being used to select a random representative of a taxon later.
+
+    Note: has test, runs: test_calculate_mean_sd.py
+
+    :param hsp_scores: is a dict generated in read_filter_blast:
+                        hsp_scores[gi_id] = {'hsp.bits': hsp.bits, 'hsp.score': hsp.score,
+                                            'alignment.length': alignment.length, 'hsp.expect': hsp.expect}
     """
-    # Note: has test, runs: test_calculate_mean_sd.py
     debug('calculate_mean_sd')
     total_seq = 0
     bit_sum = 0
@@ -73,13 +87,15 @@ def calculate_mean_sd(hsp_scores):
     return mean_sd
 
 
-def read_local_blast(workdir, seq_d, fn):
+def read_filter_blast(workdir, seq_d, fn):
     """Reads the files of the local blast run and returns sequences below a value
-    (within the std of the mean scores of the hsp.bit scores at the moment).
+    (within the sd of the mean scores of the hsp.bit scores at the moment).
 
     (this is to make sure seqs chosen are representative of the taxon)
+
+    Note: has test, runs: test_read_local_blast.py
+
     """
-    # Note: has test, runs: test_read_local_blast.py
     general_wd = os.getcwd()
     os.chdir(os.path.join(workdir, "blast"))
     output_blast = "output_{}_tobeblasted.xml".format(fn)
@@ -127,8 +143,8 @@ def read_local_blast(workdir, seq_d, fn):
     return seq_blast_score
 
 
-def write_blast_files(workdir, file_name, seq, db=False, fn=None):
-    """Writes local blast files which will be read by run_local_blast.
+def write_filterblast_files(workdir, file_name, seq, db=False, fn=None):
+    """Writes local blast files which will be read by run_filter_blast.
     """
     debug("writing files")
     if not os.path.exists("{}/blast".format(workdir)):

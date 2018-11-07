@@ -12,6 +12,12 @@ from Bio import Entrez
 
 from __init__ import debug
 
+
+if sys.version_info < (3, ):
+    from urllib2 import HTTPError
+else:
+    from urllib.error import HTTPError
+
 """Code used to concatenate different single PhyScraper runs into a concatenated one.
 """
 debug("Current concat Version number: 11022018.0")
@@ -251,7 +257,8 @@ class Concat(object):
                 for i in range(tries):
                     try:
                         handle = Entrez.efetch(db="nucleotide", id=gb_id, retmode="xml")
-                    except: # TODO: is either IndexError or urllib2.HTTPError: HTTP Error 400: Bad Request
+                    except (IndexError, HTTPError) as err:
+                        sys.stderr.write(err)
                         if i < tries - 1:  # i is zero indexed
                             continue
                         else:

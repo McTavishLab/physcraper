@@ -99,7 +99,7 @@ def standard_run(study_id,
         scraper.blast_subdir = shared_blast_folder
     else:
         shared_blast_folder = None
-    scraper.run_blast(delay=14)
+    scraper.run_blast_wrapper(delay=14)
     scraper.read_blast_wrapper(blast_dir=shared_blast_folder)
     scraper.remove_identical_seqs()
     scraper.generate_streamed_alignment()
@@ -110,7 +110,7 @@ def standard_run(study_id,
             scraper.blast_subdir = shared_blast_folder
         else:
             shared_blast_folder = None
-        scraper.run_blast(delay=14)
+        scraper.run_blast_wrapper(delay=14)
         scraper.read_blast_wrapper(blast_dir=shared_blast_folder)
         scraper.remove_identical_seqs()
         scraper.generate_streamed_alignment()
@@ -180,12 +180,12 @@ def own_data_run(seqaln,
         else:
             shared_blast_folder = None
         # run the analyses
-        scraper.run_blast(delay=14)
+        scraper.run_blast_wrapper(delay=14)
         scraper.read_blast_wrapper(blast_dir=shared_blast_folder)
         scraper.remove_identical_seqs()
         scraper.generate_streamed_alignment()
     while scraper.repeat == 1: 
-        scraper.run_blast(delay=14)
+        scraper.run_blast_wrapper(delay=14)
         if shared_blast_folder:
             scraper.blast_subdir = shared_blast_folder
         else:
@@ -253,7 +253,7 @@ def filter_OTOL(study_id,
             sys.stdout.write("Blasting against local unpublished data")
             filteredScrape.unpublished = True
             filteredScrape.write_unpubl_blastdb(add_unpubl_seq)
-            filteredScrape.run_blast(delay=14)
+            filteredScrape.run_blast_wrapper(delay=14)
             filteredScrape.data.local_otu_json = id_to_spn_addseq_json
             filteredScrape.read_blast_wrapper()
             filteredScrape.remove_identical_seqs()
@@ -261,7 +261,7 @@ def filter_OTOL(study_id,
             filteredScrape.unpublished = False
         else:
             sys.stdout.write("BLASTing input sequences\n")
-            filteredScrape.run_blast(delay=14)
+            filteredScrape.run_blast_wrapper(delay=14)
             filteredScrape.read_blast_wrapper(blast_dir=shared_blast_folder)
             filteredScrape.remove_identical_seqs()
             filteredScrape.dump()
@@ -277,7 +277,7 @@ def filter_OTOL(study_id,
         filteredScrape.data.write_labelled(label='^ot:ottTaxonName', add_gb_id=True)
         filteredScrape.data.write_otus("otu_info", schema='table')
         sys.stdout.write("BLASTing input sequences\n")
-        filteredScrape.run_blast(delay=14)
+        filteredScrape.run_blast_wrapper(delay=14)
         filteredScrape.read_blast_wrapper(blast_dir=shared_blast_folder)
         filteredScrape.remove_identical_seqs()
         sys.stdout.write("Filter the sequences\n")
@@ -360,7 +360,7 @@ def add_unpubl_to_backbone(seqaln,
             filteredScrape.unpublished = True
             filteredScrape.backbone = True
             filteredScrape.write_unpubl_blastdb(add_unpubl_seq)
-            filteredScrape.run_blast(delay=14)
+            filteredScrape.run_blast_wrapper(delay=14)
             filteredScrape.local_otu_json = id_to_spn_addseq_json
             filteredScrape.read_blast_wrapper()
             filteredScrape.remove_identical_seqs()
@@ -373,7 +373,7 @@ def add_unpubl_to_backbone(seqaln,
                 filteredScrape.blast_subdir = shared_blast_folder
             else:
                 shared_blast_folder = None
-            filteredScrape.run_blast(delay=14)
+            filteredScrape.run_blast_wrapper(delay=14)
             filteredScrape.read_blast_wrapper(blast_dir=shared_blast_folder)
             filteredScrape.remove_identical_seqs()
             filteredScrape.dump()
@@ -394,7 +394,7 @@ def add_unpubl_to_backbone(seqaln,
             filteredScrape.blast_subdir = shared_blast_folder
         else:
             shared_blast_folder = None
-        filteredScrape.run_blast(delay=14)
+        filteredScrape.run_blast_wrapper(delay=14)
         filteredScrape.read_blast_wrapper(blast_dir=shared_blast_folder)
         filteredScrape.remove_identical_seqs()
         sys.stdout.write("Filter the sequences\n")
@@ -476,7 +476,7 @@ def filter_data_run(seqaln,
             sys.stdout.write("Blasting against local unpublished data")
             filteredScrape.unpublished = True
             filteredScrape.write_unpubl_blastdb(add_unpubl_seq)
-            filteredScrape.run_blast(delay=14)
+            filteredScrape.run_blast_wrapper(delay=14)
             filteredScrape.local_otu_json = id_to_spn_addseq_json
             filteredScrape.read_blast_wrapper()
             filteredScrape.remove_identical_seqs()
@@ -489,18 +489,22 @@ def filter_data_run(seqaln,
                 filteredScrape.blast_subdir = shared_blast_folder
             else:
                 shared_blast_folder = None
-            filteredScrape.run_blast(delay=14)
+            filteredScrape.run_blast_wrapper(delay=14)
             filteredScrape.read_blast_wrapper(blast_dir=shared_blast_folder)
             filteredScrape.remove_identical_seqs()
             filteredScrape.dump()
             sys.stdout.write("Filter the sequences\n")
             if threshold is not None:
+
                 filteredScrape.sp_dict(downtorank)
                 filteredScrape.make_sp_seq_dict()
                 filteredScrape.how_many_sp_to_keep(threshold=threshold, selectby=selectby)
                 filteredScrape.replace_new_seq()
             sys.stdout.write("Calculate the phylogeny\n")
             filteredScrape.generate_streamed_alignment()
+            filteredScrape.data.write_otus("otu_info", schema='table')
+            filteredScrape.write_otu_info(downtorank)
+
             filteredScrape.dump()
     while filteredScrape.repeat == 1:
         filteredScrape.data.write_labelled(label='^ot:ottTaxonName', add_gb_id=True)
@@ -510,7 +514,7 @@ def filter_data_run(seqaln,
             filteredScrape.blast_subdir = shared_blast_folder
         else:
             shared_blast_folder = None
-        filteredScrape.run_blast(delay=14)
+        filteredScrape.run_blast_wrapper(delay=14)
         filteredScrape.read_blast_wrapper(blast_dir=shared_blast_folder)
         filteredScrape.remove_identical_seqs()
         sys.stdout.write("Filter the sequences\n")
@@ -578,7 +582,7 @@ def run_with_settings(settings):
         ids = IdDicts(conf, workdir=settings.workdir)
 
         filteredScrape = FilterBlast(data_obj, ids, settings)
-        filteredScrape.add_setting_to_self(downtorank, threshold, blacklist)
+        filteredScrape.add_setting_to_self(settings.downtorank, settings.threshold)
 
         filteredScrape.write_otu_info(settings.downtorank)
 
@@ -587,7 +591,7 @@ def run_with_settings(settings):
         if filteredScrape.unpublished is True:  # use unpublished data
             sys.stdout.write("Blasting against local unpublished data")
             filteredScrape.write_unpubl_blastdb(settings.add_unpubl_seq)
-            filteredScrape.run_blast(settings.delay)
+            filteredScrape.run_blast_wrapper(settings.delay)
             filteredScrape.local_otu_json = settings.id_to_spn_addseq_json
             filteredScrape.read_blast_wrapper()
             filteredScrape.remove_identical_seqs()
@@ -596,7 +600,7 @@ def run_with_settings(settings):
 
         # run the ananlyses
         if filteredScrape.unpublished is not True:
-            filteredScrape.run_blast(settings.delay)
+            filteredScrape.run_blast_wrapper(settings.delay)
             filteredScrape.read_blast_wrapper(blast_dir=settings.shared_blast_folder)
             filteredScrape.remove_identical_seqs()
             filteredScrape.dump()
@@ -611,7 +615,7 @@ def run_with_settings(settings):
     while filteredScrape.repeat is 1:
         filteredScrape.data.write_labelled(label='^ot:ottTaxonName', add_gb_id=True)
         filteredScrape.data.write_otus("otu_info", schema='table')
-        filteredScrape.run_blast(settings.delay)
+        filteredScrape.run_blast_wrapper(settings.delay)
         filteredScrape.read_blast_wrapper(blast_dir=settings.shared_blast_folder)
         filteredScrape.remove_identical_seqs()
         if settings.threshold is not None:
