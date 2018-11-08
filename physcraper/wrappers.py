@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from __future__ import absolute_import
 import pickle
 import sys
 import os
@@ -12,7 +13,7 @@ from physcraper import (
 )
 from physcraper import FilterBlast, Settings, debug  # Concat
 from dendropy import DnaCharacterMatrix
-from concat import Concat
+from .concat import Concat
 
 print("Current Wrapper Version number: 09142018.0")
 
