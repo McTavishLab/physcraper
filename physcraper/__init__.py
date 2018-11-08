@@ -2924,7 +2924,7 @@ class FilterBlast(PhyscraperScrape):
         sp_info = {}
         for k in sp_d:
             sp_info[k] = len(sp_d[k])
-        with open("taxon_sampling.csv", "w") as csv_file:
+        with open("{}/taxon_sampling.csv".format(self.workdir), "w") as csv_file:
             writer = csv.writer(csv_file)
             for key, value in sp_info.items():
                 spn = self.ids.ncbi_parser.get_name_from_id(key)
@@ -2939,7 +2939,7 @@ class FilterBlast(PhyscraperScrape):
             "^ncbi:taxon",
             "^ncbi:title",
         ]
-        with open("otu_seq_info.csv", "w") as output:
+        with open("{}/otu_seq_info.csv".format(self.workdir), "w") as output:
             writer = csv.writer(output)
             for otu in self.data.otu_dict.keys():
                 rowinfo = [otu]

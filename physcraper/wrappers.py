@@ -14,7 +14,7 @@ from physcraper import FilterBlast, Settings, debug  # Concat
 from dendropy import DnaCharacterMatrix
 from concat import Concat
 
-print("Current Version number: 09142018.0")
+print("Current Wrapper Version number: 09142018.0")
 
 # TODO: we never do anything with the function nor the file
 def sync_ncbi(configfi):
@@ -257,7 +257,7 @@ def filter_OTOL(study_id,
 
         # Now combine the data, the ids, and the configuration into a single physcraper scrape object
         filteredScrape = FilterBlast(data_obj, ids)
-        filteredScrape.add_setting_to_self(downtorank, threshold, blacklist)
+        filteredScrape.add_setting_to_self(downtorank, threshold)
 
         filteredScrape.blacklist = blacklist
         if add_unpubl_seq is not None:
@@ -337,7 +337,7 @@ def add_unpubl_to_backbone(seqaln,
         sys.stdout.write("setting up Data Object\n")
         sys.stdout.flush()
         # read the config file into a configuration object
-        conf = ConfigObj(configfi, interactive=True)
+        conf = ConfigObj(configfi, interactive=False)
 
         # Generate an linked Alignment-Tree-Taxa object
         data_obj = generate_ATT_from_files(seqaln=seqaln, 
@@ -363,7 +363,8 @@ def add_unpubl_to_backbone(seqaln,
 
         # Now combine the data, the ids, and the configuration into a single physcraper scrape object
         filteredScrape = FilterBlast(data_obj, ids)
-        filteredScrape.add_setting_to_self(downtorank, threshold, blacklist)
+        
+        filteredScrape.add_setting_to_self(downtorank, threshold)
 
         filteredScrape.blacklist = blacklist
         if add_unpubl_seq is not None:
@@ -372,9 +373,18 @@ def add_unpubl_to_backbone(seqaln,
             sys.stdout.write("Blasting against local unpublished data")
             filteredScrape.unpublished = True
             filteredScrape.backbone = True
+
             filteredScrape.write_unpubl_blastdb(add_unpubl_seq)
             filteredScrape.run_blast_wrapper(delay=14)
-            filteredScrape.local_otu_json = id_to_spn_addseq_json
+
+
+
+            print("add unpubl otu json")
+            filteredScrape.data.unpubl_otu_json = id_to_spn_addseq_json
+            print(filteredScrape.data.unpubl_otu_json)
+            
+
+
             filteredScrape.read_blast_wrapper()
             filteredScrape.remove_identical_seqs()
             filteredScrape.generate_streamed_alignment()
@@ -481,7 +491,7 @@ def filter_data_run(seqaln,
 
         # Now combine the data, the ids, and the configuration into a single physcraper scrape object
         filteredScrape = FilterBlast(data_obj, ids)
-        filteredScrape.add_setting_to_self(downtorank, threshold, blacklist)
+        filteredScrape.add_setting_to_self(downtorank, threshold)
         filteredScrape.blacklist = blacklist
         if add_unpubl_seq is not None:
             filteredScrape.unpublished = True
@@ -490,7 +500,10 @@ def filter_data_run(seqaln,
             filteredScrape.unpublished = True
             filteredScrape.write_unpubl_blastdb(add_unpubl_seq)
             filteredScrape.run_blast_wrapper(delay=14)
-            filteredScrape.local_otu_json = id_to_spn_addseq_json
+            print("add unpubl otu json")
+            filteredScrape.data.unpubl_otu_json = id_to_spn_addseq_json
+            print(filteredScrape.data.unpubl_otu_json)
+
             filteredScrape.read_blast_wrapper()
             filteredScrape.remove_identical_seqs()
             filteredScrape.generate_streamed_alignment()
@@ -540,7 +553,8 @@ def filter_data_run(seqaln,
         sys.stdout.write("calculate the phylogeny\n")
         filteredScrape.generate_streamed_alignment()
         filteredScrape.dump()
-
+        filteredScrape.write_otu_info(downtorank)
+        # print(some)
     filteredScrape.write_otu_info(downtorank)
     return filteredScrape
 
