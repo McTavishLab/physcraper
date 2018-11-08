@@ -122,3 +122,39 @@ def test_reconcile():
 
     assert len(prune) == 1
     assert list(prune)[0].label == 'S_scopolii'
+
+
+    # ----------------------------
+
+
+
+    seqaln= "tests/data/tiny_test_example/test.fas"
+    seqalnmiss= "tests/data/tiny_test_example/test_missingseq.fas"
+    mattype="fasta"
+    treefile= "tests/data/tiny_test_example/test.tre"
+    treefilemiss= "tests/data/tiny_test_example/test_missingtip.tre"
+    schema_trf = "newick"
+    workdir="tests/output/owndata"
+    configfi = "example.config"
+    id_to_spn = r"tests/data/tiny_test_example/test_nicespl.csv"
+    otu_jsonfi = "tests/data/tmp/owndata/otu_dict.json".format(workdir)
+
+    data_obj = generate_ATT_from_files(seqaln=seqalnmiss, 
+                                     mattype=mattype, 
+                                     workdir=workdir,
+                                     treefile=treefilemiss,
+                                     schema_trf = schema_trf,
+                                     otu_json=otu_jsonfi,
+                                     ingroup_mrca=None)
+
+
+
+
+    for otu in data_obj.otu_dict:
+        if data_obj.otu_dict[otu][u'^ot:originalLabel'] == '2029_doronicum':
+            assert data_obj.otu_dict[otu]['^physcraper:status'] == "deleted in name reconciliation"
+
+    for otu in data_obj.otu_dict:
+        if data_obj.otu_dict[otu][u'^ot:originalLabel'] == 'S_scopolii':
+            assert data_obj.otu_dict[otu]['^physcraper:status'] == "deleted in name reconciliation"
+
