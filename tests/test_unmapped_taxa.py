@@ -62,18 +62,18 @@ except:
 
 def test_unmapped():
     conf = physcraper.ConfigObj(configfi, interactive=False)
-conf.unmapped = 'remove'
+    conf.unmapped = 'remove'
 
-ids = physcraper.IdDicts(conf, workdir=data_obj.workdir)
+    ids = physcraper.IdDicts(conf, workdir=data_obj.workdir)
 
-data_obj = pickle.load(open("tests/data/precooked/otol_tiny_dataobj.p", 'rb'))
-data_obj.workdir = absworkdir
-scraper2 = physcraper.PhyscraperScrape(data_obj, ids)
-num_remove = len(scraper2.data.aln.taxon_namespace)
-dict_id = 0
-for tax in scraper.data.aln.taxon_namespace:
-    if '^ot:ottId' in scraper.data.otu_dict[tax.label]:
-        dict_id = dict_id + 1
-# print(num_remove, num_keep, dict_id)
-assert num_remove <= num_keep - 1
-assert num_keep == dict_id
+    data_obj = pickle.load(open("tests/data/precooked/otol_tiny_dataobj.p", 'rb'))
+    data_obj.workdir = absworkdir
+    scraper2 = physcraper.PhyscraperScrape(data_obj, ids)
+    num_remove = len(scraper2.data.aln.taxon_namespace)
+    dict_id = 0
+    for tax in scraper.data.aln.taxon_namespace:
+        if '^ot:ottId' in scraper.data.otu_dict[tax.label]:
+            dict_id = dict_id + 1
+    # print(num_remove, num_keep, dict_id)
+    assert num_remove <= num_keep - 1
+    assert num_keep == dict_id
