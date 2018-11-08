@@ -23,3 +23,4 @@ ete2==2.3.10
 pandas==0.23.4
 pytest
 m2r
+recommonmark
