@@ -1607,7 +1607,7 @@ class PhyscraperScrape(object):
         result_handle.close()
         save_file.close()
 
-    def run_blast(self, delay=14):
+    def run_blast_wrapper(self, delay=14):
         """generates the blast queries and saves them depending on the blasting method to different file formats
 
         :param delay: number that determines when a previously blasted sequence is reblasted - time is in days
@@ -1765,8 +1765,8 @@ class PhyscraperScrape(object):
             for alignment in blast_record.alignments:
                 for hsp in alignment.hsps:
                     if float(hsp.expect) < float(self.config.e_value_thresh):
-                        if local_id not in self.data.gb_dict:  # skip ones we already have
                         local_id = alignment.title.split("|")[-1].split(" ")[-1]
+                        if local_id not in self.data.gb_dict:  # skip ones we already have
                             unpbl_local_id = "unpubl_{}".format(local_id)
                             self.new_seqs[unpbl_local_id] = hsp.sbjct
                             self.data.gb_dict[unpbl_local_id] = {'title': "unpublished", 'localID': local_id}
