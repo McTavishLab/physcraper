@@ -14,51 +14,50 @@ absworkdir = os.path.abspath(workdir)
 
 configfi = "tests/data/test.config"
 
-# try:
+def test_0():
+    if os.path.isfile("tests/data/precooked/otol_scraper.p"):
+        # physcraper.debug(os.getcwd())
+        conf = physcraper.ConfigObj(configfi, interactive=False)
+        # physcraper.debug("conf")
+        conf.unmapped = 'keep'
+        # physcraper.debug("set unmapped")
+        data_obj = pickle.load(open("tests/data/precooked/otol_tiny_dataobj.p", 'rb'))
+        data_obj.workdir = absworkdir
+        # physcraper.debug("dataobj loaded")
+        ids = physcraper.IdDicts(conf, workdir=data_obj.workdir)
+        ids.acc_ncbi_dict = pickle.load(open("tests/data/precooked/otol_tiny_gi_map.p", "rb"))
+        # physcraper.debug("ids loaded")
+        scraper = pickle.load(open("tests/data/precooked/otol_scraper.p", "rb"))
+        # physcraper.debug("scraper loaded")
+        # scraper2 = pickle.load(open("tests/data/precooked/otol_scraper.p", "rb"))
+        num_keep = len(scraper.data.aln.taxon_namespace)
+        # physcraper.debug('num_keep')
 
-if os.path.isfile("tests/data/precooked/otol_scraper.p"):
-    # physcraper.debug(os.getcwd())
-    conf = physcraper.ConfigObj(configfi, interactive=False)
-    # physcraper.debug("conf")
-    conf.unmapped = 'keep'
-    # physcraper.debug("set unmapped")
-    data_obj = pickle.load(open("tests/data/precooked/otol_tiny_dataobj.p", 'rb'))
-    data_obj.workdir = absworkdir
-    # physcraper.debug("dataobj loaded")
-    ids = physcraper.IdDicts(conf, workdir=data_obj.workdir)
-    ids.acc_ncbi_dict = pickle.load(open("tests/data/precooked/otol_tiny_gi_map.p", "rb"))
-    # physcraper.debug("ids loaded")
-    scraper = pickle.load(open("tests/data/precooked/otol_scraper.p", "rb"))
-    # physcraper.debug("scraper loaded")
-    # scraper2 = pickle.load(open("tests/data/precooked/otol_scraper.p", "rb"))
-    num_keep = len(scraper.data.aln.taxon_namespace)
-    # physcraper.debug('num_keep')
-
-    # physcraper.debug(num_keep)
-# except:
-else:
-    sys.stdout.write("\n\n No files present\n\n")
-    conf = physcraper.ConfigObj(configfi)
-    conf.unmapped = 'keep'
-    aln = DnaCharacterMatrix.get(path=seqaln, schema=mattype)
-    data_obj = physcraper.generate_ATT_from_phylesystem(aln=aln,
-                                 workdir=workdir,
-                                 study_id = study_id,
-                                 tree_id = tree_id,
-                                 phylesystem_loc = conf.phylesystem_loc)
-    # physcraper.debug(len(data_obj.aln.taxon_namespace))
-    pickle.dump(data_obj, open("tests/data/precooked/otol_tiny_dataobj.p", "wb" ))
-    ids =  physcraper.IdDicts(conf, workdir=workdir)
-    # physcraper.debug(os.getcwd())
-    pickle.dump(ids.acc_ncbi_dict, open("tests/data/precooked/otol_tiny_gi_map.p", "wb"))
-    data_obj.write_files()
-    scraper = physcraper.PhyscraperScrape(data_obj, ids)
-    # physcraper.debug(len(scraper.data.aln.taxon_namespace))
-    # physcraper.debug("scraper obj made")
-    pickle.dump(scraper.config, open("tests/data/precooked/otol_conf.p", "wb"))
-    pickle.dump(scraper, open("tests/data/precooked/otol_scraper.p", "wb"))
-    num_keep = len(scraper.data.aln.taxon_namespace)
-    # physcraper.debug(num_keep)
+        # physcraper.debug(num_keep)
+    # except:
+    else:
+        sys.stdout.write("\n\n No files present\n\n")
+        conf = physcraper.ConfigObj(configfi)
+        conf.unmapped = 'keep'
+        aln = DnaCharacterMatrix.get(path=seqaln, schema=mattype)
+        data_obj = physcraper.generate_ATT_from_phylesystem(aln=aln,
+                                    workdir=workdir,
+                                    study_id = study_id,
+                                    tree_id = tree_id,
+                                    phylesystem_loc = conf.phylesystem_loc)
+        # physcraper.debug(len(data_obj.aln.taxon_namespace))
+        pickle.dump(data_obj, open("tests/data/precooked/otol_tiny_dataobj.p", "wb" ))
+        ids =  physcraper.IdDicts(conf, workdir=workdir)
+        # physcraper.debug(os.getcwd())
+        pickle.dump(ids.acc_ncbi_dict, open("tests/data/precooked/otol_tiny_gi_map.p", "wb"))
+        data_obj.write_files()
+        scraper = physcraper.PhyscraperScrape(data_obj, ids)
+        # physcraper.debug(len(scraper.data.aln.taxon_namespace))
+        # physcraper.debug("scraper obj made")
+        pickle.dump(scraper.config, open("tests/data/precooked/otol_conf.p", "wb"))
+        pickle.dump(scraper, open("tests/data/precooked/otol_scraper.p", "wb"))
+        num_keep = len(scraper.data.aln.taxon_namespace)
+        # physcraper.debug(num_keep)
 
 
 
