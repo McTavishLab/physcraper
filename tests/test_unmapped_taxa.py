@@ -14,9 +14,11 @@ absworkdir = os.path.abspath(workdir)
 
 configfi = "tests/data/test.config"
 
-try:
+# try:
+
+if os.path.isfile("tests/data/precooked/otol_scraper.p"):
     # physcraper.debug(os.getcwd())
-    conf = ConfigObj(configfi, interactive=False)
+    conf = physcraper.ConfigObj(configfi, interactive=False)
     # physcraper.debug("conf")
     conf.unmapped = 'keep'
     # physcraper.debug("set unmapped")
@@ -33,7 +35,8 @@ try:
     # physcraper.debug('num_keep')
 
     # physcraper.debug(num_keep)
-except:
+# except:
+else:
     sys.stdout.write("\n\n No files present\n\n")
     conf = physcraper.ConfigObj(configfi)
     conf.unmapped = 'keep'
@@ -64,10 +67,12 @@ def test_unmapped():
     conf = physcraper.ConfigObj(configfi, interactive=False)
     conf.unmapped = 'remove'
 
-    ids = physcraper.IdDicts(conf, workdir=data_obj.workdir)
 
     data_obj = pickle.load(open("tests/data/precooked/otol_tiny_dataobj.p", 'rb'))
     data_obj.workdir = absworkdir
+
+    ids = physcraper.IdDicts(conf, workdir=data_obj.workdir)
+
     scraper2 = physcraper.PhyscraperScrape(data_obj, ids)
     num_remove = len(scraper2.data.aln.taxon_namespace)
     dict_id = 0
