@@ -666,6 +666,7 @@ class AlignTreeTax(object):
         align with those found in the alignment. Spaces vs underscores
         kept being an issue, so all spaces are coerced to underscores throughout!
         """
+        debug("reconcile names")
         treed_tax = set()
         for leaf in self.tre.leaf_nodes():
             treed_tax.add(leaf.taxon)
@@ -679,12 +680,19 @@ class AlignTreeTax(object):
                     ' and will be pruned. Missing "{}"\n'
             errm = errmf.format('", "'.join(missing))
             sys.stderr.write(errm)
+        del_aln = []
+        del_tre = []
         for taxon in prune:
             assert (taxon in aln_tax) or (taxon in treed_tax)
             if taxon in aln_tax:
-                self.aln.remove_sequences(prune)
+                # debug(taxon)
+                del_aln.append(taxon)
             if taxon in treed_tax:
-                self.tre.prune_taxa(prune)
+                del_tre.append(taxon)
+        # debug(del_aln)
+        # debug(del_tre)
+        self.aln.remove_sequences(del_aln)  
+        self.tre.prune_taxa(del_tre)     
         for tax in prune:
             # potentially slow at large number of taxa and large numbers to be pruned
             found = 0
@@ -693,7 +701,7 @@ class AlignTreeTax(object):
                     self.otu_dict[otu]['^physcraper:status'] = "deleted in name reconciliation"
                     found = 1
             if found == 0:
-                sys.stderr.write("lost taxon {} in name reconcilliation".format(tax.label))
+                sys.stderr.write("lost taxon {} in name reconcilliation \n".format(tax.label))
             self.aln.taxon_namespace.remove_taxon(tax)
         assert self.aln.taxon_namespace == self.tre.taxon_namespace
         for tax in self.aln.taxon_namespace:
@@ -2886,7 +2894,11 @@ class FilterBlast(PhyscraperScrape):
                 if '^ncbi:accession' in self.data.otu_dict[key]:
                     if self.data.otu_dict[key]['^ncbi:accession'] == gb_id:
                         self.data.otu_dict[key]['^physcraper:last_blasted'] = "1900/01/01"
-                        self.data.otu_dict[key]['^physcraper:status'] = 'not added, there are enough seq per sp in tre'
+                        
+                        print(self.data.otu_dict[key]['^physcraper:status'])
+                        if self.data.otu_dict[key]['^physcraper:status'] == "query":
+                            self.data.otu_dict[key]['^physcraper:status'] = 'not added, there are enough seq per sp in tre'
+        
         for gb_id in keylist:
             if gb_id.split(".") == 1:
                 debug(gb_id)
