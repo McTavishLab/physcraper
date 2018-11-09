@@ -1141,7 +1141,7 @@ class IdDicts(object):
           * **self.mrca_ncbi**: set, which is fed by self.get_ncbi_mrca()
 
           * **Optional**:
-          
+
               * depending on blasting method:
                * self.ncbi_parser: for local blast, initializes the ncbi_parser class, that contains information about rank and identifiers
                * self.otu_rank: for remote blast to store the rank information
@@ -1463,17 +1463,17 @@ class PhyscraperScrape(object):
 
         Following functions are called during the init-process:
 
-        * **self.reset_markers()**: 
-             adds things to self: I think they are used to make sure certain function run, if program crashed and pickle file is read in.
-            * self._blasted: 0/1, if run_blast_wrapper() was called, it is set to 1 for the round.
-            * self._blast_read: 0/1, if read_blast_wrapper() was called, it is set to 1 for the round.
-            * self._identical_removed: 0
-            * self._query_seqs_written: 0/1, if write_query_seqs() was called, it is set to 1 for the round.
-            * self._query_seqs_aligned: 0
-            * self._query_seqs_placed: 0/1, if place_query_seqs() was called, it is set to 1 for the round.
-            * self._reconciled: 0
-            * self._full_tree_est: 0/1, if est_full_tree() was called, it is set to 1 for the round.
-        * **self.OToL_unmapped_tips()**: function that either removes or maps unmapped taxa from OToL studies
+            * **self.reset_markers()**: 
+                 adds things to self: I think they are used to make sure certain function run, if program crashed and pickle file is read in.
+                * self._blasted: 0/1, if run_blast_wrapper() was called, it is set to 1 for the round.
+                * self._blast_read: 0/1, if read_blast_wrapper() was called, it is set to 1 for the round.
+                * self._identical_removed: 0
+                * self._query_seqs_written: 0/1, if write_query_seqs() was called, it is set to 1 for the round.
+                * self._query_seqs_aligned: 0
+                * self._query_seqs_placed: 0/1, if place_query_seqs() was called, it is set to 1 for the round.
+                * self._reconciled: 0
+                * self._full_tree_est: 0/1, if est_full_tree() was called, it is set to 1 for the round.
+            * **self.OToL_unmapped_tips()**: function that either removes or maps unmapped taxa from OToL studies
     """
 
     def __init__(self, data_obj, ids_obj):

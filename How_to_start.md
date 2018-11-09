@@ -15,78 +15,79 @@ After the single-gene datasets are updated, the data can be concatenated. Either
 
 #### 1. install the dependencies:
 
-     * [PaPaRa](http://sco.h-its.org/exelixis/web/software/papara/index.html) - alignment tool
-     * [RAxML](http://sco.h-its.org/exelixis/web/software/raxml/index.html) - tree estimation program
-        * Make sure you do `make -f Makefile.PTHREADS.gcc` from within the RAxML folder to enable multi-core calculation
-     * [BLAST+](https://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Web&PAGE_TYPE=BlastDocs&DOC_TYPE=Download) - it's needed for filter runs and when using local BLAST databses.
+* [PaPaRa](http://sco.h-its.org/exelixis/web/software/papara/index.html) - alignment tool
+* [RAxML](http://sco.h-its.org/exelixis/web/software/raxml/index.html) - tree estimation program
+    * Make sure you do `make -f Makefile.PTHREADS.gcc` from within the RAxML folder to enable multi-core calculation
+* [BLAST+](https://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Web&PAGE_TYPE=BlastDocs&DOC_TYPE=Download) - it's needed for filter runs and when using local BLAST databses.
 
-#### 2. make sure the programms are accessible from everywhere, thus add them to your PATH using the command line:
-     * UNIX: `export PATH=$PATH:/path/to/my/program`
-     * Windows: `set PATH=%PATH%;C:\path\to\my\program`
-     * MAC: `export PATH=$PATH:~/path/to/program`
 
-    (! set PATH=%PATH%:  it takes the current path and sets PATH to it.)
+make sure the programms are accessible from everywhere, thus add them to your PATH using the command line:
+* UNIX: `export PATH=$PATH:/path/to/my/program`
+* Windows: `set PATH=%PATH%;C:\path\to\my\program`
+* MAC: `export PATH=$PATH:~/path/to/program`
 
-#### 3. download PhyScraper using the command line:
-     * as a normal package: `git clone https://github.com/McTavishLab/physcraper.git`
-     * as a git repository: `git clone 'git@github.com:McTavishLab/physcraper.git'`
+(! set PATH=%PATH%:  it takes the current path and sets PATH to it.)
 
-#### 4. install python requirements and dependencies:
+#### 2. download PhyScraper using the command line:
+* as a normal package: `git clone https://github.com/McTavishLab/physcraper.git`
+* as a git repository: `git clone 'git@github.com:McTavishLab/physcraper.git'`
 
-    run from within the physcraper main folder:
+#### 3. install python requirements and dependencies:
 
-      * `python setup.py install`
-      * `pip install -r requirements.txt`
+run from within the physcraper main folder:
 
-#### 5. decide for a BLASTing method:
+* `python setup.py install`
+* `pip install -r requirements.txt`
 
-    Depending on the size of your tree to be updated, there are things to consider.
+#### 4. decide for a BLASTing method:
 
-      * **web BLAST service**: If the tree is not too large and/or you have enough time, you can run the tool with the main settings, that uses the web BLAST service. The web service is not intended for large amounts of queries and if there are too many searchs being submitted by a user, the searches are being slowed down. Another down side is, that the species name retrieval can be difficult sometimes. Advantage is that it is the most up to date database to blast against.
-      * **Amazon cloud service**: If you do not have a fast computer, there are options to pay for a pre-installed cloud service using [amazon](https://aws.amazon.com/marketplace/pp/B00N44P7L6/ref=mkt_wir_ncbi_blast).
-      * **local blast database**: This is the __recommended method__, as it is the fastest and does not heavily depend on good internet connection. Especially, if the trees are bigger and/or you have a relatively fast computer, this might be the best option. Ncbi regularly publishes the databases, that can easily be downloaded and initiated.
+Depending on the size of your tree to be updated, there are things to consider.
 
-        * Install a local Blast database:
+  * **web BLAST service**: If the tree is not too large and/or you have enough time, you can run the tool with the main settings, that uses the web BLAST service. The web service is not intended for large amounts of queries and if there are too many searchs being submitted by a user, the searches are being slowed down. Another down side is, that the species name retrieval can be difficult sometimes. Advantage is that it is the most up to date database to blast against.
+  * **Amazon cloud service**: If you do not have a fast computer, there are options to pay for a pre-installed cloud service using [amazon](https://aws.amazon.com/marketplace/pp/B00N44P7L6/ref=mkt_wir_ncbi_blast).
+  * **local blast database**: This is the __recommended method__, as it is the fastest and does not heavily depend on good internet connection. Especially, if the trees are bigger and/or you have a relatively fast computer, this might be the best option. Ncbi regularly publishes the databases, that can easily be downloaded and initiated.
 
-            General information about the BLAST database can be found here: ftp://ftp.ncbi.nlm.nih.gov/blast/documents/blastdb.html.
-    
-            In Linux to install the BLAST database do the following (for Windows and MAC please use google to figure it out, there should be plenty of information.):
+    * Install a local Blast database:
 
-            * `open a terminal`
-            * `cd /to/the/folder/of/your/future/blastdb`  
-            * `sudo apt-get install ncbi-blast+` # if not already installed earlier
-            * `wget 'ftp://ftp.ncbi.nlm.nih.gov/blast/db/nt.*'`  # this downloads all nt-compressed files
-            * `update_blastdb nt`
-            * `cat *.tar.gz | tar -xvzf - -i`  # macOS `tar` does not support the `-i` flag,  you need to use homebrew to `brew install gnu-tar` and replace the `tar` command by `gtar`
-            * `blastdbcmd -db nt -info`
-              
-             The last command shows you if it worked correctly. 'nt' means, we are making the nucleotide database.
-             The database needs to be update regularly, the program will check the dates of your databases and will ask you to update the databases after 60 days. If your databases are older, you will be asked for input, if you want to update the databases. 
-             Interactive input does not work on remote machines, to stop the program from asking, change the following line in your analysis file from `conf = ConfigObj(configfi)` to `conf = ConfigObj(configfi, interactive=False)`.
-             If you want to update the databases earlier go back to step 1.
-             
-        *  install the taxonomy database:
-            
-            install ncbi taxonomy database to retrieve taxon information from BLAST searches into the same directory as your blastdb from the step before.
-            
-              * `cd /to/the/folder/of/your/blastdb`
-              * `wget 'ftp://ftp.ncbi.nlm.nih.gov/blast/db/taxdb.tar.gz'` # Download the taxdb archive
-              * `gunzip -cd taxdb.tar.gz | (tar xvf - )`  # Install it in the BLASTDB directory
-    
-        * install the taxonomic rank database:
-             *  `wget 'ftp://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdump.tar.gz'`
-             *  `gunzip  -cd taxdump.tar.gz | (tar xvf - names.dmp nodes.dmp)`  
-             *  move files into `tests/data/`
-        * updating the databases:
+        General information about the BLAST database can be found here: ftp://ftp.ncbi.nlm.nih.gov/blast/documents/blastdb.html.
+
+        In Linux to install the BLAST database do the following (for Windows and MAC please use google to figure it out, there should be plenty of information.):
+
+        * `open a terminal`
+        * `cd /to/the/folder/of/your/future/blastdb`  
+        * `sudo apt-get install ncbi-blast+` # if not already installed earlier
+        * `wget 'ftp://ftp.ncbi.nlm.nih.gov/blast/db/nt.*'`  # this downloads all nt-compressed files
+        * `update_blastdb nt`
+        * `cat *.tar.gz | tar -xvzf - -i`  # macOS `tar` does not support the `-i` flag,  you need to use homebrew to `brew install gnu-tar` and replace the `tar` command by `gtar`
+        * `blastdbcmd -db nt -info`
+          
+         The last command shows you if it worked correctly. 'nt' means, we are making the nucleotide database.
+         The database needs to be update regularly, the program will check the dates of your databases and will ask you to update the databases after 60 days. If your databases are older, you will be asked for input, if you want to update the databases. 
+         Interactive input does not work on remote machines, to stop the program from asking, change the following line in your analysis file from `conf = ConfigObj(configfi)` to `conf = ConfigObj(configfi, interactive=False)`.
+         If you want to update the databases earlier go back to step 1.
+         
+    *  install the taxonomy database:
         
-             The databases need to be update regularly, the program will check the dates of your databases and will ask you to update the databases after 60 days. If your databases are older, you will be asked for input, if you want to update the databases. 
-             Interactive input does not work on remote machines, to stop the program from asking, change the following line in your analysis file from `conf = ConfigObj(configfi)` to `conf = ConfigObj(configfi, interactive=False)`.
-             
-             If you want to update the databases earlier:
+        install ncbi taxonomy database to retrieve taxon information from BLAST searches into the same directory as your blastdb from the step before.
+        
+          * `cd /to/the/folder/of/your/blastdb`
+          * `wget 'ftp://ftp.ncbi.nlm.nih.gov/blast/db/taxdb.tar.gz'` # Download the taxdb archive
+          * `gunzip -cd taxdb.tar.gz | (tar xvf - )`  # Install it in the BLASTDB directory
 
-              * blast db: repeat the steps listed under 'Install a local Blast database'
-              * taxonomy db: run `update_blastdb taxdb`
-              * rank db: repeat the steps listed under 'install the taxonomic rank database'
+    * install the taxonomic rank database:
+         *  `wget 'ftp://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdump.tar.gz'`
+         *  `gunzip  -cd taxdump.tar.gz | (tar xvf - names.dmp nodes.dmp)`  
+         *  move files into `tests/data/`
+    * updating the databases:
+    
+         The databases need to be update regularly, the program will check the dates of your databases and will ask you to update the databases after 60 days. If your databases are older, you will be asked for input, if you want to update the databases. 
+         Interactive input does not work on remote machines, to stop the program from asking, change the following line in your analysis file from `conf = ConfigObj(configfi)` to `conf = ConfigObj(configfi, interactive=False)`.
+         
+         If you want to update the databases earlier:
+
+          * blast db: repeat the steps listed under 'Install a local Blast database'
+          * taxonomy db: run `update_blastdb taxdb`
+          * rank db: repeat the steps listed under 'install the taxonomic rank database'
    
 ### Set up a run
 
@@ -137,7 +138,6 @@ There is an example config file in `tests/data/localblast.config`
       There is an example file in `docs/example.py` it is based on the wrapper function `standard_run()`
 
       To obtain the study and tree ID's for an OToL run, either go to the website and query your lineage or you can run `find_studies.py` by typing in the terminal `python ./path/to/file/find_studies.py LINEAGENAME`. It will give you a studyID and a treeID, if there is a study available.
-
         * **study_id**: the ID of the corresponding study from OToL
         * **tree_id**: the ID of the corresponding tree from OToL
         * **seqaln**: give the path to your alignment file, must be a single gene alignment
@@ -149,7 +149,6 @@ There is an example config file in `tests/data/localblast.config`
     b) using your own files:
 
       There is an example file in `tests/tiny_standard_ownfile.py`, it comes with a tiny sample dataset in `tests/data/tiny_example`. The corresponding wrapper function to use in your file setup is `own_data_run()`.
-
         * **seqaln**: give the path to your alignment file, must be a single gene alignment
         * **mattype**: file format of your alignment - currently supported: “fasta”, “newick”, “nexus”, “nexml”, “phylip”
         * **trfn**: give the path to the file containing the corresponding phylogeny, all tips must be represented in the alignment file as well.
@@ -219,18 +218,18 @@ There are some more features that can be changed if you know where, we will chan
 * trim method: by default sequences will be trimmed from the alignment if it has not at least 75% of the total sequence length. This can be changed in `./physcraper/__init__.py`, in the function `trim()` the value for `taxon_missingness`. 
 * change the most recent common ancestor (mrca): often phylogenies include outgroups, and someone might not be interested in updating that part of the tree. This can be avoided by defining the most recent common ancestor. It requires the OpenTreeOfLife identifier for the group of interest. 
     
-    You can get that ID by two different approaches:
+  You can get that ID by two different approaches:
 
-      1. run `python scripts/get_ottid.py name_of_your_ingroup`
+    1. run `python scripts/get_ottid.py name_of_your_ingroup`
 
-      2. by going to [Open Tree of Life](https://ot14.opentreeoflife.org/opentree/argus/opentree9.1@ott93302) and type in the name of the lineage and get the OTT ID at the right side of the page. That number needs to be provided analysis file, as following:
-      
-      The identifying number need to be entered here:
-      1. in an OToL run: within the function  `standard_run()`/`filter_OTOL()` in your analysis file in the field for `ingroup_mrca`.
+    2. by going to [Open Tree of Life](https://ot14.opentreeoflife.org/opentree/argus/opentree9.1@ott93302) and type in the name of the lineage and get the OTT ID at the right side of the page. That number needs to be provided analysis file, as following:
+    
+    The identifying number need to be entered here:
+    1. in an OToL run: within the function  `standard_run()`/`filter_OTOL()` in your analysis file in the field for `ingroup_mrca`.
 
-      2. in an own data run: provide ID within the function `own_data_run()`/`filter_data_run()` in your analysis file in the field for `ingroup_mrca`.
+    2. in an own data run: provide ID within the function `own_data_run()`/`filter_data_run()` in your analysis file in the field for `ingroup_mrca`.
 
-      Another aspect which needs to be considered, if your group of interest is not monophyletic and you limit the search to the mrca of the group, closely related sequences that belong for example to a different genus will not be added.
+    Another aspect which needs to be considered, if your group of interest is not monophyletic and you limit the search to the mrca of the group, closely related sequences that belong for example to a different genus will not be added.
 * sharing blast result files across runs: 
 
     1. give the path to the folder in the wrapper function of your analysis file.
