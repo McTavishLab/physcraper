@@ -11,31 +11,34 @@ After the single-gene datasets are updated, the data can be concatenated. Either
 ## Short tutorial:
 
 ### Before you can start
-1. install the dependencies:
+
+
+#### 1. install the dependencies:
+
      * [PaPaRa](http://sco.h-its.org/exelixis/web/software/papara/index.html) - alignment tool
      * [RAxML](http://sco.h-its.org/exelixis/web/software/raxml/index.html) - tree estimation program
         * Make sure you do `make -f Makefile.PTHREADS.gcc` from within the RAxML folder to enable multi-core calculation
      * [BLAST+](https://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Web&PAGE_TYPE=BlastDocs&DOC_TYPE=Download) - it's needed for filter runs and when using local BLAST databses.
 
-2. make sure the programms are accessible from everywhere, thus add them to your PATH using the command line:
+#### 2. make sure the programms are accessible from everywhere, thus add them to your PATH using the command line:
      * UNIX: `export PATH=$PATH:/path/to/my/program`
      * Windows: `set PATH=%PATH%;C:\path\to\my\program`
      * MAC: `export PATH=$PATH:~/path/to/program`
 
     (! set PATH=%PATH%:  it takes the current path and sets PATH to it.)
 
-3. download PhyScraper using the command line:
+#### 3. download PhyScraper using the command line:
      * as a normal package: `git clone https://github.com/McTavishLab/physcraper.git`
      * as a git repository: `git clone 'git@github.com:McTavishLab/physcraper.git'`
 
-4. install python requirements and dependencies:
+#### 4. install python requirements and dependencies:
 
     run from within the physcraper main folder:
 
       * `python setup.py install`
       * `pip install -r requirements.txt`
 
-5. decide for a BLASTing method:
+#### 5. decide for a BLASTing method:
 
     Depending on the size of your tree to be updated, there are things to consider.
 
@@ -86,7 +89,8 @@ After the single-gene datasets are updated, the data can be concatenated. Either
               * rank db: repeat the steps listed under 'install the taxonomic rank database'
    
 ### Set up a run
-**1. edit major settings in the config file**
+
+#### **1. edit major settings in the config file**
 
 There is an example config file in `tests/data/localblast.config`
   * BLAST settings:
@@ -119,7 +123,7 @@ There is an example config file in `tests/data/localblast.config`
 
 
 
-**2. write your analysis file**
+#### **2. write your analysis file**
 1. standard run 
 
     This is explaining how to set up a "standard run", which will add all sequences, that are similar and long enough to the alignment, as long as they are no subsequences of an already existing sequence. Optional arguments are explained in the following section.
@@ -130,30 +134,30 @@ There is an example config file in `tests/data/localblast.config`
 
     a) using OpenTreeOfLife study ID:
 
-        There is an example file in `docs/example.py` it is based on the wrapper function `standard_run()`
+      There is an example file in `docs/example.py` it is based on the wrapper function `standard_run()`
 
-        To obtain the study and tree ID's for an OToL run, either go to the website and query your lineage or you can run `find_studies.py` by typing in the terminal `python ./path/to/file/find_studies.py LINEAGENAME`. It will give you a studyID and a treeID, if there is a study available.
+      To obtain the study and tree ID's for an OToL run, either go to the website and query your lineage or you can run `find_studies.py` by typing in the terminal `python ./path/to/file/find_studies.py LINEAGENAME`. It will give you a studyID and a treeID, if there is a study available.
 
-          * **study_id**: the ID of the corresponding study from OToL
-          * **tree_id**: the ID of the corresponding tree from OToL
-          * **seqaln**: give the path to your alignment file, must be a single gene alignment
-          * **mattype**: file format of your alignment - currently supported: “fasta”, “newick”, “nexus”, “nexml”, “phylip”
-          * **workdir**: path to your working directory, the folder where the intermediate and result files shall be stored.
-          * **configfi**: path to your config-file, which edited in step 1.
-          * **otu_jsonfi**: path to the otu json file, this will contain all the information of the sequences retrieved during the run. Usually, does not need to be edited.
+        * **study_id**: the ID of the corresponding study from OToL
+        * **tree_id**: the ID of the corresponding tree from OToL
+        * **seqaln**: give the path to your alignment file, must be a single gene alignment
+        * **mattype**: file format of your alignment - currently supported: “fasta”, “newick”, “nexus”, “nexml”, “phylip”
+        * **workdir**: path to your working directory, the folder where the intermediate and result files shall be stored.
+        * **configfi**: path to your config-file, which edited in step 1.
+        * **otu_jsonfi**: path to the otu json file, this will contain all the information of the sequences retrieved during the run. Usually, does not need to be edited.
 
     b) using your own files:
 
-        There is an example file in `tests/tiny_standard_ownfile.py`, it comes with a tiny sample dataset in `tests/data/tiny_example`. The corresponding wrapper function to use in your file setup is `own_data_run()`.
+      There is an example file in `tests/tiny_standard_ownfile.py`, it comes with a tiny sample dataset in `tests/data/tiny_example`. The corresponding wrapper function to use in your file setup is `own_data_run()`.
 
-          * **seqaln**: give the path to your alignment file, must be a single gene alignment
-          * **mattype**: file format of your alignment - currently supported: “fasta”, “newick”, “nexus”, “nexml”, “phylip”
-          * **trfn**: give the path to the file containing the corresponding phylogeny, all tips must be represented in the alignment file as well.
-          * **schema_trf**: file format of your phylogeny file - currently supported: “fasta”, “newick”, “nexus”, “nexml”, “phylip”
-          * **id_to_spn**: path to a comma-delimited file where tip labels correspond to species names: example file can be found in `tests/data/tiny_test_example/test_nicespl.csv`
-          * **workdir**: path to your working directory, the folder where intermediate and result files shall be stored.
-          * **configfi**: path to your config-file, which was edited in step 1.
-          * **otu_jsonfi**: path to the otu json file, this will contain all the information of the sequences retrieved during the run. Usually, does not need to be edited.
+        * **seqaln**: give the path to your alignment file, must be a single gene alignment
+        * **mattype**: file format of your alignment - currently supported: “fasta”, “newick”, “nexus”, “nexml”, “phylip”
+        * **trfn**: give the path to the file containing the corresponding phylogeny, all tips must be represented in the alignment file as well.
+        * **schema_trf**: file format of your phylogeny file - currently supported: “fasta”, “newick”, “nexus”, “nexml”, “phylip”
+        * **id_to_spn**: path to a comma-delimited file where tip labels correspond to species names: example file can be found in `tests/data/tiny_test_example/test_nicespl.csv`
+        * **workdir**: path to your working directory, the folder where intermediate and result files shall be stored.
+        * **configfi**: path to your config-file, which was edited in step 1.
+        * **otu_jsonfi**: path to the otu json file, this will contain all the information of the sequences retrieved during the run. Usually, does not need to be edited.
 
 2. filter run:
 
@@ -163,20 +167,20 @@ There is an example config file in `tests/data/localblast.config`
 
     * **threshold**: This defines the maximum number of sequences per taxon (e.g. species) to be retrieved. 
 
-            If your input dataset already contains more sequences, there will be no additional sequences added, but also not removed.
-            (If the removal of sequences that were already part of the initial phylogeny is a function someone would like to have, this should be easy to implement. Just ask.) 
+        If your input dataset already contains more sequences, there will be no additional sequences added, but also not removed.
+        (If the removal of sequences that were already part of the initial phylogeny is a function someone would like to have, this should be easy to implement. Just ask.) 
     * **downtorank**: This defines the rank which is used to determine the maximum number of sequences per taxon. 
 
-            It can be set to None and then for all taxons, there will be the maximum number of threshold sequences retrieved. 
-            If it is set to species, there will no more than the maximum number of sequences randomly choosen from all sequences available for all the subspecies. 
-            It can be set to any ranks defined in the ncbi taxonomy browser.
+        It can be set to None and then for all taxons, there will be the maximum number of threshold sequences retrieved. 
+        If it is set to species, there will no more than the maximum number of sequences randomly choosen from all sequences available for all the subspecies. 
+        It can be set to any ranks defined in the ncbi taxonomy browser.
     * **selectby**: This defines how to select the representative sequences.
 
         * **blast**: All sequences belonging to a taxon will be used for a filtering blast search. 
 
             A sequence already present in the phylogeny, or a randomly chosen sequence, will be used to blast against all other sequences from the locus with the same taxon name.
             From the sequences that pass the filtering criterium, sequences will be randomly selected as representative. The filtering criterium is that they need to be within the mean +/- standard deviation of sequence  similarity in relation to the queried sequence. See below for the explanation of the similarity value.
-    
+
             If the taxon is likely monophyletic the distances will be similar and thus all sequences will fall within the mean and standard deviation of sequence similarity. 
             If there are a few outlier sequences only, this seems to be likely a misidentification or mis-labeling in GenBank, outlier sequences will not be added, as they are most likely outside the allowed range of mean +/- SD. 
             If the taxon is likely not monophyletic and sequences diverge a lot from each other, the mean and SD will be larger and allows to randomly pick sequences, that represent the divergence.
@@ -195,10 +199,11 @@ There is an example config file in `tests/data/localblast.config`
 
      Instead of using GenBank as the source of new sequences, we can specify a folder which contains sequences in fasta format and this folder will be used as a sequence database. Then before running a standard or filter run, sequences from that folder can be added to the alignment/phylogeny if the folder contains sequences that are similar to the sequences already present in the alignment. This is intended to be used for newly sequenced material, which is not yet published on GenBank.
      To use this you need to specify:
-     * add_unpubl_seq = path to folder with the sequences
-     * id_to_spn_addseq_json = path to file which translates the sequences names to species names
 
-**3. start to update your phylogeny:**
+       * add_unpubl_seq = path to folder with the sequences
+       * id_to_spn_addseq_json = path to file which translates the sequences names to species names
+
+#### **3. start to update your phylogeny:**
 
 This should be straight forward - type in your physcraper main folder:
 
@@ -215,25 +220,26 @@ There are some more features that can be changed if you know where, we will chan
 * change the most recent common ancestor (mrca): often phylogenies include outgroups, and someone might not be interested in updating that part of the tree. This can be avoided by defining the most recent common ancestor. It requires the OpenTreeOfLife identifier for the group of interest. 
     
     You can get that ID by two different approaches:
-    1. run `python scripts/get_ottid.py name_of_your_ingroup`
 
-    2. by going to [Open Tree of Life](https://ot14.opentreeoflife.org/opentree/argus/opentree9.1@ott93302) and type in the name of the lineage and get the OTT ID at the right side of the page. That number needs to be provided analysis file, as following:
-    
-    The identifying number need to be entered here:
-    1. in an OToL run: within the function  `standard_run()`/`filter_OTOL()` in your analysis file in the field for `ingroup_mrca`.
+      1. run `python scripts/get_ottid.py name_of_your_ingroup`
 
-    2. in an own data run: provide ID within the function `own_data_run()`/`filter_data_run()` in your analysis file in the field for `ingroup_mrca`.
+      2. by going to [Open Tree of Life](https://ot14.opentreeoflife.org/opentree/argus/opentree9.1@ott93302) and type in the name of the lineage and get the OTT ID at the right side of the page. That number needs to be provided analysis file, as following:
+      
+      The identifying number need to be entered here:
+      1. in an OToL run: within the function  `standard_run()`/`filter_OTOL()` in your analysis file in the field for `ingroup_mrca`.
 
-    Another aspect which needs to be considered, if your group of interest is not monophyletic and you limit the search to the mrca of the group, closely related sequences that belong for example to a different genus will not be added.
+      2. in an own data run: provide ID within the function `own_data_run()`/`filter_data_run()` in your analysis file in the field for `ingroup_mrca`.
+
+      Another aspect which needs to be considered, if your group of interest is not monophyletic and you limit the search to the mrca of the group, closely related sequences that belong for example to a different genus will not be added.
 * sharing blast result files across runs: 
 
     1. give the path to the folder in the wrapper function of your analysis file.
 
     2. in your config file: change the gb_id_filename setting to True. 
     
-    Be careful! If you have different hitlist_size defined, your blast files have different numbers of sequences saved. Sharing the folder across those different settings is not recommended!
+  Be careful! If you have different hitlist_size defined, your blast files have different numbers of sequences saved. Sharing the folder across those different settings is not recommended!
 
-**5. Concatenate different single-gene PhyScraper runs:**
+#### **5. Concatenate different single-gene PhyScraper runs:**
     
 After the single-gene PhyScraper runs were updated, the data can be combined, see for example `tests/data/concat_runs.py`.
 Either the program randomly decides which sequences to concatenate if there are more sequences available for one loci or the user can specify a file, which sequences shall be concatenated. An example file can be found at `tests/data/concatenation_input.csv`.
