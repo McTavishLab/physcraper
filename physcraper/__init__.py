@@ -96,13 +96,15 @@ def get_raw_input():
 class ConfigObj(object):
     """
     To build the class the following is needed:
+
       * **configfi**: a configuration file in a specific format, e.g. to read in self.e_value_thresh.
-                The file needs to have a heading of the format: [blast] and then somewhere below that heading
-                a string e_value_thresh = value
+                
+        The file needs to have a heading of the format: [blast] and then somewhere below that heading a string e_value_thresh = value
 
       * **interactive**: defaults to True, is used to interactively update the local blast databases
 
     During the initializing process the following self objects are generated:
+
       * **self.e_value_thresh**: the defined threshold for the e-value during Blast searches, check out: https://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Web&PAGE_TYPE=BlastDocs&DOC_TYPE=FAQ
       * **self.hitlist_size**: the maximum number of sequences retrieved by a single blast search
       * **self.seq_len_perc**: value from 0 to 1. Defines how much shorter new seq can be compared to input
@@ -572,8 +574,10 @@ class AlignTreeTax(object):
           * **self.aln**: contains the alignment and which will be updated during the run
           * **self.tre**: contains the phylogeny, which will be updated during the run
           * **self.otu_dict**: dictionary with taxon information and physcraper relevant stuff
+               
                * key: a unique identifier (otu plus either "tiplabel of phylogeny" or for newly found sequences PS_number.
                * value: dictionary with the following key:values:
+                   
                     * '^ncbi:gi': GenBank identifier - deprecated by Genbank - only older sequences will have it
                     * '^ncbi:accession': Genbanks accession number
                     * '^ncbi:title': title of Genbank sequence submission
@@ -582,6 +586,7 @@ class AlignTreeTax(object):
                     * '^physcraper:status': contains information if it was 'original', 'queried', 'removed', 'added during filtering process'
                     * '^ot:ottTaxonName': OToL taxon name
                     * '^physcraper:last_blasted': contains the date when the sequence was blasted.                
+                         
                          If the year is different from the 20th century, it tells us
                          something about the initial status:
                          * 1800 = never blasted, not yet considered to be added
@@ -624,6 +629,7 @@ class AlignTreeTax(object):
                 removes taxa, that are not found in both, the phylogeny and the aln and changes their names????
 
         The physcraper class is then updating: 
+
           * self.aln, self.tre and self.otu_dict, self.ps_otu, self.gi_dict
  """
 
@@ -1103,6 +1109,7 @@ class IdDicts(object):
           * **mrca**: mrca as defined by input, can be a class
 
         During the initializing process the following self objects are generated:
+
           * **self.workdir**: contains path of working directory
           * **self.config**: contains the Config class object
           * **self.ott_to_ncbi**: dictionary
@@ -1134,6 +1141,7 @@ class IdDicts(object):
           * **self.mrca_ncbi**: set, which is fed by self.get_ncbi_mrca()
 
           * **Optional**:
+          
               * depending on blasting method:
                * self.ncbi_parser: for local blast, initializes the ncbi_parser class, that contains information about rank and identifiers
                * self.otu_rank: for remote blast to store the rank information
@@ -1453,7 +1461,8 @@ class PhyscraperScrape(object):
           * **self.unpublished**: True/False. Used to look for local unpublished seq that shall be added if True.
           * **self.path_to_local_seq:** Usually False, contains path to unpublished sequences if option is used.
 
-        #### Following functions are called during the init-process:
+        Following functions are called during the init-process:
+
         * **self.reset_markers()**: 
              adds things to self: I think they are used to make sure certain function run, if program crashed and pickle file is read in.
             * self._blasted: 0/1, if run_blast_wrapper() was called, it is set to 1 for the round.
@@ -1621,6 +1630,7 @@ class PhyscraperScrape(object):
         :return: writes blast queries to file
         """
         debug("run_blast_wrapper")
+        debug(self.blast_subdir)
         if not os.path.exists(self.blast_subdir):
             os.makedirs(self.blast_subdir)
         with open(self.logfile, "a") as log:
@@ -2454,18 +2464,22 @@ class FilterBlast(PhyscraperScrape):
     a number of representative sequences for a genus or lineage it can also be used to deal with subspecies.
 
     existing self objects are:
+
         self.sp_d: dictionary
+
                 key = species name/id
                 value = dictionary:
                     key = otuID
                     value = otu_dict entry
         self.sp_seq_d: dictionary
+
                 key = species name/id
                 value = dictionary (Is overwritten every 'round')
+
                     key = otuID
                     value = seq.
-        self.filtered_seq: dictionary. Is used as the self.new_seqs equivalent from Physcraper, just with fewer seqs.
-                            Is overwritten every 'round'
+        self.filtered_seq: dictionary. Is used as the self.new_seqs equivalent from Physcraper, just with fewer seqs. Is overwritten every 'round'
+
                 key = otuID,
                 val = seq.
         self.downtorank: optional string defining the level of taxonomic filtering, e.g. "species", "genus"
