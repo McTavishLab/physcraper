@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """Physcraper module"""
 
-# from __future__ import absolute_import
+from __future__ import absolute_import
 
 import sys
 import re
@@ -30,7 +30,7 @@ from peyotl.nexson_syntax import (
 )
 
 # extension functions
-import concat  # is the local concat class
+from . import concat  # is the local concat class
 from . import ncbi_data_parser  # is the ncbi data parser class and associated functions
 from . import local_blast
 
