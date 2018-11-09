@@ -95,39 +95,40 @@ def get_raw_input():
 
 class ConfigObj(object):
     """
-    #### To build the class the following is needed:
-      * **configfi**: a configuration file in a specific format,
-       
-            e.g. to read in self.e_value_thresh.
+    To build the class the following is needed:
+      * **configfi**: a configuration file in a specific format, e.g. to read in self.e_value_thresh.
                 The file needs to have a heading of the format: [blast] and then somewhere below that heading
                 a string e_value_thresh = value
 
       * **interactive**: defaults to True, is used to interactively update the local blast databases
 
-    #### During the initializing process the following self objects are generated:
-      * **self.e_value_thresh**: the defined threshold for the e-value during Blast searches, check out:
-                                https://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Web&PAGE_TYPE=BlastDocs&DOC_TYPE=FAQ
+    During the initializing process the following self objects are generated:
+      * **self.e_value_thresh**: the defined threshold for the e-value during Blast searches, check out: https://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Web&PAGE_TYPE=BlastDocs&DOC_TYPE=FAQ
       * **self.hitlist_size**: the maximum number of sequences retrieved by a single blast search
       * **self.seq_len_perc**: value from 0 to 1. Defines how much shorter new seq can be compared to input
       * **self.get_ncbi_taxonomy**: Path to sh file doing something...
       * **self.ncbi_dmp**: path to file that has gi numbers and the corresponding ncbi tax id's
-      * **self.phylesystem_loc**: defines which phylesystem for OpenTree datastore is used. 
-                                The default is api, but can run on local version too. 
+      * **self.phylesystem_loc**: defines which phylesystem for OpenTree datastore is used. The default is api, but can run on local version too. 
       * **self.ott_ncbi**: file containing OTT id, ncbi and taxon name (??)
       * **self.id_pickle**: path to pickle file
       * **self.email**: email address used for blast queries
       * **self.blast_loc**: defines which blasting method to use:
+
           * either web-query (=remote)
           * from a local blast database (=local)
       * **self.num_threads**: number of cores to be used during a run
       * **self.url_base**: 
+
           * if blastloc == remote: it defines the url for the blast queries.
           * if blastloc == local: url_base = None
       * **self.unmapped**: used for OToL original tips that can not be assigned to a taxon
+
           * keep: keep the unmapped taxa and asign them to life
           * remove: remove the unmapped taxa from aln and tre
       * **optional self.objects**:
+
           * if blastloc == local:
+
               * self.blastdb: this defines the path to the local blast database
               * self.ncbi_parser_nodes_fn: path to 'nodes.dmp' file, that contains the hierarchical information
               * self.ncbi_parser_names_fn: path to 'names.dmp' file, that contains the different ID's
@@ -557,31 +558,28 @@ class AlignTreeTax(object):
     """wrap up the key parts together, requires OTT_id, and names must already match.
         Hypothetically, all the keys in the  otu_dict should be clean.
 
-        ####To build the class the following is needed:
+        To build the class the following is needed:
 
           * **newick**: dendropy.tre.as_string(schema=schema_trf) object
           * **otu_dict**: json file including the otu_dict information generated earlier
           * **alignment**: dendropy DNACharacterMatrix object
-          * **ingroup_mrca**: OToL identifier of the group of interest, either subclade as defined by user or of
-                            all tiplabels in the phylogeny
+          * **ingroup_mrca**: OToL identifier of the group of interest, either subclade as defined by user or of all tiplabels in the phylogeny
           * **workdir**: the path to the corresponding working directory
           * **schema**: optional argument to define tre file schema, if different from "newick"
 
-        ####During the initializing process the following self objects are generated:
+        During the initializing process the following self objects are generated:
 
           * **self.aln**: contains the alignment and which will be updated during the run
           * **self.tre**: contains the phylogeny, which will be updated during the run
           * **self.otu_dict**: dictionary with taxon information and physcraper relevant stuff
-               * key: a unique identifier (otu plus either "tiplabel of phylogeny" or for newly found sequences
-                    PS_number.
+               * key: a unique identifier (otu plus either "tiplabel of phylogeny" or for newly found sequences PS_number.
                * value: dictionary with the following key:values:
                     * '^ncbi:gi': GenBank identifier - deprecated by Genbank - only older sequences will have it
                     * '^ncbi:accession': Genbanks accession number
                     * '^ncbi:title': title of Genbank sequence submission
                     * '^ncbi:taxon': ncbi taxon identifier
                     * '^ot:ottId': OToL taxon identifier
-                    * '^physcraper:status': contains information if it was 'original', 'queried', 'removed',
-                                        'added during filtering process'
+                    * '^physcraper:status': contains information if it was 'original', 'queried', 'removed', 'added during filtering process'
                     * '^ot:ottTaxonName': OToL taxon name
                     * '^physcraper:last_blasted': contains the date when the sequence was blasted.                
                          If the year is different from the 20th century, it tells us
@@ -620,12 +618,12 @@ class AlignTreeTax(object):
           * **self._reconciled**: True/False,
           * **self.unpubl_otu_json**: optional, will contain the OTU-dict for unpublished data, if that option is used
 
-        ####Following functions are called during the init-process:
+        Following functions are called during the init-process:
 
           * **self._reconcile_names()**: 
                 removes taxa, that are not found in both, the phylogeny and the aln and changes their names????
 
-        ####The physcraper class is then updating: 
+        The physcraper class is then updating: 
           * self.aln, self.tre and self.otu_dict, self.ps_otu, self.gi_dict
  """
 
@@ -1098,13 +1096,13 @@ def get_ott_ids_from_otu_dict(otu_dict):  # TODO put into data obj?
 class IdDicts(object):
     """Class contains different taxonomic identifiers and helps to find the corresponding ids between ncbi and OToL
 
-        #### To build the class the following is needed:
+        To build the class the following is needed:
             
           * **config_obj**: Object of class config (see above)
           * **workdir**: the path to the assigned working directory
           * **mrca**: mrca as defined by input, can be a class
 
-        #### During the initializing process the following self objects are generated:
+        During the initializing process the following self objects are generated:
           * **self.workdir**: contains path of working directory
           * **self.config**: contains the Config class object
           * **self.ott_to_ncbi**: dictionary
@@ -1415,12 +1413,12 @@ class PhyscraperScrape(object):
     """
     This is the class that does the perpetual updating
 
-        #### To build the class the following is needed:
+        To build the class the following is needed:
 
           * **data_obj**: Object of class ATT (see above)
           * **ids_obj**: Object of class IdDict (see above)
 
-        #### During the initializing process the following self.objects are generated:
+        During the initializing process the following self.objects are generated:
 
           * **self.workdir**: path to working directory retrieved from ATT object = data_obj.workdir
           * **self.logfile**: path of logfile
@@ -1428,12 +1426,15 @@ class PhyscraperScrape(object):
           * **self.ids**: IdDict object
           * **self.config**: Config object
           * **self.new_seqs**: dictionary that contains the newly found seq using blast:
+            
             * key: gi id
             * value: corresponding seq
           * **self.new_seqs_otu_id**: dictionary that contains the new sequences that passed the remove_identical_seq() step:
+            
             * key: otu_id
             * value: see otu_dict, is a subset of the otu_dict, all sequences that will be newly added to aln and tre
           * **self.otu_by_gi**: dictionary that contains ????:
+            
             * key:
             * value:
           * **self._to_be_pruned**: list that contains ????
@@ -1448,9 +1449,7 @@ class PhyscraperScrape(object):
           * **self.newseqs_acc**: list of all gi_ids that were passed into remove_identical_seq(). Used to speed up adding process
           * **self.blacklist**: list of gi_id of sequences that shall not be added or need to be removed. Supplied by user.
           * **self.acc_list_mrca**: list of all gi_ids available on GenBank for a given mrca. Used to limit possible seq to add.
-          * **self.seq_filter**: list of words that may occur in otu_dict.status and which shall not be used
-                        in the building of FilterBlast.sp_d (that's the main function), but it is also used as assert
-                        statement to make sure unwanted seqs are not added.
+          * **self.seq_filter**: list of words that may occur in otu_dict.status and which shall not be used in the building of FilterBlast.sp_d (that's the main function), but it is also used as assert statement to make sure unwanted seqs are not added.
           * **self.unpublished**: True/False. Used to look for local unpublished seq that shall be added if True.
           * **self.path_to_local_seq:** Usually False, contains path to unpublished sequences if option is used.
 
