@@ -2269,7 +2269,8 @@ class PhyscraperScrape(object):
         self._full_tree_est = 1  
 
     def calculate_bootstrap(self):
-        """calculate bootstrap and consensus trees
+        """Calculates bootstrap and consensus trees.
+
         -p: random seed
         -s: aln file
         -n: output fn
@@ -2909,7 +2910,7 @@ class FilterBlast(PhyscraperScrape):
                         self.data.otu_dict[key]['^physcraper:last_blasted'] = "1900/01/01"
                         
                         print(self.data.otu_dict[key]['^physcraper:status'])
-                        if self.data.otu_dict[key]['^physcraper:status'] == "query":
+                        if self.data.otu_dict[key]['^physcraper:status'] == "query" or self.data.otu_dict[key]['^physcraper:status'].split(" ")[0] == new :
                             self.data.otu_dict[key]['^physcraper:status'] = 'not added, there are enough seq per sp in tre'
         
         for gb_id in keylist:
