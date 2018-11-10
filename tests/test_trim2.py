@@ -2,7 +2,7 @@ from dendropy import Tree, \
       DnaCharacterMatrix, \
       DataSet, \
       datamodel
-from physcraper import wrappers, generate_ATT_from_files, AlignTreeTax, OtuJsonDict, IdDicts, ConfigObj
+from physcraper import generate_ATT_from_files, AlignTreeTax, OtuJsonDict, IdDicts, ConfigObj
 import os
 import json
 
@@ -25,12 +25,8 @@ if not os.path.exists("{}".format(workdir)):
 conf = ConfigObj(configfi, interactive=False)
 ids = IdDicts(conf, workdir=workdir)
 
-if os.path.exists(otu_jsonfi):
-    print("load json")
-    otu_json = json.load(open(otu_jsonfi))
-else:
-    otu_json = OtuJsonDict(id_to_spn, ids)
-    json.dump(otu_json, open(otu_jsonfi,"w"))
+otu_json = OtuJsonDict(id_to_spn, ids)
+json.dump(otu_json, open(otu_jsonfi,"w"))
 
 
 data_obj = generate_ATT_from_files(seqaln=seqaln, 
@@ -41,11 +37,26 @@ data_obj = generate_ATT_from_files(seqaln=seqaln,
                                  otu_json=otu_jsonfi,
                                  ingroup_mrca=None)
 
+
+for tax, seq in data_obj.aln.items():
+  len_start = len(seq)
+
+
+data_obj.trim()
+
+for tax, seq in data_obj.aln.items():
+  len_end = len(seq)
+
+assert len_start ==  len_end
+
+
 for tax, seq in data_obj.aln.items():
 	len_start = len(seq)
-	next
-data_obj.trim()
+
+
+data_obj.trim(taxon_missingness=0.5)
+
 for tax, seq in data_obj.aln.items():
 	len_end = len(seq)
 
-assert len_start != len_end
+assert len_start >  len_end
