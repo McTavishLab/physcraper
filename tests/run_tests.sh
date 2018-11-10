@@ -21,6 +21,6 @@ py.test tests/test_addLocal.py
 py.test tests/test_reconcile.py
 py.test tests/test_trim.py
 py.test tests/test_unmapped_taxa.py
-
+python tests/test_trim2.py
 
 py.test tests/test_blacklist.py
