@@ -871,24 +871,31 @@ class Concat(object):
         :return: writes output to file
         """   
         otu_dict_keys = [
-            "^ot:ottTaxonName",
-            "^ncbi:gi",
-            "^ncbi:accession",
-            "^physcraper:last_blasted",
-            "^physcraper:status",
-            "^ot:ottId",
-            "^ncbi:taxon",
-            "^ncbi:title",
-        ]
-        with open("{}/otu_seq_info.csv".format(self.workdir), "w") as output:
+            "unique_id", "spn", "original_PS_id", "concat:status"]
+        with open("otu_seq_info.csv", "w") as output:
             writer = csv.writer(output)
+            writer.writerow(otu_dict_keys, )
+            # print(self.sp_acc_comb.keys())
             for otu in self.sp_acc_comb.keys():
-                rowinfo = [otu]
-                for item in otu_dict_keys:
-                    if item in self.sp_acc_comb[otu].keys():
-                        tofile = str(self.sp_acc_comb[otu][item]).replace("_", " ")
-                        rowinfo.append(tofile)
-                    else:
-                        rowinfo.append("-")
-                writer.writerow(rowinfo)                
+                # print(self.sp_acc_comb[otu].keys())
+                
+                # rowinfo = spn_writer
+                for loci in self.sp_acc_comb[otu].keys():
+                    
+                    print("newinfo")
+                    rowinfo = [loci]
+                    # print(self.sp_acc_comb[otu][loci])
+                    for concat_id in self.sp_acc_comb[otu][loci].keys():
+                        rowinfo_details = deepcopy(rowinfo)
+                        print(rowinfo_details)
+                        rowinfo_details.append(concat_id)
+
+                        for item in otu_dict_keys:
+                            if item in self.sp_acc_comb[otu][loci][concat_id].keys():
+                                tofile = str(self.sp_acc_comb[otu][loci][concat_id][item]).replace("_", " ")
+                                rowinfo_details.append(tofile)
+                            else:
+                                rowinfo_details.append("-")
+                        print(rowinfo_details)
+                        writer.writerow(rowinfo_details)                
 
