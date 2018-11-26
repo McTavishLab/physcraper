@@ -770,7 +770,7 @@ class AlignTreeTax(object):
         self.trim()
         self._reconciled = 1
 
-    def trim(self, taxon_missingness=0.74):
+    def trim(self, taxon_missingness=0.75):
         """ It removes bases at the start and end of alignments, if they are represented by less than 75%
         of the sequences in the alignment.
         Ensures, that not whole chromosomes get dragged in. It's cutting the ends of long sequences.
