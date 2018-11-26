@@ -766,8 +766,8 @@ class Concat(object):
                          "-n", "autoMRE"])
         subprocess.call(["raxmlHPC", "-m", "GTRCAT",
                          "-s", aln, "-q", partition,
-                         "-p", "1", "-f", "a", "-x", "1", "-#", "autoMRE_fa",
-                         "-n", "autoMRE"])
+                         "-p", "1", "-f", "a", "-x", "1", "-#", "autoMRE",
+                         "-n", "autoMRE_fa"])
         # strict consensus:
         subprocess.call(["raxmlHPC", "-m", "GTRCAT",
                          "-J", "STRICT",
@@ -859,3 +859,37 @@ class Concat(object):
         """ Save a concat run as pickle.
         """
         pickle.dump(self, open("{}/{}".format(self.workdir, filename), "wb"))
+
+    def write_otu_info(self, downtorank=None):
+        """Writes output tables to file: Makes reading important information less code heavy.
+
+        file with all relevant GenBank info to file (otu_dict).
+
+        It uses the self.sp_d to get sampling information, that's why the downtorank is required.
+
+        :param downtorank: hierarchical filter
+        :return: writes output to file
+        """
+        debug("write out infos")
+       
+        otu_dict_keys = [
+            "^ot:ottTaxonName",
+            "^ncbi:gi",
+            "^ncbi:accession",
+            "^physcraper:last_blasted",
+            "^physcraper:status",
+            "^ot:ottId",
+            "^ncbi:taxon",
+            "^ncbi:title",
+        ]
+        with open("{}/otu_seq_info.csv".format(self.workdir), "w") as output:
+            writer = csv.writer(output)
+            for otu in self.data.otu_dict.keys():
+                rowinfo = [otu]
+                for item in otu_dict_keys:
+                    if item in self.data.otu_dict[otu].keys():
+                        tofile = str(self.data.otu_dict[otu][item]).replace("_", " ")
+                        rowinfo.append(tofile)
+                    else:
+                        rowinfo.append("-")
+                writer.writerow(rowinfo)

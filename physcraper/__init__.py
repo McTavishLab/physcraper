@@ -2470,9 +2470,7 @@ class FilterBlast(PhyscraperScrape):
         self.sp_d: dictionary
 
                 key = species name/id
-                value = dictionary:
-                    key = otuID
-                    value = otu_dict entry
+                value = list with otu_dict entry
         self.sp_seq_d: dictionary
 
                 key = species name/id
