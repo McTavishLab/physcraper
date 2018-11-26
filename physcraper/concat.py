@@ -882,11 +882,11 @@ class Concat(object):
         ]
         with open("{}/otu_seq_info.csv".format(self.workdir), "w") as output:
             writer = csv.writer(output)
-            for otu in self.data.otu_dict.keys():
+            for otu in self.sp_acc_comb.keys():
                 rowinfo = [otu]
                 for item in otu_dict_keys:
-                    if item in self.data.otu_dict[otu].keys():
-                        tofile = str(self.data.otu_dict[otu][item]).replace("_", " ")
+                    if item in self.sp_acc_comb[otu].keys():
+                        tofile = str(self.sp_acc_comb[otu][item]).replace("_", " ")
                         rowinfo.append(tofile)
                     else:
                         rowinfo.append("-")
