@@ -890,5 +890,5 @@ class Concat(object):
                         rowinfo.append(tofile)
                     else:
                         rowinfo.append("-")
-                writer.writerow(rowinfo)
-                
+                writer.writerow(rowinfo)                
+
