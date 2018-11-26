@@ -1979,6 +1979,7 @@ class PhyscraperScrape(object):
                             sys.stdout.write("seq {} is supersequence of {}, {} added "
                                              "and {} removed\n".format(label, tax_lab, label, tax_lab))
                         self.data.otu_dict[label]['^physcraper:status'] = "new seq added in place of {}".format(tax_lab)
+                        self.data.otu_dict[tax_lab]['^physcraper:status'] = "deleted, {} is supersequence".format(label)
                         debug("{} added, instead of  {}".format(id_of_label, existing_id))
                         continue_search = True
                         continue
@@ -1992,7 +1993,7 @@ class PhyscraperScrape(object):
                 else:
                     debug("label was never added to aln or tre")
                 # Note: should not be the word 'deleted', as this is used in self.seq_filter
-                self.data.otu_dict[label]['^physcraper:status'] = "removed in seq dict build"
+                # self.data.otu_dict[label]['^physcraper:status'] = "removed in seq dict build"
                 return seq_dict
         if _VERBOSE:
             sys.stdout.write(".")
