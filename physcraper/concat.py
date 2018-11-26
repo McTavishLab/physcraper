@@ -869,9 +869,7 @@ class Concat(object):
 
         :param downtorank: hierarchical filter
         :return: writes output to file
-        """
-        debug("write out infos")
-       
+        """   
         otu_dict_keys = [
             "^ot:ottTaxonName",
             "^ncbi:gi",
@@ -893,3 +891,4 @@ class Concat(object):
                     else:
                         rowinfo.append("-")
                 writer.writerow(rowinfo)
+                
