@@ -1,0 +1,14 @@
+language: python
+python:
+  - "2.7"
+# command to install dependencies
+install:
+  - pip install --quiet -r requirements.txt
+  - pip install --quiet . 
+# command to run tests
+script:
+  - wget 'https://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdump.tar.gz'
+  - gunzip  -cd taxdump.tar.gz | (tar xvf - names.dmp nodes.dmp)
+  - mv *.dmp tests/data/
+  - echo 'no' | python tests/testfilesetup.py
+  - py.test tests/ --setup-only

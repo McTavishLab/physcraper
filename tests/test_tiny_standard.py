@@ -2,6 +2,7 @@
 import os
 import json
 from physcraper import wrappers
+from physcraper import ConfigObj, IdDicts, OtuJsonDict
 
 
 
@@ -19,27 +20,27 @@ otu_jsonfi = "{}/otu_dict.json".format(workdir)
 
 # setting up a physcraper run
 
+def test():
+    if not os.path.exists("{}".format(workdir)):
+            os.makedirs("{}".format(workdir))
 
-if not os.path.exists("{}".format(workdir)):
-        os.makedirs("{}".format(workdir))
-
-conf = ConfigObj(configfi, interactive=False)
-ids = IdDicts(conf, workdir=workdir)
-
-
-if os.path.exists(otu_jsonfi):
-    print("load json")
-    otu_json = json.load(open(otu_jsonfi))
-else:
-    otu_json = OtuJsonDict(id_to_spn, ids)
-    json.dump(otu_json, open(otu_jsonfi,"w"))
+    conf = ConfigObj(configfi, interactive=False)
+    ids = IdDicts(conf, workdir=workdir)
 
 
-# that's the main function
-wrappers.own_data_run(seqaln,
-                 mattype,
-                 trfn,
-                 schema_trf,
-                 workdir,
-                 otu_jsonfi,
-                 configfi)
+    if os.path.exists(otu_jsonfi):
+        print("load json")
+        otu_json = json.load(open(otu_jsonfi))
+    else:
+        otu_json = OtuJsonDict(id_to_spn, ids)
+        json.dump(otu_json, open(otu_jsonfi,"w"))
+
+
+    # that's the main function
+    wrappers.own_data_run(seqaln,
+                     mattype,
+                     trfn,
+                     schema_trf,
+                     workdir,
+                     otu_jsonfi,
+                     configfi)

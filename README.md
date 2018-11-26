@@ -1,4 +1,7 @@
 # physcraper
+
+[![Build Status](https://travis-ci.org/McTavishLab/physcraper.svg?branch=master)](https://travis-ci.org/McTavishLab/physcraper)[![Documentation](https://readthedocs.org/projects/physcraper/badge/?version=latest&style=flat)](https://physcraper.readthedocs.io/en/latest/)
+
 Continual gene tree updating. 
 Uses a tree from Open tree of Life (or your own tree) and an alignment to search for and adds homologous sequences to phylogenetic inference. 
 
