@@ -313,14 +313,14 @@ def add_unpubl_to_backbone(seqaln,
                            trfn,
                            schema_trf,
                            workdir,
-                           threshold,
                            spInfoDict,
                            configfi,
-                           selectby="blast",
-                           downtorank="species",
+                           add_unpubl_seq,
+                           id_to_spn_addseq_json,
+                           selectby=None,
+                           downtorank=None,
+                           threshold = None,
                            blacklist=None,
-                           add_unpubl_seq=None,
-                           id_to_spn_addseq_json=None,
                            ingroup_mrca=None,
                            shared_blast_folder=None):
     """looks for pickeled file to continue run, or builds and runs 
@@ -680,5 +680,6 @@ def concat(genelistdict, workdir_comb, email, percentage=0.37, user_concat_fn=No
     concat.place_new_seqs()
     concat.est_full_tree()
     concat.calculate_bootstrap()
+    concat.write_otu_info()
     return concat
 
