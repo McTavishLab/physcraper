@@ -2177,11 +2177,11 @@ class PhyscraperScrape(object):
         This function ensures they are properly removed."""
         for tax_lab in self.data.aln.taxon_namespace:
             if tax_lab not in self.data.tre.taxon_namespace:
-                sys.stdout.write("tax not in tre. This is an alien name in the data.")
+                sys.stderr.write("tax {} not in tre. This is an alien name in the data.\n".format(tax_lab))
                 self.data.remove_taxa_aln_tre(tax_lab)
         for tax_lab in self.data.tre.taxon_namespace:
             if tax_lab not in self.data.aln.taxon_namespace:
-                sys.stdout.write("tax not in aln. This is an alien name in the data. ")
+                sys.stderr.write("tax {} not in aln. This is an alien name in the data.\n".format(tax_lab))
                 self.data.remove_taxa_aln_tre(tax_lab)
         self.data.prune_short()
 
@@ -2368,6 +2368,7 @@ class PhyscraperScrape(object):
                 self.write_query_seqs()
                 self.align_query_seqs()
                 self.place_query_seqs()
+                self.prune_short()
                 self.est_full_tree()
                 self.data.tre = Tree.get(path="{}/RAxML_bestTree.{}".format(self.workdir, self.date),
                                          schema="newick",
@@ -2532,6 +2533,8 @@ class FilterBlast(PhyscraperScrape):
                     if tax_name is None:
                         debug("something is going wrong!Check species name")
                         sys.stderr.write("{} has no corresponding tax_name! Check what is wrong!".format(key))
+                if len(tax_name.split("(")) > 1:
+                    tax_name = tax_name.split("(")[0]
                 tax_name = str(tax_name).replace(" ", "_")
                 if self.config.blast_loc == 'remote':
                     if '^ncbi:accession' in self.data.otu_dict[key]:
@@ -2958,11 +2961,12 @@ class FilterBlast(PhyscraperScrape):
             "^ot:ottTaxonName",
             "^ncbi:gi",
             "^ncbi:accession",
+            "^ot:originalLabel",
             "^physcraper:last_blasted",
             "^physcraper:status",
             "^ot:ottId",
             "^ncbi:taxon",
-            "^ncbi:title",
+            "^ncbi:title"
         ]
         with open("{}/otu_seq_info.csv".format(self.workdir), "w") as output:
             writer = csv.writer(output)

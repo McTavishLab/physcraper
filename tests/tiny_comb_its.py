@@ -11,7 +11,7 @@ schema_trf = "newick"
 id_to_spn = r"tests/data/tiny_comb_its/nicespl.csv"
 
 workdir = "tiny_comb_its"
-configfi = "tests/data/test.config"
+configfi = "tests/data/localblast.config"
 otu_jsonfi = "{}/otu_dict.json".format(workdir)
 threshold = 2
 selectby = "blast"

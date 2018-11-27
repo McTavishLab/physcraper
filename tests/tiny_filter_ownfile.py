@@ -10,7 +10,7 @@ trfn = "tests/data/tiny_test_example/test.tre"
 schema_trf = "newick"
 id_to_spn = r"tests/data/tiny_test_example/test_nicespl.csv"
 workdir="tests/output/tiny_filter_own"
-configfi = "tests/data/test.config"
+configfi = "tests/data/localblast.config"
 
 otu_jsonfi = "{}/otu_dict.json".format(workdir)
 
