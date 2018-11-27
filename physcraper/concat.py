@@ -701,11 +701,20 @@ class Concat(object):
             os.chdir(self.workdir)
 
             physcraper.debug("make place-tree")
-            subprocess.call(["raxmlHPC", "-m", "GTRCAT",
-                             "-f", "v", "-q", "partition",
-                             "-s", "concat_red.fasta",
-                             "-t", "starting_red.tre",
-                             "-n", "PLACE"])
+            try:
+                num_threads = int(self.config.num_threads)
+                print(num_threads)
+                subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(num_threads), "-m", "GTRCAT",
+                                 "-f", "v", "-q", "partition",
+                                 "-s", "concat_red.fasta",
+                                 "-t", "starting_red.tre",
+                                 "-n", "PLACE"])
+            except:
+                subprocess.call(["raxmlHPC", "-m", "GTRCAT",
+                                 "-f", "v", "-q", "partition",
+                                 "-s", "concat_red.fasta",
+                                 "-t", "starting_red.tre",
+                                 "-n", "PLACE"])
             os.chdir(cwd)
             physcraper.debug("read place tree")
             placetre = Tree.get(path="{}/starting_red.tre".format(self.workdir),
@@ -732,7 +741,16 @@ class Concat(object):
         else:
             aln = "concat_red.fasta"
             partition = "partition"
-        subprocess.call(["raxmlHPC", "-m", "GTRCAT",
+        try:
+            num_threads = int(self.config.num_threads)
+            print(num_threads)
+            subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(num_threads), "-m", "GTRCAT",
+                         "-s", aln, "--print-identical-sequences",
+                         "-t", "{}".format(starting_fn),
+                         "-p", "1", "-q", partition,
+                         "-n", "concat"])
+        except:
+            subprocess.call(["raxmlHPC", "-m", "GTRCAT",
                          "-s", aln, "--print-identical-sequences",
                          "-t", "{}".format(starting_fn),
                          "-p", "1", "-q", partition,
@@ -759,25 +777,48 @@ class Concat(object):
         # make bipartition tree
         # is the -f b command
         # -z specifies file with multiple trees
-        subprocess.call(["raxmlHPC", "-m", "GTRCAT",
-                         "-s", aln,  "-q", partition,
-                         # "-t", "place_resolve.tre", 
-                         "-p", "1", "-b", "1", "-#", "autoMRE",
-                         "-n", "autoMRE"])
-        subprocess.call(["raxmlHPC", "-m", "GTRCAT",
-                         "-s", aln, "-q", partition,
-                         "-p", "1", "-f", "a", "-x", "1", "-#", "autoMRE",
-                         "-n", "autoMRE_fa"])
-        # strict consensus:
-        subprocess.call(["raxmlHPC", "-m", "GTRCAT",
-                         "-J", "STRICT",
-                         "-z", "RAxML_bootstrap.autoMRE",
-                         "-n", "StrictCon"])
-        # majority rule:
-        subprocess.call(["raxmlHPC", "-m", "GTRCAT",
-                         "-J", "MR",
-                         "-z", "RAxML_bootstrap.autoMRE",
-                         "-n", "MR"])
+        try:
+            num_threads = int(self.config.num_threads)
+            print(num_threads)
+            subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(num_threads), "-m", "GTRCAT",
+                             "-s", aln,  "-q", partition,
+                             # "-t", "place_resolve.tre", 
+                             "-p", "1", "-b", "1", "-#", "autoMRE",
+                             "-n", "autoMRE"])
+            subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(num_threads), "-m", "GTRCAT",
+                             "-s", aln, "-q", partition,
+                             "-p", "1", "-f", "a", "-x", "1", "-#", "autoMRE",
+                             "-n", "autoMRE_fa"])
+            # strict consensus:
+            subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(num_threads), "-m", "GTRCAT",
+                             "-J", "STRICT",
+                             "-z", "RAxML_bootstrap.autoMRE",
+                             "-n", "StrictCon"])
+            # majority rule:
+            subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(num_threads), "-m", "GTRCAT",
+                             "-J", "MR",
+                             "-z", "RAxML_bootstrap.autoMRE",
+                             "-n", "MR"])
+        except:
+            subprocess.call(["raxmlHPC", "-m", "GTRCAT",
+                             "-s", aln,  "-q", partition,
+                             # "-t", "place_resolve.tre", 
+                             "-p", "1", "-b", "1", "-#", "autoMRE",
+                             "-n", "autoMRE"])
+            subprocess.call(["raxmlHPC", "-m", "GTRCAT",
+                             "-s", aln, "-q", partition,
+                             "-p", "1", "-f", "a", "-x", "1", "-#", "autoMRE",
+                             "-n", "autoMRE_fa"])
+            # strict consensus:
+            subprocess.call(["raxmlHPC", "-m", "GTRCAT",
+                             "-J", "STRICT",
+                             "-z", "RAxML_bootstrap.autoMRE",
+                             "-n", "StrictCon"])
+            # majority rule:
+            subprocess.call(["raxmlHPC", "-m", "GTRCAT",
+                             "-J", "MR",
+                             "-z", "RAxML_bootstrap.autoMRE",
+                             "-n", "MR"])
 
     def user_defined_concat(self):
         """If a user gave an input file to concatenate data. Fills in the data for self.comb_seq, self.comb_acc
