@@ -1777,9 +1777,10 @@ class PhyscraperScrape(object):
                     self.new_seqs[gb_acc] = query_dict[key]["sseq"]
                     self.data.gb_dict[gb_acc] = query_dict[key]
             else:
-                fn = open("{}/blast_threshold_not_passed.csv".format(self.workdir), "a")
+                fn = open("{}/blast_threshold_not_passed.csv".format(self.workdir), "a+")
                 fn.write("blast_threshold_not_passed:\n")
-                fn.write("{}, {}, {}".format(query_dict[key]["sscinames"], query_dict[key]["accession"], query_dict[key]["evalue"]))
+                fn.write("{}, {}, {}".format(query_dict[key]["sscinames"], query_dict[key]["accession"],
+                                             query_dict[key]["evalue"]))
                 fn.close()
 
     def read_unpublished_blast_query(self):
@@ -2102,10 +2103,21 @@ class PhyscraperScrape(object):
                             self.newseqs_acc.append(gb_id)
                             otu_id = self.data.add_otu(gb_id, self.ids)
                             self.seq_dict_build(seq, otu_id, tmp_dict)
+                        else:
+                            fn = open("{}/not_part_of_mrca.csv".format(self.workdir), "a+")
+                            fn.write("not_part_of_mrca:\n")
+                            fn.write("{}: {}".format(gb_id, input_rank_id))
+                            fn.close()
                     else:
                         self.newseqs_acc.append(gb_id)
                         otu_id = self.data.add_otu(gb_id, self.ids)
                         self.seq_dict_build(seq, otu_id, tmp_dict)
+                else:
+                    fn = open("{}/seqlen_threshold_not_passed.csv".format(self.workdir), "a+")
+                    fn.write("seqlen_threshold_not_passed:\n")
+                    fn.write("{}: {}".format(gb_id, len(seq.replace("-", "").replace("N", ""))))
+                    fn.close()
+
         old_seqs_ids = set()
         for tax in old_seqs:
             old_seqs_ids.add(tax)
@@ -2491,6 +2503,68 @@ class PhyscraperScrape(object):
         os.chdir(os.path.join(self.workdir, "blast"))
         cmd1 = "makeblastdb -in {}_db -dbtype nucl".format("local_unpubl_seq")
         os.system(cmd1)
+
+    def get_additional_GB_info(self):
+        """Retrieves additional information given during the Genbank sequence submission
+        for all included sequences and writes them out to file"""
+        table_keys = [
+                        "Genbank accession",
+                        "Species name",
+                        "authors",
+                        "journal",
+                        "publication title",
+                        "voucher information",
+                        "clone",
+                        "country",
+                        "isolate"
+                    ]
+        
+        with open("{}/Genbank_information_added_seq.csv".format(self.workdir), "w+") as output:
+            writer = csv.writer(output)
+            writer.writerow(table_keys)
+            for entry in self.data.otu_dict.keys():
+                if self.data.otu_dict[entry]['^physcraper:status'].split(' ')[0] not in self.seq_filter:
+                    if '^ncbi:accession' in self.data.otu_dict[entry].keys():
+                        gb_id = self.data.otu_dict[entry]['^ncbi:accession']
+                        tries = 10
+                        Entrez.email = self.config.email
+                        for i in range(tries):
+                            try:
+                                handle = Entrez.efetch(db="nucleotide", id=gb_id, retmode="xml")
+                            except (IndexError, HTTPError) as e:
+                                if i < tries - 1:  # i is zero indexed
+                                    continue
+                                else:
+                                    raise
+                            break
+                        read_handle = Entrez.read(handle)
+                        handle.close()
+                        ncbi_sp = None
+                        voucher = None
+                        clone = None
+                        country = None
+                        isolate = None
+                        # print(read_handle[0])
+                        # print(read_handle[0]["GBSeq_references"][0])
+                        gb_list = read_handle[0]["GBSeq_feature-table"][0]["GBFeature_quals"]
+                        # print(gb_list)
+                        for item in gb_list:
+                            if item[u"GBQualifier_name"] == "organism":
+                                ncbi_sp = str(item[u"GBQualifier_value"])
+                                ncbi_sp = ncbi_sp.replace(" ", "_")
+                            if item[u"GBQualifier_name"] == "specimen_voucher":
+                                voucher = str(item[u"GBQualifier_value"])
+                            if item[u"GBQualifier_name"] == "clone":
+                                clone = str(item[u"GBQualifier_value"])
+                            if item[u"GBQualifier_name"] == "country":
+                                country = str(item[u"GBQualifier_value"])
+                            if item[u"GBQualifier_name"] == "isolate":
+                                isolate = str(item[u"GBQualifier_value"])
+                        authors = read_handle[0]["GBSeq_references"][0][u'GBReference_authors']
+                        journal = read_handle[0]["GBSeq_references"][0][u'GBReference_journal']
+                        publication = read_handle[0]["GBSeq_references"][0][u'GBReference_title']
+                        info = [gb_id, ncbi_sp, authors, journal, publication, voucher, clone, country, isolate]
+                        writer.writerow(info)
 
 
 class FilterBlast(PhyscraperScrape):
