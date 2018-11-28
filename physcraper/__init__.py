@@ -693,8 +693,8 @@ class AlignTreeTax(object):
                 del_tre.append(taxon)
         # debug(del_aln)
         # debug(del_tre)
-        self.aln.remove_sequences(del_aln)  
-        self.tre.prune_taxa(del_tre)     
+        self.aln.remove_sequences(del_aln)
+        self.tre.prune_taxa(del_tre)
         for tax in prune:
             # potentially slow at large number of taxa and large numbers to be pruned
             found = 0
@@ -1491,11 +1491,11 @@ class PhyscraperScrape(object):
         self.logfile = "{}/logfile".format(self.workdir)
         self.data = data_obj
         self.ids = ids_obj
-        self.config = self.ids.config
+        self.config = self.ids.config  # TODO: this is already part of self.ids, information are doubled.
         self.new_seqs = {}  # all new seq after read_blast_wrapper
         self.new_seqs_otu_id = {}  # only new seq which passed remove_identical
-        self.otu_by_gi = {}
-        self._to_be_pruned = []
+        self.otu_by_gi = {}  # TODO: What was this intended for? we don't use it
+        self._to_be_pruned = []  # TODO: What was this intended for? We don't use it
         self.mrca_ncbi = ids_obj.ott_to_ncbi[data_obj.ott_mrca]
         self.tmpfi = "{}/physcraper_run_in_progress".format(self.workdir)
         self.blast_subdir = "{}/current_blast_run".format(self.workdir)
@@ -1506,7 +1506,11 @@ class PhyscraperScrape(object):
         self.repeat = 1  # used to determine if we continue updating the tree
         self.newseqs_acc = []  # all ever added Genbank accession numbers during any PhyScraper run, used to speed up adding process
         self.blacklist = []  # remove sequences by default
-        self.seq_filter = ['deleted', 'subsequence,', 'not', "removed", "deleted,", "local"]
+        # self.acc_list_mrca = []  # all gb_ids of a given mrca. Used to limit possible seq to add.
+        # if self.config.blast_loc == 'local' and len(self.acc_list_mrca) == 0:
+        #     self.acc_list_mrca = self.get_all_acc_mrca()
+            # debug(self.acc_list_mrca)
+        self.seq_filter = ['deleted', 'subsequence,', 'not', "removed", "deleted,", "local"]  # TODO MK: try to move completely to FilterBlast class
         self.reset_markers()
         self.unpublished = False  # used to look for local unpublished seq that shall be added.
         self.path_to_local_seq = False  # path to unpublished seq.
@@ -1802,35 +1806,9 @@ class PhyscraperScrape(object):
                             self.data.gb_dict[unpbl_local_id] = {'title': "unpublished", 'localID': local_id}
                             debug(self.data.unpubl_otu_json)
                             self.data.gb_dict[unpbl_local_id].update(
-                                self.data.unpubl_otu_json['otu{}'.format(local_id)])
+                                self.data.unpubl_otu_json['otu{}'.format(local_id.replace("_", "").replace("-",""))])
                             gb_counter += 1
 
-    def read_unpublished_blast_query(self):
-        """
-        Reads in the blast files generated during local_blast_for_unpublished() and adds seq to self.data.gb_dict and
-        self.new_seqs.
-
-        """
-        output_blast = "output_tst_fn.xml"
-        gb_counter = 1
-        general_wd = os.getcwd()
-        os.chdir(os.path.join(self.workdir, "blast"))
-        xml_file = open(output_blast)
-        os.chdir(general_wd)
-        blast_out = NCBIXML.parse(xml_file)
-        for blast_record in blast_out:
-            for alignment in blast_record.alignments:
-                for hsp in alignment.hsps:
-                    if float(hsp.expect) < float(self.config.e_value_thresh):
-                        local_id = alignment.title.split('|')[-1].split(' ')[-1]
-                        if local_id not in self.data.gb_dict:  # skip ones we already have
-                            unpbl_local_id = "unpubl_{}".format(local_id)
-                            self.new_seqs[unpbl_local_id] = hsp.sbjct
-                            self.data.gb_dict[unpbl_local_id] = {'title': "unpublished", 'localID': local_id}
-                            debug(self.data.unpubl_otu_json)
-                            self.data.gb_dict[unpbl_local_id].update(
-                                self.data.unpubl_otu_json['otu{}'.format(local_id)])
-                            gb_counter += 1
 
     def read_webbased_blast_query(self, fn_path):
         """ Implementation to read in results of web blast searches.
@@ -1851,6 +1829,12 @@ class PhyscraperScrape(object):
                             if gb_id.split(".") == 1:
                                 debug(gb_id)
                             if gb_id not in self.data.gb_dict:  # skip ones we already have
+                            # gb_id = int(alignment.title.split('|')[1])  # 1 is for gi
+                            # assert type(gb_id) is int
+                            # SHOULD NOT BE NECESSARY....IS WEBBLAST HAS THE TAXON ALREADY LIMITED
+                            # if len(self.acc_list_mrca) >= 1 and (gb_id not in self.acc_list_mrca):
+                            #     pass
+                            # else:
                                 self.new_seqs[gb_id] = hsp.sbjct
                                 gi_id = alignment.title.split('|')[1]
                                 gb_acc = alignment.__dict__['accession']
@@ -2239,47 +2223,51 @@ class PhyscraperScrape(object):
     def place_query_seqs(self):
         """runs raxml on the tree, and the combined alignment including the new query seqs.
         Just for placement, to use as starting tree."""
-
-        if self.backbone is not True:
-            if os.path.exists("RAxML_labelledTree.PLACE"):
-                os.rename("RAxML_labelledTree.PLACE", "RAxML_labelledTreePLACE.tmp")
-            if _VERBOSE:
-                sys.stdout.write("placing query sequences \n")
-            cwd = (os.getcwd())
-            os.chdir(self.workdir)
-            try:
-                subprocess.call(["raxmlHPC", "-m", "GTRCAT",
-                                 "-f", "v",
-                                 "-s", "papara_alignment.extended",
-                                 "-t", "random_resolve.tre",
-                                 "-n", "PLACE"])
-                placetre = Tree.get(path="RAxML_labelledTree.PLACE",
-                                    schema="newick",
-                                    preserve_underscores=True)
-            except OSError as e:
-                if e.errno == os.errno.ENOENT:
-                    sys.stderr.write("failed running raxmlHPC. Is it installed?")
-                    sys.exit(-6)
-                # handle file not
-                # handle file not found error.
-                else:
-                    # Something else went wrong while trying to run `wget`
-                    raise
-            placetre.resolve_polytomies()
-            for taxon in placetre.taxon_namespace:
-                if taxon.label.startswith("QUERY"):
-                    taxon.label = taxon.label.replace("QUERY___", "")
-            placetre.write(path="place_resolve.tre", schema="newick", unquoted_underscores=True)
-            os.chdir(cwd)
-            self._query_seqs_placed = 1
-        else:
+        if self.backbone is True:
             cwd = os.getcwd()
             os.chdir(self.workdir)
-            backbonetre = self.data.orig_newick
+            # backbonetre = self.data.orig_newick
+
+            backbonetre = Tree.get(path="{}/backbone.tre".format(self.workdir),
+                                schema="newick",
+                                preserve_underscores=True)
+
             backbonetre.resolve_polytomies()
-            backbonetre.write(path="backbone.tre", schema="newick", unquoted_underscores=True)
+            backbonetre.write(path="random_resolve.tre", schema="newick", unquoted_underscores=True)
             os.chdir(cwd)
-            self._query_seqs_placed = 1
+
+        # if self.backbone is not True:
+        if os.path.exists("RAxML_labelledTree.PLACE"):
+            os.rename("RAxML_labelledTree.PLACE", "RAxML_labelledTreePLACE.tmp")
+        if _VERBOSE:
+            sys.stdout.write("placing query sequences \n")
+        cwd = (os.getcwd())
+        os.chdir(self.workdir)
+        try:
+            subprocess.call(["raxmlHPC", "-m", "GTRCAT",
+                             "-f", "v",
+                             "-s", "papara_alignment.extended",
+                             "-t", "random_resolve.tre",
+                             "-n", "PLACE"])
+            placetre = Tree.get(path="RAxML_labelledTree.PLACE",
+                                schema="newick",
+                                preserve_underscores=True)
+        except OSError as e:
+            if e.errno == os.errno.ENOENT:
+                sys.stderr.write("failed running raxmlHPC. Is it installed?")
+                sys.exit(-6)
+            # handle file not
+            # handle file not found error.
+            else:
+                # Something else went wrong while trying to run `wget`
+                raise
+        placetre.resolve_polytomies()
+        for taxon in placetre.taxon_namespace:
+            if taxon.label.startswith("QUERY"):
+                taxon.label = taxon.label.replace("QUERY___", "")
+        placetre.write(path="place_resolve.tre", schema="newick", unquoted_underscores=True)
+        os.chdir(cwd)
+        self._query_seqs_placed = 1
 
     def est_full_tree(self):
         """Full raxml run from the placement tree as starting tree"""
@@ -2317,7 +2305,7 @@ class PhyscraperScrape(object):
                                  "-p", "1",
                                  "-n", "{}".format(self.date)])
         os.chdir(cwd)
-        self._full_tree_est = 1  
+        self._full_tree_est = 1
 
     def calculate_bootstrap(self):
         """Calculates bootstrap and consensus trees.
