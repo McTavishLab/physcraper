@@ -14,6 +14,8 @@ import json
 import configparser
 import pickle
 import random
+from past.builtins import xrange
+from builtins import input
 from copy import deepcopy
 from ete2 import NCBITaxa
 import physcraper.AWSWWW as AWSWWW
@@ -142,7 +144,7 @@ class ConfigObj(object):
         debug(os.path.isfile(configfi))
         assert os.path.isfile(configfi), "file `%s` does not exists" % configfi
         config = configparser.ConfigParser()
-        config.read(configfi)
+        config.read_file(open(configfi))
         self.e_value_thresh = config["blast"]["e_value_thresh"]
         assert is_number(self.e_value_thresh), (
                 "value `%s` does not exists" % self.e_value_thresh
@@ -2669,7 +2671,7 @@ class FilterBlast(PhyscraperScrape):
                             downtorank_id = tax_id
                             downtorank_name = tax_name
                         else:
-                            for key_rank, val in lineage2ranks.iteritems():
+                            for key_rank, val in lineage2ranks.items():
                                 if val == downtorank:
                                     downtorank_id = key_rank
                                     value_d = ncbi.get_taxid_translator([downtorank_id])
@@ -2787,7 +2789,7 @@ class FilterBlast(PhyscraperScrape):
         # then this is the one to be added, but it will be removed,
         # later as it is no new seq! thus no new seq for that species is added
         seq_w_maxlen = {}
-        for key, val in self.sp_seq_d[taxon_id].iteritems():
+        for key, val in self.sp_seq_d[taxon_id].items():
             if self.sp_d[taxon_id][key]['^physcraper:status'].split(' ')[0] != ["added", "deleted", "original", "new"]:
                 if len(val) == len(max_len):
                     seq_w_maxlen[key] = val
@@ -2802,10 +2804,10 @@ class FilterBlast(PhyscraperScrape):
         else:
             toselect = range(len(seq_w_maxlen), (threshold - count))
             keymax = seq_w_maxlen.keys()
-            subdict = {k: v for k, v in self.sp_seq_d[taxon_id].iteritems() if k not in keymax}
+            subdict = {k: v for k, v in self.sp_seq_d[taxon_id].items() if k not in keymax}
             second_len = max(subdict.values())
             seq2len = {}
-            for key, val in subdict.iteritems():
+            for key, val in subdict.items():
                 if len(val) == len(second_len):
                     seq2len[key] = val
             random_seq_ofsp = random.sample(seq2len.items(), len(toselect))
