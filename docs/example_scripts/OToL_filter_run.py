@@ -4,8 +4,9 @@ from physcraper import wrappers
 study_id = "pg_873"
 tree_id = "tree1679"
 seqaln = "tests/data/minitest.fas"
+mattype = "fasta"
 workdir="example_output"
-configfi = "tests/data/test.config"
+configfi = "tests/data/localblast.config"
 
 threshold = 2
 selectby = "blast"
@@ -20,6 +21,7 @@ shared_blast_folder = None
 wrappers.filter_OTOL(study_id,
                 tree_id,
                 seqaln,
+		mattype,
                 workdir,
                 configfi,
                 threshold,

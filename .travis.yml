@@ -6,7 +6,7 @@ python:
 before_install:
   - sudo apt-get update
 
-  ### install blastn
+  ### install blast+
   # this fails often with connection errors
   - sudo apt-get install ncbi-blast+
 
