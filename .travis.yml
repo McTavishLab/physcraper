@@ -48,7 +48,7 @@ install:
   - conda update -q conda
   - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION
   - source activate test-environment
-  - conda install --yes bioconda raxml
+  - conda install -c bioconda raxml
   - python setup.py install
 
 
