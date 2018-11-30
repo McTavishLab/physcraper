@@ -21,10 +21,11 @@ before_install:
 
   ### install blastn
 
-  - wget ftp://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/LATEST/ncbi-blast-2.7.1+-x64-linux.tar.gz
-  - tar -xvzf ncbi-blast-2.7.1+-x64-linux.tar.gz
-  - export PATH=$PATH:./ncbi-blast-2.7.1+
-
+  #- wget ftp://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/LATEST/ncbi-blast-2.7.1+-x64-linux.tar.gz
+  
+  #- tar -xvzf ncbi-blast-2.7.1+-x64-linux.tar.gz
+  #- export PATH=$PATH:./ncbi-blast-2.7.1+
+  - sudo apt-get install ncbi-blast+
 
 
 
