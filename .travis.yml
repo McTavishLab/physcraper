@@ -25,13 +25,15 @@ before_install:
   
   #- tar -xvzf ncbi-blast-2.7.1+-x64-linux.tar.gz
   #- export PATH=$PATH:./ncbi-blast-2.7.1+
-  - sudo apt-get install ncbi-blast+
+  
 
 
 
 
 install:
   - sudo apt-get update
+  - sudo apt-get install ncbi-blast+
+
   - pip install --quiet -r requirements.txt
   - pip install --quiet . 
 
