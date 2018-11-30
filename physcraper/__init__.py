@@ -139,6 +139,23 @@ class ConfigObj(object):
     def __init__(self, configfi, interactive=True):
         if _DEBUG:
             sys.stdout.write("Building config object\n")
+
+
+        #  type:    |  Bytes    |  String 
+        #-----------|--------------------
+        #  Python 2 | str/bytes |unicode
+        #  Python 3 | bytes     | str
+        #
+        # Plus on Python 2 there is automatic casting.
+        if sys.version_info < (3,):
+            if not isinstance(configfi, unicode):
+                configfi = configfi.decode()
+        else:
+            if not isinstance(configfi, str):
+                configfi = configfi.decode()
+
+
+
         debug(configfi)
         debug(os.path.isfile(configfi))
         assert os.path.isfile(configfi), "file `%s` does not exists" % configfi
