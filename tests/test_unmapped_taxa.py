@@ -75,8 +75,8 @@ def test_unmapped():
     scraper2 = physcraper.PhyscraperScrape(data_obj, ids)
     num_remove = len(scraper2.data.aln.taxon_namespace)
     dict_id = 0
-    for tax in scraper.data.aln.taxon_namespace:
-        if '^ot:ottId' in scraper.data.otu_dict[tax.label]:
+    for tax in scraper2.data.aln.taxon_namespace:
+        if '^ot:ottId' in scraper2.data.otu_dict[tax.label]:
             dict_id = dict_id + 1
     # print(num_remove, num_keep, dict_id)
     assert num_remove <= num_keep - 1
