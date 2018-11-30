@@ -62,7 +62,6 @@ def test_0():
 
 
 
-def test_unmapped():
     conf = physcraper.ConfigObj(configfi, interactive=False)
     conf.unmapped = 'remove'
 
