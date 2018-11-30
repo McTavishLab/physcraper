@@ -3,7 +3,6 @@ import os
 import pickle  #
 from physcraper import ConfigObj, IdDicts, FilterBlast
 
-sys.stdout.write("\ntests add_all\n")
 
 workdir = "tests/output/add_all"
 configfi = "tests/data/test.config"

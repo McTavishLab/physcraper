@@ -258,7 +258,7 @@ class ConfigObj(object):
                     else:
                         print("You did not type yes or no!")
                 else:
-                    download_date = os.path.getmtime("{}/nt.01.nhr".format(self.blastdb))
+                    download_date = os.path.getmtime("{}/nt.60.nhr".format(self.blastdb))
                     download_date = datetime.datetime.fromtimestamp(download_date)
                     today = datetime.datetime.now()
                     time_passed = (today - download_date).days
@@ -1791,8 +1791,8 @@ class PhyscraperScrape(object):
                     self.ids.acc_ncbi_dict[gb_acc] = staxids
                 if gb_acc not in query_dict and gb_acc not in self.newseqs_acc:
                     query_dict[gb_acc] = {'^ncbi:gi': gi_id, 'accession': gb_acc, 'staxids': staxids,
-                                         'sscinames': sscinames, 'pident': pident, 'evalue': evalue,
-                                         'bitscore': bitscore, 'sseq': sseq, 'title': stitle}
+                                          'sscinames': sscinames, 'pident': pident, 'evalue': evalue,
+                                          'bitscore': bitscore, 'sseq': sseq, 'title': stitle}
         # debug("key in query")
         for key in query_dict.keys():
             if float(query_dict[key]["evalue"]) < float(self.config.e_value_thresh):

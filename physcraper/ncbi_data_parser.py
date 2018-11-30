@@ -18,7 +18,7 @@ def debug(msg):
         print(msg)
 
 
-debug("Current ncbi_parser version number: 10172018.0")
+debug("Current ncbi_parser version number: 11272018.0")
 
 nodes = None
 names = None
@@ -181,6 +181,36 @@ class Parser:
             parent_id = int(nodes[nodes["tax_id"] == tax_id]["parent_tax_id"].values[0])
             return self.get_downtorank_id(parent_id, downtorank)
 
+    def match_id_to_mrca(self, tax_id, mrca_id):
+        """ Recursive function to find out if tax_id is part of mrca_id.
+        """
+        debug("match_id_to_mrca")
+        if nodes is None:
+            self.initialize()
+        if type(tax_id) != int:
+            sys.stdout.write(
+                "WARNING: tax_id {} is no integer. Will convert value to int\n".format(
+                    tax_id
+                )
+            )
+            tax_id = int(tax_id)
+        if type(mrca_id) != int:
+            sys.stdout.write(
+                "WARNING: mrca_id {} is no integer. Will convert value to int\n".format(
+                    mrca_id
+                )
+            )
+            mrca_id = int(mrca_id)
+        if tax_id == mrca_id:
+            # debug("found right rank")
+            return tax_id
+        elif nodes[nodes["tax_id"] == tax_id]["rank"].values[0] == "superkingdom":
+            tax_id = 0
+            return tax_id
+        else:
+            parent_id = int(nodes[nodes["tax_id"] == tax_id]["parent_tax_id"].values[0])
+            return self.match_id_to_mrca(parent_id, mrca_id)
+
     def get_name_from_id(self, tax_id):
         """ Find the scientific name for a given ID.
         """
@@ -214,7 +244,7 @@ class Parser:
                 tax_id = names[names["name_txt"] == tax_name]["tax_id"].values[0]
             else:
                 sys.stdout.write(
-                    "Are you sure, its an accepted name and not a synonym?I look in the synonym table now"
+                    "Are you sure, its an accepted name and not a synonym: {}? I look in the synonym table now.\n".format(tax_name)
                 )
                 tax_id = self.get_id_from_synonym(tax_name)
         tax_id = int(tax_id)
