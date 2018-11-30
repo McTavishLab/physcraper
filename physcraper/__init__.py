@@ -2474,9 +2474,11 @@ class PhyscraperScrape(object):
                 count = count + 1
                 seq = seq_l[i]
                 local_blast.write_filterblast_files(self.workdir, key, seq, db=True, fn="local_unpubl_seq")
+        old_cwd = os.getcwd()
         os.chdir(os.path.join(self.workdir, "blast"))
         cmd1 = "makeblastdb -in {}_db -dbtype nucl".format("local_unpubl_seq")
         os.system(cmd1)
+        os.chdir(old_cwd)
 
 
 class FilterBlast(PhyscraperScrape):
