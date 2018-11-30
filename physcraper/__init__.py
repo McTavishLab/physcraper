@@ -48,6 +48,25 @@ _deep_debug = 0
 _VERBOSE = 0
 
 
+import contextlib
+
+
+@contextlib.contextmanager
+def cd(path):
+    print 'initially inside {0}'.format(os.getcwd())
+    CWD = os.getcwd()
+    
+    os.chdir(path)
+    print 'inside {0}'.format(os.getcwd())
+    try:
+        yield
+    except:
+        print 'Exception caught: ',sys.exc_info()[0]
+    finally:
+        print 'finally inside {0}'.format(os.getcwd())
+        os.chdir(CWD)
+
+
 def debug(msg):
     """short debugging command
     """
@@ -225,12 +244,13 @@ class ConfigObj(object):
                                   "{}/".format(self.blastdb))
                         os.system("wget 'ftp://ftp.ncbi.nlm.nih.gov/blast/db/taxdb.tar.gz'"
                                   "{}/".format(self.blastdb))
-                        cwd = os.getcwd()
-                        os.chdir(self.blastdb)
-                        os.system("update_blastdb nt")
-                        os.system("cat *.tar.gz | tar -xvzf - -i")
-                        os.system("gunzip -cd taxdb.tar.gz | (tar xvf - )")
-                        os.chdir(cwd)
+                        with cd(self.blastdb):
+                            # cwd = os.getcwd()
+                            # os.chdir(self.blastdb)
+                            os.system("update_blastdb nt")
+                            os.system("cat *.tar.gz | tar -xvzf - -i")
+                            os.system("gunzip -cd taxdb.tar.gz | (tar xvf - )")
+                            # os.chdir(cwd)
                     elif x == "no":
                         print("You did not agree to download data from ncbi. Program will default to blast web-queries.")
                         print("This is slow and crashes regularly!")
@@ -248,13 +268,14 @@ class ConfigObj(object):
                               "You agree to their terms".format(time_passed))
                         x = get_raw_input()
                         if x == "yes":
-                            cwd = os.getcwd()
-                            os.chdir(self.blastdb)
-                            os.system("update_blastdb nt")
-                            os.system("cat *.tar.gz | tar -xvzf - -i")
-                            os.system("update_blastdb taxdb")
-                            os.system("gunzip -cd taxdb.tar.gz | (tar xvf - )")
-                            os.chdir(cwd)
+                            with cd(self.blastdb):
+                                # cwd = os.getcwd()
+                                # os.chdir(self.blastdb)
+                                os.system("update_blastdb nt")
+                                os.system("cat *.tar.gz | tar -xvzf - -i")
+                                os.system("update_blastdb taxdb")
+                                os.system("gunzip -cd taxdb.tar.gz | (tar xvf - )")
+                                # os.chdir(cwd)
                         elif x == "no":
                             print("You did not agree to update data from ncbi. Old database files will be used.")
                         else:
@@ -1574,20 +1595,21 @@ class PhyscraperScrape(object):
         toblast.write(">{}\n".format(taxon_label))
         toblast.write("{}\n".format(query))
         toblast.close()
-        cwd = os.getcwd()
+        # cwd = os.getcwd()
         assert os.path.isdir(self.config.blastdb)
-        os.chdir(self.config.blastdb)
-        # this formats allows to get the taxonomic information at the same time
-        outfmt = " -outfmt '6 sseqid staxids sscinames pident evalue bitscore sseq stitle'"
-        # outfmt = " -outfmt 5"  # format for xml file type
-        # TODO query via stdin
-        blastcmd = "blastn -query " + "{}/tmp.fas".format(abs_blastdir) + \
-                   " -db {}nt -out ".format(self.config.blastdb) + abs_fn + \
-                   " {} -num_threads {}".format(outfmt, self.config.num_threads) + \
-                   " -max_target_seqs {} -max_hsps {}".format(self.config.hitlist_size,
-                                                              self.config.hitlist_size)
-        os.system(blastcmd)
-        os.chdir(cwd)
+        # os.chdir(self.config.blastdb)
+        with cd(self.config.blastdb):
+            # this formats allows to get the taxonomic information at the same time
+            outfmt = " -outfmt '6 sseqid staxids sscinames pident evalue bitscore sseq stitle'"
+            # outfmt = " -outfmt 5"  # format for xml file type
+            # TODO query via stdin
+            blastcmd = "blastn -query " + "{}/tmp.fas".format(abs_blastdir) + \
+                       " -db {}nt -out ".format(self.config.blastdb) + abs_fn + \
+                       " {} -num_threads {}".format(outfmt, self.config.num_threads) + \
+                       " -max_target_seqs {} -max_hsps {}".format(self.config.hitlist_size,
+                                                                  self.config.hitlist_size)
+            os.system(blastcmd)
+        # os.chdir(cwd)
 
     def local_blast_for_unpublished(self, query, taxon):
         """
@@ -1793,10 +1815,11 @@ class PhyscraperScrape(object):
         """
         output_blast = "output_tst_fn.xml"
         gb_counter = 1
-        general_wd = os.getcwd()
-        os.chdir(os.path.join(self.workdir, "blast"))
-        xml_file = open(output_blast)
-        os.chdir(general_wd)
+        # general_wd = os.getcwd()
+        # os.chdir(os.path.join(self.workdir, "blast"))
+        with cd(os.path.join(self.workdir, "blast")):
+            xml_file = open(output_blast)
+        # os.chdir(general_wd)
         blast_out = NCBIXML.parse(xml_file)
         for blast_record in blast_out:
             for alignment in blast_record.alignments:
@@ -2178,7 +2201,7 @@ class PhyscraperScrape(object):
         :param papara_runname: possible file extension name for papara
         :return: writes out files after papara run/aligning seqs
         """
-        cwd = os.getcwd()
+        # cwd = os.getcwd()
         if not self._query_seqs_written:
             self.write_query_seqs()
         for filename in glob.glob('{}/papara*'.format(self.workdir)):
@@ -2189,26 +2212,27 @@ class PhyscraperScrape(object):
         # hack for the alien taxa thing
         self.remove_alien_aln_tre()
         self.data.write_papara_files()
-        os.chdir(self.workdir)  # Clean up dir moving
-        try:
-            assert self.data.aln.taxon_namespace == self.data.tre.taxon_namespace
-            subprocess.call(["papara",
-                             "-t", "random_resolve.tre",
-                             "-s", "aln_ott.phy",
-                           #  "-j", "{}".format(self.config.num_threads),  # FIXME: Does not work on some machines
-                             "-q", self.newseqs_file,
-                             "-n", papara_runname])  # FIXME directory ugliness
-            if _VERBOSE:
-                sys.stdout.write("Papara done")
-        except OSError as e:
-            if e.errno == os.errno.ENOENT:
-                sys.stderr.write("failed running papara. Is it installed?\n")
-                sys.exit(-5)
-            # handle file not found error.
-            else:
-                # Something else went wrong while trying to run `wget`
-                raise
-        os.chdir(cwd)
+        # os.chdir(self.workdir)  # Clean up dir moving
+        with cd(self.workdir):
+            try:
+                assert self.data.aln.taxon_namespace == self.data.tre.taxon_namespace
+                subprocess.call(["papara",
+                                 "-t", "random_resolve.tre",
+                                 "-s", "aln_ott.phy",
+                                 #  "-j", "{}".format(self.config.num_threads),  # FIXME: Does not work on some machines
+                                 "-q", self.newseqs_file,
+                                 "-n", papara_runname])  # FIXME directory ugliness
+                if _VERBOSE:
+                    sys.stdout.write("Papara done")
+            except OSError as e:
+                if e.errno == os.errno.ENOENT:
+                    sys.stderr.write("failed running papara. Is it installed?\n")
+                    sys.exit(-5)
+                # handle file not found error.
+                else:
+                    # Something else went wrong while trying to run `wget`
+                    raise
+        # os.chdir(cwd)
         assert os.path.exists(path="{}/papara_alignment.{}".format(self.workdir, papara_runname))
         self.data.aln = DnaCharacterMatrix.get(path="{}/papara_alignment."
                                                     "{}".format(self.workdir, papara_runname), schema="phylip")
@@ -2238,87 +2262,89 @@ class PhyscraperScrape(object):
         """runs raxml on the tree, and the combined alignment including the new query seqs.
         Just for placement, to use as starting tree."""
         if self.backbone is True:
-            cwd = os.getcwd()
-            os.chdir(self.workdir)
+            # cwd = os.getcwd()
+            # os.chdir(self.workdir)
             # backbonetre = self.data.orig_newick
+            with cd(self.workdir):
+                backbonetre = Tree.get(path="{}/backbone.tre".format(self.workdir),
+                                    schema="newick",
+                                    preserve_underscores=True)
 
-            backbonetre = Tree.get(path="{}/backbone.tre".format(self.workdir),
-                                schema="newick",
-                                preserve_underscores=True)
-
-            backbonetre.resolve_polytomies()
-            backbonetre.write(path="random_resolve.tre", schema="newick", unquoted_underscores=True)
-            os.chdir(cwd)
+                backbonetre.resolve_polytomies()
+                backbonetre.write(path="random_resolve.tre", schema="newick", unquoted_underscores=True)
+            # os.chdir(cwd)
 
         # if self.backbone is not True:
         if os.path.exists("RAxML_labelledTree.PLACE"):
             os.rename("RAxML_labelledTree.PLACE", "RAxML_labelledTreePLACE.tmp")
         if _VERBOSE:
             sys.stdout.write("placing query sequences \n")
-        cwd = (os.getcwd())
-        os.chdir(self.workdir)
-        try:
-            subprocess.call(["raxmlHPC", "-m", "GTRCAT",
-                             "-f", "v",
-                             "-s", "papara_alignment.extended",
-                             "-t", "random_resolve.tre",
-                             "-n", "PLACE"])
-            placetre = Tree.get(path="RAxML_labelledTree.PLACE",
-                                schema="newick",
-                                preserve_underscores=True)
-        except OSError as e:
-            if e.errno == os.errno.ENOENT:
-                sys.stderr.write("failed running raxmlHPC. Is it installed?")
-                sys.exit(-6)
-            # handle file not
-            # handle file not found error.
-            else:
-                # Something else went wrong while trying to run `wget`
-                raise
-        placetre.resolve_polytomies()
-        for taxon in placetre.taxon_namespace:
-            if taxon.label.startswith("QUERY"):
-                taxon.label = taxon.label.replace("QUERY___", "")
-        placetre.write(path="place_resolve.tre", schema="newick", unquoted_underscores=True)
-        os.chdir(cwd)
+        # cwd = (os.getcwd())
+        # os.chdir(self.workdir)
+        with cd(self.workdir):
+            try:
+                subprocess.call(["raxmlHPC", "-m", "GTRCAT",
+                                 "-f", "v",
+                                 "-s", "papara_alignment.extended",
+                                 "-t", "random_resolve.tre",
+                                 "-n", "PLACE"])
+                placetre = Tree.get(path="RAxML_labelledTree.PLACE",
+                                    schema="newick",
+                                    preserve_underscores=True)
+            except OSError as e:
+                if e.errno == os.errno.ENOENT:
+                    sys.stderr.write("failed running raxmlHPC. Is it installed?")
+                    sys.exit(-6)
+                # handle file not
+                # handle file not found error.
+                else:
+                    # Something else went wrong while trying to run `wget`
+                    raise
+            placetre.resolve_polytomies()
+            for taxon in placetre.taxon_namespace:
+                if taxon.label.startswith("QUERY"):
+                    taxon.label = taxon.label.replace("QUERY___", "")
+            placetre.write(path="place_resolve.tre", schema="newick", unquoted_underscores=True)
+        # os.chdir(cwd)
         self._query_seqs_placed = 1
 
     def est_full_tree(self):
         """Full raxml run from the placement tree as starting tree"""
-        cwd = os.getcwd()
-        os.chdir(self.workdir)
-        for filename in glob.glob('{}/RAxML*'.format(self.workdir)):
-            os.rename(filename, "{}/{}_tmp".format(self.workdir, filename.split("/")[-1]))
-        try:
-            num_threads = int(self.config.num_threads)
-            if self.backbone is not True:
-                subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(num_threads), "-m", "GTRCAT",
-                                 "-s", "papara_alignment.extended",
-                                 "-t", "place_resolve.tre",
-                                 "-p", "1",
-                                 "-n", "{}".format(self.date)])
-            else:
-                subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(num_threads), "-m", "GTRCAT",
-                                 "-s", "papara_alignment.extended",
-                                 "-r", "backbone.tre",
-                                 "-p", "1",
-                                 "-n", "{}".format(self.date)])
-        except:
-            sys.stderr.write("You do not have the raxmlHPC-PTHREADS installed, will fall down to slow version!")
+        # cwd = os.getcwd()
+        # os.chdir(self.workdir)
+        with cd(self.workdir):
+            for filename in glob.glob('{}/RAxML*'.format(self.workdir)):
+                os.rename(filename, "{}/{}_tmp".format(self.workdir, filename.split("/")[-1]))
+            try:
+                num_threads = int(self.config.num_threads)
+                if self.backbone is not True:
+                    subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(num_threads), "-m", "GTRCAT",
+                                     "-s", "papara_alignment.extended",
+                                     "-t", "place_resolve.tre",
+                                     "-p", "1",
+                                     "-n", "{}".format(self.date)])
+                else:
+                    subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(num_threads), "-m", "GTRCAT",
+                                     "-s", "papara_alignment.extended",
+                                     "-r", "backbone.tre",
+                                     "-p", "1",
+                                     "-n", "{}".format(self.date)])
+            except:
+                sys.stderr.write("You do not have the raxmlHPC-PTHREADS installed, will fall down to slow version!")
 
-            if self.backbone is not True:
-                subprocess.call(["raxmlHPC", "-m", "GTRCAT",
-                                 "-s", "papara_alignment.extended",
-                                 "-t", "place_resolve.tre",
-                                 "-p", "1",
-                                 "-n", "{}".format(self.date)])
-            else:
-                subprocess.call(["raxmlHPC", "-m", "GTRCAT",
-                                 "-s", "papara_alignment.extended",
-                                 "-r", "backbone.tre",
-                                 "-p", "1",
-                                 "-n", "{}".format(self.date)])
-        os.chdir(cwd)
+                if self.backbone is not True:
+                    subprocess.call(["raxmlHPC", "-m", "GTRCAT",
+                                     "-s", "papara_alignment.extended",
+                                     "-t", "place_resolve.tre",
+                                     "-p", "1",
+                                     "-n", "{}".format(self.date)])
+                else:
+                    subprocess.call(["raxmlHPC", "-m", "GTRCAT",
+                                     "-s", "papara_alignment.extended",
+                                     "-r", "backbone.tre",
+                                     "-p", "1",
+                                     "-n", "{}".format(self.date)])
+        # os.chdir(cwd)
         self._full_tree_est = 1
 
     def calculate_bootstrap(self):
@@ -2502,9 +2528,19 @@ class PhyscraperScrape(object):
                 count = count + 1
                 seq = seq_l[i]
                 local_blast.write_filterblast_files(self.workdir, key, seq, db=True, fn="local_unpubl_seq")
-        os.chdir(os.path.join(self.workdir, "blast"))
-        cmd1 = "makeblastdb -in {}_db -dbtype nucl".format("local_unpubl_seq")
-        os.system(cmd1)
+        
+
+        with cd(os.path.join(self.workdir, "blast")):
+            print os.listdir('.')
+            cmd1 = "makeblastdb -in {}_db -dbtype nucl".format("local_unpubl_seq")
+            os.system(cmd1)
+
+
+        # cwd = os.getcwd()
+        # os.chdir(os.path.join(self.workdir, "blast"))
+        # cmd1 = "makeblastdb -in {}_db -dbtype nucl".format("local_unpubl_seq")
+        # os.system(cmd1)
+        # os.chdir(cwd)
 
     def get_additional_GB_info(self):
         """Retrieves additional information given during the Genbank sequence submission
