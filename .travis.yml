@@ -34,7 +34,7 @@ install:
 
   - pip install --quiet -r requirements.txt
   - pip install --quiet . 
-  
+
   ##### to use RAXML we need conda
   - sudo apt-get update
   
@@ -42,7 +42,7 @@ install:
   - conda create --yes -n test-environment python=$TRAVIS_PYTHON_VERSION
 
   - source activate test-environment
-  -conda install --yes bioconda raxml
+  - conda install --yes bioconda raxml
   - python setup.py install
 
 
