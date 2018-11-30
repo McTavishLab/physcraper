@@ -225,11 +225,9 @@ class ConfigObj(object):
                         os.system("wget 'ftp://ftp.ncbi.nlm.nih.gov/blast/db/taxdb.tar.gz'" 
                                   "{}/".format(self.blastdb))
                         cwd = os.getcwd()
-                        os.chdir(self.blastdb)
-                        os.system("update_blastdb nt")
-                        os.system("cat *.tar.gz | tar -xvzf - -i")
-                        os.system("gunzip -cd taxdb.tar.gz | (tar xvf - )")
-                        os.chdir(cwd)
+                        subprocess.call("update_blastdb nt", shell=True, cwd=self.blastdb)
+                        subprocess.call("cat *.tar.gz | tar -xvzf - -i", shell=True, cwd=self.blastdb)
+                        subprocess.call("gunzip -cd taxdb.tar.gz | (tar xvf - )", shell=True, cwd=self.blastdb)
                     elif x == "no":
                         print("You did not agree to download data from ncbi. Program will default to blast web-queries.")
                         print("This is slow and crashes regularly!")
@@ -247,13 +245,10 @@ class ConfigObj(object):
                               "You agree to their terms".format(time_passed))
                         x = get_raw_input()
                         if x == "yes":
-                            cwd = os.getcwd()
-                            os.chdir(self.blastdb)
-                            os.system("update_blastdb nt")
-                            os.system("cat *.tar.gz | tar -xvzf - -i")
-                            os.system("update_blastdb taxdb")
-                            os.system("gunzip -cd taxdb.tar.gz | (tar xvf - )")
-                            os.chdir(cwd)
+                            subprocess.call("update_blastdb nt", shell=True, cwd=self.blastdb)
+                            subprocess.call("cat *.tar.gz | tar -xvzf - -i", shell=True, cwd=self.blastdb)
+                            subprocess.call("update_blastdb taxdb", shell=True, cwd=self.blastdb)
+                            subprocess.call("gunzip -cd taxdb.tar.gz | (tar xvf - )", shell=True, cwd=self.blastdb)
                         elif x == "no":
                             print("You did not agree to update data from ncbi. Old database files will be used.")
                         else:
@@ -1571,7 +1566,6 @@ class PhyscraperScrape(object):
         toblast.close()
         cwd = os.getcwd()
         assert os.path.isdir(self.config.blastdb)
-        os.chdir(self.config.blastdb)
         # this formats allows to get the taxonomic information at the same time
         outfmt = " -outfmt '6 sseqid staxids sscinames pident evalue bitscore sseq stitle'"
         # outfmt = " -outfmt 5"  # format for xml file type
@@ -1581,8 +1575,7 @@ class PhyscraperScrape(object):
                    " {} -num_threads {}".format(outfmt, self.config.num_threads) + \
                    " -max_target_seqs {} -max_hsps {}".format(self.config.hitlist_size,
                                                               self.config.hitlist_size)
-        os.system(blastcmd)
-        os.chdir(cwd)
+        subprocess.call(blastcmd, shell=True, cwd=self.config.blastdb)
 
     def local_blast_for_unpublished(self, query, taxon):
         """
@@ -1788,23 +1781,22 @@ class PhyscraperScrape(object):
         output_blast = "output_tst_fn.xml"
         gb_counter = 1
         general_wd = os.getcwd()
-        os.chdir(os.path.join(self.workdir, "blast"))
-        xml_file = open(output_blast)
-        os.chdir(general_wd)
-        blast_out = NCBIXML.parse(xml_file)
-        for blast_record in blast_out:
-            for alignment in blast_record.alignments:
-                for hsp in alignment.hsps:
-                    if float(hsp.expect) < float(self.config.e_value_thresh):
-                        local_id = alignment.title.split("|")[-1].split(" ")[-1]
-                        if local_id not in self.data.gb_dict:  # skip ones we already have
-                            unpbl_local_id = "unpubl_{}".format(local_id)
-                            self.new_seqs[unpbl_local_id] = hsp.sbjct
-                            self.data.gb_dict[unpbl_local_id] = {'title': "unpublished", 'localID': local_id}
-                            debug(self.data.unpubl_otu_json)
-                            self.data.gb_dict[unpbl_local_id].update(
-                                self.data.unpubl_otu_json['otu{}'.format(local_id)])
-                            gb_counter += 1
+        output_blas_path = os.path.join(self.workdir, "blast", output_blast)
+        with open(output_blas_path) as xml_file:
+            blast_out = NCBIXML.parse(xml_file)
+            for blast_record in blast_out:
+                for alignment in blast_record.alignments:
+                    for hsp in alignment.hsps:
+                        if float(hsp.expect) < float(self.config.e_value_thresh):
+                            local_id = alignment.title.split("|")[-1].split(" ")[-1]
+                            if local_id not in self.data.gb_dict:  # skip ones we already have
+                                unpbl_local_id = "unpubl_{}".format(local_id)
+                                self.new_seqs[unpbl_local_id] = hsp.sbjct
+                                self.data.gb_dict[unpbl_local_id] = {'title': "unpublished", 'localID': local_id}
+                                debug(self.data.unpubl_otu_json)
+                                self.data.gb_dict[unpbl_local_id].update(
+                                    self.data.unpubl_otu_json['otu{}'.format(local_id)])
+                                gb_counter += 1
 
     def read_webbased_blast_query(self, fn_path):
         """ Implementation to read in results of web blast searches.
@@ -2165,7 +2157,6 @@ class PhyscraperScrape(object):
         # hack for the alien taxa thing
         self.remove_alien_aln_tre()
         self.data.write_papara_files()
-        os.chdir(self.workdir)  # Clean up dir moving
         try:
             assert self.data.aln.taxon_namespace == self.data.tre.taxon_namespace
             subprocess.call(["papara",
@@ -2173,7 +2164,9 @@ class PhyscraperScrape(object):
                              "-s", "aln_ott.phy",
                            #  "-j", "{}".format(self.config.num_threads),
                              "-q", self.newseqs_file,
-                             "-n", papara_runname])  # FIXME directory ugliness
+                             "-n", papara_runname], 
+                            cwd=self.workdir
+                            )  # FIXME directory ugliness
             if _VERBOSE:
                 sys.stdout.write("Papara done")
         except OSError as e:
@@ -2184,7 +2177,6 @@ class PhyscraperScrape(object):
             else:
                 # Something else went wrong while trying to run `wget`
                 raise
-        os.chdir(cwd)
         assert os.path.exists(path="{}/papara_alignment.{}".format(self.workdir, papara_runname))
         self.data.aln = DnaCharacterMatrix.get(path="{}/papara_alignment."
                                                     "{}".format(self.workdir, papara_runname), schema="phylip")
@@ -2475,10 +2467,8 @@ class PhyscraperScrape(object):
                 seq = seq_l[i]
                 local_blast.write_filterblast_files(self.workdir, key, seq, db=True, fn="local_unpubl_seq")
         old_cwd = os.getcwd()
-        os.chdir(os.path.join(self.workdir, "blast"))
         cmd1 = "makeblastdb -in {}_db -dbtype nucl".format("local_unpubl_seq")
-        os.system(cmd1)
-        os.chdir(old_cwd)
+        subprocess.call(cmd1, shell=True, cwd=os.path.join(self.workdir, "blast"))
 
 
 class FilterBlast(PhyscraperScrape):
