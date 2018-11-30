@@ -5,10 +5,49 @@ python:
 install:
   - pip install --quiet -r requirements.txt
   - pip install --quiet . 
+
+
+
+  ##### to use RAXML we need conda
+  - sudo apt-get update
+  # We do this conditionally because it saves us some downloading if the
+  # version is the same.
+  - wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -O miniconda.sh;
+  - bash miniconda.sh -b -p $HOME/miniconda
+  - export PATH="$HOME/miniconda/bin:$PATH"
+  - hash -r
+  - conda config --set always_yes yes --set changeps1 no
+  - conda update -q conda
+  # Useful for debugging any issues with conda
+  - conda info -a
+
+  # Replace dep1 dep2 ... with your dependencies
+  - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION bioconda raxml
+  - source activate test-environment
+  - python setup.py install
+
+  #### install papara
+
+  - wget 'https://sco.h-its.org/exelixis/resource/download/software/papara_nt-2.5-static_x86_64.tar.gz'
+  - gunzip  -cd papara_nt-2.5-static_x86_64.tar.gz 
+  - export PATH=$PATH:./
+
+
+  ### install blastn
+
+  - get ftp://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/LATEST/ncbi-blast-2.7.1+-x64-linux.tar.gz
+  - gunzip  -cd ncbi-blast-2.7.1+-x64-linux.tar.gz 
+  - export PATH=$PATH:./ncbi-blast-2.7.1+
+
+
 # command to run tests
 script:
+
+
   - wget 'https://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdump.tar.gz'
   - gunzip  -cd taxdump.tar.gz | (tar xvf - names.dmp nodes.dmp)
   - mv *.dmp tests/data/
   - echo 'no' | python tests/testfilesetup.py
   - py.test tests/ --setup-only
+
+
