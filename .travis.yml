@@ -31,8 +31,9 @@ before_install:
   #### ete fails now, because of conda
   - conda install -c etetoolkit ete2
   - export PATH=~/anaconda_ete/bin:$PATH
-install:
 
+
+install:
   # install requirements of physcraper
   - pip install --quiet -r requirements.txt
   - pip install --quiet . 
@@ -40,12 +41,10 @@ install:
 
 # command to run tests
 script:
-
-
   - wget 'https://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdump.tar.gz'
   - gunzip  -cd taxdump.tar.gz | (tar xvf - names.dmp nodes.dmp)
   - mv *.dmp tests/data/
   - echo 'no' | python tests/testfilesetup.py
-  - py.test tests/ --setup-only
+  - py.test tests/ 
 
 
