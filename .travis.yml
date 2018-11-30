@@ -45,6 +45,6 @@ script:
   - gunzip  -cd taxdump.tar.gz | (tar xvf - names.dmp nodes.dmp)
   - mv *.dmp tests/data/
   - echo 'no' | python tests/testfilesetup.py
-  - py.test tests/ 
-
+  #- py.test tests/ --setup-only
+  - sh tests/run_tests.sh
 
