@@ -21,7 +21,7 @@ before_install:
 
   ### install blastn
 
-  - get ftp://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/LATEST/ncbi-blast-2.7.1+-x64-linux.tar.gz
+  - wget ftp://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/LATEST/ncbi-blast-2.7.1+-x64-linux.tar.gz
   - gunzip  -cd ncbi-blast-2.7.1+-x64-linux.tar.gz 
   - export PATH=$PATH:./ncbi-blast-2.7.1+
 
@@ -30,19 +30,14 @@ before_install:
 
 
 install:
-
+  - sudo apt-get update
   - pip install --quiet -r requirements.txt
   - pip install --quiet . 
 
   ##### to use RAXML we need conda
-  - sudo apt-get update
-
   - conda config --set always_yes yes --set changeps1 no
   - conda update -q conda
-
-  # Replace dep1 dep2 ... with your dependencies
   - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION
-
   - source activate test-environment
   - conda install --yes bioconda raxml
   - python setup.py install
