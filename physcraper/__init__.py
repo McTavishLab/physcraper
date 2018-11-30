@@ -34,7 +34,7 @@ from . import concat  # is the local concat class
 from . import ncbi_data_parser  # is the ncbi data parser class and associated functions
 from . import local_blast
 
-if sys.version_info < (3, ):
+if sys.version_info < (3,):
     from urllib2 import HTTPError
 else:
     from urllib.error import HTTPError
@@ -84,7 +84,7 @@ def get_raw_input():
     x = None
     while not is_valid:
         try:
-            x = raw_input("Please write either 'yes' or 'no': ")
+            x = input("Please write either 'yes' or 'no': ")
             if x == "yes" or x == "no":
                 is_valid = 1  # set it to 1 to validate input and to terminate the while..not loop
         except ValueError as e:
@@ -145,12 +145,12 @@ class ConfigObj(object):
         config.read(configfi)
         self.e_value_thresh = config["blast"]["e_value_thresh"]
         assert is_number(self.e_value_thresh), (
-            "value `%s` does not exists" % self.e_value_thresh
+                "value `%s` does not exists" % self.e_value_thresh
         )
         self.hitlist_size = int(config["blast"]["hitlist_size"])
         self.seq_len_perc = float(config["physcraper"]["seq_len_perc"])
         assert 0 < self.seq_len_perc < 1, (
-            "value `%s` is not between 0 and 1" % self.seq_len_perc
+                "value `%s` is not between 0 and 1" % self.seq_len_perc
         )
         self.phylesystem_loc = config["phylesystem"]["location"]
         assert self.phylesystem_loc in [
@@ -161,7 +161,7 @@ class ConfigObj(object):
             "ott_ncbi"
         ]  # TODO: how do we update the file?
         assert os.path.isfile(self.ott_ncbi), (
-            "file `%s` does not exists" % self.ott_ncbi
+                "file `%s` does not exists" % self.ott_ncbi
         )
         # rewrites relative path to absolute path so that it behaves when changing dirs
         self.id_pickle = os.path.abspath(config["taxonomy"]["id_pickle"])
@@ -170,7 +170,7 @@ class ConfigObj(object):
         self.blast_loc = config["blast"]["location"]
         self.num_threads = config["blast"].get("num_threads")
         assert self.blast_loc in ["local", "remote"], (
-            "your blast location `%s` is not remote or local" % self.email
+                "your blast location `%s` is not remote or local" % self.email
         )
         if self.blast_loc == "local":
             self.blastdb = config["blast"]["localblastdb"]
@@ -190,8 +190,8 @@ class ConfigObj(object):
             self._download_localblastdb()
         self.unmapped = config["blast"]["unmapped"]
         assert self.unmapped in ["remove", "keep"], (
-            "your unmapped statement `%s` in the config file is not remove or keep"
-            % self.unmapped
+                "your unmapped statement `%s` in the config file is not remove or keep"
+                % self.unmapped
         )
         debug("shared blast folder?")
         debug(self.gb_id_filename)
@@ -219,9 +219,9 @@ class ConfigObj(object):
                           "This is a US government website! You agree to their terms")
                     x = get_raw_input()
                     if x == "yes":
-                        os.system("wget 'ftp://ftp.ncbi.nlm.nih.gov/blast/db/nt.*'" 
+                        os.system("wget 'ftp://ftp.ncbi.nlm.nih.gov/blast/db/nt.*'"
                                   "{}/".format(self.blastdb))
-                        os.system("wget 'ftp://ftp.ncbi.nlm.nih.gov/blast/db/taxdb.tar.gz'" 
+                        os.system("wget 'ftp://ftp.ncbi.nlm.nih.gov/blast/db/taxdb.tar.gz'"
                                   "{}/".format(self.blastdb))
                         cwd = os.getcwd()
                         os.chdir(self.blastdb)
@@ -2037,7 +2037,7 @@ class PhyscraperScrape(object):
         if len(self.new_seqs_otu_id) > 0:
             if _DEBUG:
                 sys.stdout.write("running remove identical twice in a row"
-                                "without generating new alignment will cause errors. skipping\n")
+                                 "without generating new alignment will cause errors. skipping\n")
             return
         tmp_dict = dict((taxon.label, self.data.aln[taxon].symbols_as_string()) for taxon in self.data.aln)
         old_seqs = tmp_dict.keys()
@@ -2081,7 +2081,7 @@ class PhyscraperScrape(object):
                                 debug(tax_name.split(" ")[0])
                                 tax_lin_name = tax_name.split(" ")[0]
                                 tax_lin_name = tax_lin_name.split("_")[0]
-                                print(tax_lin_name)
+                                debug(tax_lin_name)
                                 ncbi_id = self.ids.ncbi_parser.get_id_from_name(tax_lin_name)
                                 # ncbi_id = 00000
                         elif len(gb_id.split(".")) >= 2:
@@ -2830,7 +2830,8 @@ class FilterBlast(PhyscraperScrape):
         for otu_id in self.sp_d[key]:
             if '^physcraper:status' in otu_id:
                 if otu_id['^physcraper:status'].split(' ')[0] not in self.seq_filter:
-                    if otu_id['^physcraper:last_blasted'] == '1800/01/01':
+                    if otu_id['^physcraper:last_blasted'] == '1800/01/01' \
+                            and otu_id['^physcraper:status'] != "original":
                         gb_id = otu_id['^ncbi:accession']
                         if gb_id.split(".") == 1:
                             debug(gb_id)
@@ -2904,7 +2905,8 @@ class FilterBlast(PhyscraperScrape):
                                     # if self.downtorank is not None:
                                     #     filename = key
                                     #     nametoreturn = key
-                                    local_blast.write_filterblast_files(self.workdir, gb_id, seq, db=True, fn=nametoreturn)
+                                    local_blast.write_filterblast_files(self.workdir, gb_id, seq, db=True,
+                                                                        fn=nametoreturn)
                     name_gbid = key
         if self.downtorank is not None:
             nametoreturn = key
@@ -3070,8 +3072,10 @@ class FilterBlast(PhyscraperScrape):
                     if self.data.otu_dict[key]['^ncbi:accession'] == gb_id:
                         self.data.otu_dict[key]['^physcraper:last_blasted'] = "1900/01/01"
                         debug(self.data.otu_dict[key]['^physcraper:status'])
-                        if self.data.otu_dict[key]['^physcraper:status'] == "query" or self.data.otu_dict[key]['^physcraper:status'].split(" ")[0] == 'new':
-                            self.data.otu_dict[key]['^physcraper:status'] = 'not added, there are enough seq per sp in tre'
+                        if self.data.otu_dict[key]['^physcraper:status'] == "query" \
+                                or self.data.otu_dict[key]['^physcraper:status'].split(" ")[0] == 'new':
+                            self.data.otu_dict[key]['^physcraper:status'] = 'not added, ' \
+                                                                            'there are enough seq per sp in tre'
         for gb_id in keylist:
             if gb_id.split(".") == 1:
                 debug(gb_id)
@@ -3093,8 +3097,10 @@ class FilterBlast(PhyscraperScrape):
         self.filtered_seq.clear()
         return
 
-    def write_otu_info(self, downtorank=None):
-        """Writes different output tables to file: Makes reading important information less code heavy.
+    def write_out_files(self, downtorank=None):
+        """Wrapper function for writing information output files.
+
+        Writes different output tables to file: Makes reading important information less code heavy.
 
         1. table with taxon names and sampling.
         2. a file with all relevant GenBank info to file (otu_dict).
