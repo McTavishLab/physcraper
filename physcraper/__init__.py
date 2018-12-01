@@ -359,7 +359,7 @@ def generate_ATT_from_phylesystem(aln,
 
     Alignment need to be a Dendropy DNA character matrix!
 
-    :param aln: dendropy alignment object
+    :param aln: dendropy :class:`DnaCharacterMatrix <dendropy.datamodel.charmatrixmodel.DnaCharacterMatrix>` alignment object
     :param workdir: path to working directory
     :param study_id: OToL study id of the corresponding phylogeny which shall be updated
     :param tree_id: OToL corresponding tree ID as some studies have several phylogenies
@@ -585,7 +585,7 @@ class AlignTreeTax(object):
 
           * **newick**: dendropy.tre.as_string(schema=schema_trf) object
           * **otu_dict**: json file including the otu_dict information generated earlier
-          * **alignment**: dendropy DNACharacterMatrix object
+          * **alignment**: dendropy :class:`DnaCharacterMatrix <dendropy.datamodel.charmatrixmodel.DnaCharacterMatrix>` object
           * **ingroup_mrca**: OToL identifier of the group of interest, either subclade as defined by user or of all tiplabels in the phylogeny
           * **workdir**: the path to the corresponding working directory
           * **schema**: optional argument to define tre file schema, if different from "newick"
@@ -2121,7 +2121,8 @@ class PhyscraperScrape(object):
                         assert tax_name is not None
                         assert ncbi_id is not None
                         tax_name = str(tax_name).replace(" ", "_")
-                        input_rank_id = self.ids.ncbi_parser.get_downtorank_id(ncbi_id, rank_mrca_ncbi)
+                        # input_rank_id = self.ids.ncbi_parser.get_downtorank_id(ncbi_id, rank_mrca_ncbi)
+                        input_rank_id = self.ids.ncbi_parser.match_id_to_mrca(ncbi_id, mrca_ncbi)
                         # #######################################################
                         if input_rank_id == mrca_ncbi:  # belongs to ingroup mrca -> add to data, if not, leave it out
                             # debug("input belongs to same mrca")
@@ -2129,18 +2130,18 @@ class PhyscraperScrape(object):
                             otu_id = self.data.add_otu(gb_id, self.ids)
                             self.seq_dict_build(seq, otu_id, tmp_dict)
                         else:
-                            fn = open("{}/not_part_of_mrca.csv".format(self.workdir), "a+")
-                            fn.write("not_part_of_mrca:\n")
-                            fn.write("{}: {}".format(gb_id, input_rank_id))
+                            self.write_not_added_info("not_part_of_mrca")
+                            fn = open("{}/not_added_seq.csv".format(self.workdir), "a+")
+                            fn.write("not_part_of_mrca, {}, {}\n".format(gb_id, input_rank_id))
                             fn.close()
                     else:
                         self.newseqs_acc.append(gb_id)
                         otu_id = self.data.add_otu(gb_id, self.ids)
                         self.seq_dict_build(seq, otu_id, tmp_dict)
                 else:
-                    fn = open("{}/seqlen_threshold_not_passed.csv".format(self.workdir), "a+")
-                    fn.write("seqlen_threshold_not_passed:\n")
-                    fn.write("{}: {}".format(gb_id, len(seq.replace("-", "").replace("N", ""))))
+                    self.write_not_added_info("seqlen_threshold_not_passed")
+                    fn = open("{}/not_added_seq.csv".format(self.workdir), "a+")
+                    fn.write("seqlen_threshold_not_passed, {}, {}\n".format(gb_id, len(seq.replace("-", "").replace("N", ""))))
                     fn.close()
 
         old_seqs_ids = set()
@@ -2156,6 +2157,40 @@ class PhyscraperScrape(object):
             log.write("{} new sequences added from genbank after removing identical seq, "
                       "of {} before filtering\n".format(len(self.new_seqs_otu_id), len(self.new_seqs)))
         self.data.dump()
+
+    def write_not_added_info(self, reason=None):
+        """Writes out infos of not added seq based on information provided in reason."""
+        debug("write not added infos")
+        tab_keys = [
+            "^ncbi:gi",
+            "^accession",
+            "sscinames",
+            "staxids",
+            "title",
+            "length",
+            "hsps",
+            "pident",
+            "evalue"
+            "bitscore",
+            "sseq"
+        ]
+        if not os.path.exists(path="{}/info_not_added_seq.csv".format(self.workdir)):
+            with open("{}/info_not_added_seq.csv".format(self.workdir), "w+") as output:
+                writer = csv.writer(output)
+                writer.writerow(tab_keys)
+
+        
+        with open("{}/info_not_added_seq.csv".format(self.workdir), "a") as output:
+            writer = csv.writer(output)
+            for otu in self.data.gb_dict.keys():
+                rowinfo = [otu]
+                for item in tab_keys:
+                    if item in self.data.gb_dict[otu].keys():
+                        tofile = str(self.data.gb_dict[otu][item]).replace("_", " ")
+                        rowinfo.append(tofile)
+                    else:
+                        rowinfo.append("-")
+                writer.writerow(rowinfo)
 
     def find_otudict_gi(self):
         """Used to find seqs that were added twice. Debugging function.
@@ -3148,16 +3183,17 @@ class FilterBlast(PhyscraperScrape):
         :param downtorank: hierarchical filter
         :return: writes output to file
         """
+        self.taxon_sampling(downtorank)
+        self.write_otu_info()
+
+    def write_otu_info(self):
+        """Writes output table to file
+
+        1. a file with all relevant GenBank info to file (otu_dict).
+
+        :return: writes output to file
+        """
         debug("write out infos")
-        sp_d = self.sp_dict(downtorank)
-        sp_info = {}
-        for k in sp_d:
-            sp_info[k] = len(sp_d[k])
-        with open("{}/taxon_sampling.csv".format(self.workdir), "w") as csv_file:
-            writer = csv.writer(csv_file)
-            for key, value in sp_info.items():
-                spn = self.ids.ncbi_parser.get_name_from_id(key)
-                writer.writerow([key, spn, value])
         otu_dict_keys = [
             "^ot:ottTaxonName",
             "^ncbi:gi",
@@ -3180,6 +3216,25 @@ class FilterBlast(PhyscraperScrape):
                     else:
                         rowinfo.append("-")
                 writer.writerow(rowinfo)
+
+    def taxon_sampling(self, downtorank=None):
+        """Write out file which contains the taxon smapling.
+
+        Writes output table to file: table with taxon names and sampling
+        It uses the self.sp_d to get sampling information, that's why the downtorank is required.
+
+        :param downtorank: hierarchical filter
+        :return: writes output to file
+        """
+        sp_d = self.sp_dict(downtorank)
+        sp_info = {}
+        for k in sp_d:
+            sp_info[k] = len(sp_d[k])
+        with open("{}/taxon_sampling.csv".format(self.workdir), "w") as csv_file:
+            writer = csv.writer(csv_file)
+            for key, value in sp_info.items():
+                spn = self.ids.ncbi_parser.get_name_from_id(key)
+                writer.writerow([key, spn, value])
 
 
 class Settings(object):
