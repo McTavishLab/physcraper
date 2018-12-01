@@ -24,4 +24,4 @@ pandas==0.23.4
 pytest
 m2r
 recommonmark
-past.builtins
+past
