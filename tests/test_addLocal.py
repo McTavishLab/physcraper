@@ -20,7 +20,6 @@ id_to_spn = r"tests/data/tiny_comb_its/nicespl.csv"
 otu_jsonfi = "{}/otu_dict.json".format(workdir)
 otu_jsonfi_local = "{}/otu_dict_local.json".format(workdir)
 
-cwd = os.getcwd()
 threshold = 10
 selectby = "blast"
 downto = None
@@ -28,6 +27,8 @@ add_local_seq = "tests/data/local_seqs"
 id_to_spn_addseq = "tests/data/tipnTOspn_localAdd.csv"
 
 ###################
+
+
 
 def test_add_local():
     conf = ConfigObj(configfi, interactive=False)

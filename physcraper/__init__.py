@@ -53,17 +53,16 @@ import contextlib
 
 @contextlib.contextmanager
 def cd(path):
-    print 'initially inside {0}'.format(os.getcwd())
+    # print 'initially inside {0}'.format(os.getcwd())
     CWD = os.getcwd()
-    
     os.chdir(path)
-    print 'inside {0}'.format(os.getcwd())
+    # print 'inside {0}'.format(os.getcwd())
     try:
         yield
     except:
         print 'Exception caught: ',sys.exc_info()[0]
     finally:
-        print 'finally inside {0}'.format(os.getcwd())
+        # print 'finally inside {0}'.format(os.getcwd())
         os.chdir(CWD)
 
 
@@ -879,7 +878,7 @@ class AlignTreeTax(object):
                 debug(tax_name.split(" ")[0])
                 tax_lin_name = tax_name.split(" ")[0]
                 tax_lin_name = tax_lin_name.split("_")[0]
-                print(tax_lin_name)
+                debug(tax_lin_name)
                 ncbi_id = ids_obj.ncbi_parser.get_id_from_name(tax_lin_name)
                 # ncbi_id = 00000
         elif len(gb_id.split(".")) >= 2:  # used to figure out if gb_id is from Genbank
@@ -1619,16 +1618,20 @@ class PhyscraperScrape(object):
         :param taxon: taxon.label used as identifier for the sequences
         :return: xml files with the results of the local blast
         """
-        debug("run against local unpublished data")
-        toblast = open("{}/tmp.fas".format(self.blast_subdir), "w")
-        toblast.write(">{}\n".format(taxon))
-        toblast.write("{}\n".format(query))
-        toblast.close()
-        blast_db = "local_unpubl_seq_db"
-        output = "tst_fn"
-        blastcmd = "blastn -query {}/tmp.fas -db {} -out output_{}.xml " \
-                   "-outfmt 5".format(self.blast_subdir, blast_db, output)
-        os.system(blastcmd)
+
+        with cd(os.path.join(self.workdir, "blast")):
+            debug("run against local unpublished data")
+            print(self.blast_subdir)
+            toblast = open("{}/tmp.fas".format(self.blast_subdir), "w")
+            toblast.write(">{}\n".format(taxon))
+            toblast.write("{}\n".format(query))
+            toblast.close()
+            blast_db = "local_unpubl_seq_db"
+            output = "tst_fn"
+            blastcmd = "blastn -query {}/tmp.fas -db {} -out output_{}.xml " \
+                       "-outfmt 5".format(self.blast_subdir, blast_db, output)
+            os.system(blastcmd)
+            # debug(some)
 
     def run_web_blast_query(self, query, equery, fn_path):
         """Equivalent to run_local_blast_cmd() but for webqueries, 
@@ -2397,7 +2400,7 @@ class PhyscraperScrape(object):
         os.chdir(self.workdir)
         try:
             num_threads = int(self.config.num_threads)
-            print(num_threads)
+            debug(num_threads)
             # run bootstrap
             subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(num_threads), "-m", "GTRCAT",
                              "-s", "papara_alignment.extended",
@@ -2566,7 +2569,7 @@ class PhyscraperScrape(object):
         
 
         with cd(os.path.join(self.workdir, "blast")):
-            print os.listdir('.')
+            # print os.listdir('.')
             cmd1 = "makeblastdb -in {}_db -dbtype nucl".format("local_unpubl_seq")
             os.system(cmd1)
 
