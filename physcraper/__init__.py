@@ -1815,11 +1815,11 @@ class PhyscraperScrape(object):
         """
         output_blast = "output_tst_fn.xml"
         gb_counter = 1
-        # general_wd = os.getcwd()
-        # os.chdir(os.path.join(self.workdir, "blast"))
-        with cd(os.path.join(self.workdir, "blast")):
-            xml_file = open(output_blast)
-        # os.chdir(general_wd)
+        general_wd = os.getcwd()
+        os.chdir(os.path.join(self.workdir, "blast"))
+        # with cd(os.path.join(self.workdir, "blast")):
+        xml_file = open(output_blast)
+        os.chdir(general_wd)
         blast_out = NCBIXML.parse(xml_file)
         for blast_record in blast_out:
             for alignment in blast_record.alignments:
@@ -2201,7 +2201,7 @@ class PhyscraperScrape(object):
         :param papara_runname: possible file extension name for papara
         :return: writes out files after papara run/aligning seqs
         """
-        # cwd = os.getcwd()
+        cwd = os.getcwd()
         if not self._query_seqs_written:
             self.write_query_seqs()
         for filename in glob.glob('{}/papara*'.format(self.workdir)):
@@ -2212,27 +2212,27 @@ class PhyscraperScrape(object):
         # hack for the alien taxa thing
         self.remove_alien_aln_tre()
         self.data.write_papara_files()
-        # os.chdir(self.workdir)  # Clean up dir moving
-        with cd(self.workdir):
-            try:
-                assert self.data.aln.taxon_namespace == self.data.tre.taxon_namespace
-                subprocess.call(["papara",
-                                 "-t", "random_resolve.tre",
-                                 "-s", "aln_ott.phy",
-                                 #  "-j", "{}".format(self.config.num_threads),  # FIXME: Does not work on some machines
-                                 "-q", self.newseqs_file,
-                                 "-n", papara_runname])  # FIXME directory ugliness
-                if _VERBOSE:
-                    sys.stdout.write("Papara done")
-            except OSError as e:
-                if e.errno == os.errno.ENOENT:
-                    sys.stderr.write("failed running papara. Is it installed?\n")
-                    sys.exit(-5)
-                # handle file not found error.
-                else:
-                    # Something else went wrong while trying to run `wget`
-                    raise
-        # os.chdir(cwd)
+        os.chdir(self.workdir)  # Clean up dir moving
+        # with cd(self.workdir):
+        try:
+            assert self.data.aln.taxon_namespace == self.data.tre.taxon_namespace
+            subprocess.call(["papara",
+                             "-t", "random_resolve.tre",
+                             "-s", "aln_ott.phy",
+                             #  "-j", "{}".format(self.config.num_threads),  # FIXME: Does not work on some machines
+                             "-q", self.newseqs_file,
+                             "-n", papara_runname])  # FIXME directory ugliness
+            if _VERBOSE:
+                sys.stdout.write("Papara done")
+        except OSError as e:
+            if e.errno == os.errno.ENOENT:
+                sys.stderr.write("failed running papara. Is it installed?\n")
+                sys.exit(-5)
+            # handle file not found error.
+            else:
+                # Something else went wrong while trying to run `wget`
+                raise
+        os.chdir(cwd)
         assert os.path.exists(path="{}/papara_alignment.{}".format(self.workdir, papara_runname))
         self.data.aln = DnaCharacterMatrix.get(path="{}/papara_alignment."
                                                     "{}".format(self.workdir, papara_runname), schema="phylip")
