@@ -10,7 +10,7 @@ trfn = "tests/data/tiny_test_example/test.tre"
 schema_trf = "newick"
 id_to_spn = r"tests/data/tiny_test_example/test_nicespl.csv"
 workdir="tests/output/tiny_filter_own"
-configfi = "tests/data/test.config"
+configfi = "tests/data/localblast.config"
 
 otu_jsonfi = "{}/otu_dict.json".format(workdir)
 
@@ -20,8 +20,6 @@ selectby = "blast"
 downtorank = "species"
 shared_blast_folder = "/home/blubb/Documents/gitdata/physcraper/shared_runs/"
 ingroup_mrca = 723076
-
-
 # setup the run
 if not os.path.exists("{}".format(workdir)):
         os.makedirs("{}".format(workdir))
@@ -39,7 +37,9 @@ else:
 
 
 # select a wrapper function, depending on what you want to do, see short tutorial:
-wrappers.filter_data_run(seqaln,
+
+
+res = wrappers.filter_data_run(seqaln,
                          mattype,
                          trfn,
                          schema_trf,
@@ -51,3 +51,5 @@ wrappers.filter_data_run(seqaln,
                          downtorank=downtorank,
                          ingroup_mrca=ingroup_mrca,
                          shared_blast_folder=shared_blast_folder)
+
+res.get_additional_GB_info()
