@@ -136,9 +136,12 @@ class ConfigObj(object):
               * self.ncbi_parser_names_fn: path to 'names.dmp' file, that contains the different ID's
     """
 
-    def __init__(self, configfi, interactive=True):
+    def __init__(self, configfi, interactive=None):
         if _DEBUG:
             sys.stdout.write("Building config object\n")
+
+        if interactive is None:
+            interactive=sys.stdin.isatty()
         debug(configfi)
         debug(os.path.isfile(configfi))
         assert os.path.isfile(configfi), "file `%s` does not exists" % configfi
