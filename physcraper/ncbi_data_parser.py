@@ -244,7 +244,8 @@ class Parser:
                 tax_id = names[names["name_txt"] == tax_name]["tax_id"].values[0]
             else:
                 sys.stdout.write(
-                    "Are you sure, its an accepted name and not a synonym: {}? I look in the synonym table now.\n".format(tax_name)
+                    "Are you sure, its an accepted name and not a synonym: {}? "
+                    "I look in the synonym table now.\n".format(tax_name)
                 )
                 tax_id = self.get_id_from_synonym(tax_name)
         tax_id = int(tax_id)

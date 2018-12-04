@@ -155,7 +155,9 @@ class ConfigObj(object):
               * self.ncbi_parser_names_fn: path to 'names.dmp' file, that contains the different ID's
     """
 
-    def __init__(self, configfi, interactive=True):
+    def __init__(self, configfi, interactive=None):
+        if interactive is None:
+            interactive = sys.stdin.isatty()
         if _DEBUG:
             sys.stdout.write("Building config object\n")
         debug(configfi)
@@ -473,7 +475,7 @@ def generate_ATT_from_files(seqaln,
         else:
             ott_mrca = int(ingroup_mrca)
     else:
-        ott_ids = [otu_dict[otu].get(u"^ot:ottId") for otu in otu_dict]
+        ott_ids = [otu_dict[otu].get(u'^ot:ottId', ) for otu in otu_dict]
         ott_ids = filter(None, ott_ids)
         ott_ids = set(ott_ids)
         ott_mrca = get_mrca_ott(ott_ids)
@@ -673,14 +675,14 @@ class AlignTreeTax(object):
         self.otu_dict = otu_dict
         self.ps_otu = 1  # iterator for new otu IDs
         self._reconcile_names()
-        self.workdir = os.path.abspath(workdir)
+        self.workdir = os.path.abspath(workdir)  # TODO: is this where the workdir should live?
         if not os.path.exists(self.workdir):
             os.makedirs(self.workdir)
         assert int(ingroup_mrca)
-        self.ott_mrca = ingroup_mrca
-        self.orig_seqlen = []
-        self.gb_dict = {}  # has all info about new blast seq
-        self._reconciled = False
+        self.ott_mrca = ingroup_mrca  # TODO: we only use .ott_mrca to infer mrca_ncbi. Why not using the ncbi one directly?
+        self.orig_seqlen = []  # FIXME
+        self.gb_dict = {}  # has all info about new blast seq TODO: Cannot be deleted. Is used frequently! TODODELTE (should maybe go anyhow due to gi switch?): Should this not be part of physcraper class instead? it has all blast information. Blast is not part of this class.
+        self._reconciled = False  # TODO: for what do we want to use it? .... it was checking to see if name reconcilation has ahappened yet. Should get flipped to true when done. MK: Yes, but we never do anything with the information
         self.unpubl_otu_json = None
 
     def _reconcile_names(self):
@@ -820,16 +822,16 @@ class AlignTreeTax(object):
                 call = self.aln[tax][i].label
                 if call in ["?", "-"]:
                     counts[call] += 1
-            if counts["?"] + counts["-"] <= cutoff:
+            if counts['?'] + counts['-'] <= cutoff:  # first ok column
                 start = i
                 break
-        for i in range(seqlen, 0, -1):
-            counts = {"?": 0, "-": 0}
+        for i in range(seqlen, 0, -1):  # previously seqlen-1, that cuts off last character of aln, I changed it.
+            counts = {'?': 0, '-': 0}
             for tax in self.aln:
-                call = self.aln[tax][i - 1].label
-                if call in ["?", "-"]:
+                call = self.aln[tax][i - 1].label  # changing seqlen-1 to seqlen requires that we have here i-1
+                if call in ['?', '-']:
                     counts[call] += 1
-            if counts["?"] + counts["-"] <= cutoff:
+            if counts['?'] + counts['-'] <= cutoff:
                 stop = i
                 break
         aln_ids = set()
@@ -934,7 +936,9 @@ class AlignTreeTax(object):
         Papara is finicky about trees and needs phylip format for the alignment.
 
         Is only used within func align_query_seqs."""
-        debug("write papara files")
+        # TODO: CAN I even evaluate things in the function definitions?
+        # TODO: names for tree and aln files should not be changed, as they are hardcoded in align_query_seqs().
+        debug('write papara files')
         self.tre.resolve_polytomies()
         self.tre.deroot()
         tmptre = self.tre.as_string(schema="newick",
@@ -1179,7 +1183,7 @@ class IdDicts(object):
 
     def __init__(self, config_obj, workdir, mrca=None):
         """Generates a series of name disambiguation dicts"""
-        self.workdir = workdir
+        self.workdir = workdir  # TODO: Not needed. only used for dump and map_gi. map_gi file does not exists. dump is only used in wrapper, and we have the information of workdir available in wrapper functions anyways
         self.config = config_obj
         assert self.config.email
         self.ott_to_ncbi = {}  # currently only used to find mcra ncbi id from mrca ott_id
@@ -1191,8 +1195,8 @@ class IdDicts(object):
         self.mrca_ott = mrca  # mrca_list
         assert type(self.mrca_ott) in [int, list] or self.mrca_ott is None
         self.mrca_ncbi = set()  # corresponding ids for mrca_ott list
-        fi = open(config_obj.ott_ncbi)
-        for lin in fi:
+        fi = open(config_obj.ott_ncbi)  # TODO need to keep updated, where does the file come from?
+        for lin in fi:  # TODO This is insanely memory inefficient, how about using a pandas dataframe?
             lii = lin.split(",")
             self.ott_to_ncbi[int(lii[0])] = int(lii[1])
             self.ncbi_to_ott[int(lii[1])] = int(lii[0])
@@ -1201,6 +1205,8 @@ class IdDicts(object):
             assert len(self.ncbi_to_ott) > 0
             assert len(self.ott_to_name) > 0
         fi.close()
+        # TODO: pandas solution? requires to rewrite usages of self.ott_to_ncbi, self.ncbi_to_ott, self.ott_to_name
+        # TODO: where do we generate id_map?
         if os.path.isfile("{}/id_map.txt".format(workdir)):  # todo config?!
             fi = open("{}/id_map.txt".format(workdir))
             for lin in fi:
@@ -1519,11 +1525,11 @@ class PhyscraperScrape(object):
         self.otu_by_gi = {}  # TODO: What was this intended for? we don't use it
         self._to_be_pruned = []  # TODO: What was this intended for? We don't use it
         self.mrca_ncbi = ids_obj.ott_to_ncbi[data_obj.ott_mrca]
-        self.tmpfi = "{}/physcraper_run_in_progress".format(self.workdir)
+        self.tmpfi = "{}/physcraper_run_in_progress".format(self.workdir) # TODO: For what do we want to use this?
         self.blast_subdir = "{}/current_blast_run".format(self.workdir)
         if not os.path.exists(self.workdir):
             os.makedirs(self.workdir)
-        self.newseqs_file = "tmp.fasta"
+        self.newseqs_file = "tmp.fasta"  # TODO: is renamed before using it. Name is easily confused with 'tmp.fas' which is used as temporary file that contains the sequence that is currently blasted
         self.date = str(datetime.date.today())  # Date of the run - may lag behind real date!
         self.repeat = 1  # used to determine if we continue updating the tree
         self.newseqs_acc = []  # all ever added Genbank accession numbers during any PhyScraper run, used to speed up adding process
@@ -1547,11 +1553,11 @@ class PhyscraperScrape(object):
     def reset_markers(self):
         self._blasted = 0
         self._blast_read = 0
-        self._identical_removed = 0
+        self._identical_removed = 0  # TODO: We don't use it
         self._query_seqs_written = 0
-        self._query_seqs_aligned = 0
+        self._query_seqs_aligned = 0  # TODO: We don't use it
         self._query_seqs_placed = 0
-        self._reconciled = 0
+        self._reconciled = 0  # TODO: We don't use it
         self._full_tree_est = 0
 
     def OToL_unmapped_tips(self):
@@ -1662,7 +1668,7 @@ class PhyscraperScrape(object):
         result_handle.close()
         save_file.close()
 
-    def run_blast_wrapper(self, delay=14):
+    def run_blast_wrapper(self, delay=14):  # TODO Should this be happening elsewhere?
         """generates the blast queries and saves them depending on the blasting method to different file formats
 
         :param delay: number that determines when a previously blasted sequence is reblasted - time is in days
@@ -2480,7 +2486,7 @@ class PhyscraperScrape(object):
         debug(len(self.new_seqs_otu_id))
         if len(self.new_seqs) > 0:
             self.data.write_files()  # should happen before aligning in case of pruning
-            if len(self.new_seqs_otu_id) > 0:
+            if len(self.new_seqs_otu_id) > 0:  # TODO rename to something more intuitive
                 self.write_query_seqs()
                 self.align_query_seqs()
                 self.place_query_seqs()
@@ -2673,6 +2679,8 @@ class FilterBlast(PhyscraperScrape):
                 val = seq.
         self.downtorank: optional string defining the level of taxonomic filtering, e.g. "species", "genus"
     """
+    # TODO MK: self.sp_d = {} does not need to contain all otu_dict info, key is sufficient
+
     def __init__(self, data_obj, ids, settings=None):
         super(FilterBlast, self).__init__(data_obj, ids)
         debug("start derived class init")
@@ -2733,7 +2741,21 @@ class FilterBlast(PhyscraperScrape):
                     tax_name = self.ids.get_rank_info_from_web(taxon_name=tax_name)
                     tax_id = self.ids.otu_rank[tax_name]["taxon id"]
                 else:
-                    tax_id = self.ids.ncbi_parser.get_id_from_name(tax_name)
+                    try:
+                        tax_id = self.ids.ncbi_parser.get_id_from_name(tax_name)
+                    except UnboundLocalError:
+                        ott_id = self.data.otu_dict[key][u'^ot:ottId']
+                        tx = APIWrapper().taxomachine
+                        nms = tx.taxon(ott_id)
+                        # print(nms)
+                        #if u"ncbi" in nms[u"tax_sources"]:
+                        # print(nms[u"tax_sources"])
+                        for item in nms[u"tax_sources"]:
+                            # print(item.split(":")[0])
+                            if item.split(":")[0] == "ncbi":
+
+                                tax_id =item.split(":")[1]
+                            #tax_id = self.ids.ott_id_to_ncbiid(ott_id)
                 if self.downtorank is not None:
                     downtorank_name = None
                     downtorank_id = None

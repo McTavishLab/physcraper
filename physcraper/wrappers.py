@@ -307,7 +307,7 @@ def filter_OTOL(study_id,
         sys.stdout.write("calculate the phylogeny\n")
         filteredScrape.generate_streamed_alignment()
         filteredScrape.dump()
-        filteredScrape.write_otu_info(downtorank)
+        filteredScrape.write_otu_info()
         return filteredScrape
 
 
@@ -322,7 +322,7 @@ def add_unpubl_to_backbone(seqaln,
                            id_to_spn_addseq_json,
                            selectby=None,
                            downtorank=None,
-                           threshold = None,
+                           threshold=None,
                            blacklist=None,
                            ingroup_mrca=None,
                            shared_blast_folder=None):
@@ -428,7 +428,7 @@ def add_unpubl_to_backbone(seqaln,
         sys.stdout.write("calculate the phylogeny\n")
         filteredScrape.generate_streamed_alignment()
         filteredScrape.dump()
-    filteredScrape.write_otu_info(downtorank)
+    filteredScrape.write_otu_info()
     return filteredScrape
 
 
