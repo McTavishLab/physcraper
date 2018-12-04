@@ -156,10 +156,11 @@ class ConfigObj(object):
     """
 
     def __init__(self, configfi, interactive=None):
-        if interactive is None:
-            interactive = sys.stdin.isatty()
         if _DEBUG:
             sys.stdout.write("Building config object\n")
+
+        if interactive is None:
+            interactive=sys.stdin.isatty()
         debug(configfi)
         debug(os.path.isfile(configfi))
         assert os.path.isfile(configfi), "file `%s` does not exists" % configfi
@@ -2572,8 +2573,6 @@ class PhyscraperScrape(object):
                 count = count + 1
                 seq = seq_l[i]
                 local_blast.write_filterblast_files(self.workdir, key, seq, db=True, fn="local_unpubl_seq")
-        
-
         with cd(os.path.join(self.workdir, "blast")):
             # print os.listdir('.')
             cmd1 = "makeblastdb -in {}_db -dbtype nucl".format("local_unpubl_seq")
@@ -2647,7 +2646,6 @@ class PhyscraperScrape(object):
                         publication = read_handle[0]["GBSeq_references"][0][u'GBReference_title']
                         info = [gb_id, ncbi_sp, authors, journal, publication, voucher, clone, country, isolate]
                         writer.writerow(info)
-
 
 class FilterBlast(PhyscraperScrape):
     """Takes the Physcraper Superclass and filters the ncbi blast results to only include a subset of the sequences.
