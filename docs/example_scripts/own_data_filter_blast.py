@@ -14,13 +14,13 @@ configfi = "tests/data/localblast.config"
 id_to_spn = r"tests/data/tiny_test_example/test_nicespl.csv"
 otu_jsonfi = "{}/otu_dict.json".format(workdir)
 
-threshold = 2
-selectby = "blast"
+threshold = 2  # amount of sequences being kept by FilterBlast
+selectby = "blast"  # how to select sequences in FilterBlast, either "length" or "blast"
 
 ingroup_mrca = None  # must be OToL ID
 shared_blast_folder = None # location to share blast runs across runs, see documentation
-downtorank = None
-blacklist = None
+downtorank = None  # define filter rank, e.g. "species", "genus"
+blacklist = None  # list with accession numbers, e.g. [XXX.1, YYY.1]
 add_unpubl_seq = None
 id_to_spn_addseq_json = None
 
@@ -35,7 +35,7 @@ else:
 	json.dump(otu_json, open(otu_jsonfi, "w"))
 
 
-
+## function to filter the blast results, if you want to keep all sequences found by blast, use own_data_run()
 wrappers.filter_data_run(seqaln,
                      mattype,
                      trfn,
@@ -46,7 +46,7 @@ wrappers.filter_data_run(seqaln,
                      configfi,
                      downtorank=downtorank,
                      selectby=selectby,
-					 blacklist=blacklist,
+		     blacklist=blacklist,
                      add_unpubl_seq=add_unpubl_seq,
                      id_to_spn_addseq_json=id_to_spn_addseq_json,
                      ingroup_mrca=ingroup_mrca,
