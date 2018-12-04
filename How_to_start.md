@@ -69,7 +69,8 @@ Depending on the size of your tree to be updated, there are things to consider.
     *  install the taxonomy database:
         
         install ncbi taxonomy database to retrieve taxon information from BLAST searches into the same directory as your blastdb from the step before.
-        
+
+                  
           * `cd /to/the/folder/of/your/blastdb`
           * `wget 'ftp://ftp.ncbi.nlm.nih.gov/blast/db/taxdb.tar.gz'` # Download the taxdb archive
           * `gunzip -cd taxdb.tar.gz | (tar xvf - )`  # Install it in the BLASTDB directory
@@ -78,6 +79,7 @@ Depending on the size of your tree to be updated, there are things to consider.
          *  `wget 'ftp://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdump.tar.gz'`
          *  `gunzip  -cd taxdump.tar.gz | (tar xvf - names.dmp nodes.dmp)`  
          *  move files into `tests/data/`
+         
     * updating the databases:
     
          The databases need to be update regularly, the program will check the dates of your databases and will ask you to update the databases after 60 days. If your databases are older, you will be asked for input, if you want to update the databases. 
@@ -138,25 +140,26 @@ There is an example config file in `tests/data/localblast.config`
       There is an example file in `docs/example.py` it is based on the wrapper function `standard_run()`
 
       To obtain the study and tree ID's for an OToL run, either go to the website and query your lineage or you can run `find_studies.py` by typing in the terminal `python ./path/to/file/find_studies.py LINEAGENAME`. It will give you a studyID and a treeID, if there is a study available.
-        * **study_id**: the ID of the corresponding study from OToL
-        * **tree_id**: the ID of the corresponding tree from OToL
-        * **seqaln**: give the path to your alignment file, must be a single gene alignment
-        * **mattype**: file format of your alignment - currently supported: “fasta”, “newick”, “nexus”, “nexml”, “phylip”
-        * **workdir**: path to your working directory, the folder where the intermediate and result files shall be stored.
-        * **configfi**: path to your config-file, which edited in step 1.
-        * **otu_jsonfi**: path to the otu json file, this will contain all the information of the sequences retrieved during the run. Usually, does not need to be edited.
+     
+    * **study_id**: the ID of the corresponding study from OToL
+    * **tree_id**: the ID of the corresponding tree from OToL
+    * **seqaln**: give the path to your alignment file, must be a single gene alignment
+    * **mattype**: file format of your alignment - currently supported: “fasta”, “newick”, “nexus”, “nexml”, “phylip”
+    * **workdir**: path to your working directory, the folder where the intermediate and result files shall be stored.
+    * **configfi**: path to your config-file, which edited in step 1.
+    * **otu_jsonfi**: path to the otu json file, this will contain all the information of the sequences retrieved during the run. Usually, does not need to be edited.
 
     b) using your own files:
 
       There is an example file in `tests/tiny_standard_ownfile.py`, it comes with a tiny sample dataset in `tests/data/tiny_example`. The corresponding wrapper function to use in your file setup is `own_data_run()`.
-        * **seqaln**: give the path to your alignment file, must be a single gene alignment
-        * **mattype**: file format of your alignment - currently supported: “fasta”, “newick”, “nexus”, “nexml”, “phylip”
-        * **trfn**: give the path to the file containing the corresponding phylogeny, all tips must be represented in the alignment file as well.
-        * **schema_trf**: file format of your phylogeny file - currently supported: “fasta”, “newick”, “nexus”, “nexml”, “phylip”
-        * **id_to_spn**: path to a comma-delimited file where tip labels correspond to species names: example file can be found in `tests/data/tiny_test_example/test_nicespl.csv`
-        * **workdir**: path to your working directory, the folder where intermediate and result files shall be stored.
-        * **configfi**: path to your config-file, which was edited in step 1.
-        * **otu_jsonfi**: path to the otu json file, this will contain all the information of the sequences retrieved during the run. Usually, does not need to be edited.
+    * **seqaln**: give the path to your alignment file, must be a single gene alignment
+    * **mattype**: file format of your alignment - currently supported: “fasta”, “newick”, “nexus”, “nexml”, “phylip”
+    * **trfn**: give the path to the file containing the corresponding phylogeny, all tips must be represented in the alignment file as well.
+    * **schema_trf**: file format of your phylogeny file - currently supported: “fasta”, “newick”, “nexus”, “nexml”, “phylip”
+    * **id_to_spn**: path to a comma-delimited file where tip labels correspond to species names: example file can be found in `tests/data/tiny_test_example/test_nicespl.csv`
+    * **workdir**: path to your working directory, the folder where intermediate and result files shall be stored.
+    * **configfi**: path to your config-file, which was edited in step 1.
+    * **otu_jsonfi**: path to the otu json file, this will contain all the information of the sequences retrieved during the run. Usually, does not need to be edited.
 
 2. filter run:
 

@@ -20,7 +20,6 @@ def test_run_filter_blast():
     data_obj.workdir = absworkdir
     ids = physcraper.IdDicts(conf, workdir=data_obj.workdir)
     ids.acc_ncbi_dict = pickle.load(open("tests/data/precooked/tiny_acc_map.p", "rb"))
-
     filteredScrape =  physcraper.FilterBlast(data_obj, ids)
 
     blast_db = "otuSlagascanus"
@@ -39,4 +38,3 @@ def test_run_filter_blast():
 
     if os.path.exists(blast_out):
         open(blast_out)
-  

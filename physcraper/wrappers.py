@@ -213,6 +213,7 @@ def own_data_run(seqaln,
 def filter_OTOL(study_id,
                 tree_id,
                 seqaln,
+                mattype,
                 workdir,
                 configfi,
                 threshold,
@@ -237,7 +238,9 @@ def filter_OTOL(study_id,
         # read the config file into a configuration object
         conf = ConfigObj(configfi, interactive=True)
         # Generate an linked Alignment-Tree-Taxa object
-        data_obj = generate_ATT_from_phylesystem(seqaln,
+        aln = DnaCharacterMatrix.get(path=seqaln, schema=mattype)
+
+        data_obj = generate_ATT_from_phylesystem(aln,
                                                  workdir,
                                                  study_id,
                                                  tree_id,
@@ -304,7 +307,7 @@ def filter_OTOL(study_id,
         sys.stdout.write("calculate the phylogeny\n")
         filteredScrape.generate_streamed_alignment()
         filteredScrape.dump()
-        filteredScrape.write_otu_info(downtorank)
+        filteredScrape.write_otu_info()
         return filteredScrape
 
 
@@ -319,7 +322,7 @@ def add_unpubl_to_backbone(seqaln,
                            id_to_spn_addseq_json,
                            selectby=None,
                            downtorank=None,
-                           threshold = None,
+                           threshold=None,
                            blacklist=None,
                            ingroup_mrca=None,
                            shared_blast_folder=None):
@@ -377,15 +380,9 @@ def add_unpubl_to_backbone(seqaln,
 
             filteredScrape.write_unpubl_blastdb(add_unpubl_seq)
             filteredScrape.run_blast_wrapper(delay=14)
-
-
-
             print("add unpubl otu json")
             filteredScrape.data.unpubl_otu_json = id_to_spn_addseq_json
             print(filteredScrape.data.unpubl_otu_json)
-            
-
-
             filteredScrape.read_blast_wrapper()
             filteredScrape.remove_identical_seqs()
             filteredScrape.generate_streamed_alignment()
@@ -431,7 +428,7 @@ def add_unpubl_to_backbone(seqaln,
         sys.stdout.write("calculate the phylogeny\n")
         filteredScrape.generate_streamed_alignment()
         filteredScrape.dump()
-    filteredScrape.write_otu_info(downtorank)
+    filteredScrape.write_otu_info()
     return filteredScrape
 
 
@@ -504,7 +501,6 @@ def filter_data_run(seqaln,
             print("add unpubl otu json")
             filteredScrape.data.unpubl_otu_json = id_to_spn_addseq_json
             print(filteredScrape.data.unpubl_otu_json)
-
             filteredScrape.read_blast_wrapper()
             filteredScrape.remove_identical_seqs()
             filteredScrape.generate_streamed_alignment()
@@ -522,7 +518,6 @@ def filter_data_run(seqaln,
             filteredScrape.dump()
             sys.stdout.write("Filter the sequences\n")
             if threshold is not None:
-
                 filteredScrape.sp_dict(downtorank)
                 filteredScrape.make_sp_seq_dict()
                 filteredScrape.how_many_sp_to_keep(threshold=threshold, selectby=selectby)
@@ -530,10 +525,12 @@ def filter_data_run(seqaln,
             sys.stdout.write("Calculate the phylogeny\n")
             filteredScrape.generate_streamed_alignment()
             filteredScrape.data.write_otus("otu_info", schema="table")
-            filteredScrape.write_otu_info(downtorank)
+            filteredScrape.write_out_files(downtorank)
 
             filteredScrape.dump()
+
     while filteredScrape.repeat == 1:
+        # filteredScrape.get_additional_GB_info()
         filteredScrape.data.write_labelled(label="^ot:ottTaxonName", add_gb_id=True)
         filteredScrape.data.write_otus("otu_info", schema="table")
         sys.stdout.write("BLASTing input sequences\n")
@@ -554,9 +551,10 @@ def filter_data_run(seqaln,
         sys.stdout.write("calculate the phylogeny\n")
         filteredScrape.generate_streamed_alignment()
         filteredScrape.dump()
-        filteredScrape.write_otu_info(downtorank)
+        filteredScrape.write_out_files(downtorank)
         # print(some)
-    filteredScrape.write_otu_info(downtorank)
+    filteredScrape.write_out_files(downtorank)
+    # filteredScrape.get_additional_GB_info()
     return filteredScrape
 
 
@@ -614,7 +612,7 @@ def run_with_settings(settings):
         filteredScrape = FilterBlast(data_obj, ids, settings)
         filteredScrape.add_setting_to_self(settings.downtorank, settings.threshold)
 
-        filteredScrape.write_otu_info(settings.downtorank)
+        filteredScrape.write_out_files(settings.downtorank)
 
         if settings.add_unpubl_seq is not None:
             filteredScrape.unpublished = True
@@ -655,7 +653,7 @@ def run_with_settings(settings):
             filteredScrape.replace_new_seq()
         filteredScrape.generate_streamed_alignment()
         filteredScrape.dump()
-        filteredScrape.write_otu_info(settings.downtorank)
+        filteredScrape.write_out_files(settings.downtorank)
         return filteredScrape
 
 

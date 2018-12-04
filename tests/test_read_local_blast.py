@@ -17,13 +17,13 @@ selectby = None
 downtorank = None
 absworkdir = os.path.abspath(workdir)
 
-def test_red_local_blast():
+
+def test_read_local_blast():
     conf = physcraper.ConfigObj(configfi, interactive=False)
     data_obj = pickle.load(open("tests/data/precooked/tiny_dataobj.p", 'rb'))
     data_obj.workdir = absworkdir
     ids = physcraper.IdDicts(conf, workdir=data_obj.workdir)
     ids.acc_ncbi_dict = pickle.load(open("tests/data/precooked/tiny_acc_map.p", "rb"))
-
     filteredScrape = physcraper.FilterBlast(data_obj, ids)
     filteredScrape._blasted = 1
     blast_dir = "tests/data/precooked/fixed/tte_blast_files"
@@ -47,8 +47,6 @@ def test_red_local_blast():
                 seq = filteredScrape.sp_seq_d[taxonID][blast_key]
                 local_blast.write_filterblast_files(filteredScrape.workdir, blast_key, seq, db=True, fn=str(taxonID))
             break
-
-    # test starts here:
     blast_db = 1268580
     blast_seq = 1268580
     key = 1268580

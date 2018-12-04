@@ -1,26 +1,22 @@
-# package import
+import sys
 import os
 import json
-from physcraper import wrappers, OtuJsonDict, ConfigObj, IdDicts
+from physcraper import wrappers, OtuJsonDict, IdDicts, ConfigObj
 
-# define here your files
-seqaln = "tests/data/tiny_test_example/test.fas"
+# tiny ets
+seqaln = "tests/data/tiny_comb_its/tiny_comb_its.fasta"
 mattype = "fasta"
-trfn = "tests/data/tiny_test_example/test.tre"
+trfn = "tests/data/tiny_comb_its/tiny_comb_its.tre"
 schema_trf = "newick"
-id_to_spn = r"tests/data/tiny_test_example/test_nicespl.csv"
-workdir = "tests/output/tiny_filter_own2"
-configfi = "tests/data/remote.config"
-otu_jsonfi = "{}/otu_dict.json".format(workdir)
+id_to_spn = r"tests/data/tiny_comb_its/nicespl.csv"
 
-# change to your filtering criteria
+workdir = "runs/tiny_comb_its"
+configfi = "tests/data/localblast.config"
+otu_jsonfi = "{}/otu_dict.json".format(workdir)
 threshold = 2
 selectby = "blast"
-downtorank = "species"
-ingroup_mrca = 723076
+downtorank = None
 
-
-# setup the run
 if not os.path.exists("{}".format(workdir)):
         os.makedirs("{}".format(workdir))
 
@@ -34,8 +30,6 @@ else:
     otu_json = OtuJsonDict(id_to_spn, ids)
     json.dump(otu_json, open(otu_jsonfi, "w"))
 
-
-# select a wrapper function, depending on what you want to do, see short tutorial:
 wrappers.filter_data_run(seqaln,
                          mattype,
                          trfn,
@@ -45,6 +39,4 @@ wrappers.filter_data_run(seqaln,
                          otu_jsonfi,
                          configfi,
                          selectby=selectby,
-                         downtorank=downtorank,
-                         ingroup_mrca=ingroup_mrca)
-
+                         downtorank=downtorank)

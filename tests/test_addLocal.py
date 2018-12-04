@@ -20,7 +20,6 @@ id_to_spn = r"tests/data/tiny_comb_its/nicespl.csv"
 otu_jsonfi = "{}/otu_dict.json".format(workdir)
 otu_jsonfi_local = "{}/otu_dict_local.json".format(workdir)
 
-cwd = os.getcwd()
 threshold = 10
 selectby = "blast"
 downto = None
@@ -29,13 +28,14 @@ id_to_spn_addseq = "tests/data/tipnTOspn_localAdd.csv"
 
 ###################
 
+
+
 def test_add_local():
     conf = ConfigObj(configfi, interactive=False)
     data_obj = pickle.load(open("tests/data/precooked/tiny_dataobj.p", 'rb'))
     data_obj.workdir = absworkdir
     ids = IdDicts(conf, workdir=data_obj.workdir)
     ids.acc_ncbi_dict = pickle.load(open("tests/data/precooked/tiny_acc_map.p", "rb"))
-
 
     if not os.path.exists("{}".format(workdir)):
         os.makedirs("{}".format(workdir))
@@ -85,3 +85,4 @@ def test_add_local():
                 test = True
                 break
     assert test == True
+

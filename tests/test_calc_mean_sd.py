@@ -61,7 +61,6 @@ def test_calculate_mean_sd():
     sd_val = sqrt(sd_all / sum_hsp)
     # print((sd_val, 4), round(mean_sed['sd'], 4))
     # print(mean,4), round(mean_sed['mean'], 4)
-
     assert round(sd_val, 4) == round(mean_sed['sd'], 4)
     assert round(mean, 4) == round(mean_sed['mean'], 4)
  

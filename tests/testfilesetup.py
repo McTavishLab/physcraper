@@ -14,7 +14,7 @@ configfi = "tests/data/test.config"
 id_to_spn = r"tests/data/tiny_test_example/test_nicespl.csv"
 otu_jsonfi = "{}/otu_dict.json".format(workdir)
 
-"""Tests if your own input files will generate a data object of class AlignTreeTax
+"""Generates the files needed for the tests.
 """
 
 if not os.path.exists("{}".format(workdir)):

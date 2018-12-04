@@ -62,7 +62,6 @@ def test_0():
 
 
 
-def test_unmapped():
     conf = physcraper.ConfigObj(configfi, interactive=False)
     conf.unmapped = 'remove'
 
@@ -71,6 +70,7 @@ def test_unmapped():
     data_obj.workdir = absworkdir
 
     ids = physcraper.IdDicts(conf, workdir=data_obj.workdir)
+
 
     scraper2 = physcraper.PhyscraperScrape(data_obj, ids)
     num_remove = len(scraper2.data.aln.taxon_namespace)

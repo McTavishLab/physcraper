@@ -33,7 +33,6 @@ def test_write_blast():
     filteredScrape.remove_identical_seqs()
     filteredScrape.sp_dict(downtorank)
     filteredScrape.make_sp_seq_dict()
-
     for taxonID in filteredScrape.sp_d:
         if len(filteredScrape.sp_seq_d[taxonID]) > treshold:
             blast_seq = filteredScrape.sp_seq_d[taxonID].keys()[0]
@@ -57,3 +56,4 @@ def test_write_blast():
         with open(blast_file_db) as f:
             first_line = f.readline()
             assert len(first_line.strip()) != 0
+            

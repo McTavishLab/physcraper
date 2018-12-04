@@ -49,5 +49,3 @@ def test_trim():
   	len_end = len(seq)
 
   assert len_start != len_end
-
-

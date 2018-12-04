@@ -19,3 +19,10 @@ tests/data/precooked/fixed/local-blast/Senecio_scopolii_subsp._scopolii_db.nhr
 tests/data/precooked/fixed/local-blast/Senecio_scopolii_subsp._scopolii_db.nsq
 shared_runs*
 runs/*
+docs/example_scripts/output/*
+MS3*
+runs_for_*
+tests/data/tmp/*
+tests/debugging/*
+tests/new_implementations/*
+backbone*

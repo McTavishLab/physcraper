@@ -1,6 +1,13 @@
 import sys
 from physcraper.concat import Concat
 
+from pytest import mark
+# you can actually do whatever
+# ruftrum = mark.ruftrum will work and create a "ruftrum" test. 
+concat = mark.concat
+
+
+
 #
 workdir_its = "runs/tiny_comb_its"
 workdir_ets = "runs/tiny_comb_ets"
@@ -11,9 +18,7 @@ workdir_comb = "tests/output/impl_concat"
 genelist = {"its": {"workdir": workdir_its, "pickle": pickle_fn}, "ets": {"workdir": workdir_ets, "pickle": pickle_fn}}
 
 # get to test status
-
-sys.stdout.write("\ntests Concat func sp_counter\n")
-
+@concat
 def test():
     concat = Concat(workdir_comb, email)
     for item in genelist.keys():

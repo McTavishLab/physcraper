@@ -8,6 +8,8 @@ from dendropy import DnaCharacterMatrix
 from copy import deepcopy
 
 
+# run tiny_comb_... files first
+
 workdir_ITS = "./MS3_data/output/ITS_filter"
 workdir_ETS = "./MS3_data/output/ETS_expand"
 email = "mk@xy.zt"

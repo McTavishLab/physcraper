@@ -17,6 +17,12 @@ if sys.version_info < (3,):
 else:
     from urllib.error import HTTPError
 
+
+if sys.version_info < (3, ):
+    from urllib2 import HTTPError
+else:
+    from urllib.error import HTTPError
+
 """Code used to concatenate different single PhyScraper runs into a concatenated one.
 """
 
