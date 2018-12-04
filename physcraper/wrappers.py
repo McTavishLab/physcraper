@@ -129,7 +129,7 @@ def standard_run(study_id,
         scraper.remove_identical_seqs()
         scraper.generate_streamed_alignment()
     # scraper.write_otu_info()
-
+    scraper.get_additional_GB_info()
     return scraper
 
 
@@ -207,6 +207,7 @@ def own_data_run(seqaln,
         scraper.read_blast_wrapper(blast_dir=shared_blast_folder)
         scraper.remove_identical_seqs()
         scraper.generate_streamed_alignment()
+    scraper.get_additional_GB_info()
     return 1
 
 
@@ -308,7 +309,8 @@ def filter_OTOL(study_id,
         filteredScrape.generate_streamed_alignment()
         filteredScrape.dump()
         filteredScrape.write_otu_info()
-        return filteredScrape
+    filteredScrape.get_additional_GB_info()
+    return filteredScrape
 
 
 def add_unpubl_to_backbone(seqaln,
@@ -428,7 +430,8 @@ def add_unpubl_to_backbone(seqaln,
         sys.stdout.write("calculate the phylogeny\n")
         filteredScrape.generate_streamed_alignment()
         filteredScrape.dump()
-    filteredScrape.write_otu_info()
+        filteredScrape.write_otu_info()
+    filteredScrape.get_additional_GB_info()
     return filteredScrape
 
 
@@ -554,7 +557,7 @@ def filter_data_run(seqaln,
         filteredScrape.write_out_files(downtorank)
         # print(some)
     filteredScrape.write_out_files(downtorank)
-    # filteredScrape.get_additional_GB_info()
+    filteredScrape.get_additional_GB_info()
     return filteredScrape
 
 
@@ -654,7 +657,8 @@ def run_with_settings(settings):
         filteredScrape.generate_streamed_alignment()
         filteredScrape.dump()
         filteredScrape.write_out_files(settings.downtorank)
-        return filteredScrape
+    filteredScrape.get_additional_GB_info()
+    return filteredScrape
 
 
 def concat(genelistdict, workdir_comb, email, percentage=0.37, user_concat_fn=None):

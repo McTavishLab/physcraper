@@ -14,6 +14,7 @@ import json
 import configparser
 import pickle
 import random
+import contextlib
 from past.builtins import xrange
 from builtins import input
 from copy import deepcopy
@@ -47,8 +48,6 @@ _deep_debug = 0
 
 _VERBOSE = 0
 
-
-import contextlib
 
 
 @contextlib.contextmanager
@@ -1822,6 +1821,8 @@ class PhyscraperScrape(object):
         self.new_seqs.
 
         """
+        debug("read unpublished blast query")
+
         output_blast = "output_tst_fn.xml"
         gb_counter = 1
         general_wd = os.getcwd()
@@ -1830,6 +1831,8 @@ class PhyscraperScrape(object):
         xml_file = open(output_blast)
         os.chdir(general_wd)
         blast_out = NCBIXML.parse(xml_file)
+        fn = open("{}/not_added_local_seq.csv".format(self.workdir), "a")
+        fn.write("not_added_local_seq")
         for blast_record in blast_out:
             for alignment in blast_record.alignments:
                 for hsp in alignment.hsps:
@@ -1843,6 +1846,11 @@ class PhyscraperScrape(object):
                             self.data.gb_dict[unpbl_local_id].update(
                                 self.data.unpubl_otu_json['otu{}'.format(local_id.replace("_", "").replace("-",""))])
                             gb_counter += 1
+                    else:
+                        fn.write("{}: {}".format(alignment.title.split("|")[-1].split(" ")[-1], hsp.expect))
+                        # print(some)
+        with open(self.logfile, "a") as log:
+            log.write("{} new sequences added from unpublished database\n".format(len(self.new_seqs)))
 
 
     def read_webbased_blast_query(self, fn_path):
