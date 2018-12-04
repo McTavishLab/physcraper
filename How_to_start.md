@@ -12,7 +12,6 @@ After the single-gene datasets are updated, the data can be concatenated. Either
 
 ### Before you can start
 
-
 #### 1. install the dependencies:
 
 * [PaPaRa](http://sco.h-its.org/exelixis/web/software/papara/index.html) - alignment tool
@@ -21,7 +20,7 @@ After the single-gene datasets are updated, the data can be concatenated. Either
 * [BLAST+](https://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Web&PAGE_TYPE=BlastDocs&DOC_TYPE=Download) - it's needed for filter runs and when using local BLAST databses.
 
 
-make sure the programms are accessible from everywhere, thus add them to your PATH using the command line:
+make sure the programs are accessible from everywhere, thus add them to your PATH using the command line:
 * UNIX: `export PATH=$PATH:/path/to/my/program`
 * Windows: `set PATH=%PATH%;C:\path\to\my\program`
 * MAC: `export PATH=$PATH:~/path/to/program`
@@ -63,13 +62,14 @@ Depending on the size of your tree to be updated, there are things to consider.
           
          The last command shows you if it worked correctly. 'nt' means, we are making the nucleotide database.
          The database needs to be update regularly, the program will check the dates of your databases and will ask you to update the databases after 60 days. If your databases are older, you will be asked for input, if you want to update the databases. 
+         <!---
          Interactive input does not work on remote machines, to stop the program from asking, change the following line in your analysis file from `conf = ConfigObj(configfi)` to `conf = ConfigObj(configfi, interactive=False)`.
+         -->
          If you want to update the databases earlier go back to step 1.
          
     *  install the taxonomy database:
         
         install ncbi taxonomy database to retrieve taxon information from BLAST searches into the same directory as your blastdb from the step before.
-
                   
           * `cd /to/the/folder/of/your/blastdb`
           * `wget 'ftp://ftp.ncbi.nlm.nih.gov/blast/db/taxdb.tar.gz'` # Download the taxdb archive
@@ -87,9 +87,9 @@ Depending on the size of your tree to be updated, there are things to consider.
          
          If you want to update the databases earlier:
 
-          * blast db: repeat the steps listed under 'Install a local Blast database'
-          * taxonomy db: run `update_blastdb taxdb`
-          * rank db: repeat the steps listed under 'install the taxonomic rank database'
+      * blast db: repeat the steps listed under 'Install a local Blast database'
+      * taxonomy db: run `update_blastdb taxdb`
+      * rank db: repeat the steps listed under 'install the taxonomic rank database'
    
 ### Set up a run
 
@@ -133,33 +133,34 @@ There is an example config file in `tests/data/localblast.config`
 
     Depending if you have uploaded your tree prior to analysis to the [OpenTreeofLife website (OToL)](https://ot14.opentreeoflife.org/opentree/argus/opentree9.1@ott93302), there are two main options:
 
-    Specified paths have to start either from your root directory (e.g. `/home/USER/physcraper/path/to/file`), or can be relative from within the physcraper main folder (`./path/to/file`).
+    1. using OpenTreeOfLife study ID:
 
-    a) using OpenTreeOfLife study ID:
-
-      There is an example file in `docs/example.py` it is based on the wrapper function `standard_run()`
-
-      To obtain the study and tree ID's for an OToL run, either go to the website and query your lineage or you can run `find_studies.py` by typing in the terminal `python ./path/to/file/find_studies.py LINEAGENAME`. It will give you a studyID and a treeID, if there is a study available.
+          There is an example file in `docs/example_scripts/OToL_standard_run.py` it is based on the wrapper function `standard_run()`
+        
+          To obtain the study and tree ID's for an OToL run, either go to the website and query your lineage or you can run `find_studies.py` by typing in the terminal `python ./path/to/file/find_studies.py LINEAGENAME`. It will give you a studyID and a treeID, if there is a study available.
      
-    * **study_id**: the ID of the corresponding study from OToL
-    * **tree_id**: the ID of the corresponding tree from OToL
-    * **seqaln**: give the path to your alignment file, must be a single gene alignment
-    * **mattype**: file format of your alignment - currently supported: “fasta”, “newick”, “nexus”, “nexml”, “phylip”
-    * **workdir**: path to your working directory, the folder where the intermediate and result files shall be stored.
-    * **configfi**: path to your config-file, which edited in step 1.
-    * **otu_jsonfi**: path to the otu json file, this will contain all the information of the sequences retrieved during the run. Usually, does not need to be edited.
+        * **study_id**: the ID of the corresponding study from OToL
+        * **tree_id**: the ID of the corresponding tree from OToL
+        * **seqaln**: give the path to your alignment file, must be a single gene alignment
+        * **mattype**: file format of your alignment - currently supported: “fasta”, “newick”, “nexus”, “nexml”, “phylip”
+        * **workdir**: path to your working directory, the folder where the intermediate and result files shall be stored.
+        * **configfi**: path to your config-file, which edited in step 1.
+        * **otu_jsonfi**: path to the otu json file, this will contain all the information of the sequences retrieved during the run. Usually, does not need to be edited.
 
-    b) using your own files:
+    2. using your own files:
 
-      There is an example file in `tests/tiny_standard_ownfile.py`, it comes with a tiny sample dataset in `tests/data/tiny_example`. The corresponding wrapper function to use in your file setup is `own_data_run()`.
-    * **seqaln**: give the path to your alignment file, must be a single gene alignment
-    * **mattype**: file format of your alignment - currently supported: “fasta”, “newick”, “nexus”, “nexml”, “phylip”
-    * **trfn**: give the path to the file containing the corresponding phylogeny, all tips must be represented in the alignment file as well.
-    * **schema_trf**: file format of your phylogeny file - currently supported: “fasta”, “newick”, “nexus”, “nexml”, “phylip”
-    * **id_to_spn**: path to a comma-delimited file where tip labels correspond to species names: example file can be found in `tests/data/tiny_test_example/test_nicespl.csv`
-    * **workdir**: path to your working directory, the folder where intermediate and result files shall be stored.
-    * **configfi**: path to your config-file, which was edited in step 1.
-    * **otu_jsonfi**: path to the otu json file, this will contain all the information of the sequences retrieved during the run. Usually, does not need to be edited.
+        There is an example file in `docs/example_scripts/own_data_standard_local.py`, it comes with a tiny sample dataset in `tests/data/tiny_example`. The corresponding wrapper function to use in your file setup is `own_data_run()`.
+    
+        * **seqaln**: give the path to your alignment file, must be a single gene alignment
+        * **mattype**: file format of your alignment - currently supported: “fasta”, “newick”, “nexus”, “nexml”, “phylip”
+        * **trfn**: give the path to the file containing the corresponding phylogeny, all tips must be represented in the alignment file as well.
+        * **schema_trf**: file format of your phylogeny file - currently supported: “fasta”, “newick”, “nexus”, “nexml”, “phylip”
+        * **id_to_spn**: path to a comma-delimited file where tip labels correspond to species names: example file can be found in `tests/data/tiny_test_example/test_nicespl.csv`
+        * **workdir**: path to your working directory, the folder where intermediate and result files shall be stored.
+        * **configfi**: path to your config-file, which was edited in step 1.
+        * **otu_jsonfi**: path to the otu json file, this will contain all the information of the sequences retrieved during the run. Usually, does not need to be edited.
+
+    Note: Specified paths have to start either from your root directory (e.g. `/home/USER/physcraper/path/to/file`), or can be relative from within the physcraper main folder (`./path/to/file`).
 
 2. filter run:
 
@@ -192,18 +193,19 @@ There is an example config file in `tests/data/localblast.config`
     * **blacklist**: a list of sequences, that shall not be added or were identified to be removed later. This needs to be formatted as a python list containing the GenBank identifiers (e.g. `[gi number, gi number]`). Please not, that it must be the Genbank identifiers and not the accession numbers.
 
     1. using OpenTreeofLife study ID:
-    There is an example file in `tests/filter_OTOL.py`. The corresponding function to use in your file setup is `filter_OTOL()`.
+    There is an example file in `docs/example_scripts/OToL_filter_run.py`. The corresponding function to use in your file setup is `filter_OTOL()`.
 
     2. using your own files:
-    There is an example file in `tests/tiny_filter_ownfile.py`.  The corresponding function to use in your file setup is `filter_data_run()`.
+    There is an example file in `docs/example_scripts/own_data_filter_blast.py`.  The corresponding function to use in your file setup is `filter_data_run()`.
 
 3. Use a local folder as sequence database:
 
      Instead of using GenBank as the source of new sequences, we can specify a folder which contains sequences in fasta format and this folder will be used as a sequence database. Then before running a standard or filter run, sequences from that folder can be added to the alignment/phylogeny if the folder contains sequences that are similar to the sequences already present in the alignment. This is intended to be used for newly sequenced material, which is not yet published on GenBank.
      To use this you need to specify:
-
        * add_unpubl_seq = path to folder with the sequences
        * id_to_spn_addseq_json = path to file which translates the sequences names to species names
+     
+     There is an example file in `docs/example_scripts/own_data_localdb.py`, with an example of the input files in `tests/data/local_seqs` and `tests/data/tipnTOspn_localAdd.csv` shows how to write the comma-delimited file.  
 
 #### **3. start to update your phylogeny:**
 
@@ -213,7 +215,7 @@ This should be straight forward - type in your physcraper main folder:
 
 And now you just need to wait...
 
-**4. more hidden features that can be changed:**
+#### **4. more hidden features that can be changed:**
 
 There are some more features that can be changed if you know where, we will change the code hopefully soon, to make that easier adjustable.
 
@@ -243,5 +245,5 @@ There are some more features that can be changed if you know where, we will chan
 
 #### **5. Concatenate different single-gene PhyScraper runs:**
     
-After the single-gene PhyScraper runs were updated, the data can be combined, see for example `tests/data/concat_runs.py`.
+After the single-gene PhyScraper runs were updated, the data can be combined, see for example `docs/example_scripts/concat_example.py`.
 Either the program randomly decides which sequences to concatenate if there are more sequences available for one loci or the user can specify a file, which sequences shall be concatenated. An example file can be found at `tests/data/concatenation_input.csv`.
