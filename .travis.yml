@@ -33,6 +33,10 @@ before_install:
   - conda install -c etetoolkit ete2
   - export PATH=~/anaconda_ete/bin:$PATH
 
+  #### check build documentation with sphinx
+  - pip install sphinx
+  - make -C docs
+
 
 install:
   # install requirements of physcraper
