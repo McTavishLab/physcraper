@@ -13,9 +13,10 @@ before_install:
 
   #### install papara
   - wget 'https://sco.h-its.org/exelixis/resource/download/software/papara_nt-2.5-static_x86_64.tar.gz'
-  - gunzip  -cd papara_nt-2.5-static_x86_64.tar.gz 
-  - export PATH="$PATH"
-  #- papara
+  - gunzip  -cd papara_nt-2.5-static_x86_64.tar.gz | (tar xvf - )
+  - mv papara_static_x86_64 papara
+  - export PATH="$PATH:$(pwd)"
+  - papara
 
   ##### to use RAXML we need conda
   - wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
