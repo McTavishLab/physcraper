@@ -4,6 +4,13 @@ from physcraper.concat import Concat
 from physcraper import debug
 import sys
 
+from pytest import mark
+# you can actually do whatever
+# ruftrum = mark.ruftrum will work and create a "ruftrum" test. 
+concat = mark.concat
+
+
+@concat
 def test():
     workdir_its = "runs/tiny_comb_its"
     workdir_ets = "runs/tiny_comb_ets"

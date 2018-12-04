@@ -1,4 +1,10 @@
 from physcraper.concat import Concat
+from pytest import mark
+# you can actually do whatever
+# ruftrum = mark.ruftrum will work and create a "ruftrum" test. 
+concat = mark.concat
+
+
 
 #
 workdir_its = "runs/tiny_comb_its"
@@ -10,6 +16,7 @@ pickle_fn = "scrape_checkpoint.p"
 workdir_comb = "tests/output/impl_concat"
 genelist = {"its": {"workdir": workdir_its, "pickle": pickle_fn}, "ets": {"workdir": workdir_ets, "pickle": pickle_fn}}
 
+@concat
 def test():
     # get to test status
 

@@ -9,9 +9,13 @@ def pytest_collection_modifyitems(config, items):
         # --runslow given in cli: do not skip slow tests
         return
     skip_slow = pytest.mark.skip(reason="need --runslow option to run")
+    skip_concat = pytest.mark.skip(reason="need --runslow option to run")
+
     # skip_test = pytest.mark.skip(reason="skip all for now")
     for item in items:
         if "slow" in item.keywords:
             item.add_marker(skip_slow)
+        if "concat" in item.keywords:
+            item.add_marker(skip_concat)
         #elif "fast" not in item.keywords:
         #    item.add_marker(skip_test)

@@ -12,8 +12,13 @@ genelist = {"its": {"workdir": workdir_its, "pickle": pickle_fn},
             "ets": {"workdir": workdir_ets, "pickle": pickle_fn}}
 
 
-sys.stdout.write("\ntests Concat func make_concat_id_dict\n")
+from pytest import mark
+# you can actually do whatever
+# ruftrum = mark.ruftrum will work and create a "ruftrum" test. 
+concat = mark.concat
 
+
+@concat
 def test():
 
     concat = Concat(workdir_comb, email)
