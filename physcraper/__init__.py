@@ -2409,64 +2409,64 @@ class PhyscraperScrape(object):
         -z: specifies file with multiple trees
 
         """
-        os.chdir(self.workdir)
-        try:
-            num_threads = int(self.config.num_threads)
-            debug(num_threads)
-            # run bootstrap
-            subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(num_threads), "-m", "GTRCAT",
-                             "-s", "papara_alignment.extended",
-                             "-p", "1", "-b", "1", "-#", "autoMRE",
-                             "-n", "{}".format(self.date)])
-            # make bipartition tree
-            # is the -f b command
-            subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(num_threads), "-m", "GTRCAT",
-                             "-s", "previous_run/papara_alignment.extended",
-                             "-p", "1", "-f", "a", "-x", "1", "-#", "autoMRE",
-                             "-n", "all{}".format(self.date)])
-            # strict consensus:
-            subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(num_threads), "-m", "GTRCAT",
-                             "-J", "STRICT",
-                             "-z", "RAxML_bootstrap.all{}".format(self.date),
-                             "-n", "StrictCon{}".format(self.date)])
-            # majority rule:
-            subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(num_threads), "-m", "GTRCAT",
-                             "-J", "MR",
-                             "-z", "RAxML_bootstrap.all{}".format(self.date),
-                             "-n", "MR_{}".format(self.date)])
-            # extended majority rule:
-            subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(num_threads), "-m", "GTRCAT",
-                             "-J", "MRE",
-                             "-z", "RAxML_bootstrap.all{}".format(self.date),
-                             "-n", "EMR{}".format(self.date)])
-        except:
-            sys.stderr.write("You do not have the raxmlHPC-PTHREADS installed, will fall down to slow version!")
-            # run bootstrap
-            subprocess.call(["raxmlHPC", "-m", "GTRCAT",
-                             "-s", "papara_alignment.extended",
-                             "-p", "1", "-b", "1", "-#", "autoMRE",
-                             "-n", "{}".format(self.date)])
-            # make bipartition tree
-            # is the -f b command
-            subprocess.call(["raxmlHPC", "-m", "GTRCAT",
-                             "-s", "previous_run/papara_alignment.extended",
-                             "-p", "1", "-f", "a", "-x", "1", "-#", "autoMRE",
-                             "-n", "all{}".format(self.date)])
-            # strict consensus:
-            subprocess.call(["raxmlHPC", "-m", "GTRCAT",
-                             "-J", "STRICT",
-                             "-z", "RAxML_bootstrap.all{}".format(self.date),
-                             "-n", "StrictCon{}".format(self.date)])
-            # majority rule:
-            subprocess.call(["raxmlHPC", "-m", "GTRCAT",
-                             "-J", "MR",
-                             "-z", "RAxML_bootstrap.all{}".format(self.date),
-                             "-n", "MR_{}".format(self.date)])
-            # extended majority rule:
-            subprocess.call(["raxmlHPC", "-m", "GTRCAT",
-                             "-J", "MRE",
-                             "-z", "RAxML_bootstrap.all{}".format(self.date),
-                             "-n", "EMR{}".format(self.date)])
+        with cd(self.workdir):
+            try:
+                num_threads = int(self.config.num_threads)
+                debug(num_threads)
+                # run bootstrap
+                subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(num_threads), "-m", "GTRCAT",
+                                "-s", "papara_alignment.extended",
+                                "-p", "1", "-b", "1", "-#", "autoMRE",
+                                "-n", "{}".format(self.date)])
+                # make bipartition tree
+                # is the -f b command
+                subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(num_threads), "-m", "GTRCAT",
+                                "-s", "previous_run/papara_alignment.extended",
+                                "-p", "1", "-f", "a", "-x", "1", "-#", "autoMRE",
+                                "-n", "all{}".format(self.date)])
+                # strict consensus:
+                subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(num_threads), "-m", "GTRCAT",
+                                "-J", "STRICT",
+                                "-z", "RAxML_bootstrap.all{}".format(self.date),
+                                "-n", "StrictCon{}".format(self.date)])
+                # majority rule:
+                subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(num_threads), "-m", "GTRCAT",
+                                "-J", "MR",
+                                "-z", "RAxML_bootstrap.all{}".format(self.date),
+                                "-n", "MR_{}".format(self.date)])
+                # extended majority rule:
+                subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(num_threads), "-m", "GTRCAT",
+                                "-J", "MRE",
+                                "-z", "RAxML_bootstrap.all{}".format(self.date),
+                                "-n", "EMR{}".format(self.date)])
+            except:
+                sys.stderr.write("You do not have the raxmlHPC-PTHREADS installed, will fall down to slow version!")
+                # run bootstrap
+                subprocess.call(["raxmlHPC", "-m", "GTRCAT",
+                                "-s", "papara_alignment.extended",
+                                "-p", "1", "-b", "1", "-#", "autoMRE",
+                                "-n", "{}".format(self.date)])
+                # make bipartition tree
+                # is the -f b command
+                subprocess.call(["raxmlHPC", "-m", "GTRCAT",
+                                "-s", "previous_run/papara_alignment.extended",
+                                "-p", "1", "-f", "a", "-x", "1", "-#", "autoMRE",
+                                "-n", "all{}".format(self.date)])
+                # strict consensus:
+                subprocess.call(["raxmlHPC", "-m", "GTRCAT",
+                                "-J", "STRICT",
+                                "-z", "RAxML_bootstrap.all{}".format(self.date),
+                                "-n", "StrictCon{}".format(self.date)])
+                # majority rule:
+                subprocess.call(["raxmlHPC", "-m", "GTRCAT",
+                                "-J", "MR",
+                                "-z", "RAxML_bootstrap.all{}".format(self.date),
+                                "-n", "MR_{}".format(self.date)])
+                # extended majority rule:
+                subprocess.call(["raxmlHPC", "-m", "GTRCAT",
+                                "-J", "MRE",
+                                "-z", "RAxML_bootstrap.all{}".format(self.date),
+                                "-n", "EMR{}".format(self.date)])
 
     def remove_blacklistitem(self):
         """This removes items from aln, and tree, if the corresponding Genbank identifer were added to the blacklist.
