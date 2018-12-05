@@ -2266,7 +2266,7 @@ class PhyscraperScrape(object):
         # with cd(self.workdir):
         try:
             assert self.data.aln.taxon_namespace == self.data.tre.taxon_namespace
-            subprocess.call(["papara",
+            subprocess.check_call(["papara",
                              "-t", "random_resolve.tre",
                              "-s", "aln_ott.phy",
                              #  "-j", "{}".format(self.config.num_threads),  # FIXME: Does not work on some machines
@@ -2282,8 +2282,9 @@ class PhyscraperScrape(object):
             else:
                 # Something else went wrong while trying to run `wget`
                 raise
+        path = path="{}/papara_alignment.{}".format(self.workdir, papara_runname)
+        assert os.path.exists(path) , "{path} does not exists".format(path=path)
         os.chdir(cwd)
-        assert os.path.exists(path="{}/papara_alignment.{}".format(self.workdir, papara_runname))
         self.data.aln = DnaCharacterMatrix.get(path="{}/papara_alignment."
                                                     "{}".format(self.workdir, papara_runname), schema="phylip")
         self.data.aln.taxon_namespace.is_mutable = True  # Was too strict...
