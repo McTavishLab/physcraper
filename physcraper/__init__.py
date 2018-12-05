@@ -181,7 +181,7 @@ class ConfigObj(object):
         ]  # default is api, but can run on local version of OpenTree datastore
         self.ott_ncbi = config["taxonomy"][
             "ott_ncbi"
-        ]  # TODO: how do we update the file?
+        ]
         assert os.path.isfile(self.ott_ncbi), (
                 "file `%s` does not exists" % self.ott_ncbi
         )
@@ -355,8 +355,7 @@ def generate_ATT_from_phylesystem(aln,
 
     Study and tree ID's can be obtained by using scripts/find_trees.py LINEAGE_NAME
 
-    Input can be either a study ID and tree ID from OpenTree
-    # TODO: According to code it cannot be either, but must be both
+    Input must be a study ID and tree ID from OpenTree
 
     Alignment need to be a Dendropy DNA character matrix!
 
@@ -656,7 +655,6 @@ class AlignTreeTax(object):
  """
 
     def __init__(self, newick, otu_dict, alignment, ingroup_mrca, workdir, schema=None, taxon_namespace=None):
-        # TODO add assertions that inputs are correct type!!!
         debug("build ATT class")
         self.aln = alignment
         if schema is None:
@@ -675,14 +673,14 @@ class AlignTreeTax(object):
         self.otu_dict = otu_dict
         self.ps_otu = 1  # iterator for new otu IDs
         self._reconcile_names()
-        self.workdir = os.path.abspath(workdir)  # TODO: is this where the workdir should live?
+        self.workdir = os.path.abspath(workdir)
         if not os.path.exists(self.workdir):
             os.makedirs(self.workdir)
         assert int(ingroup_mrca)
-        self.ott_mrca = ingroup_mrca  # TODO: we only use .ott_mrca to infer mrca_ncbi. Why not using the ncbi one directly?
-        self.orig_seqlen = []  # FIXME
-        self.gb_dict = {}  # has all info about new blast seq TODO: Cannot be deleted. Is used frequently! TODODELTE (should maybe go anyhow due to gi switch?): Should this not be part of physcraper class instead? it has all blast information. Blast is not part of this class.
-        self._reconciled = False  # TODO: for what do we want to use it? .... it was checking to see if name reconcilation has ahappened yet. Should get flipped to true when done. MK: Yes, but we never do anything with the information
+        self.ott_mrca = ingroup_mrca  # ott_ingroup mrca can be pulled directly from phylesystem
+        self.orig_seqlen = []  # will get filled in later...
+        self.gb_dict = {}  # has all info about new blast seq 
+        self._reconciled = False  
         self.unpubl_otu_json = None
 
     def _reconcile_names(self):
@@ -936,8 +934,7 @@ class AlignTreeTax(object):
         Papara is finicky about trees and needs phylip format for the alignment.
 
         Is only used within func align_query_seqs."""
-        # TODO: CAN I even evaluate things in the function definitions?
-        # TODO: names for tree and aln files should not be changed, as they are hardcoded in align_query_seqs().
+        #NOTE: names for tree and aln files should not be changed, as they are hardcoded in align_query_seqs().
         debug('write papara files')
         self.tre.resolve_polytomies()
         self.tre.deroot()
