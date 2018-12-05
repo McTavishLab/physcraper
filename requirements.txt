@@ -5,8 +5,7 @@ argcomplete==1.6.0
 argparse==1.2.1
 biopython==1.68
 configparser==3.5.0
-coverage==4.2
-enum34==1.1.6
+coverage>=4.4
 locket==0.2.0
 -e git+https://github.com/OpenTreeOfLife/peyotl@api_v3#egg=peyotl
 python-dateutil==2.6.0
