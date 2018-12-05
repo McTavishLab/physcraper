@@ -59,7 +59,7 @@ def cd(path):
     try:
         yield
     except:
-        print 'Exception caught: ',sys.exc_info()[0]
+        print('Exception caught: ',sys.exc_info()[0])
     finally:
         # print 'finally inside {0}'.format(os.getcwd())
         os.chdir(CWD)
@@ -2159,9 +2159,8 @@ class PhyscraperScrape(object):
                 else:
                     self.write_not_added_info("seqlen_threshold_not_passed")
                     fn = open("{}/not_added_seq.csv".format(self.workdir), "a+")
-                    fn.write("seqlen_threshold_not_passed, {}, {}\n".format(gb_id, len(seq.replace("-", "").replace("N", ""))))
+                    fn.write("seqlen_threshold_not_passed, {}, {}, min len: {}\n".format(gb_id, len(seq.replace("-", "").replace("N", "")), seq_len_cutoff))
                     fn.close()
-
         old_seqs_ids = set()
         for tax in old_seqs:
             old_seqs_ids.add(tax)
@@ -2208,6 +2207,7 @@ class PhyscraperScrape(object):
                         rowinfo.append(tofile)
                     else:
                         rowinfo.append("-")
+                rowinfo.append(reason)
                 writer.writerow(rowinfo)
 
     def find_otudict_gi(self):
@@ -2700,6 +2700,8 @@ class FilterBlast(PhyscraperScrape):
         """
         Add FilterBlast items to self.
 
+        Currently used by some wrapper functions.
+
         :param downtorank: rank which defines your level of Filtering
         :param threshold: number, defining how many seq per rank do you want to keep
         :return:
@@ -3071,7 +3073,7 @@ class FilterBlast(PhyscraperScrape):
             query_count = count_dict["query_count"]
             new_taxon = count_dict["new_taxon"]
             if seq_present <= threshold:  # add seq to aln
-                if seq_present + query_count <= threshold:  # add all stuff to self.filtered_seq[gi_n]
+                if seq_present + query_count <= threshold:  # to add all stuff to self.filtered_seq[gi_n]
                     self.add_all(tax_id)
                 else:  # filter number of sequences
                     if tax_id in self.sp_seq_d.keys():
@@ -3201,6 +3203,8 @@ class FilterBlast(PhyscraperScrape):
         self.filtered_seq.clear()
         return
 
+
+    # #### TODO MK: Move next functions to different class?
     def write_out_files(self, downtorank=None):
         """Wrapper function for writing information output files.
 
