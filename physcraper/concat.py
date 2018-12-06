@@ -11,12 +11,7 @@ from dendropy import Tree, DnaCharacterMatrix
 from Bio import Entrez
 
 import physcraper
-
-if sys.version_info < (3,):
-    from urllib2 import HTTPError
-else:
-    from urllib.error import HTTPError
-
+# from __init__ import cd
 
 if sys.version_info < (3, ):
     from urllib2 import HTTPError
@@ -703,25 +698,27 @@ class Concat(object):
         if len(self.concatenated_aln.taxon_namespace)-len(self.short_concat_seq) > len(self.tre_as_start.leaf_nodes()):
             if os.path.exists("RAxML_labelledTree.PLACE"):
                 os.rename("RAxML_labelledTree.PLACE", "RAxML_labelledTreePLACE.tmp")
-            cwd = os.getcwd()
-            os.chdir(self.workdir)
 
-            physcraper.debug("make place-tree")
-            try:
-                num_threads = int(self.config.num_threads)
-                print(num_threads)
-                subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(num_threads), "-m", "GTRCAT",
-                                 "-f", "v", "-q", "partition",
-                                 "-s", "concat_red.fasta",
-                                 "-t", "starting_red.tre",
-                                 "-n", "PLACE"])
-            except:
-                subprocess.call(["raxmlHPC", "-m", "GTRCAT",
-                                 "-f", "v", "-q", "partition",
-                                 "-s", "concat_red.fasta",
-                                 "-t", "starting_red.tre",
-                                 "-n", "PLACE"])
-            os.chdir(cwd)
+            with physcraper.cd(self.workdir):
+                # cwd = os.getcwd()
+                # os.chdir(self.workdir)
+
+                physcraper.debug("make place-tree")
+                try:
+                    num_threads = int(self.config.num_threads)
+                    print(num_threads)
+                    subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(num_threads), "-m", "GTRCAT",
+                                     "-f", "v", "-q", "partition",
+                                     "-s", "concat_red.fasta",
+                                     "-t", "starting_red.tre",
+                                     "-n", "PLACE"])
+                except:
+                    subprocess.call(["raxmlHPC", "-m", "GTRCAT",
+                                     "-f", "v", "-q", "partition",
+                                     "-s", "concat_red.fasta",
+                                     "-t", "starting_red.tre",
+                                     "-n", "PLACE"])
+                # os.chdir(cwd)
             physcraper.debug("read place tree")
             placetre = Tree.get(path="{}/starting_red.tre".format(self.workdir),
                                 schema="newick",
@@ -735,33 +732,34 @@ class Concat(object):
         """Full raxml run from the placement tree as starting tree.
         """
         physcraper.debug("run full tree")
-        cwd = os.getcwd()
-        os.chdir(self.workdir)
-        if os.path.exists("place_resolve.tre"):
-            starting_fn = "place_resolve.tre"
-        else:
-            starting_fn = "starting_red.tre"
-        if os.path.exists("concat_red.fasta.reduced"):
-            aln = "concat_red.fasta.reduced"
-            partition = "partition.reduced"
-        else:
-            aln = "concat_red.fasta"
-            partition = "partition"
-        try:
-            num_threads = int(self.config.num_threads)
-            print(num_threads)
-            subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(num_threads), "-m", "GTRCAT",
-                         "-s", aln, "--print-identical-sequences",
-                         "-t", "{}".format(starting_fn),
-                         "-p", "1", "-q", partition,
-                         "-n", "concat"])
-        except:
-            subprocess.call(["raxmlHPC", "-m", "GTRCAT",
-                         "-s", aln, "--print-identical-sequences",
-                         "-t", "{}".format(starting_fn),
-                         "-p", "1", "-q", partition,
-                         "-n", "concat"])
-        os.chdir(cwd)
+        with physcraper.cd(self.workdir):
+            # cwd = os.getcwd()
+            # os.chdir(self.workdir)
+            if os.path.exists("place_resolve.tre"):
+                starting_fn = "place_resolve.tre"
+            else:
+                starting_fn = "starting_red.tre"
+            if os.path.exists("concat_red.fasta.reduced"):
+                aln = "concat_red.fasta.reduced"
+                partition = "partition.reduced"
+            else:
+                aln = "concat_red.fasta"
+                partition = "partition"
+            try:
+                num_threads = int(self.config.num_threads)
+                print(num_threads)
+                subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(num_threads), "-m", "GTRCAT",
+                             "-s", aln, "--print-identical-sequences",
+                             "-t", "{}".format(starting_fn),
+                             "-p", "1", "-q", partition,
+                             "-n", "concat"])
+            except:
+                subprocess.call(["raxmlHPC", "-m", "GTRCAT",
+                             "-s", aln, "--print-identical-sequences",
+                             "-t", "{}".format(starting_fn),
+                             "-p", "1", "-q", partition,
+                             "-n", "concat"])
+            # os.chdir(cwd)
 
     def calculate_bootstrap(self):
         """Calculate bootstrap and consensus trees.
@@ -772,59 +770,60 @@ class Concat(object):
         -b: bootstrap random seed
         -#: bootstrap stopping criteria
         """
-        os.chdir(self.workdir)
-        if os.path.exists("concat_red.fasta.reduced"):
-            aln = "concat_red.fasta.reduced"
-            partition = "partition.reduced"
-        else:
-            aln = "concat_red.fasta"
-            partition = "partition"
-        # run bootstrap
-        # make bipartition tree
-        # is the -f b command
-        # -z specifies file with multiple trees
-        try:
-            num_threads = int(self.config.num_threads)
-            print(num_threads)
-            subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(num_threads), "-m", "GTRCAT",
-                             "-s", aln,  "-q", partition,
-                             # "-t", "place_resolve.tre", 
-                             "-p", "1", "-b", "1", "-#", "autoMRE",
-                             "-n", "autoMRE"])
-            subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(num_threads), "-m", "GTRCAT",
-                             "-s", aln, "-q", partition,
-                             "-p", "1", "-f", "a", "-x", "1", "-#", "autoMRE",
-                             "-n", "autoMRE_fa"])
-            # strict consensus:
-            subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(num_threads), "-m", "GTRCAT",
-                             "-J", "STRICT",
-                             "-z", "RAxML_bootstrap.autoMRE",
-                             "-n", "StrictCon"])
-            # majority rule:
-            subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(num_threads), "-m", "GTRCAT",
-                             "-J", "MR",
-                             "-z", "RAxML_bootstrap.autoMRE",
-                             "-n", "MR"])
-        except:
-            subprocess.call(["raxmlHPC", "-m", "GTRCAT",
-                             "-s", aln,  "-q", partition,
-                             # "-t", "place_resolve.tre", 
-                             "-p", "1", "-b", "1", "-#", "autoMRE",
-                             "-n", "autoMRE"])
-            subprocess.call(["raxmlHPC", "-m", "GTRCAT",
-                             "-s", aln, "-q", partition,
-                             "-p", "1", "-f", "a", "-x", "1", "-#", "autoMRE",
-                             "-n", "autoMRE_fa"])
-            # strict consensus:
-            subprocess.call(["raxmlHPC", "-m", "GTRCAT",
-                             "-J", "STRICT",
-                             "-z", "RAxML_bootstrap.autoMRE",
-                             "-n", "StrictCon"])
-            # majority rule:
-            subprocess.call(["raxmlHPC", "-m", "GTRCAT",
-                             "-J", "MR",
-                             "-z", "RAxML_bootstrap.autoMRE",
-                             "-n", "MR"])
+        with physcraper.cd(self.workdir):
+            # os.chdir(self.workdir)
+            if os.path.exists("concat_red.fasta.reduced"):
+                aln = "concat_red.fasta.reduced"
+                partition = "partition.reduced"
+            else:
+                aln = "concat_red.fasta"
+                partition = "partition"
+            # run bootstrap
+            # make bipartition tree
+            # is the -f b command
+            # -z specifies file with multiple trees
+            try:
+                num_threads = int(self.config.num_threads)
+                print(num_threads)
+                subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(num_threads), "-m", "GTRCAT",
+                                 "-s", aln,  "-q", partition,
+                                 # "-t", "place_resolve.tre",
+                                 "-p", "1", "-b", "1", "-#", "autoMRE",
+                                 "-n", "autoMRE"])
+                subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(num_threads), "-m", "GTRCAT",
+                                 "-s", aln, "-q", partition,
+                                 "-p", "1", "-f", "a", "-x", "1", "-#", "autoMRE",
+                                 "-n", "autoMRE_fa"])
+                # strict consensus:
+                subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(num_threads), "-m", "GTRCAT",
+                                 "-J", "STRICT",
+                                 "-z", "RAxML_bootstrap.autoMRE",
+                                 "-n", "StrictCon"])
+                # majority rule:
+                subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(num_threads), "-m", "GTRCAT",
+                                 "-J", "MR",
+                                 "-z", "RAxML_bootstrap.autoMRE",
+                                 "-n", "MR"])
+            except:
+                subprocess.call(["raxmlHPC", "-m", "GTRCAT",
+                                 "-s", aln,  "-q", partition,
+                                 # "-t", "place_resolve.tre",
+                                 "-p", "1", "-b", "1", "-#", "autoMRE",
+                                 "-n", "autoMRE"])
+                subprocess.call(["raxmlHPC", "-m", "GTRCAT",
+                                 "-s", aln, "-q", partition,
+                                 "-p", "1", "-f", "a", "-x", "1", "-#", "autoMRE",
+                                 "-n", "autoMRE_fa"])
+                # strict consensus:
+                subprocess.call(["raxmlHPC", "-m", "GTRCAT",
+                                 "-J", "STRICT",
+                                 "-z", "RAxML_bootstrap.autoMRE",
+                                 "-n", "StrictCon"])
+                # majority rule:
+                subprocess.call(["raxmlHPC", "-m", "GTRCAT",
+                                 "-J", "MR",
+                                 "-z", "RAxML_bootstrap.autoMRE",
+                                 "-n", "MR"])
 
     def user_defined_concat(self):
         """If a user gave an input file to concatenate data. Fills in the data for self.comb_seq, self.comb_acc
@@ -925,24 +924,21 @@ class Concat(object):
             # print(self.sp_acc_comb.keys())
             for otu in self.sp_acc_comb.keys():
                 # print(self.sp_acc_comb[otu].keys())
-                
                 # rowinfo = spn_writer
                 for loci in self.sp_acc_comb[otu].keys():
-                    
-                    print("newinfo")
+                    # print("newinfo")
                     rowinfo = [loci]
                     # print(self.sp_acc_comb[otu][loci])
                     for concat_id in self.sp_acc_comb[otu][loci].keys():
                         rowinfo_details = deepcopy(rowinfo)
-                        print(rowinfo_details)
+                        # print(rowinfo_details)
                         rowinfo_details.append(concat_id)
-
                         for item in otu_dict_keys:
                             if item in self.sp_acc_comb[otu][loci][concat_id].keys():
                                 tofile = str(self.sp_acc_comb[otu][loci][concat_id][item]).replace("_", " ")
                                 rowinfo_details.append(tofile)
                             else:
                                 rowinfo_details.append("-")
-                        print(rowinfo_details)
+                        # print(rowinfo_details)
                         writer.writerow(rowinfo_details)                
 
