@@ -160,6 +160,8 @@ class ConfigObj(object):
 
         if interactive is None:
             interactive=sys.stdin.isatty()
+            if interactive == False:
+                print("REMEMBER TO UPDATE THE NCBI DATABASES REGULARLY!!")
         debug(configfi)
         debug(os.path.isfile(configfi))
         assert os.path.isfile(configfi), "file `%s` does not exists" % configfi
@@ -728,6 +730,8 @@ class AlignTreeTax(object):
                 sys.stderr.write("lost taxon {} in name reconcilliation \n".format(tax.label))
             self.aln.taxon_namespace.remove_taxon(tax)
         assert self.aln.taxon_namespace == self.tre.taxon_namespace
+
+        # TODO: move to new method?
         for tax in self.aln.taxon_namespace:
             if tax.label in self.otu_dict.keys():
                 pass
@@ -757,6 +761,7 @@ class AlignTreeTax(object):
         :param min_seqlen_perc: minimum length of seq
         :return: prunes aln and tre
         """
+        # TODO: assert statement make it necessary that method is only run after building a new tree, should probably be separated, remove trim. 
         if sum(self.orig_seqlen) != 0:
             avg_seqlen = sum(self.orig_seqlen) / len(self.orig_seqlen)
             seq_len_cutoff = avg_seqlen * min_seqlen_perc
@@ -784,11 +789,16 @@ class AlignTreeTax(object):
             fi.close()
         for tax in prune:
             self.otu_dict[tax.label]["^physcraper:status"] = "deleted in prune short"
-        # out-comented next line, as this does not run if we prune aln before placing new seq in tre
-        # assert self.aln.taxon_namespace == self.tre.taxon_namespace
-        assert treed_taxa.issubset(aln_ids)
+        
         self.orig_seqlen = [len(self.aln[tax].symbols_as_string().replace("-", "").replace("N", "")) for tax in self.aln]
         self.trim()
+        # out-comented next assert line, as this does not run if we prune aln before placing new seq in tre
+        
+        # debug(self.aln.taxon_namespace)
+        # debug(self.tre.taxon_namespace)
+        # assert self.aln.taxon_namespace == self.tre.taxon_namespace
+        assert treed_taxa.issubset(aln_ids)
+
         self._reconciled = 1
 
     def trim(self, taxon_missingness=0.75):
@@ -838,6 +848,8 @@ class AlignTreeTax(object):
             aln_ids.add(taxon.label)
         assert aln_ids.issubset(self.otu_dict.keys())
         treed_taxa = set()
+
+        # TODO: this again deletes items from tre, should not be part of this method, but different one.
         for leaf in self.tre.leaf_nodes():
             treed_taxa.add(leaf.taxon)
         for leaf in self.tre.leaf_nodes():
@@ -1020,7 +1032,7 @@ class AlignTreeTax(object):
                       schema="fasta")
 
     def write_otus(self, filename, schema="table"):
-        """Writes out OTU dict as json.
+        """Writes out OTU dict as json or table.
 
         :param filename: filename
         :param schema: either table or json format
@@ -1300,7 +1312,7 @@ class IdDicts(object):
     def get_rank_info_from_web(self, taxon_name):
         """Collects rank and lineage information from ncbi,
         used to delimit the sequences from blast,
-        when you have a local blast database or a Filter Blast run
+        when you use the web blast service.
         """
         tax_name = taxon_name.replace(" ", "_")
         if tax_name not in self.otu_rank.keys():
@@ -1402,7 +1414,7 @@ class IdDicts(object):
         Finds different identifiers and information from a given gb_id and fills the corresponding self.objects
         with the retrieved information.
 
-        :param gb_id: Genbank ID to
+        :param gb_id: Genbank ID 
         :return: ncbi taxon id
         """
         # debug("map_acc_ncbi")
@@ -1496,8 +1508,7 @@ class PhyscraperScrape(object):
 
         Following functions are called during the init-process:
 
-            * **self.reset_markers()**: 
-                 adds things to self: I think they are used to make sure certain function run, if program crashed and pickle file is read in.
+            * **self.reset_markers()**: adds things to self: I think they are used to make sure certain function run, if program crashed and pickle file is read in.
                 * self._blasted: 0/1, if run_blast_wrapper() was called, it is set to 1 for the round.
                 * self._blast_read: 0/1, if read_blast_wrapper() was called, it is set to 1 for the round.
                 * self._identical_removed: 0
