@@ -10,14 +10,14 @@ from copy import deepcopy
 
 # run tiny_comb_... files first
 
-workdir_ITS = "./MS3_data/output/ITS_filter"
-workdir_ETS = "./MS3_data/output/ETS_expand"
+workdir_ITS = "tests/data/PS_tiny_comb_its"
+workdir_ETS = "tests/data/PS_tiny_comb_ets"
 email = "mk@xy.zt"
 percentage = 0.4
 
 pickle_fn = "scrape_checkpoint.p"
 
-workdir_comb = ".example/output/nr"
+workdir_comb = "docs/example_scripts/output/nr_concat"
 genelist = {"ITS": {"workdir": workdir_ITS, "pickle": pickle_fn}, 
             "ETS": {"workdir": workdir_ETS, "pickle": pickle_fn}
             }

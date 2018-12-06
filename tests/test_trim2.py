@@ -13,7 +13,7 @@ mattype="fasta"
 treefile= "tests/data/Senecioneae_ets_update/2taxon.tre"
 schema_trf = "newick"
 workdir="tests/output/test_trim2"
-configfi = "tests/data/localblast.config"
+configfi = "tests/data/test.config"
 id_to_spn = r"tests/data/Senecioneae_ets_update/nicespl.csv"
 otu_jsonfi = "{}/otu_dict.json".format(workdir)
 
