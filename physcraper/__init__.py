@@ -2282,7 +2282,7 @@ class PhyscraperScrape(object):
             else:
                 # Something else went wrong while trying to run `wget`
                 raise
-        path = path="{}/papara_alignment.{}".format(self.workdir, papara_runname)
+        path = "{}/papara_alignment.{}".format(self.workdir, papara_runname)
         assert os.path.exists(path) , "{path} does not exists".format(path=path)
         os.chdir(cwd)
         self.data.aln = DnaCharacterMatrix.get(path="{}/papara_alignment."
