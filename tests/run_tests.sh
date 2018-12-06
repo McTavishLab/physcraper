@@ -22,7 +22,5 @@ py.test  --cov=physcraper --runslow -v \
  tests/test_addLocal.py \
  tests/test_reconcile.py \
  tests/test_trim.py \
- tests/test_unmapped_taxa.py
-#python tests/test_trim2.py
-
-py.test tests/test_blacklist.py
+ tests/test_unmapped_taxa.py \
+ tests/test_blacklist.py

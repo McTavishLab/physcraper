@@ -12,8 +12,8 @@ mattype = "fasta"
 trfn = "tests/data/tiny_comb_its/tiny_comb_its.tre"
 schema_trf = "newick"
 id_to_spn = r"tests/data/tiny_comb_its/nicespl.csv"
-workdir = "tests/data/tiny_comb_its"
-configfi = "tests/data/test.config"
+workdir = "tests/data/PS_tiny_comb_its"
+configfi = "tests/data/localblast.config"
 otu_jsonfi = "{}/otu_dict.json".format(workdir)
 threshold = 2
 selectby = "blast"
@@ -43,7 +43,6 @@ wrappers.filter_data_run(seqaln,
                          configfi,
                          selectby=selectby)
 
-
 # tiny ets
 seqaln = "tests/data/tiny_comb_ets/tiny_comb_ets.fasta"
 mattype = "fasta"
@@ -51,8 +50,8 @@ trfn = "tests/data/tiny_comb_ets/tiny_comb_ets.tre"
 schema_trf = "newick"
 id_to_spn = r"tests/data/tiny_comb_ets/nicespl.csv"
 
-workdir = "tests/data/tiny_comb_ets"
-configfi = "tests/data/test.config"
+workdir = "tests/data/PS_tiny_comb_ets"
+configfi = "tests/data/localblast.config"
 otu_jsonfi = "{}/otu_dict.json".format(workdir)
 treshold = 2
 selectby = "blast"

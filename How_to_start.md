@@ -31,6 +31,18 @@ make sure the programs are accessible from everywhere, thus add them to your PAT
 * as a normal package: `git clone https://github.com/McTavishLab/physcraper.git`
 * as a git repository: `git clone 'git@github.com:McTavishLab/physcraper.git'`
 
+#### 2.b) install a virtualenvironment
+  This is very useful if you want to run it on a cluster and/or don't want to mess with your computer and only install the packages needed to Physcraper locally.
+
+  `pip install virtualenv` 
+  `virtualenv -p python2 NameOfYourENV`  # currently it only runs on python 2.7
+
+  and then to use it you need to activate it before doing anything else
+
+  `source NameOfYourENV/bin/activate`
+
+  and to deactivate it: `deactivate`
+
 #### 3. install python requirements and dependencies:
 
 run from within the physcraper main folder:
