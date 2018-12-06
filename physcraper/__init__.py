@@ -177,10 +177,8 @@ class ConfigObj(object):
                 "value `%s` is not between 0 and 1" % self.seq_len_perc
         )
         self.phylesystem_loc = config["phylesystem"]["location"]
-        assert self.phylesystem_loc in [
-            "local",
-            "api",
-        ]  # default is api, but can run on local version of OpenTree datastore
+        assert self.phylesystem_loc in ["local", "api"], \
+            ("phylesystem location must be either local or api")  # default is api, but can run on local version of OpenTree datastore
         self.ott_ncbi = config["taxonomy"][
             "ott_ncbi"
         ]
@@ -439,7 +437,7 @@ def generate_ATT_from_files(seqaln,
     :param mattype: string containing format of sequence alignment
     :param workdir: path to working directory
     :param treefile: path to phylogeny
-    :param otu_json: path to jsonfile containing the translation of tipnames to taxon names
+    :param otu_json: path to jsonfile containing the translation of tip names to taxon names
     :param schema_trf: string defining the format of the input phylogeny
     :param ingroup_mrca: optional - OToL ID of the mrca of the clade of interest
     :return: object of class ATT
@@ -484,12 +482,12 @@ def generate_ATT_from_files(seqaln,
 
 
 def standardize_label(item):
-    """Make sure that the tipnames are unicode.
+    """Make sure that the tip names are unicode.
 
     Function is only used if own files are used for the OtuJsonDict() function.
 
-    :param item: original tipname
-    :return: tipname in unicode
+    :param item: original tip name
+    :return: tip name in unicode
     """
     item_edit = item.replace("-", "")
     item_edit = item_edit.replace(" ", "")
@@ -535,10 +533,10 @@ def OtuJsonDict(id_to_spn, id_dict):
     using web to call Open tree, then ncbi if not found.
 
     This function is used, if files that shall be updated are not part of the OpenTreeofLife project.
-    It reads in the file that contains the tipnames and the corresponding species names.
+    It reads in the file that contains the tip names and the corresponding species names.
     It then tries to get the different identifier from the OToL project or if not from ncbi.
 
-    :param id_to_spn: user file, that contains tipname and corresponding sp name for input files.
+    :param id_to_spn: user file, that contains tip name and corresponding sp name for input files.
     :param id_dict: uses the id_dict generates earlier
     :return: dictionary with key: "otu_tiplabel" and value is another dict with the keys '^ncbi:taxon',
                                                     '^ot:ottTaxonName', '^ot:ottId', '^ot:originalLabel',
@@ -688,7 +686,7 @@ class AlignTreeTax(object):
     def _reconcile_names(self):
         """Taxa that are only found in the tree, or only in the alignment are deleted.
 
-        This checks that the tree "original labels" from phylsystem
+        This checks that the tree "original labels" from phylesystem
         align with those found in the alignment. Spaces vs underscores
         kept being an issue, so all spaces are coerced to underscores throughout!
         """
@@ -980,8 +978,8 @@ class AlignTreeTax(object):
 
         :param label: which information shall be displayed in labelled files: possible options:
                     '^ot:ottTaxonName', '^user:TaxonName', "^ot:originalLabel", "^ot:ottId", "^ncbi:taxon"
-        :param treepath: optional: full filenname (including path) for phylogeny
-        :param alnpath:  optional: full filenname (including path) for alignment
+        :param treepath: optional: full file name (including path) for phylogeny
+        :param alnpath:  optional: full file name (including path) for alignment
         :param norepeats: optional: if there shall be no duplicate names in the labelled output files
         :param add_gb_id: optional, to supplement tiplabel with corresponding GenBank sequence identifier
         :return: writes out labelled phylogeny and alignment to file
@@ -1342,6 +1340,7 @@ class IdDicts(object):
             inputinfo = True
         assert inputinfo is True
         tax_name = None
+        ncbi_id = None
         if sp_dict:
             if "^ot:ottTaxonName" in sp_dict:
                 tax_name = sp_dict["^ot:ottTaxonName"]
@@ -1404,6 +1403,7 @@ class IdDicts(object):
                 if sp_dict:
                     sp_dict["^ot:ottTaxonName"] = tax_name
                     sp_dict["^ncbi:taxon"] = ncbi_id
+            assert ncbi_id is not None
         assert tax_name is not None
         tax_name = tax_name.replace(" ", "_")
         return tax_name
@@ -2771,7 +2771,7 @@ class FilterBlast(PhyscraperScrape):
                             if item.split(":")[0] == "ncbi":
 
                                 tax_id =item.split(":")[1]
-                            #tax_id = self.ids.ott_id_to_ncbiid(ott_id)
+                            # tax_id = self.ids.ott_id_to_ncbiid(ott_id)
                 if self.downtorank is not None:
                     downtorank_name = None
                     downtorank_id = None
