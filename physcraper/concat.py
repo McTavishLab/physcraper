@@ -546,13 +546,13 @@ class Concat(object):
                 aln1 = DnaCharacterMatrix.from_dict(self.comb_seq[gene])
                 firstelement = False
                 self.aln_all[count] = aln1
-                aln1.write(path="{}/aln_0.fas".format(self.workdir),
-                           schema="fasta")
+                # aln1.write(path="{}/aln_0.fas".format(self.workdir),
+                           # schema="fasta")
             else:
                 aln = DnaCharacterMatrix.from_dict(self.comb_seq[gene], taxon_namespace=aln1.taxon_namespace)
                 self.aln_all[count] = aln
-                aln.write(path="{}/aln_{}.fas".format(self.workdir, count),
-                          schema="fasta")
+                # aln.write(path="{}/aln_{}.fas".format(self.workdir, count),
+                          # schema="fasta")
             count += 1
 
     def concatenate_alns(self):
@@ -906,21 +906,19 @@ class Concat(object):
         """
         pickle.dump(self, open("{}/{}".format(self.workdir, filename), "wb"))
 
-    def write_otu_info(self, downtorank=None):
+    def write_otu_info(self):
         """Writes output tables to file: Makes reading important information less code heavy.
 
         file with all relevant GenBank info to file (otu_dict).
 
-        It uses the self.sp_d to get sampling information, that's why the downtorank is required.
-
-        :param downtorank: hierarchical filter
         :return: writes output to file
         """   
+        print("write_otu_info")
         otu_dict_keys = [
             "unique_id", "spn", "original_PS_id", "concat:status"]
-        with open("otu_seq_info.csv", "w") as output:
+        with open("{}/otu_seq_info.csv".format(self.workdir), "w") as output:
             writer = csv.writer(output)
-            writer.writerow(otu_dict_keys, )
+            writer.writerow(otu_dict_keys)
             # print(self.sp_acc_comb.keys())
             for otu in self.sp_acc_comb.keys():
                 # print(self.sp_acc_comb[otu].keys())

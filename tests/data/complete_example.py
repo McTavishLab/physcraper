@@ -62,7 +62,7 @@ wrappers.filter_data_run(seqaln,
                          otu_jsonfi,
                          configfi,
                          selectby=selectby,  # default is "blast", "length" is the other option
-                         downtorank=downtorank,  # default is "species", can be any hierachy which exists in ncbi
+                         downtorank=downtorank,  # default is "species", can be any hierachy which exists with name in the taxonomy browser of ncbi
                          blacklist=blacklist,
                          add_unpubl_seq=add_unpubl_seq,
                          id_to_spn_addseq_json=id_to_spn_addseq,
