@@ -862,6 +862,28 @@ class AlignTreeTax(object):
                              "start {}, stop {}\n".format(taxon_missingness, start, stop))
         return
 
+    def remove_taxa_aln_tre(self, taxon_label):
+        """Removes taxa from aln and tre and updates otu_dict,
+        takes a single taxon_label as input.
+
+        note: has test, test_remove_taxa_aln_tre.py
+
+        :param taxon_label: taxon_label from dendropy object - aln or phy
+        :return: removes information/data from taxon_label
+        """
+        tax = self.aln.taxon_namespace.get_taxon(taxon_label)
+        tax2 = self.tre.taxon_namespace.get_taxon(taxon_label)
+        if tax:
+            self.aln.remove_sequences([tax])
+            self.aln.taxon_namespace.remove_taxon_label(taxon_label)  # raises an error if label not found
+            # the first prune does not remove it sometimes...
+            self.tre.prune_taxa([tax2])
+            self.tre.prune_taxa_with_labels([taxon_label])
+            self.tre.prune_taxa_with_labels([tax2])
+            self.otu_dict[tax.label]['^physcraper:status'] = "deleted"
+        else:
+            self.otu_dict[taxon_label]['^physcraper:status'] = "deleted, updated otu_dict but was never in tre or aln!"
+
     def add_otu(self, gb_id, ids_obj):
         """ Generates an otu_id for new sequences and adds them into self.otu_dict.
         Needs to be passed an IdDict to do the mapping.
@@ -1040,27 +1062,6 @@ class AlignTreeTax(object):
         with open("{}/{}".format(self.workdir, filename), "w") as outfile:
             json.dump(self.otu_dict, outfile)
 
-    def remove_taxa_aln_tre(self, taxon_label):
-        """Removes taxa from aln and tre and updates otu_dict,
-        takes a single taxon_label as input.
-
-        note: has test, test_remove_taxa_aln_tre.py
-
-        :param taxon_label: taxon_label from dendropy object - aln or phy
-        :return: removes information/data from taxon_label
-        """
-        tax = self.aln.taxon_namespace.get_taxon(taxon_label)
-        tax2 = self.tre.taxon_namespace.get_taxon(taxon_label)
-        if tax:
-            self.aln.remove_sequences([tax])
-            self.aln.taxon_namespace.remove_taxon_label(taxon_label)  # raises an error if label not found
-            # the first prune does not remove it sometimes...
-            self.tre.prune_taxa([tax2])
-            self.tre.prune_taxa_with_labels([taxon_label])
-            self.tre.prune_taxa_with_labels([tax2])
-            self.otu_dict[tax.label]['^physcraper:status'] = "deleted"
-        else:
-            self.otu_dict[taxon_label]['^physcraper:status'] = "deleted, updated otu_dict but was never in tre or aln!"
 
     def dump(self, filename=None):
         """writes pickled files from att class"""
@@ -1361,19 +1362,7 @@ class IdDicts(object):
                 if ncbi_id in self.ncbiid_to_spn.keys():
                     tax_name = self.ncbiid_to_spn[ncbi_id]
                 else:
-                    tries = 10
-                    Entrez.email = self.config.email
-                    for i in range(tries):
-                        try:
-                            handle = Entrez.efetch(db="nucleotide", id=gb_id, retmode="xml")
-                        except (IndexError, HTTPError) as e:
-                            if i < tries - 1:  # i is zero indexed
-                                continue
-                            else:
-                                raise
-                        break
-                    read_handle = Entrez.read(handle)
-                    handle.close()
+                    read_handle = self.entrez_efetch(gb_id)
                     tax_name = get_ncbi_tax_name(read_handle)
                     ncbi_id = get_ncbi_tax_id(read_handle)
                     self.ncbiid_to_spn[ncbi_id] = tax_name
@@ -1381,21 +1370,8 @@ class IdDicts(object):
                     if sp_dict:
                         sp_dict["^ot:ottTaxonName"] = tax_name
                         sp_dict["^ncbi:taxon"] = ncbi_id
-                    self.ncbiid_to_spn[ncbi_id] = tax_name
             else:  # usually being used for web-queries, local blast searches should have the information
-                tries = 10
-                Entrez.email = self.config.email
-                for i in range(tries):
-                    try:
-                        handle = Entrez.efetch(db="nucleotide", id=gb_id, retmode="xml")
-                    except (IndexError, HTTPError) as e:
-                        if i < tries - 1:  # i is zero indexed
-                            continue
-                        else:
-                            raise
-                    break
-                read_handle = Entrez.read(handle)
-                handle.close()
+                read_handle = self.entrez_efetch(gb_id)
                 tax_name = get_ncbi_tax_name(read_handle)
                 ncbi_id = get_ncbi_tax_id(read_handle)
                 self.ncbiid_to_spn[ncbi_id] = tax_name
@@ -1407,6 +1383,33 @@ class IdDicts(object):
         assert tax_name is not None
         tax_name = tax_name.replace(" ", "_")
         return tax_name
+
+    def entrez_efetch(self, gb_id):
+        """ Wrapper function around efetch from ncbi to get taxonomic information if everything else is failing.
+
+        It adds information to various id_dicts.
+
+        :param gb_id: Genbank identifier
+        :return: tax_name
+        """
+        tries = 10
+        Entrez.email = self.config.email
+        handle = None
+        for i in range(tries):
+            try:
+                handle = Entrez.efetch(db="nucleotide", id=gb_id, retmode="xml")
+            except (IndexError, HTTPError) as e:
+                if i < tries - 1:  # i is zero indexed
+                    continue
+                else:
+                    raise
+            break
+        assert handle is not None, ("your handle file to access data from efetch does not exist. "
+                                    "Likely an issue with the internet connection of ncbi. Try rerun...")
+        read_handle = Entrez.read(handle)
+        handle.close()
+
+        return read_handle
 
     def map_acc_ncbi(self, gb_id):
         """get the ncbi taxon id's for a Genbank identifier input.
@@ -1432,19 +1435,20 @@ class IdDicts(object):
                     self.get_rank_info_from_web(taxon_name=tax_name)
                     tax_id = self.otu_rank[tax_name]["taxon id"]
                 except IndexError:  # get id via genbank query xref in description
-                    tries = 10
-                    Entrez.email = self.config.email
-                    for i in range(tries):
-                        try:
-                            handle = Entrez.efetch(db="nucleotide", id=gb_id, retmode="xml")
-                        except IndexError:
-                            if i < tries - 1:  # i is zero indexed
-                                continue
-                            else:
-                                raise
-                        break
-                    read_handle = Entrez.read(handle)
-                    handle.close()
+                    # tries = 10
+                    # Entrez.email = self.config.email
+                    # for i in range(tries):
+                    #     try:
+                    #         handle = Entrez.efetch(db="nucleotide", id=gb_id, retmode="xml")
+                    #     except IndexError:
+                    #         if i < tries - 1:  # i is zero indexed
+                    #             continue
+                    #         else:
+                    #             raise
+                    #     break
+                    # read_handle = Entrez.read(handle)
+                    # handle.close()
+                    read_handle = self.entrez_efetch(gb_id)
                     tax_name = get_ncbi_tax_name(read_handle)
                     ncbi_id = get_ncbi_tax_id(read_handle)
             else:
@@ -2121,6 +2125,8 @@ class PhyscraperScrape(object):
                         rank_mrca_ncbi = self.ids.ncbi_parser.get_rank(mrca_ncbi)
                         # get rank to delimit seq to ingroup_mrca
                         # get name first
+                        ncbi_id = None
+                        tax_name = None
                         if gb_id[:6] == "unpubl":
                             debug("unpubl data")
                             debug(self.data.gb_dict[gb_id])
@@ -2166,8 +2172,9 @@ class PhyscraperScrape(object):
                         self.seq_dict_build(seq, otu_id, tmp_dict)
                 else:
                     self.write_not_added_info("seqlen_threshold_not_passed")
+                    len_seq = len(seq.replace("-", "").replace("N", ""))
                     fn = open("{}/not_added_seq.csv".format(self.workdir), "a+")
-                    fn.write("seqlen_threshold_not_passed, {}, {}, min len: {}\n".format(gb_id, len(seq.replace("-", "").replace("N", "")), seq_len_cutoff))
+                    fn.write("seqlen_threshold_not_passed, {}, {}, min len: {}\n".format(gb_id, len_seq, seq_len_cutoff))
                     fn.close()
         old_seqs_ids = set()
         for tax in old_seqs:
@@ -2455,30 +2462,30 @@ class PhyscraperScrape(object):
                 sys.stderr.write("You do not have the raxmlHPC-PTHREADS installed, will fall down to slow version!")
                 # run bootstrap
                 subprocess.call(["raxmlHPC", "-m", "GTRCAT",
-                                "-s", "papara_alignment.extended",
-                                "-p", "1", "-b", "1", "-#", "autoMRE",
-                                "-n", "{}".format(self.date)])
+                                 "-s", "papara_alignment.extended",
+                                 "-p", "1", "-b", "1", "-#", "autoMRE",
+                                 "-n", "{}".format(self.date)])
                 # make bipartition tree
                 # is the -f b command
                 subprocess.call(["raxmlHPC", "-m", "GTRCAT",
-                                "-s", "previous_run/papara_alignment.extended",
-                                "-p", "1", "-f", "a", "-x", "1", "-#", "autoMRE",
-                                "-n", "all{}".format(self.date)])
+                                 "-s", "previous_run/papara_alignment.extended",
+                                 "-p", "1", "-f", "a", "-x", "1", "-#", "autoMRE",
+                                 "-n", "all{}".format(self.date)])
                 # strict consensus:
                 subprocess.call(["raxmlHPC", "-m", "GTRCAT",
-                                "-J", "STRICT",
-                                "-z", "RAxML_bootstrap.all{}".format(self.date),
-                                "-n", "StrictCon{}".format(self.date)])
+                                 "-J", "STRICT",
+                                 "-z", "RAxML_bootstrap.all{}".format(self.date),
+                                 "-n", "StrictCon{}".format(self.date)])
                 # majority rule:
                 subprocess.call(["raxmlHPC", "-m", "GTRCAT",
-                                "-J", "MR",
-                                "-z", "RAxML_bootstrap.all{}".format(self.date),
-                                "-n", "MR_{}".format(self.date)])
+                                 "-J", "MR",
+                                 "-z", "RAxML_bootstrap.all{}".format(self.date),
+                                 "-n", "MR_{}".format(self.date)])
                 # extended majority rule:
                 subprocess.call(["raxmlHPC", "-m", "GTRCAT",
-                                "-J", "MRE",
-                                "-z", "RAxML_bootstrap.all{}".format(self.date),
-                                "-n", "EMR{}".format(self.date)])
+                                 "-J", "MRE",
+                                 "-z", "RAxML_bootstrap.all{}".format(self.date),
+                                 "-n", "EMR{}".format(self.date)])
 
     def remove_blacklistitem(self):
         """This removes items from aln, and tree, if the corresponding Genbank identifer were added to the blacklist.
@@ -2624,19 +2631,20 @@ class PhyscraperScrape(object):
                 if self.data.otu_dict[entry]['^physcraper:status'].split(' ')[0] not in self.seq_filter:
                     if '^ncbi:accession' in self.data.otu_dict[entry].keys():
                         gb_id = self.data.otu_dict[entry]['^ncbi:accession']
-                        tries = 10
-                        Entrez.email = self.config.email
-                        for i in range(tries):
-                            try:
-                                handle = Entrez.efetch(db="nucleotide", id=gb_id, retmode="xml")
-                            except (IndexError, HTTPError) as e:
-                                if i < tries - 1:  # i is zero indexed
-                                    continue
-                                else:
-                                    raise
-                            break
-                        read_handle = Entrez.read(handle)
-                        handle.close()
+                        read_handle = self.ids.entrez_efetch(gb_id)
+                        # tries = 10
+                        # Entrez.email = self.config.email
+                        # for i in range(tries):
+                        #     try:
+                        #         handle = Entrez.efetch(db="nucleotide", id=gb_id, retmode="xml")
+                        #     except (IndexError, HTTPError) as e:
+                        #         if i < tries - 1:  # i is zero indexed
+                        #             continue
+                        #         else:
+                        #             raise
+                        #     break
+                        # read_handle = Entrez.read(handle)
+                        # handle.close()
                         ncbi_sp = None
                         voucher = None
                         clone = None
