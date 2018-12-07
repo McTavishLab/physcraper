@@ -2,7 +2,10 @@ import sys
 import os
 import json
 from physcraper import generate_ATT_from_files, AlignTreeTax, OtuJsonDict, ConfigObj, IdDicts
+from pytest import mark
 
+
+web = mark.web
 
 
 def test_owndata():
@@ -40,4 +43,30 @@ def test_owndata():
 								 ingroup_mrca=None)
 
 
+	assert isinstance(data_obj, AlignTreeTax)
+
+
+import physcraper
+from dendropy import DnaCharacterMatrix
+
+@web
+def test_opentree():
+	# Use OpenTree phylesystem identifiers to get study and tree
+	study_id = "pg_873"
+	tree_id = "tree1679"
+	seqaln = "tests/data/minitest.fas"
+	mattype = "fasta"
+	workdir = "tests/output/opentree"
+	configfi = "tests/data/remotencbi.config"
+
+	sys.stdout.write("\nTesting 'opentree scrape (1 round)'\n")
+	conf = physcraper.ConfigObj(configfi, interactive=False)
+    # print "1. {}".format(conf.email)
+          
+	aln = DnaCharacterMatrix.get(path=seqaln, schema=mattype)
+	data_obj = physcraper.generate_ATT_from_phylesystem(aln=aln,
+                                                        workdir=workdir,
+                                                        study_id=study_id,
+                                                        tree_id=tree_id,
+                                                        phylesystem_loc=conf.phylesystem_loc)
 	assert isinstance(data_obj, AlignTreeTax)
