@@ -662,7 +662,7 @@ def run_with_settings(settings):
     return filteredScrape
 
 
-def concat(genelistdict, workdir_comb, email, percentage=0.37, user_concat_fn=None):
+def concat(genelistdict, workdir_comb, email, num_threads=None, percentage=0.37, user_concat_fn=None):
     """This is to concatenate different physcraper runs into a single alignment and tree.
     genelistdict is a dict with gene names as key and the corresponding workdir
     """
@@ -681,8 +681,8 @@ def concat(genelistdict, workdir_comb, email, percentage=0.37, user_concat_fn=No
     concat.make_concat_table()
     concat.write_partition()
     concat.place_new_seqs()
-    concat.est_full_tree()
-    concat.calculate_bootstrap()
+    concat.est_full_tree(num_threads)
+    concat.calculate_bootstrap(num_threads)
     concat.write_otu_info()
     return concat
 

@@ -728,7 +728,7 @@ class Concat(object):
             placetre.resolve_polytomies()
             placetre.write(path="{}/place_resolve.tre".format(self.workdir), schema="newick", unquoted_underscores=True)
 
-    def est_full_tree(self):
+    def est_full_tree(self, num_threads=None):
         """Full raxml run from the placement tree as starting tree.
         """
         physcraper.debug("run full tree")
@@ -746,7 +746,8 @@ class Concat(object):
                 aln = "concat_red.fasta"
                 partition = "partition"
             try:
-                num_threads = int(self.config.num_threads)
+                # if num_threads != None:
+                num_threads = int(num_threads)
                 print(num_threads)
                 subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(num_threads), "-m", "GTRCAT",
                              "-s", aln, "--print-identical-sequences",
@@ -761,7 +762,7 @@ class Concat(object):
                              "-n", "concat"])
             # os.chdir(cwd)
 
-    def calculate_bootstrap(self):
+    def calculate_bootstrap(self, num_threads=None):
         """Calculate bootstrap and consensus trees.
         -p: random seed
         -s: aln file
@@ -783,7 +784,7 @@ class Concat(object):
             # is the -f b command
             # -z specifies file with multiple trees
             try:
-                num_threads = int(self.config.num_threads)
+                num_threads = int(num_threads)
                 print(num_threads)
                 # subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(num_threads), "-m", "GTRCAT",
                 #                  "-s", aln,  "-q", partition,
@@ -913,7 +914,7 @@ class Concat(object):
 
         :return: writes output to file
         """   
-        debug("write_otu_info")
+        physcraper.debug("write_otu_info")
         otu_dict_keys = [
             "unique_id", "spn", "original_PS_id", "concat:status"]
         with open("{}/otu_seq_info.csv".format(self.workdir), "w") as output:
