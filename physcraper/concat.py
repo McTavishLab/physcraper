@@ -785,11 +785,11 @@ class Concat(object):
             try:
                 num_threads = int(self.config.num_threads)
                 print(num_threads)
-                subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(num_threads), "-m", "GTRCAT",
-                                 "-s", aln,  "-q", partition,
-                                 # "-t", "place_resolve.tre",
-                                 "-p", "1", "-b", "1", "-#", "autoMRE",
-                                 "-n", "autoMRE"])
+                # subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(num_threads), "-m", "GTRCAT",
+                #                  "-s", aln,  "-q", partition,
+                #                  # "-t", "place_resolve.tre",
+                #                  "-p", "1", "-b", "1", "-#", "autoMRE",
+                #                  "-n", "autoMRE"])
                 subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(num_threads), "-m", "GTRCAT",
                                  "-s", aln, "-q", partition,
                                  "-p", "1", "-f", "a", "-x", "1", "-#", "autoMRE",
@@ -797,19 +797,19 @@ class Concat(object):
                 # strict consensus:
                 subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(num_threads), "-m", "GTRCAT",
                                  "-J", "STRICT",
-                                 "-z", "RAxML_bootstrap.autoMRE",
+                                 "-z", "RAxML_bootstrap.autoMRE_fa",
                                  "-n", "StrictCon"])
                 # majority rule:
                 subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(num_threads), "-m", "GTRCAT",
                                  "-J", "MR",
-                                 "-z", "RAxML_bootstrap.autoMRE",
+                                 "-z", "RAxML_bootstrap.autoMRE_fa",
                                  "-n", "MR"])
             except:
-                subprocess.call(["raxmlHPC", "-m", "GTRCAT",
-                                 "-s", aln,  "-q", partition,
-                                 # "-t", "place_resolve.tre",
-                                 "-p", "1", "-b", "1", "-#", "autoMRE",
-                                 "-n", "autoMRE"])
+                # subprocess.call(["raxmlHPC", "-m", "GTRCAT",
+                #                  "-s", aln,  "-q", partition,
+                #                  # "-t", "place_resolve.tre",
+                #                  "-p", "1", "-b", "1", "-#", "autoMRE",
+                #                  "-n", "autoMRE"])
                 subprocess.call(["raxmlHPC", "-m", "GTRCAT",
                                  "-s", aln, "-q", partition,
                                  "-p", "1", "-f", "a", "-x", "1", "-#", "autoMRE",
@@ -817,12 +817,12 @@ class Concat(object):
                 # strict consensus:
                 subprocess.call(["raxmlHPC", "-m", "GTRCAT",
                                  "-J", "STRICT",
-                                 "-z", "RAxML_bootstrap.autoMRE",
+                                 "-z", "RAxML_bootstrap.autoMRE_fa",
                                  "-n", "StrictCon"])
                 # majority rule:
                 subprocess.call(["raxmlHPC", "-m", "GTRCAT",
                                  "-J", "MR",
-                                 "-z", "RAxML_bootstrap.autoMRE",
+                                 "-z", "RAxML_bootstrap.autoMRE_fa",
                                  "-n", "MR"])
 
     def user_defined_concat(self):
@@ -913,7 +913,7 @@ class Concat(object):
 
         :return: writes output to file
         """   
-        print("write_otu_info")
+        debug("write_otu_info")
         otu_dict_keys = [
             "unique_id", "spn", "original_PS_id", "concat:status"]
         with open("{}/otu_seq_info.csv".format(self.workdir), "w") as output:
