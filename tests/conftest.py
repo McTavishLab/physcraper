@@ -6,13 +6,18 @@ def pytest_addoption(parser):
         help="run slow tests")
     parser.addoption("--runconcat", action="store_true",
         help="run concat tests")
+    parser.addoption("--runweb", action="store_true",
+        help="run web tests")
+
 
 def pytest_collection_modifyitems(config, items):
     runslow =  config.getoption("--runslow")
-    runconcat =  config.getoption("--runconcat")
+    runconcat = config.getoption("--runconcat")
+    runweb = config.getoption("--runconcat")
 
-    skip_slow   = pytest.mark.skip(reason="need --runslow   option to run")
+    skip_slow = pytest.mark.skip(reason="need --runslow option to run")
     skip_concat = pytest.mark.skip(reason="need --runconcat option to run")
+    skip_web = pytest.mark.skip(reason="need --runweb option to run")
 
     # skip_test = pytest.mark.skip(reason="skip all for now")
     for item in items:
@@ -20,5 +25,7 @@ def pytest_collection_modifyitems(config, items):
             item.add_marker(skip_slow)
         if "concat" in item.keywords and not runconcat:
             item.add_marker(skip_concat)
+        if "web" in item.keywords and not runweb:
+            item.add_marker(skip_web)
         #elif "fast" not in item.keywords:
         #    item.add_marker(skip_test)
