@@ -12,6 +12,7 @@ slow = mark.slow
 
 
 @slow
+@mark.xfail
 def test_blacklist():
 
     workdir = "tests/output/test_blacklist"
