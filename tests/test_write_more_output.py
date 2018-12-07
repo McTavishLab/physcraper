@@ -4,8 +4,9 @@ import pickle
 import physcraper
 import physcraper.local_blast as local_blast
 
+import pytest
 
-
+@pytest.mark.xfail
 def test_write_outputinfo():
     workdir = "tests/output/test_write_output_files"
     configfi = "tests/data/test.config"
