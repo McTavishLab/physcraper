@@ -43,7 +43,7 @@ else:
     from urllib.error import HTTPError
 
 _DEBUG = 0
-_DEBUG_MK = 0
+_DEBUG_MK = 1
 _deep_debug = 0
 
 _VERBOSE = 0
@@ -3061,27 +3061,42 @@ class FilterBlast(PhyscraperScrape):
                 found and if the taxon is a new taxon or if seq are already present
         """
         debug("count_num_seq")
-        seq_present = 0
-        in_data = 0
+        seq_added = 0
+        original = 0
         new_taxon = True
         query_count = 0
+	debug(self.sp_d[tax_id][0]["^ot:ottTaxonName"])
         for item in self.sp_d[tax_id]:
             if '^physcraper:status' in item and item['^physcraper:status'].split(' ')[0] not in self.seq_filter:
+
+		debug(item['^physcraper:status'])
                 item_split = item['^physcraper:status'].split(' ')[0]
                 if item['^physcraper:last_blasted'] != '1800/01/01':
                     new_taxon = False
-                if item["^physcraper:status"] == "query" or item_split == "new":
+                #if item["^physcraper:status"] == "query" or item_split == "new":
+                if item["^physcraper:status"] == "query" or item_split == "new" or item_split == "added,":
                     query_count += 1
-                if item_split == "added," or item_split == "original":
-                    seq_present += 1
-        if new_taxon is False:
-            assert seq_present != 0
-        count_dict = {
-            "seq_present": seq_present,
+		if item["^physcraper:status"] == 'added as representative of taxon':
+		    seq_added += 1
+                    new_taxon = False
+		if item_split == "original":           
+		    original += 1
+                    new_taxon = False
+		#if item_split == "added," or item_split == "original":
+	count_dict = {
+            "seq_present": seq_added + original,
             "query_count": query_count,
             "new_taxon": new_taxon,
         }
-        assert seq_present <= self.threshold
+        if new_taxon is False:
+            assert original != 0 or seq_added != 0, ("count_dict `%s` has more seq added than threshold." % count_dict)
+	   # assert seq_added != 0, ("count_dict `%s` has more seq added than threshold." % count_dict)
+	if new_taxon is True:
+            assert original == 0, ("count_dict `%s` has more seq added than threshold." % count_dict)
+	    assert seq_added == 0, ("count_dict `%s` has more seq added than threshold." % count_dict)
+
+        assert seq_added <= self.threshold, ("count_dict `%s` has more seq added than threshold." % count_dict)
+
         return count_dict
 
     def how_many_sp_to_keep(self, threshold, selectby):
@@ -3223,7 +3238,7 @@ class FilterBlast(PhyscraperScrape):
                     if self.data.otu_dict[key]["^ncbi:accession"] == gb_id:
                         reduced_new_seqs_dic[key] = self.filtered_seq[gb_id]
                         self.data.otu_dict[key]['^physcraper:last_blasted'] = "1900/01/01"
-                        self.data.otu_dict[key]['^physcraper:status'] = 'added, as representative of taxon'
+                        self.data.otu_dict[key]['^physcraper:status'] = 'added as representative of taxon'
         reduced_new_seqs = {k: self.filtered_seq[k] for k in keylist}
         # debug(reduced_new_seqs_dic)
         with open(self.logfile, "a") as log:
@@ -3235,7 +3250,6 @@ class FilterBlast(PhyscraperScrape):
         self.sp_d.clear()
         self.filtered_seq.clear()
         return
-
 
     # #### TODO MK: Move next functions to different class?
     def write_out_files(self, downtorank=None):
