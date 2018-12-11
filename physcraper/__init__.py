@@ -3143,7 +3143,7 @@ class FilterBlast(PhyscraperScrape):
                 #if item["^physcraper:status"] == "query" or item_split == "new":
                 if item["^physcraper:status"] == "query" or item_split == "new" or item_split == "added,":
                     query_count += 1
-        		if item["^physcraper:status"] == 'added as representative of taxon':
+                if item["^physcraper:status"] == 'added as representative of taxon':
         		    seq_added += 1
                     new_taxon = False
         		if item_split == "original":           
