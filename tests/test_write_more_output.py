@@ -6,7 +6,7 @@ import physcraper.local_blast as local_blast
 
 import pytest
 
-@pytest.mark.xfail
+#@pytest.mark.xfail
 def test_write_outputinfo():
     workdir = "tests/output/test_write_output_files"
     configfi = "tests/data/test.config"
@@ -41,7 +41,7 @@ def test_write_outputinfo():
             line = fn.readline()
             cnt += 1
             assert type(line) == str       
-            assert line.split(",") >=2
+            assert line.split(",") >= 2
 
 
     with open(fn_sampling) as fn:
@@ -51,4 +51,4 @@ def test_write_outputinfo():
             line = fn.readline()
             cnt += 1
             assert type(line) == str
-            assert line.split(",") >=2
+            assert line.split(",") >= 2

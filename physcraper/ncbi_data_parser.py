@@ -161,7 +161,7 @@ class Parser:
                 )
             )
             tax_id = int(tax_id)
-        debug(downtorank)
+        # debug(downtorank)
         # following statement is to get id of taxa if taxa is higher ranked than specified
         if nodes[nodes["tax_id"] == tax_id]["rank"].values[0] != "species":
             if downtorank == "species":
@@ -184,7 +184,9 @@ class Parser:
     def match_id_to_mrca(self, tax_id, mrca_id):
         """ Recursive function to find out if tax_id is part of mrca_id.
         """
-        debug("match_id_to_mrca")
+        # debug("match_id_to_mrca")
+        # debug([tax_id, mrca_id])
+        # debug(nodes[nodes["tax_id"] == tax_id]["rank"].values[0])
         if nodes is None:
             self.initialize()
         if type(tax_id) != int:

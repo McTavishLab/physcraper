@@ -4,6 +4,7 @@ import pickle
 import sys
 import os
 import subprocess
+import shutil
 from physcraper import (
     generate_ATT_from_phylesystem,
     generate_ATT_from_files,
@@ -130,6 +131,8 @@ def standard_run(study_id,
         scraper.generate_streamed_alignment()
     # scraper.write_otu_info()
     scraper.get_additional_GB_info()
+    shutil.copytree("./physcraper", "{}/physcraper_runcopy".format(workdir))
+
     return scraper
 
 
@@ -207,7 +210,10 @@ def own_data_run(seqaln,
         scraper.read_blast_wrapper(blast_dir=shared_blast_folder)
         scraper.remove_identical_seqs()
         scraper.generate_streamed_alignment()
+    shutil.copytree("./physcraper", "{}/physcraper_runcopy".format(workdir))
+
     scraper.get_additional_GB_info()
+
     return 1
 
 
@@ -311,6 +317,8 @@ def filter_OTOL(study_id,
         filteredScrape.dump()
         filteredScrape.write_otu_info()
     filteredScrape.get_additional_GB_info()
+    shutil.copytree("./physcraper", "{}/physcraper_runcopy".format(workdir))
+
     return filteredScrape
 
 
@@ -433,6 +441,8 @@ def add_unpubl_to_backbone(seqaln,
         filteredScrape.dump()
         filteredScrape.write_otu_info()
     filteredScrape.get_additional_GB_info()
+    shutil.copytree("./physcraper", "{}/physcraper_runcopy".format(workdir))
+
     return filteredScrape
 
 
@@ -559,6 +569,8 @@ def filter_data_run(seqaln,
         # print(some)
     filteredScrape.write_out_files(downtorank)
     filteredScrape.get_additional_GB_info()
+    shutil.copytree("./physcraper", "{}/physcraper_runcopy".format(workdir))
+
     return filteredScrape
 
 
@@ -566,13 +578,14 @@ def filter_data_run(seqaln,
 def make_settings_class(seqaln, mattype, trfn, schema_trf, workdir, 
                         threshold=None, selectby=None, downtorank=None, spInfoDict=None, add_unpubl_seq=None, 
                         id_to_spn_addseq_json=None, configfi=None, blacklist=None, shared_blast_folder=None,
-                        delay=None, trim=None):
+                        delay=None, trim=None, prune_short=None):
     """all the settings are set here and can then be fed to the FilterClass
     """
     settings = Settings(seqaln=seqaln, mattype=mattype, trfn=trfn, schema_trf=schema_trf, workdir=workdir,
                         threshold=threshold, selectby=selectby, downtorank=downtorank, spInfoDict=spInfoDict,
                         add_unpubl_seq=add_unpubl_seq, id_to_spn_addseq_json=id_to_spn_addseq_json, configfi=configfi,
-                        blacklist=blacklist, shared_blast_folder=shared_blast_folder, delay=delay, trim=trim)
+                        blacklist=blacklist, shared_blast_folder=shared_blast_folder, delay=delay, trim=trim, 
+                        prune_short=prune_short)
     return settings
 
 
@@ -659,6 +672,8 @@ def run_with_settings(settings):
         filteredScrape.dump()
         filteredScrape.write_out_files(settings.downtorank)
     filteredScrape.get_additional_GB_info()
+    shutil.copytree("./physcraper", "{}/physcraper_runcopy".format(workdir))
+
     return filteredScrape
 
 
@@ -684,5 +699,7 @@ def concat(genelistdict, workdir_comb, email, num_threads=None, percentage=0.37,
     concat.est_full_tree(num_threads)
     concat.calculate_bootstrap(num_threads)
     concat.write_otu_info()
+    shutil.copytree("./physcraper", "{}/physcraper_runcopy".format(workdir))
+
     return concat
 

@@ -54,9 +54,15 @@ def remove_aln_tre_leaf(scrape):
 
 
 def add_to_del_acc(del_acc, gene, spn, random_gen):
-    """Adds gi number to del_acc.
-    Del_acc is used to remove gi's from tmp_dict, so that they will
+    """
+    Adds gb id to del_acc dictionary, which is used to remove gb_ids from tmp_dict so that they will
     not be added to the concat dict twice.
+
+    :param del_acc: dict with gb id that were added to concat_dict
+    :param gene: single-gene name, from where gb_id is from
+    :param spn: taxon name of gb_id
+    :param random_gen: ??
+    :return: updated del_acc
     """
     spn_ = spn.replace(" ", "_")
     if gene in del_acc.keys():
@@ -177,6 +183,7 @@ class Concat(object):
 
         Is a wrapper function around make_concat_id_dict(). It produces the parameters needed for the function.
         """
+
         physcraper.debug("combine")
         self.num_of_genes = len(self.single_runs)
         concat_id_counter = 1
@@ -309,7 +316,10 @@ class Concat(object):
     def get_largest_tre(self):
         """Find the single gene tree with the most tips, which will be used as
         starting tree for concat phylo reconstruction.
+
+        :return: fills in selfs to know which data is used as starting tree
         """
+
         physcraper.debug("get_largest_tre")
         first = True
         len_all_taxa = {}
@@ -702,8 +712,7 @@ class Concat(object):
             with physcraper.cd(self.workdir):
                 # cwd = os.getcwd()
                 # os.chdir(self.workdir)
-
-                physcraper.debug("make place-tree")
+                # physcraper.debug("make place-tree")
                 try:
                     num_threads = int(self.config.num_threads)
                     print(num_threads)
@@ -719,12 +728,12 @@ class Concat(object):
                                      "-t", "starting_red.tre",
                                      "-n", "PLACE"])
                 # os.chdir(cwd)
-            physcraper.debug("read place tree")
+            # physcraper.debug("read place tree")
             placetre = Tree.get(path="{}/starting_red.tre".format(self.workdir),
                                 schema="newick",
                                 preserve_underscores=True,
                                 suppress_internal_node_taxa=True, suppress_leaf_node_taxa=True)
-            physcraper.debug("resolve polytomies")
+            # physcraper.debug("resolve polytomies")
             placetre.resolve_polytomies()
             placetre.write(path="{}/place_resolve.tre".format(self.workdir), schema="newick", unquoted_underscores=True)
 
@@ -739,7 +748,7 @@ class Concat(object):
                 starting_fn = "place_resolve.tre"
             else:
                 starting_fn = "starting_red.tre"
-            if os.path.exists("concat_red.fasta.reduced"):
+            if os.path.exists("concat_red.fasta.reduced") and os.path.exists("partition.reduced"):
                 aln = "concat_red.fasta.reduced"
                 partition = "partition.reduced"
             else:
@@ -771,6 +780,7 @@ class Concat(object):
         -b: bootstrap random seed
         -#: bootstrap stopping criteria
         """
+        physcraper.debug("calc bootstrap")
         with physcraper.cd(self.workdir):
             # os.chdir(self.workdir)
             if os.path.exists("concat_red.fasta.reduced"):
