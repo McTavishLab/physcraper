@@ -3146,8 +3146,8 @@ class FilterBlast(PhyscraperScrape):
                 if item["^physcraper:status"] == 'added as representative of taxon':
                     seq_added += 1
                     new_taxon = False
-        		if item_split == "original":           
-        		    original += 1
+                if item_split == "original":
+                    original += 1
                     new_taxon = False
 		#if item_split == "added," or item_split == "original":
         count_dict = {
