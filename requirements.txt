@@ -14,7 +14,7 @@ redis==2.10.5
 requests==2.12.1
 sh==1.11
 six==1.10.0
-urllib3==1.19.1
+urllib3>=1.23
 wsgiref==0.1.2
 zope.interface==4.4.1
 numpy==1.14.5

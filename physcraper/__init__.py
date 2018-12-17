@@ -127,8 +127,7 @@ class ConfigObj(object):
       * **self.seq_len_perc**: value from 0 to 1. Defines how much shorter new seq can be compared to input
       * **self.trim_perc**: value that determines how many seq need to be present before the beginning and end of alignment will be trimmed
       * **self.get_ncbi_taxonomy**: Path to sh file doing something...
-      * **self.ncbi_dmp**: path to file that has gi numbers and the corresponding ncbi tax id's
-      * **self.phylesystem_loc**: defines which phylesystem for OpenTree datastore is used. The default is api, but can run on local version too. 
+      * **self.phylesystem_loc**: defines which phylesystem for OpenTree datastore is used. The default is api, but can run on local version too.
       * **self.ott_ncbi**: file containing OTT id, ncbi and taxon name (??)
       * **self.id_pickle**: path to pickle file
       * **self.email**: email address used for blast queries
