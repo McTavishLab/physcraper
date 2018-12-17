@@ -36,7 +36,8 @@ def test_owndata():
 
 	data_obj = generate_ATT_from_files(seqaln=seqaln,
 								 mattype=mattype,
-								 workdir=workdir,
+			                     workdir=workdir,
+								 config_obj=conf,
 								 treefile=trfn,
 								 schema_trf = schema_trf,
 								 otu_json=otu_jsonfi,
@@ -65,7 +66,8 @@ def test_opentree():
           
 	aln = DnaCharacterMatrix.get(path=seqaln, schema=mattype)
 	data_obj = physcraper.generate_ATT_from_phylesystem(aln=aln,
-                                                        workdir=workdir,
+		                                     			workdir=workdir,
+                                                        config_obj=conf,
                                                         study_id=study_id,
                                                         tree_id=tree_id,
                                                         phylesystem_loc=conf.phylesystem_loc)

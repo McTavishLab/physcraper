@@ -85,6 +85,7 @@ def standard_run(study_id,
         # Generate an linked Alignment-Tree-Taxa object
         data_obj = generate_ATT_from_phylesystem(aln=aln,
                                                  workdir=workdir,
+                                                 config_obj=conf,
                                                  study_id=study_id,
                                                  tree_id=tree_id,
                                                  phylesystem_loc=conf.phylesystem_loc,
@@ -114,7 +115,7 @@ def standard_run(study_id,
         scraper.blast_subdir = shared_blast_folder
     else:
         shared_blast_folder = None
-    scraper.run_blast_wrapper(delay=14)
+    scraper.run_blast_wrapper()
     scraper.read_blast_wrapper(blast_dir=shared_blast_folder)
     scraper.remove_identical_seqs()
     scraper.generate_streamed_alignment()
@@ -125,10 +126,13 @@ def standard_run(study_id,
             scraper.blast_subdir = shared_blast_folder
         else:
             shared_blast_folder = None
-        scraper.run_blast_wrapper(delay=14)
+        scraper.run_blast_wrapper()
         scraper.read_blast_wrapper(blast_dir=shared_blast_folder)
         scraper.remove_identical_seqs()
         scraper.generate_streamed_alignment()
+        scraper.dump()
+        scraper.write_otu_info()
+
     # scraper.write_otu_info()
     scraper.get_additional_GB_info()
     shutil.copytree("./physcraper", "{}/physcraper_runcopy".format(workdir))
@@ -175,7 +179,8 @@ def own_data_run(seqaln,
         # Generate an linked Alignment-Tree-Taxa object
         data_obj = generate_ATT_from_files(seqaln=seqaln, 
                                            mattype=mattype,
-                                           workdir=workdir,
+                                            workdir=workdir,
+                                           config_obj=config_obj,
                                            treefile=trfn,
                                            schema_trf=schema_trf,
                                            otu_json=sp_info_jsonfi,
@@ -197,12 +202,12 @@ def own_data_run(seqaln,
         else:
             shared_blast_folder = None
         # run the analyses
-        scraper.run_blast_wrapper(delay=14)
+        scraper.run_blast_wrapper()
         scraper.read_blast_wrapper(blast_dir=shared_blast_folder)
         scraper.remove_identical_seqs()
         scraper.generate_streamed_alignment()
     while scraper.repeat == 1:
-        scraper.run_blast_wrapper(delay=14)
+        scraper.run_blast_wrapper()
         if shared_blast_folder:
             scraper.blast_subdir = shared_blast_folder
         else:
@@ -210,6 +215,8 @@ def own_data_run(seqaln,
         scraper.read_blast_wrapper(blast_dir=shared_blast_folder)
         scraper.remove_identical_seqs()
         scraper.generate_streamed_alignment()
+        scraper.dump()
+        scraper.write_otu_info()
     shutil.copytree("./physcraper", "{}/physcraper_runcopy".format(workdir))
 
     scraper.get_additional_GB_info()
@@ -250,6 +257,7 @@ def filter_OTOL(study_id,
 
         data_obj = generate_ATT_from_phylesystem(aln,
                                                  workdir,
+                                                 conf,
                                                  study_id,
                                                  tree_id,
                                                  phylesystem_loc='api',
@@ -278,7 +286,7 @@ def filter_OTOL(study_id,
             sys.stdout.write("Blasting against local unpublished data")
             filteredScrape.unpublished = True
             filteredScrape.write_unpubl_blastdb(add_unpubl_seq)
-            filteredScrape.run_blast_wrapper(delay=14)
+            filteredScrape.run_blast_wrapper()
             filteredScrape.data.local_otu_json = id_to_spn_addseq_json
             filteredScrape.read_blast_wrapper()
             filteredScrape.remove_identical_seqs()
@@ -286,7 +294,7 @@ def filter_OTOL(study_id,
             filteredScrape.unpublished = False
         else:
             sys.stdout.write("BLASTing input sequences\n")
-            filteredScrape.run_blast_wrapper(delay=14)
+            filteredScrape.run_blast_wrapper()
             filteredScrape.read_blast_wrapper(blast_dir=shared_blast_folder)
             filteredScrape.remove_identical_seqs()
             filteredScrape.dump()
@@ -302,7 +310,7 @@ def filter_OTOL(study_id,
         filteredScrape.data.write_labelled(label="^ot:ottTaxonName", add_gb_id=True)
         filteredScrape.data.write_otus("otu_info", schema="table")
         sys.stdout.write("BLASTing input sequences\n")
-        filteredScrape.run_blast_wrapper(delay=14)
+        filteredScrape.run_blast_wrapper()
         filteredScrape.read_blast_wrapper(blast_dir=shared_blast_folder)
         filteredScrape.remove_identical_seqs()
         sys.stdout.write("Filter the sequences\n")
@@ -358,6 +366,7 @@ def add_unpubl_to_backbone(seqaln,
         data_obj = generate_ATT_from_files(seqaln=seqaln, 
                                            mattype=mattype,
                                            workdir=workdir,
+                                           config_obj=conf,
                                            treefile=trfn,
                                            schema_trf=schema_trf,
                                            otu_json=spInfoDict,
@@ -390,7 +399,7 @@ def add_unpubl_to_backbone(seqaln,
             filteredScrape.backbone = True
 
             filteredScrape.write_unpubl_blastdb(add_unpubl_seq)
-            filteredScrape.run_blast_wrapper(delay=14)
+            filteredScrape.run_blast_wrapper()
             print("add unpubl otu json")
             filteredScrape.data.unpubl_otu_json = id_to_spn_addseq_json
             print(filteredScrape.data.unpubl_otu_json)
@@ -405,7 +414,7 @@ def add_unpubl_to_backbone(seqaln,
                 filteredScrape.blast_subdir = shared_blast_folder
             else:
                 shared_blast_folder = None
-            filteredScrape.run_blast_wrapper(delay=14)
+            filteredScrape.run_blast_wrapper()
             filteredScrape.read_blast_wrapper(blast_dir=shared_blast_folder)
             filteredScrape.remove_identical_seqs()
             filteredScrape.dump()
@@ -426,7 +435,7 @@ def add_unpubl_to_backbone(seqaln,
             filteredScrape.blast_subdir = shared_blast_folder
         else:
             shared_blast_folder = None
-        filteredScrape.run_blast_wrapper(delay=14)
+        filteredScrape.run_blast_wrapper()
         filteredScrape.read_blast_wrapper(blast_dir=shared_blast_folder)
         filteredScrape.remove_identical_seqs()
         sys.stdout.write("Filter the sequences\n")
@@ -485,6 +494,7 @@ def filter_data_run(seqaln,
         data_obj = generate_ATT_from_files(seqaln=seqaln, 
                                            mattype=mattype,
                                            workdir=workdir,
+                                           config_obj=conf,
                                            treefile=trfn,
                                            schema_trf=schema_trf,
                                            otu_json=spInfoDict,
@@ -511,7 +521,7 @@ def filter_data_run(seqaln,
             sys.stdout.write("Blasting against local unpublished data")
             filteredScrape.unpublished = True
             filteredScrape.write_unpubl_blastdb(add_unpubl_seq)
-            filteredScrape.run_blast_wrapper(delay=14)
+            filteredScrape.run_blast_wrapper()
             print("add unpubl otu json")
             filteredScrape.data.unpubl_otu_json = id_to_spn_addseq_json
             print(filteredScrape.data.unpubl_otu_json)
@@ -526,7 +536,7 @@ def filter_data_run(seqaln,
                 filteredScrape.blast_subdir = shared_blast_folder
             else:
                 shared_blast_folder = None
-            filteredScrape.run_blast_wrapper(delay=14)
+            filteredScrape.run_blast_wrapper()
             filteredScrape.read_blast_wrapper(blast_dir=shared_blast_folder)
             filteredScrape.remove_identical_seqs()
             filteredScrape.dump()
@@ -552,7 +562,7 @@ def filter_data_run(seqaln,
             filteredScrape.blast_subdir = shared_blast_folder
         else:
             shared_blast_folder = None
-        filteredScrape.run_blast_wrapper(delay=14)
+        filteredScrape.run_blast_wrapper()
         filteredScrape.read_blast_wrapper(blast_dir=shared_blast_folder)
         filteredScrape.remove_identical_seqs()
         sys.stdout.write("Filter the sequences\n")
@@ -609,7 +619,8 @@ def run_with_settings(settings):
         # Generate an linked Alignment-Tree-Taxa object
         data_obj = generate_ATT_from_files(seqaln=settings.seqaln, 
                                            mattype=settings.mattype,
-                                           workdir=settings.workdir,
+                                            workdir=settings.workdir,
+                                           config_obj=conf,
                                            treefile=settings.trfn,
                                            schema_trf=settings.schema_trf,
                                            otu_json=settings.spInfoDict,
@@ -672,7 +683,7 @@ def run_with_settings(settings):
         filteredScrape.dump()
         filteredScrape.write_out_files(settings.downtorank)
     filteredScrape.get_additional_GB_info()
-    shutil.copytree("./physcraper", "{}/physcraper_runcopy".format(workdir))
+    shutil.copytree("./physcraper", "{}/physcraper_runcopy".format(settings.workdir))
 
     return filteredScrape
 
@@ -699,7 +710,7 @@ def concat(genelistdict, workdir_comb, email, num_threads=None, percentage=0.37,
     concat.est_full_tree(num_threads)
     concat.calculate_bootstrap(num_threads)
     concat.write_otu_info()
-    shutil.copytree("./physcraper", "{}/physcraper_runcopy".format(workdir))
+    shutil.copytree("./physcraper", "{}/physcraper_runcopy".format(workdir_comb))
 
     return concat
 

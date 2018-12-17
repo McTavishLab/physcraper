@@ -88,7 +88,7 @@ def is_number(s):
 
 
 # which python physcraper file do I use?
-debug("Current --init-- version number: 10-15-2018.0")
+debug("Current --init-- version number: 12-17-2018.0")
 debug(os.path.realpath(__file__))
 
 
@@ -125,6 +125,7 @@ class ConfigObj(object):
       * **self.e_value_thresh**: the defined threshold for the e-value during Blast searches, check out: https://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Web&PAGE_TYPE=BlastDocs&DOC_TYPE=FAQ
       * **self.hitlist_size**: the maximum number of sequences retrieved by a single blast search
       * **self.seq_len_perc**: value from 0 to 1. Defines how much shorter new seq can be compared to input
+      * **self.trim_perc**: value that determines how many seq need to be present before the beginning and end of alignment will be trimmed
       * **self.get_ncbi_taxonomy**: Path to sh file doing something...
       * **self.ncbi_dmp**: path to file that has gi numbers and the corresponding ncbi tax id's
       * **self.phylesystem_loc**: defines which phylesystem for OpenTree datastore is used. The default is api, but can run on local version too. 
@@ -144,6 +145,7 @@ class ConfigObj(object):
 
           * keep: keep the unmapped taxa and asign them to life
           * remove: remove the unmapped taxa from aln and tre
+      * **self.delay**: defines when to reblast sequences in days
       * **optional self.objects**:
 
           * if blastloc == local:
@@ -154,28 +156,73 @@ class ConfigObj(object):
     """
 
     def __init__(self, configfi, interactive=None):
-        if _DEBUG:
-            sys.stdout.write("Building config object\n")
-
-        if interactive is None:
-            interactive = sys.stdin.isatty()
-            if interactive == False:
-                print("REMEMBER TO UPDATE THE NCBI DATABASES REGULARLY!!")
-                sys.stdout.write("REMEMBER TO UPDATE THE NCBI DATABASES REGULARLY!!")
         debug(configfi)
         debug(os.path.isfile(configfi))
+        if _DEBUG:
+            sys.stdout.write("Building config object\n")
         assert os.path.isfile(configfi), "file `%s` does not exists" % configfi
         config = configparser.ConfigParser()
         config.read_file(open(configfi))
+        
+        # read in blast settings
+        self.email = config["blast"]["Entrez.email"]
+        assert "@" in self.email, "your email `%s` does not have an @ sign" % self.email
+        
         self.e_value_thresh = config["blast"]["e_value_thresh"]
         assert is_number(self.e_value_thresh), (
                 "value `%s` does not exists" % self.e_value_thresh
         )
         self.hitlist_size = int(config["blast"]["hitlist_size"])
+        assert is_number(self.hitlist_size), (
+                "value `%s`is not a number" % self.e_value_thresh
+        )
+        self.blast_loc = config["blast"]["location"]
+        assert self.blast_loc in ["local", "remote"], (
+                "your blast location `%s` is not remote or local" % self.email
+        )        
+        if self.blast_loc == "local":
+            self.blastdb = config["blast"]["localblastdb"]
+            self.url_base = None
+            self.ncbi_parser_nodes_fn = config["ncbi_parser"]["nodes_fn"]
+            self.ncbi_parser_names_fn = config["ncbi_parser"]["names_fn"]
+        if self.blast_loc == "remote":
+            self.url_base = config["blast"].get("url_base")
+        if _DEBUG:
+            sys.stdout.write("{}\n".format(self.email))
+            if self.blast_loc == "remote":
+                sys.stdout.write("url base = {}\n".format(self.url_base))
+            sys.stdout.write("{}\n".format(self.blast_loc))
+            if self.blast_loc == "local":
+                sys.stdout.write("local blast db {}\n".format(self.blastdb))
+        self.num_threads = config["blast"].get("num_threads")
+        self.gb_id_filename = config["blast"].get("gb_id_filename", False)
+        if self.gb_id_filename is not False:
+            if self.gb_id_filename == "True" or self.gb_id_filename == "true":
+                self.gb_id_filename = True
+            else:
+                self.gb_id_filename = False
+        debug("shared blast folder? {}".format(self.gb_id_filename))
+        self.delay = int(config["blast"]["delay"])
+        assert is_number(self.delay), (
+                "value `%s`is not a number" % self.delay
+        )       
+        # #############
+        # read in physcraper settings       
+        self.unmapped = config["physcraper"]["unmapped"]
+        assert self.unmapped in ["remove", "keep"], (
+                "your unmapped statement `%s` in the config file is not remove or keep"
+                % self.unmapped
+        )
         self.seq_len_perc = float(config["physcraper"]["seq_len_perc"])
-        assert 0 < self.seq_len_perc < 1, (
+        assert 0 < self.seq_len_perc <= 1, (
                 "value `%s` is not between 0 and 1" % self.seq_len_perc
         )
+        self.trim_perc = float(config["physcraper"]["trim_perc"])
+        assert 0 < self.trim_perc < 1, (
+                "value `%s` is not between 0 and 1" % self.trim_perc
+        )
+
+        # read in settings for internal Physcraper processes
         self.phylesystem_loc = config["phylesystem"]["location"]
         assert self.phylesystem_loc in ["local", "api"], \
             (
@@ -188,44 +235,18 @@ class ConfigObj(object):
         )
         # rewrites relative path to absolute path so that it behaves when changing dirs
         self.id_pickle = os.path.abspath(config["taxonomy"]["id_pickle"])
-        self.email = config["blast"]["Entrez.email"]
-        assert "@" in self.email, "your email `%s` does not have an @ sign" % self.email
-        self.blast_loc = config["blast"]["location"]
-        self.num_threads = config["blast"].get("num_threads")
-        assert self.blast_loc in ["local", "remote"], (
-                "your blast location `%s` is not remote or local" % self.email
-        )
-        if self.blast_loc == "local":
-            self.blastdb = config["blast"]["localblastdb"]
-            self.url_base = None
-            self.ncbi_parser_nodes_fn = config["ncbi_parser"]["nodes_fn"]
-            self.ncbi_parser_names_fn = config["ncbi_parser"]["names_fn"]
-        if self.blast_loc == "remote":
-            self.url_base = config["blast"].get("url_base")
-        self.gb_id_filename = config["blast"].get("gb_id_filename", False)
-        if self.gb_id_filename is not False:
-            if self.gb_id_filename == "True" or self.gb_id_filename == "true":
-                self.gb_id_filename = True
-            else:
-                self.gb_id_filename = False
+        
+        ####
+        # check database status
+        if interactive is None:
+            interactive = sys.stdin.isatty()
+            if interactive == False:
+                print("REMEMBER TO UPDATE THE NCBI DATABASES REGULARLY!!")
+                sys.stdout.write("REMEMBER TO UPDATE THE NCBI DATABASES REGULARLY!!")
         if interactive is True:
             self._download_ncbi_parser()
             self._download_localblastdb()
-        self.unmapped = config["blast"]["unmapped"]
-        assert self.unmapped in ["remove", "keep"], (
-                "your unmapped statement `%s` in the config file is not remove or keep"
-                % self.unmapped
-        )
-        debug("shared blast folder? {}".format(self.gb_id_filename))
         debug("check db file status?: {}".format(interactive))
-
-        if _DEBUG:
-            sys.stdout.write("{}\n".format(self.email))
-            if self.blast_loc == "remote":
-                sys.stdout.write("url base = {}\n".format(self.url_base))
-            sys.stdout.write("{}\n".format(self.blast_loc))
-            if self.blast_loc == "local":
-                sys.stdout.write("local blast db {}\n".format(self.blastdb))
 
     def _download_localblastdb(self):
         """Check if files are present and if they are uptodate.
@@ -346,6 +367,7 @@ def get_dataset_from_treebase(study_id, phylesystem_loc="api"):
 
 def generate_ATT_from_phylesystem(aln,
                                   workdir,
+                                  config_obj,
                                   study_id,
                                   tree_id,
                                   phylesystem_loc='api',
@@ -361,6 +383,7 @@ def generate_ATT_from_phylesystem(aln,
 
     :param aln: dendropy :class:`DnaCharacterMatrix <dendropy.datamodel.charmatrixmodel.DnaCharacterMatrix>` alignment object
     :param workdir: path to working directory
+    :param config_obj: config class containing the settings
     :param study_id: OToL study id of the corresponding phylogeny which shall be updated
     :param tree_id: OToL corresponding tree ID as some studies have several phylogenies
     :param phylesystem_loc: access the github version of the OpenTree data store, or a local clone
@@ -415,13 +438,14 @@ def generate_ATT_from_phylesystem(aln,
     # need to prune tree to seqs and seqs to tree...
     otu_newick = tre.as_string(schema="newick")
     workdir = os.path.abspath(workdir)
-    return AlignTreeTax(otu_newick, otu_dict, aln, ingroup_mrca=ott_mrca, workdir=workdir)
+    return AlignTreeTax(otu_newick, otu_dict, aln, ingroup_mrca=ott_mrca, workdir=workdir, config_obj=config_obj)
     # newick should be bare, but alignment should be DNACharacterMatrix
 
 
 def generate_ATT_from_files(seqaln,
                             mattype,
                             workdir,
+                            config_obj,
                             treefile,
                             otu_json,
                             schema_trf,
@@ -436,6 +460,7 @@ def generate_ATT_from_files(seqaln,
     :param seqaln: path to sequence alignment
     :param mattype: string containing format of sequence alignment
     :param workdir: path to working directory
+    :param config_obj: config class including the settings
     :param treefile: path to phylogeny
     :param otu_json: path to json file containing the translation of tip names to taxon names
     :param schema_trf: string defining the format of the input phylogeny
@@ -478,7 +503,7 @@ def generate_ATT_from_files(seqaln,
         ott_ids = filter(None, ott_ids)
         ott_ids = set(ott_ids)
         ott_mrca = get_mrca_ott(ott_ids)
-    return AlignTreeTax(otu_newick, otu_dict, aln, ingroup_mrca=ott_mrca, workdir=workdir, schema=schema_trf)
+    return AlignTreeTax(otu_newick, otu_dict, aln, ingroup_mrca=ott_mrca, workdir=workdir, config_obj=config_obj, schema=schema_trf)
 
 
 def standardize_label(item):
@@ -589,6 +614,7 @@ class AlignTreeTax(object):
           * **alignment**: dendropy :class:`DnaCharacterMatrix <dendropy.datamodel.charmatrixmodel.DnaCharacterMatrix>` object
           * **ingroup_mrca**: OToL identifier of the group of interest, either subclade as defined by user or of all tip labels in the phylogeny
           * **workdir**: the path to the corresponding working directory
+          * **config_obj**: Config class
           * **schema**: optional argument to define tre file schema, if different from "newick"
 
         During the initializing process the following self objects are generated:
@@ -657,7 +683,7 @@ class AlignTreeTax(object):
           * self.aln, self.tre and self.otu_dict, self.ps_otu, self.gi_dict
  """
 
-    def __init__(self, newick, otu_dict, alignment, ingroup_mrca, workdir, schema=None, taxon_namespace=None):
+    def __init__(self, newick, otu_dict, alignment, ingroup_mrca, workdir, config_obj, schema=None, taxon_namespace=None):
         debug("build ATT class")
         self.aln = alignment
         if schema is None:
@@ -674,6 +700,7 @@ class AlignTreeTax(object):
         assert isinstance(self.aln, datamodel.charmatrixmodel.DnaCharacterMatrix)
         assert isinstance(otu_dict, dict)
         self.otu_dict = otu_dict
+        self.config = config_obj
         self.ps_otu = 1  # iterator for new otu IDs
         self._reconcile()
         self._reconcile_names()
@@ -760,7 +787,7 @@ class AlignTreeTax(object):
                 if found_label == 0:
                     sys.stderr.write("could not match tiplabel {} or {} to an OTU\n".format(tax.label, newname))
 
-    def prune_short(self, min_seqlen_perc=0.75):
+    def prune_short(self):
         """Prunes sequences from alignment if they are shorter than 75%, or if tip is only present in tre.
 
         Sometimes in the de-concatenating of the original alignment taxa with no sequence are generated
@@ -778,7 +805,7 @@ class AlignTreeTax(object):
 
         # if sum(self.orig_seqlen) != 0:
         avg_seqlen = sum(self.orig_seqlen) / len(self.orig_seqlen)
-        seq_len_cutoff = avg_seqlen * min_seqlen_perc
+        seq_len_cutoff = avg_seqlen * self.config.seq_len_perc 
         # else:
         #     for tax, seq in self.aln.items():
         #         seqlen = len(self.aln[tax].symbols_as_string())
@@ -815,7 +842,7 @@ class AlignTreeTax(object):
         self.check_tre_in_aln()
         self._reconciled = 1
 
-    def trim(self, taxon_missingness=0.75):
+    def trim(self):
         """ It removes bases at the start and end of alignments, if they are represented by less than 75%
         of the sequences in the alignment.
         Ensures, that not whole chromosomes get dragged in. It's cutting the ends of long sequences.
@@ -826,6 +853,7 @@ class AlignTreeTax(object):
         :param taxon_missingness: defines how many sequences need to have a base at the start/end of an alignment
         """
         # debug('in trim')
+        taxon_missingness = self.config.trim_perc
         i = 0
         seqlen = len(self.aln[i])
         while seqlen == 0:
@@ -979,6 +1007,7 @@ class AlignTreeTax(object):
         if gb_id[:6] == "unpubl":
             self.otu_dict[otu_id]["^physcraper:status"] = "local seq"
             self.otu_dict[otu_id]["^ot:originalLabel"] = self.gb_dict[gb_id]["localID"]
+            self.otu_dict[otu_id]['^user:TaxonName'] = self.gb_dict[gb_id][u'^user:TaxonName']
         else:
             self.otu_dict[otu_id]["^ncbi:gi"] = self.gb_dict[gb_id]["^ncbi:gi"]
             self.otu_dict[otu_id]["^ncbi:accession"] = gb_id
@@ -1609,7 +1638,7 @@ class PhyscraperScrape(object):
                     # second condition for OToL unmapped taxa, not present in own_data
                     if u"^ot:treebaseOTUId" in self.data.otu_dict[key]:
                         self.data.remove_taxa_aln_tre(key)
-        else:
+        elif  self.config.unmapped == "keep":
             i = 1
             for key in self.data.otu_dict:
                 i = i + 1
@@ -1707,12 +1736,13 @@ class PhyscraperScrape(object):
         result_handle.close()
         save_file.close()
 
-    def run_blast_wrapper(self, delay=14):  # TODO Should this be happening elsewhere?
+    def run_blast_wrapper(self):  # TODO Should this be happening elsewhere?
         """generates the blast queries and saves them depending on the blasting method to different file formats
 
         :param delay: number that determines when a previously blasted sequence is reblasted - time is in days
         :return: writes blast queries to file
         """
+        delay = self.config.delay
         debug("run_blast_wrapper")
         debug(self.blast_subdir)
         if not os.path.exists(self.blast_subdir):
@@ -1878,8 +1908,8 @@ class PhyscraperScrape(object):
         for blast_record in blast_out:
             for alignment in blast_record.alignments:
                 for hsp in alignment.hsps:
+                    local_id = alignment.title.split("|")[-1].split(" ")[-1]
                     if float(hsp.expect) < float(self.config.e_value_thresh):
-                        local_id = alignment.title.split("|")[-1].split(" ")[-1]
                         if local_id not in self.data.gb_dict:  # skip ones we already have
                             unpbl_local_id = "unpubl_{}".format(local_id)
                             self.new_seqs[unpbl_local_id] = hsp.sbjct
@@ -1893,8 +1923,8 @@ class PhyscraperScrape(object):
                             gb_counter += 1
                     else:
                         fn.write("{}: {}".format(alignment.title.split("|")[-1].split(" ")[-1], hsp.expect))
-                        if gb_id not in self.gb_not_added:
-                            self.gb_not_added.append(gb_id)
+                        if local_id not in self.gb_not_added:
+                            self.gb_not_added.append(local_id)
                             self.write_not_added_info("threshold not passed")
                         # print(some)
         with open(self.logfile, "a") as log:
@@ -2087,6 +2117,15 @@ class PhyscraperScrape(object):
                                                                           "but different species"
                         seq_dict[label] = seq
                         debug("{} and  {} supersequence, but different sp. concept".format(id_of_label, existing_id))
+                        continue_search = True
+                        continue
+                    elif self.data.otu_dict[tax_lab].get('^physcraper:status') == "local seq":
+                        if _VERBOSE:
+                            sys.stdout.write("seq {} is supersequence of local seq {}, "
+                                             "both kept in alignment\n".format(label, tax_lab))
+                        self.data.otu_dict[label]['^physcraper:status'] = "new seq added"
+                        seq_dict[label] = seq
+                        debug("{} and  {} added".format(id_of_label, existing_id))
                         continue_search = True
                         continue
                     else:
@@ -2748,6 +2787,37 @@ class PhyscraperScrape(object):
                         info = [gb_id, ncbi_sp, authors, journal, publication, voucher, clone, country, isolate]
                         writer.writerow(info)
 
+    def write_otu_info(self):
+        """Writes output table to file
+
+        1. a file with all relevant GenBank info to file (otu_dict).
+
+        :return: writes output to file
+        """
+        debug("write out infos")
+        otu_dict_keys = [
+            "^ot:ottTaxonName",
+            "^ncbi:gi",
+            "^ncbi:accession",
+            "^ot:originalLabel",
+            "^physcraper:last_blasted",
+            "^physcraper:status",
+            "^ot:ottId",
+            "^ncbi:taxon",
+            "^ncbi:title"
+        ]
+        with open("{}/otu_seq_info.csv".format(self.workdir), "w") as output:
+            writer = csv.writer(output)
+            for otu in self.data.otu_dict.keys():
+                rowinfo = [otu]
+                for item in otu_dict_keys:
+                    if item in self.data.otu_dict[otu].keys():
+                        tofile = str(self.data.otu_dict[otu][item]).replace("_", " ")
+                        rowinfo.append(tofile)
+                    else:
+                        rowinfo.append("-")
+                writer.writerow(rowinfo)
+
 
 class FilterBlast(PhyscraperScrape):
     """Takes the Physcraper Superclass and filters the ncbi blast results to only include a subset of the sequences.
@@ -3334,36 +3404,7 @@ class FilterBlast(PhyscraperScrape):
         self.taxon_sampling(downtorank)
         self.write_otu_info()
 
-    def write_otu_info(self):
-        """Writes output table to file
 
-        1. a file with all relevant GenBank info to file (otu_dict).
-
-        :return: writes output to file
-        """
-        debug("write out infos")
-        otu_dict_keys = [
-            "^ot:ottTaxonName",
-            "^ncbi:gi",
-            "^ncbi:accession",
-            "^ot:originalLabel",
-            "^physcraper:last_blasted",
-            "^physcraper:status",
-            "^ot:ottId",
-            "^ncbi:taxon",
-            "^ncbi:title"
-        ]
-        with open("{}/otu_seq_info.csv".format(self.workdir), "w") as output:
-            writer = csv.writer(output)
-            for otu in self.data.otu_dict.keys():
-                rowinfo = [otu]
-                for item in otu_dict_keys:
-                    if item in self.data.otu_dict[otu].keys():
-                        tofile = str(self.data.otu_dict[otu][item]).replace("_", " ")
-                        rowinfo.append(tofile)
-                    else:
-                        rowinfo.append("-")
-                writer.writerow(rowinfo)
 
     def taxon_sampling(self, downtorank=None):
         """Write out file which contains the taxon smapling.

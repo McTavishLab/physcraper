@@ -32,6 +32,7 @@ with open(otu_jsonfi,"w") as outfile:
 data_obj = generate_ATT_from_files(seqaln=seqaln, 
                              mattype=mattype, 
                              workdir=workdir,
+                             config_obj=conf,
                              treefile=trfn,
                              schema_trf = schema_trf,
                              otu_json=otu_jsonfi,

@@ -27,11 +27,11 @@ make sure the programs are accessible from everywhere, thus add them to your PAT
 
 (! set PATH=%PATH%:  it takes the current path and sets PATH to it.)
 
-#### 2. download PhyScraper using the command line:
+#### 2.a) download PhyScraper using the command line:
 * as a normal package: `git clone https://github.com/McTavishLab/physcraper.git`
 * as a git repository: `git clone 'git@github.com:McTavishLab/physcraper.git'`
 
-#### 2.b) install a virtualenvironment
+#### 2.b) install a virtual environment
   This is very useful if you want to run it on a cluster and/or don't want to mess with your computer and only install the packages needed to Physcraper locally.
 
   `pip install virtualenv` 
@@ -115,28 +115,24 @@ There is an example config file in `tests/data/localblast.config`
       This is the e-value that can be retrieved from BLAST searches and is used to limit the BLAST results to sequences that are similar to the search input sequence.
       It is a parameter that describes how many hits can be expected by chance from a similar-sized database during BLAST searches. Small e-value indicate a significant match. In general, shorter sequences have lower e-values, because shorter sequences have a higher probability to occur in the database by chance. For more information please refer to the ncbi BLAST resources (e.g. \url{https://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Web&PAGE_TYPE=BlastDocs}).
       We used an e-value of 0.001 for all example datasets.
-    * **unmapped**: 
-      It is used when working with trees from OToL. Sometimes not all sequences of the study were mapped to OToL species identifiers.
-      * **keep**: Unmapped tips will be kept and the is set to unknown_NAME_OF_THE_MRCA. 
-      * **remove**: Unmapped tips will be removed from the phylogeny and the alignment.
     * **hitlist_size**: 
       This specifies the amount of sequences being returned from a BLAST search. If your phylogeny does not contain a lot of nodes, it can be a low value, which will speed-up the analysis. If the sampled lineage contains many sequences with low sequence divergence it is better to increase it to be able to retrieve all similar sequences. It is not advised to have a really low hitlist size, as this will influence the number of sequences that will be added to your alignment. Low hitlist sizes might not return all best-matches but only the first 10 even though there might be more best-matches in the database \citep{shah_misunderstood-2018}. Furthermore, for example, if the hitlist size is 10, but the phylogeny which shall be updated is sparsely sampled, this might result in an updated phylogeny, that has only the parts of the phylogeny updated, that were present in the input phylogeny. Lineages that were not present might never be added, as the 10 best hits all belong to the lineages already present. 
     * **location**: 
       This defines which kind of BLAST service is used
        * **remote**: either ncbi (default) or amazon cloud service (website needs to be defined using `url_base`)
-       * **local**: will look for a local database under the path specified under localblastdb, `num_threads` defines how many cores shall be used for the blasting (the more the faster).
+       * **local**: will look for a local database under the path specified under `localblastdb`
+    * **num_threads**: defines how many cores shall be used for the blasting and other parallelized parts
     * **gb_id_filename**: 
       If you plan to run different settings for the same phylogeny or several runs with similar phylogenies, where there might be overlap between BLAST searches, set it to true und specify the blastsubdir to be equal among runs (see next section). This will share BLAST searches between runs and thus speeds up the run time of the BLAST search.
-  * ncbi_parser settings: Only need to be specified for local blast searches
-    * **nodes_fn**: 
-    Path to the nodes file, which was downloaded as part of the local blast installation.
-    * **names_fn**: 
-    Path to the names file, which was downloaded as part of the local blast installation.
   * Physcraper settings:
-     * **seq_len_perc**: 
-     Here you can specify the minimum percentage length of newly found sequences to be added in comparison to the original alignment.
-
-
+    * **unmapped**: It is used when working with trees from OToL. Sometimes not all sequences of the study were mapped to OToL species identifiers.
+      * **keep**: Unmapped tips will be kept and the is set to unknown_NAME_OF_THE_MRCA. 
+      * **remove**: Unmapped tips will be removed from the phylogeny and the alignment.
+    * **seq_len_perc**: Here you can specify the minimum percentage length of newly found sequences to be added in comparison to the original alignment.
+    * **trim_perc**: How many sequences need to have information at the beginning and end of an alignment, to not be trimed.
+  * Internal settings:
+    Will follow, if you are looking for it and it's not here, send us an email.
+    
 
 #### **2. write your analysis file**
 1. standard run 
@@ -232,7 +228,7 @@ And now you just need to wait...
 There are some more features that can be changed if you know where, we will change the code hopefully soon, to make that easier adjustable.
 
 * time lapse for blasting: at the moment this is set to be 14 days. If you want to adjust the timing change `run_blast_wrapper()` in the wrapper to `run_blast_wrapper(delay = your_value)`
-* trim method: by default sequences will be trimmed from the alignment if it has not at least 75% of the total sequence length. This can be changed in `./physcraper/__init__.py`, in the function `trim()` the value for `taxon_missingness`. 
+
 * change the most recent common ancestor (mrca): often phylogenies include outgroups, and someone might not be interested in updating that part of the tree. This can be avoided by defining the most recent common ancestor. It requires the OpenTreeOfLife identifier for the group of interest. 
     
   You can get that ID by two different approaches:

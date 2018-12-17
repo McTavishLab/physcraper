@@ -32,8 +32,9 @@ def test():
     data_obj = generate_ATT_from_files(seqaln=seqaln, 
                                      mattype=mattype, 
                                      workdir=workdir,
+                                     config_obj=conf,
                                      treefile=treefile,
-                                     schema_trf = schema_trf,
+                                     schema_trf=schema_trf,
                                      otu_json=otu_jsonfi,
                                      ingroup_mrca=None)
 
@@ -53,8 +54,8 @@ def test():
     for tax, seq in data_obj.aln.items():
         len_start = len(seq)
 
-
-    data_obj.trim(taxon_missingness=0.5)
+    data_obj.config.trim_perc = 0.5
+    data_obj.trim()
 
     for tax, seq in data_obj.aln.items():
         len_end = len(seq)
