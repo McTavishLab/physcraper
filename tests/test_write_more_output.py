@@ -6,7 +6,7 @@ import physcraper.local_blast as local_blast
 
 import pytest
 
-#@pytest.mark.xfail
+
 def test_write_outputinfo():
     workdir = "tests/output/test_write_output_files"
     configfi = "tests/data/test.config"
@@ -27,8 +27,8 @@ def test_write_outputinfo():
     # filteredScrape.acc_list_mrca = pickle.load(open("tests/data/precooked/acc_list_mrca.p", 'rb'))
     filteredScrape.read_blast_wrapper(blast_dir=blast_dir)
     filteredScrape.remove_identical_seqs()
-    filteredScrape.sp_dict(downtorank)
-    filteredScrape.make_sp_seq_dict()
+    # filteredScrape.sp_dict(downtorank)
+    # filteredScrape.make_sp_seq_dict()
 
     filteredScrape.generate_streamed_alignment()
 

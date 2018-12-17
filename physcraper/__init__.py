@@ -788,21 +788,18 @@ class AlignTreeTax(object):
                     sys.stderr.write("could not match tiplabel {} or {} to an OTU\n".format(tax.label, newname))
 
     def prune_short(self):
-        """Prunes sequences from alignment if they are shorter than 75%, or if tip is only present in tre.
+        """Prunes sequences from alignment if they are shorter than specified in the config file,
+         or if tip is only present in tre.
 
         Sometimes in the de-concatenating of the original alignment taxa with no sequence are generated
         or in general if certain sequences are really short. This removes those from both the tre and the alignment.
 
         has test: test_prune_short.py
 
-        :param min_seqlen_perc: minimum length of seq
         :return: prunes aln and tre
         """
-        # TODO: assert statement make it necessary that method is only run after building a new tree, should probably be separated, remove trim. 
-
         self.orig_seqlen = [len(self.aln[tax].symbols_as_string().replace("-", "").replace("N", "")) for tax in
                             self.aln]
-
         # if sum(self.orig_seqlen) != 0:
         avg_seqlen = sum(self.orig_seqlen) / len(self.orig_seqlen)
         seq_len_cutoff = avg_seqlen * self.config.seq_len_perc 
@@ -843,14 +840,13 @@ class AlignTreeTax(object):
         self._reconciled = 1
 
     def trim(self):
-        """ It removes bases at the start and end of alignments, if they are represented by less than 75%
-        of the sequences in the alignment.
+        """ It removes bases at the start and end of alignments, if they are represented by less than the value
+        specified in the config file. E.g. 0.75 given in config means, that 75% of the sequences need to have a
+        base present
+
         Ensures, that not whole chromosomes get dragged in. It's cutting the ends of long sequences.
 
-        Used in prune_short()
         has test: test_trim.py
-
-        :param taxon_missingness: defines how many sequences need to have a base at the start/end of an alignment
         """
         # debug('in trim')
         taxon_missingness = self.config.trim_perc
@@ -1739,7 +1735,8 @@ class PhyscraperScrape(object):
     def run_blast_wrapper(self):  # TODO Should this be happening elsewhere?
         """generates the blast queries and saves them depending on the blasting method to different file formats
 
-        :param delay: number that determines when a previously blasted sequence is reblasted - time is in days
+        It runs blast if the sequences was not blasted since the user defined threshold in the config file (delay).
+
         :return: writes blast queries to file
         """
         delay = self.config.delay

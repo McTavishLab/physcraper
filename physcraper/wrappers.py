@@ -179,8 +179,8 @@ def own_data_run(seqaln,
         # Generate an linked Alignment-Tree-Taxa object
         data_obj = generate_ATT_from_files(seqaln=seqaln, 
                                            mattype=mattype,
-                                            workdir=workdir,
-                                           config_obj=config_obj,
+                                           workdir=workdir,
+                                           config_obj=conf,
                                            treefile=trfn,
                                            schema_trf=schema_trf,
                                            otu_json=sp_info_jsonfi,
@@ -263,7 +263,8 @@ def filter_OTOL(study_id,
                                                  phylesystem_loc='api',
                                                  ingroup_mrca=ingroup_mrca)
         # Prune sequnces below a certain length threshold
-        # This is particularly important when using loci that have been de-concatenated, as some are 0 length which causes problems.
+        # This is particularly important when using loci that have been de-concatenated,
+        # as some are 0 length which causes problems.
         data_obj.prune_short()
         data_obj.write_files()
         data_obj.write_labelled(label="^ot:ottTaxonName", add_gb_id=True)
@@ -373,7 +374,8 @@ def add_unpubl_to_backbone(seqaln,
                                            ingroup_mrca=ingroup_mrca)
 
         # Prune sequnces below a certain length threshold
-        # This is particularly important when using loci that have been de-concatenated, as some are 0 length which causes problems.
+        # This is particularly important when using loci that have been de-concatenated,
+        # as some are 0 length which causes problems.
         data_obj.prune_short()
         data_obj.write_files()
         data_obj.write_labelled(label="^ot:ottTaxonName", add_gb_id=True)
@@ -501,7 +503,8 @@ def filter_data_run(seqaln,
                                            ingroup_mrca=ingroup_mrca)
 
         # Prune sequnces below a certain length threshold
-        # This is particularly important when using loci that have been de-concatenated, as some are 0 length which causes problems.
+        # This is particularly important when using loci that have been de-concatenated,
+        # as some are 0 length which causes problems.
         data_obj.prune_short()
         data_obj.write_files()
         data_obj.write_labelled(label="^ot:ottTaxonName", add_gb_id=True)
@@ -587,15 +590,13 @@ def filter_data_run(seqaln,
 # # # # # # # # # # # # # # # # # # # # # # #
 def make_settings_class(seqaln, mattype, trfn, schema_trf, workdir, 
                         threshold=None, selectby=None, downtorank=None, spInfoDict=None, add_unpubl_seq=None, 
-                        id_to_spn_addseq_json=None, configfi=None, blacklist=None, shared_blast_folder=None,
-                        delay=None, trim=None, prune_short=None):
+                        id_to_spn_addseq_json=None, configfi=None, blacklist=None, shared_blast_folder=None):
     """all the settings are set here and can then be fed to the FilterClass
     """
     settings = Settings(seqaln=seqaln, mattype=mattype, trfn=trfn, schema_trf=schema_trf, workdir=workdir,
                         threshold=threshold, selectby=selectby, downtorank=downtorank, spInfoDict=spInfoDict,
                         add_unpubl_seq=add_unpubl_seq, id_to_spn_addseq_json=id_to_spn_addseq_json, configfi=configfi,
-                        blacklist=blacklist, shared_blast_folder=shared_blast_folder, delay=delay, trim=trim, 
-                        prune_short=prune_short)
+                        blacklist=blacklist, shared_blast_folder=shared_blast_folder)
     return settings
 
 
@@ -627,7 +628,8 @@ def run_with_settings(settings):
                                            ingroup_mrca=None)
 
         # Prune sequences below a certain length threshold
-        # This is particularly important when using loci that have been de-concatenated, as some are 0 length which causes problems.
+        # This is particularly important when using loci that have been de-concatenated,
+        # as some are 0 length which causes problems.
         data_obj.prune_short()
         data_obj.write_files()
 
@@ -647,7 +649,7 @@ def run_with_settings(settings):
         if filteredScrape.unpublished is True:  # use unpublished data
             sys.stdout.write("Blasting against local unpublished data")
             filteredScrape.write_unpubl_blastdb(settings.add_unpubl_seq)
-            filteredScrape.run_blast_wrapper(settings.delay)
+            filteredScrape.run_blast_wrapper()
             filteredScrape.local_otu_json = settings.id_to_spn_addseq_json
             filteredScrape.read_blast_wrapper()
             filteredScrape.remove_identical_seqs()
@@ -656,7 +658,7 @@ def run_with_settings(settings):
 
         # run the ananlyses
         if filteredScrape.unpublished is not True:
-            filteredScrape.run_blast_wrapper(settings.delay)
+            filteredScrape.run_blast_wrapper()
             filteredScrape.read_blast_wrapper(blast_dir=settings.shared_blast_folder)
             filteredScrape.remove_identical_seqs()
             filteredScrape.dump()
@@ -671,7 +673,7 @@ def run_with_settings(settings):
     while filteredScrape.repeat is 1:
         filteredScrape.data.write_labelled(label="^ot:ottTaxonName", add_gb_id=True)
         filteredScrape.data.write_otus("otu_info", schema="table")
-        filteredScrape.run_blast_wrapper(settings.delay)
+        filteredScrape.run_blast_wrapper()
         filteredScrape.read_blast_wrapper(blast_dir=settings.shared_blast_folder)
         filteredScrape.remove_identical_seqs()
         if settings.threshold is not None:
