@@ -3094,7 +3094,8 @@ class FilterBlast(PhyscraperScrape):
             random_seq_ofsp = random.sample(seq2len.items(), len(toselect))
             random_seq_ofsp = dict(random_seq_ofsp)
             random_seq_ofsp.update(seq_w_maxlen)
-        assert random_seq_ofsp is not None
+        if (threshold - count) >= 1:
+            assert random_seq_ofsp is not None
         if random_seq_ofsp is not None:
             for key in random_seq_ofsp.keys():
                 self.filtered_seq[key] = random_seq_ofsp[key]
