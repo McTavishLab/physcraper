@@ -11,8 +11,8 @@ def test_filter_length():
     schema_trf = "newick"
     id_to_spn = r"tests/data/tiny_test_example/test_nicespl.csv"
 
-    workdir = "tests/output/impl_selectbylength"
-    configfi = "tests/data/blubb_localblast.config"
+    workdir = "tests/output/test_selectbylength"
+    configfi = "tests/data/test.config"
     otu_jsonfi = "{}/otu_dict.json".format(workdir)
     threshold = 2
     selectby = "length"
@@ -70,40 +70,25 @@ def test_filter_length():
     filteredScrape = FilterBlast(data_obj, ids)
     filteredScrape.add_setting_to_self(downtorank, threshold)
     filteredScrape.blacklist = blacklist
-    if add_unpubl_seq is not None:
-        filteredScrape.unpublished = True
-    if filteredScrape.unpublished is True:  # use unpublished data
-        sys.stdout.write("Blasting against local unpublished data")
-        filteredScrape.unpublished = True
-        filteredScrape.write_unpubl_blastdb(add_unpubl_seq)
-        filteredScrape.run_blast_wrapper()
-        print("add unpubl otu json")
-        filteredScrape.data.unpubl_otu_json = id_to_spn_addseq_json
-        print(filteredScrape.data.unpubl_otu_json)
-        filteredScrape.read_blast_wrapper()
-        filteredScrape.remove_identical_seqs()
-        filteredScrape.generate_streamed_alignment()
-        filteredScrape.unpublished = False
+   
+    sys.stdout.write("BLASTing input sequences\n")
+    if shared_blast_folder:
+        filteredScrape.blast_subdir = shared_blast_folder
     else:
-        # run the analysis
-        sys.stdout.write("BLASTing input sequences\n")
-        if shared_blast_folder:
-            filteredScrape.blast_subdir = shared_blast_folder
-        else:
-            shared_blast_folder = None
-        filteredScrape.run_blast_wrapper()
-        filteredScrape.read_blast_wrapper(blast_dir=shared_blast_folder)
-        filteredScrape.remove_identical_seqs()
-        filteredScrape.dump()
-        sys.stdout.write("Filter the sequences\n")
-        length_unfiltered = len(filteredScrape.new_seqs)
+        shared_blast_folder = None
+    filteredScrape.run_blast_wrapper()
+    filteredScrape.read_blast_wrapper(blast_dir="tests/data/precooked/fixed/tte_blast_files")
+    filteredScrape.remove_identical_seqs()
+    filteredScrape.dump()
+    sys.stdout.write("Filter the sequences\n")
+    length_unfiltered = len(filteredScrape.new_seqs)
 
-        if threshold is not None:
-            filteredScrape.sp_dict(downtorank)
-            filteredScrape.make_sp_seq_dict()
-            filteredScrape.how_many_sp_to_keep(threshold=threshold, selectby=selectby)
-            filteredScrape.replace_new_seq()
+    if threshold is not None:
+        filteredScrape.sp_dict(downtorank)
+        filteredScrape.make_sp_seq_dict()
+        filteredScrape.how_many_sp_to_keep(threshold=threshold, selectby=selectby)
+        filteredScrape.replace_new_seq()
 
-        length_filtered = len(filteredScrape.new_seqs)
+    length_filtered = len(filteredScrape.new_seqs)
 
     assert length_filtered != length_unfiltered
