@@ -3044,6 +3044,11 @@ class FilterBlast(PhyscraperScrape):
         Count is the return value from self.count_num_seq(tax_id)["seq_present"], that tells the program how many
         sequences for the taxon are already available in the aln.
 
+        !!! sometimes the only seq in seq_w_maxlen is the original seq,
+        then this is the one to be added, but it will be removed,
+        later as it is no new seq! thus no new seq for that species is added
+
+
         :param taxon_id: key from self.sp_seq_d
         :param threshold: threshold - max number of sequences added per taxon - defined in input
         :param count: self.count_num_seq(tax_id)["seq_present"]
@@ -3051,14 +3056,24 @@ class FilterBlast(PhyscraperScrape):
         """
         debug("select_seq_by_length")
         max_len = max(self.sp_seq_d[taxon_id].values())
-        # !!! sometimes the only seq in seq_w_maxlen is the original seq,
-        # then this is the one to be added, but it will be removed,
-        # later as it is no new seq! thus no new seq for that species is added
+        
         seq_w_maxlen = {}
         for key, val in self.sp_seq_d[taxon_id].items():
-            if self.sp_d[taxon_id][key]['^physcraper:status'].split(' ')[0] != ["added", "deleted", "original", "new"]:
-                if len(val) == len(max_len):
-                    seq_w_maxlen[key] = val
+            # print(key)
+            # print(val)
+            # print(self.sp_d[taxon_id])
+            for item in self.sp_d[taxon_id]:
+                # print(item)
+                # print(item['^ncbi:accession'])
+                if '^ncbi:accession' in item and item['^ncbi:accession'] == key:
+                    # print(item)
+                    # print(item['^physcraper:status'].split(' ')[0])
+                    # print(len(max_len))
+                    # print(len(val))
+                    if item['^physcraper:status'].split(' ')[0] != ["added", "deleted", "original", "new"]:
+                        if len(val) == len(max_len):
+                                seq_w_maxlen[key] = val
+        # print(seq_w_maxlen)
         if (threshold - count) <= 0:
             debug("already to many samples of sp in aln, skip adding more.")
             random_seq_ofsp = None
