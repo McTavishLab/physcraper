@@ -1174,16 +1174,6 @@ def get_mrca_ott(ott_ids):
     return tax_id
 
 
-def get_ott_ids_from_otu_dict(otu_dict):  # TODO put into data obj?
-    """Get the ott ids from an otu dict object"""
-    # TODO: never used
-    ott_ids = []
-    for otu in otu_dict:
-        try:
-            ott_ids.append(otu["^ot:ottId"])
-        except KeyError:
-            pass
-
 
 #####################################
 
@@ -2358,8 +2348,8 @@ class PhyscraperScrape(object):
         self.data.write_papara_files()
         os.chdir(self.workdir)  # Clean up dir moving
         # with cd(self.workdir):
+        assert self.data.aln.taxon_namespace == self.data.tre.taxon_namespace
         try:
-            assert self.data.aln.taxon_namespace == self.data.tre.taxon_namespace
             subprocess.check_call(["papara",
                                    "-t", "random_resolve.tre",
                                    "-s", "aln_ott.phy",
