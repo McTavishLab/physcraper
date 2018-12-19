@@ -391,7 +391,7 @@ def generate_ATT_from_phylesystem(aln,
     """
     assert isinstance(aln, datamodel.charmatrixmodel.DnaCharacterMatrix)
     for tax in aln.taxon_namespace:
-        tax.label = tax.label.replace(" ", "_")  # Forcing all spaces to underscore UGH
+        tax.label = tax.label.replace(" ", "_")  # Forcing all spaces to underscore
     nexson = get_nexson(study_id, phylesystem_loc)
     ott_ids = get_subtree_otus(nexson,
                                tree_id=tree_id,
@@ -481,7 +481,7 @@ def generate_ATT_from_files(seqaln,
     aln = DnaCharacterMatrix.get(path=new_seq_file, schema=mattype)
     assert aln.taxon_namespace
     for tax in aln.taxon_namespace:
-        tax.label = tax.label.replace(" ", "_")  # Forcing all spaces to underscore UGH
+        tax.label = tax.label.replace(" ", "_")  # Forcing all spaces to underscore
     tre = Tree.get(path=treefile,
                    schema=schema_trf,
                    preserve_underscores=True,
@@ -719,9 +719,8 @@ class AlignTreeTax(object):
 
         This checks that the tree "original labels" from phylesystem
         align with those found in the alignment. Spaces vs underscores
-        kept being an issue, so all spaces are coerced to underscores throughout!
+        kept being an issue, so all spaces are coerced to underscores when data are read in.
         """
-        # TODO last part of docstring is never happening here, or? and also not in the extracted method reconcile_names, I wrote that part to deal with the issue of the n in the own data files...
         debug("reconcile")
         treed_tax = set()
         for leaf in self.tre.leaf_nodes():
@@ -1030,9 +1029,8 @@ class AlignTreeTax(object):
         self.aln.write(path="{}/{}".format(self.workdir, alnfilename), schema="phylip")
 
     def write_files(self, treepath="physcraper.tre", treeschema="newick", alnpath="physcraper.fas", alnschema="fasta"):
-        """Outputs both the streaming files and a ditechecked"""
-        # TODO: ditchecked?
-        # First write rich annotation json file with everything needed for later?
+        """Outputs both the streaming files, with labed with OTU labels."""
+        #Todo First write rich annotation json file with everything needed for label disambiguation
         debug("write_files")
         self.tre.write(path="{}/{}".format(self.workdir, treepath),
                        schema=treeschema, unquoted_underscores=True)
@@ -1239,7 +1237,6 @@ class IdDicts(object):
 
     def __init__(self, config_obj, workdir, mrca=None):
         """Generates a series of name disambiguation dicts"""
-        self.workdir = workdir  # TODO: Not needed. only used for dump and map_gi. map_gi file does not exists. dump is only used in wrapper, and we have the information of workdir available in wrapper functions anyways
         self.config = config_obj
         assert self.config.email
         self.ott_to_ncbi = {}  # currently only used to find mcra ncbi id from mrca ott_id
@@ -1251,7 +1248,7 @@ class IdDicts(object):
         self.mrca_ott = mrca  # mrca_list
         assert type(self.mrca_ott) in [int, list] or self.mrca_ott is None
         self.mrca_ncbi = set()  # corresponding ids for mrca_ott list
-        fi = open(config_obj.ott_ncbi)  # TODO need to keep updated, where does the file come from?
+        fi = open(config_obj.ott_ncbi)  # This is in the taxonomy folder of the repo, needs to be updated by devs when OpenTree taxonomy changes.
         for lin in fi:  # TODO This is insanely memory inefficient, how about using a pandas dataframe?
             lii = lin.split(",")
             self.ott_to_ncbi[int(lii[0])] = int(lii[1])
@@ -1262,11 +1259,6 @@ class IdDicts(object):
             assert len(self.ott_to_name) > 0
         fi.close()
         # TODO: pandas solution? requires to rewrite usages of self.ott_to_ncbi, self.ncbi_to_ott, self.ott_to_name
-        # TODO: where do we generate id_map?
-        if os.path.isfile("{}/id_map.txt".format(workdir)):  # todo config?!
-            fi = open("{}/id_map.txt".format(workdir))
-            for lin in fi:
-                self.acc_ncbi_dict[int(lin.split(",")[0])] = lin.split(",")[1]
         if config_obj.blast_loc == 'remote':
             self.otu_rank = {}  # used only for web queries - contains taxonomic hierarchy information
         else:  # ncbi parser contains information about spn, tax_id, and ranks
@@ -1580,17 +1572,16 @@ class PhyscraperScrape(object):
         self.logfile = "{}/logfile".format(self.workdir)
         self.data = data_obj
         self.ids = ids_obj
-        self.config = self.ids.config  # TODO: this is already part of self.ids, information are doubled.
+        assert data_obj.config == ids_obj.config
+        self.config = self.ids.config  # pointer to config
         self.new_seqs = {}  # all new seq after read_blast_wrapper
         self.new_seqs_otu_id = {}  # only new seq which passed remove_identical
-        self.otu_by_gi = {}  # TODO: What was this intended for? we don't use it
-        self._to_be_pruned = []  # TODO: What was this intended for? We don't use it
         self.mrca_ncbi = ids_obj.ott_to_ncbi[data_obj.ott_mrca]
         self.tmpfi = "{}/physcraper_run_in_progress".format(self.workdir)  # TODO: For what do we want to use this?
         self.blast_subdir = "{}/current_blast_run".format(self.workdir)
         if not os.path.exists(self.workdir):
             os.makedirs(self.workdir)
-        self.newseqs_file = "tmp.fasta"  # TODO: is renamed before using it. Name is easily confused with 'tmp.fas' which is used as temporary file that contains the sequence that is currently blasted
+        self.newseqs_file = ""
         self.date = str(datetime.date.today())  # Date of the run - may lag behind real date!
         self.repeat = 1  # used to determine if we continue updating the tree
         self.newseqs_acc = []  # all ever added Genbank accession numbers during any PhyScraper run, used to speed up adding process
@@ -1616,11 +1607,8 @@ class PhyscraperScrape(object):
     def reset_markers(self):
         self._blasted = 0
         self._blast_read = 0
-        self._identical_removed = 0  # TODO: We don't use it
         self._query_seqs_written = 0
-        self._query_seqs_aligned = 0  # TODO: We don't use it
         self._query_seqs_placed = 0
-        self._reconciled = 0  # TODO: We don't use it
         self._full_tree_est = 0
 
     def OToL_unmapped_tips(self):
@@ -2625,9 +2613,6 @@ class PhyscraperScrape(object):
                     os.rename("{}/previous_run".format(self.workdir), prev_dir)
                 if self.config.gb_id_filename is not True:
                     os.rename(self.blast_subdir, "{}/previous_run".format(self.workdir))
-                if os.path.exists("{}/last_completed_update".format(
-                        self.workdir)):  # TODO: this and the following line are not used.
-                    os.rename(self.tmpfi, "{}/last_completed_update".format(self.workdir))
                 for filename in glob.glob('{}/RAxML*'.format(self.workdir)):
                     if not os.path.exists("{}/previous_run".format(self.workdir)):
                         os.makedirs('{}/previous_run/'.format(self.workdir))
