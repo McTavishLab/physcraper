@@ -524,7 +524,7 @@ def standardize_label(item):
 def get_ott_taxon_info(spp_name):
     """get ottid, taxon name, and ncbid (if present) from Open Tree Taxonomy.
     ONLY works with version 3 of Open tree APIs
-
+    
     :param spp_name: species name
     :return:
     """
@@ -766,7 +766,6 @@ class AlignTreeTax(object):
 
         :return: replaced tip names
         """
-        # TODO: move to new method?
         for tax in self.aln.taxon_namespace:
             if tax.label in self.otu_dict.keys():
                 pass
@@ -947,25 +946,25 @@ class AlignTreeTax(object):
         ncbi_id = None
         tax_name = None
         ott_id = None
-        if gb_id[:6] == "unpubl":
+        if gb_id[:6] == "unpubl": #There may not be ncbi id, because they aren't published
             tax_name = self.gb_dict[gb_id]["^ot:ottTaxonName"]
-            ncbi_id = self.gb_dict[gb_id]["^ncbi:taxon"]
+            ncbi_id = int(self.gb_dict[gb_id]["^ncbi:taxon"])
             ott_id = self.gb_dict[gb_id]["^ot:ottId"]
             if tax_name is None:
                 tax_name = self.gb_dict[gb_id][u'^user:TaxonName']
-            if ncbi_id is None:
+            if ncbi_id is None: 
                 debug(tax_name.split(" ")[0])
                 tax_lin_name = tax_name.split(" ")[0]
                 tax_lin_name = tax_lin_name.split("_")[0]
                 debug(tax_lin_name)
-                ncbi_id = ids_obj.ncbi_parser.get_id_from_name(tax_lin_name)
+                ncbi_id = int(ids_obj.ncbi_parser.get_id_from_name(tax_lin_name))
                 # ncbi_id = 00000
         elif len(gb_id.split(".")) >= 2:  # used to figure out if gb_id is from Genbank
             if gb_id in self.gb_dict.keys() and "staxids" in self.gb_dict[gb_id].keys():
                 tax_name = self.gb_dict[gb_id]["sscinames"]
-                ncbi_id = self.gb_dict[gb_id]["staxids"]
-            else:
-                tax_name = ids_obj.find_name(acc=gb_id)
+                ncbi_id = self.gb_dict[gb_id]["staxids"] #
+            else: #all web blast results
+                ncbi_id = ids_obj.find_name(acc=gb_id)#todo check
                 if tax_name is None:
                     sys.stderr.write("no species name returned for {}".format(gb_id))
                 ncbi_id = ids_obj.map_acc_ncbi(gb_id)
@@ -974,22 +973,21 @@ class AlignTreeTax(object):
             exit(-1)
         if ncbi_id is None:
             debug("ncbi_id is none")
-            if ids_obj.otu_rank is not None:
-                ncbi_id = ids_obj.otu_rank[tax_name]["taxon id"]
-            else:
-                ncbi_id = ids_obj.ncbi_parser.get_id_from_name(tax_name)
+            if ids_obj.otu_rank is not None: 
+                ncbi_id = ids_obj.otu_rank[tax_name]["taxon id"] #todo why would be have found the ncbi id before, but not in find_name?
+#            else:
+#                ncbi_id = ids_obj.ncbi_parser.get_id_from_name(tax_name)
             ids_obj.acc_ncbi_dict[gb_id] = ncbi_id
             ids_obj.ncbiid_to_spn[ncbi_id] = tax_name
             ids_obj.spn_to_ncbiid[tax_name] = ncbi_id
-        if ncbi_id in ids_obj.ncbi_to_ott.keys():
-            ott_id = int(ids_obj.ncbi_to_ott[ncbi_id])
-        if ott_id is None:
-            ott_id = "OTT_{}".format(self.ps_otu)
-            self.ps_otu += 1
+        if int(ncbi_id) in ids_obj.ncbi_to_ott.keys():
+            ott_id = int(ids_obj.ncbi_to_ott[int(ncbi_id)])
+        else:
+            debug("{} Ncbi id not found in ott_ncbi dictionaries\n".format(ncbi_id))
         if otu_id in self.otu_dict.keys():
             ott_name = ids_obj.ott_to_name.get(ott_id)
         else:
-            ott_name = tax_name
+            ott_name = None
         self.otu_dict[otu_id] = {}
         self.otu_dict[otu_id]["^ncbi:title"] = self.gb_dict[gb_id]["title"]
         self.otu_dict[otu_id]["^ncbi:taxon"] = ncbi_id
@@ -1029,8 +1027,8 @@ class AlignTreeTax(object):
         self.aln.write(path="{}/{}".format(self.workdir, alnfilename), schema="phylip")
 
     def write_files(self, treepath="physcraper.tre", treeschema="newick", alnpath="physcraper.fas", alnschema="fasta"):
-        """Outputs both the streaming files, with labed with OTU labels."""
-        #Todo First write rich annotation json file with everything needed for label disambiguation
+        """Outputs both the streaming files, labeled with OTU ids.
+        Can be mapped to original labels using otu_dict.json or otu_seq_info.csv"""
         debug("write_files")
         self.tre.write(path="{}/{}".format(self.workdir, treepath),
                        schema=treeschema, unquoted_underscores=True)
@@ -1151,7 +1149,7 @@ def get_mrca_ott(ott_ids):
         except:
             # except HTTPError as err: # TODO: this is not working, program fails with HTTPError
             # sys.stderr.write(err)
-            debug("except")
+            debug("get_mrca_ott unhandled exception")
             ott_ids_not_in_synth.append(ott)
     if len(synth_tree_ott_ids) == 0:
         sys.stderr.write('No sampled taxa were found in the current synthetic tree. '
@@ -1243,7 +1241,7 @@ class IdDicts(object):
             lii = lin.split(",")
             self.ott_to_ncbi[int(lii[0])] = int(lii[1])
             self.ncbi_to_ott[int(lii[1])] = int(lii[0])
-            self.ott_to_name[int(lii[0])] = lii[2].strip()
+            self.ott_to_name[int(lii[0])] = lii[2].strip() #todo merge into ott_to_ncbi?
             assert len(self.ott_to_ncbi) > 0
             assert len(self.ncbi_to_ott) > 0
             assert len(self.ott_to_name) > 0
@@ -1383,11 +1381,11 @@ class IdDicts(object):
             if acc:
                 gb_id = acc
             elif "^ncbi:accession" in sp_dict:
-                gb_id = sp_dict["^ncbi:accession"]
-            else:
-                sys.stderr.write("There is no name supplied and no acc available. This should not happen! Check name!")
-            if gb_id.split(".") == 1:
-                debug(gb_id)
+                gb_id = sp_dict["^ncbi:accession"] 
+            #else:
+            #    sys.stderr.write("There is no name supplied and no accession number. This should not happen! Check name!")
+            #if gb_id.split(".") == 1:
+            #    debug(gb_id)
             if gb_id in self.acc_ncbi_dict:
                 ncbi_id = self.acc_ncbi_dict[gb_id]
                 if ncbi_id in self.ncbiid_to_spn.keys():
@@ -1399,7 +1397,7 @@ class IdDicts(object):
                     self.ncbiid_to_spn[ncbi_id] = tax_name
                     self.acc_ncbi_dict[gb_id] = ncbi_id
                     if sp_dict:
-                        sp_dict["^ot:ottTaxonName"] = tax_name
+                        sp_dict["^ot:ottTaxonName"] = tax_name #TODO does this actually edit the dictionary entry?
                         sp_dict["^ncbi:taxon"] = ncbi_id
             else:  # usually being used for web-queries, local blast searches should have the information
                 read_handle = self.entrez_efetch(gb_id)
@@ -1413,7 +1411,7 @@ class IdDicts(object):
             assert ncbi_id is not None
         assert tax_name is not None
         tax_name = tax_name.replace(" ", "_")
-        return tax_name
+        return tax_name #todo return ncbi_id
 
     def entrez_efetch(self, gb_id):
         """ Wrapper function around efetch from ncbi to get taxonomic information if everything else is failing.
@@ -1562,7 +1560,7 @@ class PhyscraperScrape(object):
         self.logfile = "{}/logfile".format(self.workdir)
         self.data = data_obj
         self.ids = ids_obj
-        assert data_obj.config == ids_obj.config
+#        assert data_obj.config == ids_obj.config
         self.config = self.ids.config  # pointer to config
         self.new_seqs = {}  # all new seq after read_blast_wrapper
         self.new_seqs_otu_id = {}  # only new seq which passed remove_identical
@@ -3445,7 +3443,7 @@ class Settings(object):
 
 
 def get_ncbi_tax_id(handle):
-    """Get the taxon ID from ncbi.
+    """Get the taxon ID from ncbi. ONly used for web queries
 
     :param handle: NCBI read.handle
     :return: ncbi_id
@@ -3463,7 +3461,8 @@ def get_ncbi_tax_id(handle):
 
 
 def get_ncbi_tax_name(handle):
-    """Get the sp name from ncbi.
+    """Get the sp name from ncbi. 
+    Could be replaced by direct lookup to ott_ncbi.
 
     :param handle: NCBI read.handle
     :return: ncbi_spn
