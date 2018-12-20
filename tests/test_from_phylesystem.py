@@ -1,8 +1,12 @@
 import physcraper
 import sys
+from pytest import mark
 from dendropy import DnaCharacterMatrix
 
+web = mark.web
 
+
+@web
 def test_generate_ATT_from_phylesystem():
     seqaln = "tests/data/input.fas"
     study_id = "pg_873"
