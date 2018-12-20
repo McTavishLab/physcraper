@@ -948,7 +948,7 @@ class AlignTreeTax(object):
         ott_id = None
         if gb_id[:6] == "unpubl": #There may not be ncbi id, because they aren't published
             tax_name = self.gb_dict[gb_id]["^ot:ottTaxonName"]
-            ncbi_id = int(self.gb_dict[gb_id]["^ncbi:taxon"])
+            ncbi_id = self.gb_dict[gb_id]["^ncbi:taxon"]
             ott_id = self.gb_dict[gb_id]["^ot:ottId"]
             if tax_name is None:
                 tax_name = self.gb_dict[gb_id][u'^user:TaxonName']
@@ -957,7 +957,7 @@ class AlignTreeTax(object):
                 tax_lin_name = tax_name.split(" ")[0]
                 tax_lin_name = tax_lin_name.split("_")[0]
                 debug(tax_lin_name)
-                ncbi_id = int(ids_obj.ncbi_parser.get_id_from_name(tax_lin_name))
+                ncbi_id = ids_obj.ncbi_parser.get_id_from_name(tax_lin_name)
                 # ncbi_id = 00000
         elif len(gb_id.split(".")) >= 2:  # used to figure out if gb_id is from Genbank
             if gb_id in self.gb_dict.keys() and "staxids" in self.gb_dict[gb_id].keys():
@@ -980,10 +980,11 @@ class AlignTreeTax(object):
             ids_obj.acc_ncbi_dict[gb_id] = ncbi_id
             ids_obj.ncbiid_to_spn[ncbi_id] = tax_name
             ids_obj.spn_to_ncbiid[tax_name] = ncbi_id
-        if int(ncbi_id) in ids_obj.ncbi_to_ott.keys():
+        if ncbi_id in ids_obj.ncbi_to_ott.keys():
             ott_id = int(ids_obj.ncbi_to_ott[int(ncbi_id)])
         else:
             debug("{} Ncbi id not found in ott_ncbi dictionaries\n".format(ncbi_id))
+
         if otu_id in self.otu_dict.keys():
             ott_name = ids_obj.ott_to_name.get(ott_id)
         else:
@@ -1384,8 +1385,8 @@ class IdDicts(object):
                 gb_id = sp_dict["^ncbi:accession"] 
             #else:
             #    sys.stderr.write("There is no name supplied and no accession number. This should not happen! Check name!")
-            #if gb_id.split(".") == 1:
-            #    debug(gb_id)
+            if gb_id.split(".") == 1:
+                debug(gb_id)
             if gb_id in self.acc_ncbi_dict:
                 ncbi_id = self.acc_ncbi_dict[gb_id]
                 if ncbi_id in self.ncbiid_to_spn.keys():
