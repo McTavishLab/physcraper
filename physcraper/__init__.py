@@ -964,7 +964,7 @@ class AlignTreeTax(object):
                 tax_name = self.gb_dict[gb_id]["sscinames"]
                 ncbi_id = self.gb_dict[gb_id]["staxids"] #
             else: #all web blast results
-                ncbi_id = ids_obj.find_name(acc=gb_id)#todo check
+                tax_name = ids_obj.find_name(acc=gb_id)#todo check
                 if tax_name is None:
                     sys.stderr.write("no species name returned for {}".format(gb_id))
                 ncbi_id = ids_obj.map_acc_ncbi(gb_id)
