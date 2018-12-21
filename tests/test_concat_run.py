@@ -1,4 +1,5 @@
-
+import os
+import shutil
 from physcraper import wrappers
 from physcraper.concat import Concat
 
@@ -16,7 +17,7 @@ def test_concat_run():
 	email = "mk@xy.zt"
 	percentage = 0.4
 
-	pickle_fn = "scrape_checkpoint.p"
+	pickle_fn = "final_ATT_checkpoint.p"
 
 	workdir_comb = "./tests/output/concat_nr"
 	genelist = {"ITS": {"workdir": workdir_ITS, "pickle": pickle_fn}, 
@@ -27,3 +28,5 @@ def test_concat_run():
 	                       email=email, percentage=percentage, user_concat_fn=None)
 
 	assert isinstance(conc, Concat)
+	print(os.path.join(workdir_comb, "physcraper"))
+	shutil.rmtree(os.path.join(workdir_comb, "physcraper_runcopy"))

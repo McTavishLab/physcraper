@@ -1,6 +1,6 @@
 if [ -f output/owndata/ ]; then echo 'Found some!'; fi
 
-py.test  --cov=physcraper --runslow -v tests/
+py.test  --cov=physcraper --runslow  --runconcat -v tests/
 
 
 #py.test --cov=physcraper tests/test_remove_identical_seqs.py

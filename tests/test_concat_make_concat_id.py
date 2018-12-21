@@ -2,14 +2,14 @@ import sys
 from physcraper.concat import Concat
 
 #
-workdir_its = "runs/tiny_comb_its"
-workdir_ets = "runs/tiny_comb_ets"
+workdir_its = "tests/data/precooked/concat_pre"
+workdir_ets = "tests/data/precooked/concat_pre"
 email = "martha.kandziora@yahoo.com"
-pickle_fn = "scrape_checkpoint.p"
+pickle_fn = "final_ATT_checkpoint.p"
 
 workdir_comb = "tests/output/impl_concat"
-genelist = {"its": {"workdir": workdir_its, "pickle": pickle_fn}, 
-            "ets": {"workdir": workdir_ets, "pickle": pickle_fn}}
+genelist = {"its": {"workdir": workdir_its, "pickle": "its_{}".format(pickle_fn)}, 
+            "ets": {"workdir": workdir_ets, "pickle": "ets_{}".format(pickle_fn)}}
 
 
 from pytest import mark
@@ -28,8 +28,8 @@ def test():
     concat.combine()
     spnl = []
     for genename in concat.single_runs:
-        for otu in concat.single_runs[genename].data.otu_dict.keys():
-            data = concat.single_runs[genename].data.otu_dict[otu]
+        for otu in concat.single_runs[genename].otu_dict.keys():
+            data = concat.single_runs[genename].otu_dict[otu]
            
             if '^ot:ottTaxonName' in data:
                 spn = concat.get_taxon_info('^ot:ottTaxonName', data)

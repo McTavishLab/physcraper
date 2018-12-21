@@ -36,18 +36,18 @@ def remove_aln_tre_leaf(scrape):
      that were removed sometime in the single runs, but kind of sneak in.
     """
     aln_ids = set()
-    for tax in scrape.data.aln:
+    for tax in scrape.aln:
         aln_ids.add(tax.label)
-    assert aln_ids.issubset(scrape.data.otu_dict.keys())
+    assert aln_ids.issubset(scrape.otu_dict.keys())
 
     treed_taxa = set()
-    for leaf in scrape.data.tre.leaf_nodes():
+    for leaf in scrape.tre.leaf_nodes():
         treed_taxa.add(leaf.taxon)
-    for leaf in scrape.data.tre.leaf_nodes():
+    for leaf in scrape.tre.leaf_nodes():
         if leaf.taxon not in aln_ids:
-            scrape.data.tre.prune_taxa([leaf])
-            scrape.data.tre.prune_taxa_with_labels([leaf.taxon])
-            scrape.data.tre.prune_taxa_with_labels([leaf])
+            scrape.tre.prune_taxa([leaf])
+            scrape.tre.prune_taxa_with_labels([leaf.taxon])
+            scrape.tre.prune_taxa_with_labels([leaf])
             treed_taxa.remove(leaf.taxon)
     assert treed_taxa.issubset(aln_ids)
     return scrape
@@ -137,6 +137,7 @@ class Concat(object):
         self.concatenated_aln = concatenated alignment
         self.tmp_dict = subset of self.sp_acc_comb
         self.part_len = holds sequence partition position to write the partitioning file # ! TODO MK: might not need to be self
+	self.backbone = T/F, if you want to keep one of the phylogenies as constraint backbone
     """
 
     def __init__(self, workdir_comb, email):
@@ -161,6 +162,7 @@ class Concat(object):
         self.concatenated_aln = None
         self.tmp_dict = None
         self.concat_tips = {}
+        self.backbone = False
 
     def load_single_genes(self, workdir, pickle_fn, genename):
         """Load PhyScraper class objects and make a single dict per run.
@@ -189,7 +191,7 @@ class Concat(object):
         concat_id_counter = 1
         for genename in self.single_runs:
             self.genes_present.append(genename)
-            for otu in self.single_runs[genename].data.aln.taxon_namespace:
+            for otu in self.single_runs[genename].aln.taxon_namespace:
                 concat_id = "concat_{}".format(concat_id_counter)
                 self.make_concat_id_dict(otu.label, genename, concat_id)
                 concat_id_counter += 1
@@ -261,26 +263,26 @@ class Concat(object):
         :param data: otu_dict entry from single gene physcraper run
         :return: taxon name
         """
-        # debug("get_rank_info")
+        # physcraper.debug("get_rank_info")
         tax_name = None
         if key in data:
             if data[key] is None:
                 if "^ncbi:accession" in data:
                     gb_id = data["^ncbi:accession"]
-                Entrez.email = self.email
-                tries = 5
-                for i in range(tries):
-                    try:
-                        handle = Entrez.efetch(db="nucleotide", id=gb_id, retmode="xml")
-                    except (IndexError, HTTPError) as err:
-                        sys.stderr.write(err)
-                        if i < tries - 1:  # i is zero indexed
-                            continue
-                        else:
-                            raise
-                    break
-                read_handle = Entrez.read(handle)[0]
-                tax_name = read_handle['GBSeq_feature-table'][0]['GBFeature_quals'][0]['GBQualifier_value']
+                    Entrez.email = self.email
+                    tries = 5
+                    for i in range(tries):
+                        try:
+                            handle = Entrez.efetch(db="nucleotide", id=gb_id, retmode="xml")
+                        except (IndexError, HTTPError) as err:
+                            sys.stderr.write(err)
+                            if i < tries - 1:  # i is zero indexed
+                                continue
+                            else:
+                                raise
+                        break
+                    read_handle = Entrez.read(handle)[0]
+                    tax_name = read_handle['GBSeq_feature-table'][0]['GBFeature_quals'][0]['GBQualifier_value']
             else:
                 tax_name = data[key]
         assert tax_name is not None
@@ -324,7 +326,7 @@ class Concat(object):
         first = True
         len_all_taxa = {}
         for gene in self.single_runs:
-            len_aln_taxa = len(self.single_runs[gene].data.aln.taxon_namespace)
+            len_aln_taxa = len(self.single_runs[gene].aln.taxon_namespace)
             len_all_taxa[gene] = len_aln_taxa
         len_max = 0
         gene_max = 0
@@ -338,7 +340,7 @@ class Concat(object):
             if len_item > len_max:
                 len_max = len_item
                 gene_max = gene
-        self.tre_as_start = self.single_runs[gene_max].data.tre
+        self.tre_as_start = self.single_runs[gene_max].tre
         self.tre_start_gene = gene_max
 
     def make_sp_gene_dict(self):
@@ -496,7 +498,7 @@ class Concat(object):
         """
         # physcraper.debug("make_empty_seq")
         len_gene_aln = 0
-        for tax, seq in self.single_runs[gene].data.aln.items():
+        for tax, seq in self.single_runs[gene].aln.items():
             len_gene_aln = len(seq)
             break
         assert len_gene_aln != 0
@@ -685,7 +687,7 @@ class Concat(object):
         count = 0
         len_gene = 0
         for gene in self.single_runs:
-            for tax, seq in self.single_runs[gene].data.aln.items():
+            for tax, seq in self.single_runs[gene].aln.items():
                 len_gene = len(seq.symbols_as_string())
                 break
             if count == 0:
@@ -700,7 +702,7 @@ class Concat(object):
                 with open("{}/partition".format(self.workdir), "a") as partition:
                     partition.write("DNA, {} = {}-{}\n".format(gene, start, end))
 
-    def place_new_seqs(self):
+    def place_new_seqs(self, num_threads=None):
         """Places the new seqs (that are only found in loci which is not the starting tree)
         onto one of the single run trees.
         """
@@ -714,8 +716,8 @@ class Concat(object):
                 # os.chdir(self.workdir)
                 # physcraper.debug("make place-tree")
                 try:
-                    num_threads = int(self.config.num_threads)
-                    print(num_threads)
+                    num_threads = int(num_threads)
+                    # debug(num_threads)
                     subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(num_threads), "-m", "GTRCAT",
                                      "-f", "v", "-q", "partition",
                                      "-s", "concat_red.fasta",
@@ -755,20 +757,33 @@ class Concat(object):
                 aln = "concat_red.fasta"
                 partition = "partition"
             try:
-                # if num_threads != None:
-                num_threads = int(num_threads)
-                print(num_threads)
-                subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(num_threads), "-m", "GTRCAT",
-                             "-s", aln, "--print-identical-sequences",
-                             "-t", "{}".format(starting_fn),
-                             "-p", "1", "-q", partition,
-                             "-n", "concat"])
+                if self.backbone is not True:
+                    num_threads = int(num_threads)
+                    # print(num_threads)
+                    subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(num_threads), "-m", "GTRCAT",
+                                     "-s", aln, "--print-identical-sequences",
+                                     "-t", "{}".format(starting_fn),
+                                     "-p", "1", "-q", partition,
+                                     "-n", "concat"])
+                else:
+                    subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(num_threads), "-m", "GTRCAT",
+                                     "-s", aln, "--print-identical-sequences",
+                                     "-r", "{}".format(starting_fn),
+                                     "-p", "1",
+                                     "-n", "backbone_concat"])
             except:
-                subprocess.call(["raxmlHPC", "-m", "GTRCAT",
-                             "-s", aln, "--print-identical-sequences",
-                             "-t", "{}".format(starting_fn),
-                             "-p", "1", "-q", partition,
-                             "-n", "concat"])
+                if self.backbone is not True:
+                    subprocess.call(["raxmlHPC-PTHREADS", "-m", "GTRCAT",
+                                     "-s", aln, "--print-identical-sequences",
+                                     "-t", "{}".format(starting_fn),
+                                     "-p", "1", "-q", partition,
+                                     "-n", "concat"])
+                else:
+                    subprocess.call(["raxmlHPC-PTHREADS", "-m", "GTRCAT",
+                                     "-s", aln, "--print-identical-sequences",
+                                     "-r", "{}".format(starting_fn),
+                                     "-p", "1",
+                                     "-n", "backbone_concat"])
             # os.chdir(cwd)
 
     def calculate_bootstrap(self, num_threads=None):
@@ -795,7 +810,7 @@ class Concat(object):
             # -z specifies file with multiple trees
             try:
                 num_threads = int(num_threads)
-                print(num_threads)
+                # print(num_threads)
                 # subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(num_threads), "-m", "GTRCAT",
                 #                  "-s", aln,  "-q", partition,
                 #                  # "-t", "place_resolve.tre",
@@ -917,11 +932,14 @@ class Concat(object):
         """
         pickle.dump(self, open("{}/{}".format(self.workdir, filename), "wb"))
 
-    def write_otu_info(self):
+    def write_otu_info(self, downtorank=None):
         """Writes output tables to file: Makes reading important information less code heavy.
 
         file with all relevant GenBank info to file (otu_dict).
 
+        It uses the self.sp_d to get sampling information, that's why the downtorank is required.
+
+        :param downtorank: hierarchical filter
         :return: writes output to file
         """   
         physcraper.debug("write_otu_info")
