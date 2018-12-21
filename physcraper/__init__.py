@@ -36,6 +36,7 @@ from peyotl.nexson_syntax import (
 from . import concat  # is the local concat class
 from . import ncbi_data_parser  # is the ncbi data parser class and associated functions
 from . import local_blast
+from . import opentree_helpers
 
 if sys.version_info < (3,):
     from urllib2 import HTTPError
@@ -1144,13 +1145,10 @@ def get_mrca_ott(ott_ids):
     synth_tree_ott_ids = []
     ott_ids_not_in_synth = []
     for ott in ott_ids:
-        try:
-            tree_of_life.mrca(ott_ids=[ott], wrap_response=False)
+        r = opentree_helpers.check_if_ottid_in_synth(ott)
+        if r == 1:
             synth_tree_ott_ids.append(ott)
-        except:
-            # except HTTPError as err: # TODO: this is not working, program fails with HTTPError
-            # sys.stderr.write(err)
-            debug("get_mrca_ott unhandled exception")
+        else:
             ott_ids_not_in_synth.append(ott)
     if len(synth_tree_ott_ids) == 0:
         sys.stderr.write('No sampled taxa were found in the current synthetic tree. '
