@@ -207,8 +207,6 @@ class Concat(object):
         :param concat_id: unique identifier in the concat class
         :return: modified self.sp_acc_comb
         """
-        data = self.single_runs[genename].data.otu_dict[otu]
-        seq = str(self.single_runs[genename].data.aln[otu])
         spn = None
         if "^ot:ottTaxonName" in data:
             spn = self.get_taxon_info("^ot:ottTaxonName", data)
@@ -227,6 +225,9 @@ class Concat(object):
             physcraper.debug("THERE IS A SERIOUS PROBLEM....")
         assert spn is not None
         if concat_id not in self.sp_acc_comb[spn][genename]:
+        data = self.single_runs[genename].otu_dict[otu]
+        #print(data)
+        seq = str(self.single_runs[genename].aln[otu])
             if "^ncbi:accession" in data:
                 unique_id = data["^ncbi:accession"]
             elif u"^ot:originalLabel" in data:
