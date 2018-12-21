@@ -6,10 +6,10 @@ from physcraper.concat import Concat
 from pytest import mark
 # you can actually do whatever
 # ruftrum = mark.ruftrum will work and create a "ruftrum" test. 
-concat = mark.concat
+concatfull = mark.concatfull
 
 
-@concat
+@concatfull
 def test_concat_run():
 
 	workdir_ITS = "tests/data/PS_tiny_comb_its"
