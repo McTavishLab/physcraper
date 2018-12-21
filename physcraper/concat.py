@@ -207,7 +207,7 @@ class Concat(object):
         :param concat_id: unique identifier in the concat class
         :return: modified self.sp_acc_comb
         """
-	data = self.single_runs[genename].otu_dict[otu]
+        data = self.single_runs[genename].otu_dict[otu]
         #print(data)
         seq = str(self.single_runs[genename].aln[otu])
         
