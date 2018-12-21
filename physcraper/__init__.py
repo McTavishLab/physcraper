@@ -36,6 +36,7 @@ from peyotl.nexson_syntax import (
 from . import concat  # is the local concat class
 from . import ncbi_data_parser  # is the ncbi data parser class and associated functions
 from . import local_blast
+from . import opentree_helpers
 
 if sys.version_info < (3,):
     from urllib2 import HTTPError
@@ -391,7 +392,7 @@ def generate_ATT_from_phylesystem(aln,
     """
     assert isinstance(aln, datamodel.charmatrixmodel.DnaCharacterMatrix)
     for tax in aln.taxon_namespace:
-        tax.label = tax.label.replace(" ", "_")  # Forcing all spaces to underscore UGH
+        tax.label = tax.label.replace(" ", "_")  # Forcing all spaces to underscore
     nexson = get_nexson(study_id, phylesystem_loc)
     ott_ids = get_subtree_otus(nexson,
                                tree_id=tree_id,
@@ -481,7 +482,7 @@ def generate_ATT_from_files(seqaln,
     aln = DnaCharacterMatrix.get(path=new_seq_file, schema=mattype)
     assert aln.taxon_namespace
     for tax in aln.taxon_namespace:
-        tax.label = tax.label.replace(" ", "_")  # Forcing all spaces to underscore UGH
+        tax.label = tax.label.replace(" ", "_")  # Forcing all spaces to underscore
     tre = Tree.get(path=treefile,
                    schema=schema_trf,
                    preserve_underscores=True,
@@ -524,7 +525,7 @@ def standardize_label(item):
 def get_ott_taxon_info(spp_name):
     """get ottid, taxon name, and ncbid (if present) from Open Tree Taxonomy.
     ONLY works with version 3 of Open tree APIs
-
+    
     :param spp_name: species name
     :return:
     """
@@ -719,9 +720,8 @@ class AlignTreeTax(object):
 
         This checks that the tree "original labels" from phylesystem
         align with those found in the alignment. Spaces vs underscores
-        kept being an issue, so all spaces are coerced to underscores throughout!
+        kept being an issue, so all spaces are coerced to underscores when data are read in.
         """
-        # TODO last part of docstring is never happening here, or? and also not in the extracted method reconcile_names, I wrote that part to deal with the issue of the n in the own data files...
         debug("reconcile")
         treed_tax = set()
         for leaf in self.tre.leaf_nodes():
@@ -767,7 +767,6 @@ class AlignTreeTax(object):
 
         :return: replaced tip names
         """
-        # TODO: move to new method?
         for tax in self.aln.taxon_namespace:
             if tax.label in self.otu_dict.keys():
                 pass
@@ -948,13 +947,13 @@ class AlignTreeTax(object):
         ncbi_id = None
         tax_name = None
         ott_id = None
-        if gb_id[:6] == "unpubl":
+        if gb_id[:6] == "unpubl": #There may not be ncbi id, because they aren't published
             tax_name = self.gb_dict[gb_id]["^ot:ottTaxonName"]
             ncbi_id = self.gb_dict[gb_id]["^ncbi:taxon"]
             ott_id = self.gb_dict[gb_id]["^ot:ottId"]
             if tax_name is None:
                 tax_name = self.gb_dict[gb_id][u'^user:TaxonName']
-            if ncbi_id is None:
+            if ncbi_id is None: 
                 debug(tax_name.split(" ")[0])
                 tax_lin_name = tax_name.split(" ")[0]
                 tax_lin_name = tax_lin_name.split("_")[0]
@@ -964,9 +963,9 @@ class AlignTreeTax(object):
         elif len(gb_id.split(".")) >= 2:  # used to figure out if gb_id is from Genbank
             if gb_id in self.gb_dict.keys() and "staxids" in self.gb_dict[gb_id].keys():
                 tax_name = self.gb_dict[gb_id]["sscinames"]
-                ncbi_id = self.gb_dict[gb_id]["staxids"]
-            else:
-                tax_name = ids_obj.find_name(acc=gb_id)
+                ncbi_id = self.gb_dict[gb_id]["staxids"] #
+            else: #all web blast results
+                tax_name = ids_obj.find_name(acc=gb_id)#todo check
                 if tax_name is None:
                     sys.stderr.write("no species name returned for {}".format(gb_id))
                 ncbi_id = ids_obj.map_acc_ncbi(gb_id)
@@ -975,23 +974,23 @@ class AlignTreeTax(object):
             exit(-1)
         if ncbi_id is None:
             debug("ncbi_id is none")
-            if ids_obj.otu_rank is not None:
-                ncbi_id = ids_obj.otu_rank[tax_name]["taxon id"]
-            else:
-                ncbi_id = ids_obj.ncbi_parser.get_id_from_name(tax_name)
+            if ids_obj.otu_rank is not None: 
+                ncbi_id = ids_obj.otu_rank[tax_name]["taxon id"] #todo why would be have found the ncbi id before, but not in find_name?
+#            else:
+#                ncbi_id = ids_obj.ncbi_parser.get_id_from_name(tax_name)
             ids_obj.acc_ncbi_dict[gb_id] = ncbi_id
             ids_obj.ncbiid_to_spn[ncbi_id] = tax_name
             ids_obj.spn_to_ncbiid[tax_name] = ncbi_id
         if ncbi_id in ids_obj.ncbi_to_ott.keys():
-            ott_id = int(ids_obj.ncbi_to_ott[ncbi_id])
-        if ott_id is None:
-            ott_id = "OTT_{}".format(self.ps_otu)
-            self.ps_otu += 1
+            ott_id = int(ids_obj.ncbi_to_ott[int(ncbi_id)])
+        else:
+            debug("{} Ncbi id not found in ott_ncbi dictionaries\n".format(ncbi_id))
+
         if otu_id in self.otu_dict.keys():
             ott_name = ids_obj.ott_to_name.get(ott_id)
         else:
-            ott_name = tax_name
-        self.otu_dict[otu_id] = {}
+	    ott_name = tax_name    # TODO MK: make new entry with ncbi: taxonnames!!!    
+	self.otu_dict[otu_id] = {}
         self.otu_dict[otu_id]["^ncbi:title"] = self.gb_dict[gb_id]["title"]
         self.otu_dict[otu_id]["^ncbi:taxon"] = ncbi_id
         self.otu_dict[otu_id]["^ot:ottId"] = ott_id
@@ -1030,9 +1029,8 @@ class AlignTreeTax(object):
         self.aln.write(path="{}/{}".format(self.workdir, alnfilename), schema="phylip")
 
     def write_files(self, treepath="physcraper.tre", treeschema="newick", alnpath="physcraper.fas", alnschema="fasta"):
-        """Outputs both the streaming files and a ditechecked"""
-        # TODO: ditchecked?
-        # First write rich annotation json file with everything needed for later?
+        """Outputs both the streaming files, labeled with OTU ids.
+        Can be mapped to original labels using otu_dict.json or otu_seq_info.csv"""
         debug("write_files")
         self.tre.write(path="{}/{}".format(self.workdir, treepath),
                        schema=treeschema, unquoted_underscores=True)
@@ -1147,13 +1145,10 @@ def get_mrca_ott(ott_ids):
     synth_tree_ott_ids = []
     ott_ids_not_in_synth = []
     for ott in ott_ids:
-        try:
-            tree_of_life.mrca(ott_ids=[ott], wrap_response=False)
+        r = opentree_helpers.check_if_ottid_in_synth(ott)
+        if r == 1:
             synth_tree_ott_ids.append(ott)
-        except:
-            # except HTTPError as err: # TODO: this is not working, program fails with HTTPError
-            # sys.stderr.write(err)
-            debug("except")
+        else:
             ott_ids_not_in_synth.append(ott)
     if len(synth_tree_ott_ids) == 0:
         sys.stderr.write('No sampled taxa were found in the current synthetic tree. '
@@ -1175,16 +1170,6 @@ def get_mrca_ott(ott_ids):
         sys.exit(-4)
     return tax_id
 
-
-def get_ott_ids_from_otu_dict(otu_dict):  # TODO put into data obj?
-    """Get the ott ids from an otu dict object"""
-    # TODO: never used
-    ott_ids = []
-    for otu in otu_dict:
-        try:
-            ott_ids.append(otu["^ot:ottId"])
-        except KeyError:
-            pass
 
 
 #####################################
@@ -1239,7 +1224,6 @@ class IdDicts(object):
 
     def __init__(self, config_obj, workdir, mrca=None):
         """Generates a series of name disambiguation dicts"""
-        self.workdir = workdir  # TODO: Not needed. only used for dump and map_gi. map_gi file does not exists. dump is only used in wrapper, and we have the information of workdir available in wrapper functions anyways
         self.config = config_obj
         assert self.config.email
         self.ott_to_ncbi = {}  # currently only used to find mcra ncbi id from mrca ott_id
@@ -1251,22 +1235,17 @@ class IdDicts(object):
         self.mrca_ott = mrca  # mrca_list
         assert type(self.mrca_ott) in [int, list] or self.mrca_ott is None
         self.mrca_ncbi = set()  # corresponding ids for mrca_ott list
-        fi = open(config_obj.ott_ncbi)  # TODO need to keep updated, where does the file come from?
+        fi = open(config_obj.ott_ncbi)  # This is in the taxonomy folder of the repo, needs to be updated by devs when OpenTree taxonomy changes.
         for lin in fi:  # TODO This is insanely memory inefficient, how about using a pandas dataframe?
             lii = lin.split(",")
             self.ott_to_ncbi[int(lii[0])] = int(lii[1])
             self.ncbi_to_ott[int(lii[1])] = int(lii[0])
-            self.ott_to_name[int(lii[0])] = lii[2].strip()
+            self.ott_to_name[int(lii[0])] = lii[2].strip() #todo merge into ott_to_ncbi?
             assert len(self.ott_to_ncbi) > 0
             assert len(self.ncbi_to_ott) > 0
             assert len(self.ott_to_name) > 0
         fi.close()
         # TODO: pandas solution? requires to rewrite usages of self.ott_to_ncbi, self.ncbi_to_ott, self.ott_to_name
-        # TODO: where do we generate id_map?
-        if os.path.isfile("{}/id_map.txt".format(workdir)):  # todo config?!
-            fi = open("{}/id_map.txt".format(workdir))
-            for lin in fi:
-                self.acc_ncbi_dict[int(lin.split(",")[0])] = lin.split(",")[1]
         if config_obj.blast_loc == 'remote':
             self.otu_rank = {}  # used only for web queries - contains taxonomic hierarchy information
         else:  # ncbi parser contains information about spn, tax_id, and ranks
@@ -1401,9 +1380,9 @@ class IdDicts(object):
             if acc:
                 gb_id = acc
             elif "^ncbi:accession" in sp_dict:
-                gb_id = sp_dict["^ncbi:accession"]
-            else:
-                sys.stderr.write("There is no name supplied and no acc available. This should not happen! Check name!")
+                gb_id = sp_dict["^ncbi:accession"] 
+            #else:
+            #    sys.stderr.write("There is no name supplied and no accession number. This should not happen! Check name!")
             if gb_id.split(".") == 1:
                 debug(gb_id)
             if gb_id in self.acc_ncbi_dict:
@@ -1417,7 +1396,7 @@ class IdDicts(object):
                     self.ncbiid_to_spn[ncbi_id] = tax_name
                     self.acc_ncbi_dict[gb_id] = ncbi_id
                     if sp_dict:
-                        sp_dict["^ot:ottTaxonName"] = tax_name
+                        sp_dict["^ot:ottTaxonName"] = tax_name #TODO does this actually edit the dictionary entry?
                         sp_dict["^ncbi:taxon"] = ncbi_id
             else:  # usually being used for web-queries, local blast searches should have the information
                 read_handle = self.entrez_efetch(gb_id)
@@ -1431,7 +1410,7 @@ class IdDicts(object):
             assert ncbi_id is not None
         assert tax_name is not None
         tax_name = tax_name.replace(" ", "_")
-        return tax_name
+        return tax_name #todo return ncbi_id
 
     def entrez_efetch(self, gb_id):
         """ Wrapper function around efetch from ncbi to get taxonomic information if everything else is failing.
@@ -1580,17 +1559,16 @@ class PhyscraperScrape(object):
         self.logfile = "{}/logfile".format(self.workdir)
         self.data = data_obj
         self.ids = ids_obj
-        self.config = self.ids.config  # TODO: this is already part of self.ids, information are doubled.
+#        assert data_obj.config == ids_obj.config
+        self.config = self.ids.config  # pointer to config
         self.new_seqs = {}  # all new seq after read_blast_wrapper
         self.new_seqs_otu_id = {}  # only new seq which passed remove_identical
-        self.otu_by_gi = {}  # TODO: What was this intended for? we don't use it
-        self._to_be_pruned = []  # TODO: What was this intended for? We don't use it
         self.mrca_ncbi = ids_obj.ott_to_ncbi[data_obj.ott_mrca]
         self.tmpfi = "{}/physcraper_run_in_progress".format(self.workdir)  # TODO: For what do we want to use this?
         self.blast_subdir = "{}/current_blast_run".format(self.workdir)
         if not os.path.exists(self.workdir):
             os.makedirs(self.workdir)
-        self.newseqs_file = "tmp.fasta"  # TODO: is renamed before using it. Name is easily confused with 'tmp.fas' which is used as temporary file that contains the sequence that is currently blasted
+        self.newseqs_file = ""
         self.date = str(datetime.date.today())  # Date of the run - may lag behind real date!
         self.repeat = 1  # used to determine if we continue updating the tree
         self.newseqs_acc = []  # all ever added Genbank accession numbers during any PhyScraper run, used to speed up adding process
@@ -1616,11 +1594,8 @@ class PhyscraperScrape(object):
     def reset_markers(self):
         self._blasted = 0
         self._blast_read = 0
-        self._identical_removed = 0  # TODO: We don't use it
         self._query_seqs_written = 0
-        self._query_seqs_aligned = 0  # TODO: We don't use it
         self._query_seqs_placed = 0
-        self._reconciled = 0  # TODO: We don't use it
         self._full_tree_est = 0
 
     def OToL_unmapped_tips(self):
@@ -2370,8 +2345,8 @@ class PhyscraperScrape(object):
         self.data.write_papara_files()
         os.chdir(self.workdir)  # Clean up dir moving
         # with cd(self.workdir):
+        assert self.data.aln.taxon_namespace == self.data.tre.taxon_namespace
         try:
-            assert self.data.aln.taxon_namespace == self.data.tre.taxon_namespace
             subprocess.check_call(["papara",
                                    "-t", "random_resolve.tre",
                                    "-s", "aln_ott.phy",
@@ -2625,9 +2600,6 @@ class PhyscraperScrape(object):
                     os.rename("{}/previous_run".format(self.workdir), prev_dir)
                 if self.config.gb_id_filename is not True:
                     os.rename(self.blast_subdir, "{}/previous_run".format(self.workdir))
-                if os.path.exists("{}/last_completed_update".format(
-                        self.workdir)):  # TODO: this and the following line are not used.
-                    os.rename(self.tmpfi, "{}/last_completed_update".format(self.workdir))
                 for filename in glob.glob('{}/RAxML*'.format(self.workdir)):
                     if not os.path.exists("{}/previous_run".format(self.workdir)):
                         os.makedirs('{}/previous_run/'.format(self.workdir))
@@ -3470,7 +3442,7 @@ class Settings(object):
 
 
 def get_ncbi_tax_id(handle):
-    """Get the taxon ID from ncbi.
+    """Get the taxon ID from ncbi. ONly used for web queries
 
     :param handle: NCBI read.handle
     :return: ncbi_id
@@ -3488,7 +3460,8 @@ def get_ncbi_tax_id(handle):
 
 
 def get_ncbi_tax_name(handle):
-    """Get the sp name from ncbi.
+    """Get the sp name from ncbi. 
+    Could be replaced by direct lookup to ott_ncbi.
 
     :param handle: NCBI read.handle
     :return: ncbi_spn

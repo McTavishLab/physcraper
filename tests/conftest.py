@@ -13,7 +13,7 @@ def pytest_addoption(parser):
 def pytest_collection_modifyitems(config, items):
     runslow =  config.getoption("--runslow")
     runconcat = config.getoption("--runconcat")
-    runweb = config.getoption("--runconcat")
+    runweb = config.getoption("--runweb")
 
     skip_slow = pytest.mark.skip(reason="need --runslow option to run")
     skip_concat = pytest.mark.skip(reason="need --runconcat option to run")
