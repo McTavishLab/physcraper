@@ -62,7 +62,7 @@ def load_ids_obj(conf, workdir):
         sys.stdout.write("setting up id dictionaries\n")
         sys.stdout.flush()
         ids = IdDicts(conf, workdir=workdir)
-        ids.dump()
+        ids.dump(workdir)
     return ids
 
 
