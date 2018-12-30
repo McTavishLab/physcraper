@@ -1266,8 +1266,8 @@ class IdDicts(object):
 
         debug("ottid to ncbiid")
         debug(ott_id)
-        if ott_id in self.ott_id_to_ncbiid:
-            ncbi_id = self.ott_id_to_ncbiid[ott_id]
+        if ott_id in self.ott_to_ncbi:
+            ncbi_id = self.ott_to_ncbi[ott_id]
         elif ott_id in self.ott_to_name:
             ott_name = self.ott_to_name[ott_id]
             if self.config.blast_loc == "remote":
