@@ -5,13 +5,15 @@ import sys
 import os
 import subprocess
 import shutil
+import json
 from physcraper import (
     generate_ATT_from_phylesystem,
     generate_ATT_from_files,
     ConfigObj,
     IdDicts,
     PhyscraperScrape,
-    AlignTreeTax
+    AlignTreeTax,
+    OtuJsonDict
 )
 from physcraper import FilterBlast, Settings, debug  # Concat
 from dendropy import DnaCharacterMatrix
@@ -59,7 +61,7 @@ def load_ids_obj(conf, workdir):
         sys.stdout.write("Reloading id dicts from {}\n".format(conf.id_pickle))
         ids = pickle.load(open(conf.id_pickle, "rb"))
     else:
-        sys.stdout.write("setting up id dictionaries\n")
+        sys.stdout.write("setting up ID dictionaries\n")
         sys.stdout.flush()
         ids = IdDicts(conf, workdir=workdir)
         ids.dump(workdir)
@@ -106,7 +108,24 @@ def load_otol_data(conf, ingroup_mrca, mattype, seqaln, study_id, tree_id, workd
     return data_obj
 
 
-def load_own_data(conf, seqaln, mattype, trfn, schema_trf, sp_info_jsonfi, workdir, ingroup_mrca):
+def make_otujsondict(id_to_spn, workdir, ids):
+    """
+    Generate a dictionary equivalent to the OToL one.
+
+    :param id_to_spn: csv delimited file, where tipnames correspond to species names
+    :param ids: physcraper Id object
+    :return: otu dict as json file
+    """
+    otu_jsonfi = "{}/otu_dict.json".format(workdir)
+
+    if os.path.exists(otu_jsonfi):
+        otu_json = json.load(open(otu_jsonfi))
+    else:
+        otu_json = OtuJsonDict(id_to_spn, ids)
+        json.dump(otu_json, open(otu_jsonfi, "w"))
+
+
+def load_own_data(conf, seqaln, mattype, trfn, schema_trf, workdir, ingroup_mrca):
     """
     Generates ATT object from own data.
 
@@ -115,11 +134,13 @@ def load_own_data(conf, seqaln, mattype, trfn, schema_trf, sp_info_jsonfi, workd
     :param mattype: format of sequence alignment
     :param trfn: tree file
     :param schema_trf: format of tree file
-    :param sp_info_jsonfi: JSON file where tip names correspond to species names
     :param workdir: working directory
     :param ingroup_mrca: mrca of ingroup as OTT ID
     :return: ATT object
     """
+    otu_jsonfi = "{}/otu_dict.json".format(workdir)
+    assert os.path.exists(otu_jsonfi)
+
     if os.path.isfile("{}/att_checkpoint.p".format(workdir)):
         sys.stdout.write("Reloading from pickled scrapefile: ATT\n")
         data_obj = pickle.load(open("{}/att_checkpoint.p".format(workdir), "rb"))
@@ -134,7 +155,7 @@ def load_own_data(conf, seqaln, mattype, trfn, schema_trf, sp_info_jsonfi, workd
                                            config_obj=conf,
                                            treefile=trfn,
                                            schema_trf=schema_trf,
-                                           otu_json=sp_info_jsonfi,
+                                           otu_json=otu_jsonfi,
                                            ingroup_mrca=ingroup_mrca)
 
         # Prune sequences below a certain length threshold
@@ -327,7 +348,7 @@ def own_data_run(seqaln,
                  trfn,
                  schema_trf,
                  workdir,
-                 sp_info_jsonfi,
+                 id_to_spn,
                  configfi,
                  ingroup_mrca=None,
                  shared_blast_folder=None):
@@ -349,9 +370,11 @@ def own_data_run(seqaln,
 
     debug("Debugging mode is on")
     conf = ConfigObj(configfi)
-    data_obj = load_own_data(conf, seqaln, mattype, trfn, schema_trf, sp_info_jsonfi, workdir, ingroup_mrca)
-    # Mapping identifiers between original data and NCBI requires an identifier dict object
     ids = load_ids_obj(conf, workdir)
+
+    make_otujsondict(id_to_spn, workdir, ids)
+    data_obj = load_own_data(conf, seqaln, mattype, trfn, schema_trf, workdir, ingroup_mrca)
+    # Mapping identifiers between original data and NCBI requires an identifier dict object
     # scraper = PhyscraperScrape(data_obj, ids)
     scraper = PS_standard_run(data_obj, ids, shared_blast_folder)
     save_copy_code(workdir)
@@ -395,7 +418,7 @@ def filter_data_run(seqaln,
                     schema_trf,
                     workdir,
                     threshold,
-                    sp_info_jsonfi,
+                    id_to_spn,
                     configfi,
                     selectby="blast",
                     downtorank=None,
@@ -410,9 +433,12 @@ def filter_data_run(seqaln,
     """
     debug("Debugging mode is on")
     conf = ConfigObj(configfi)
-    # Generate an linked Alignment-Tree-Taxa object
-    data_obj = load_own_data(conf, seqaln, mattype, trfn, schema_trf, sp_info_jsonfi, workdir, ingroup_mrca)
     ids = load_ids_obj(conf, workdir)
+
+    make_otujsondict(id_to_spn, workdir, ids)
+
+    # Generate an linked Alignment-Tree-Taxa object
+    data_obj = load_own_data(conf, seqaln, mattype, trfn, schema_trf, workdir, ingroup_mrca)
     filteredScrape = PS_filter_run(add_unpubl_seq, blacklist, data_obj, downtorank, id_to_spn_addseq_json, ids,
                                    selectby, shared_blast_folder, threshold)
     save_copy_code(workdir)
@@ -445,7 +471,7 @@ def add_unpubl_to_backbone(seqaln,
     conf = ConfigObj(configfi)
 
     # Generate an linked Alignment-Tree-Taxa object
-    data_obj = load_own_data(conf, seqaln, mattype, trfn, schema_trf, sp_info_jsonfi, workdir, ingroup_mrca)
+    data_obj = load_own_data(conf, seqaln, mattype, trfn, schema_trf, workdir, ingroup_mrca)
     ids = load_ids_obj(conf, workdir)
     filteredScrape = PS_filter_run(add_unpubl_seq, blacklist, data_obj, downtorank, id_to_spn_addseq_json, ids,
                                    selectby, shared_blast_folder, threshold, backbone=True)
