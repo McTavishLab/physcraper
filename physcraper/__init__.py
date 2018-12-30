@@ -126,6 +126,7 @@ class ConfigObj(object):
       * **self.hitlist_size**: the maximum number of sequences retrieved by a single blast search
       * **self.seq_len_perc**: value from 0 to 1. Defines how much shorter new seq can be compared to input
       * **self.trim_perc**: value that determines how many seq need to be present before the beginning and end of alignment will be trimmed
+      * **self.maxlen**: max length for values to add to aln
       * **self.get_ncbi_taxonomy**: Path to sh file doing something...
       * **self.phylesystem_loc**: defines which phylesystem for OpenTree datastore is used. The default is api, but can run on local version too.
       * **self.ott_ncbi**: file containing OTT id, ncbi and taxon name (??)
@@ -219,6 +220,10 @@ class ConfigObj(object):
         self.trim_perc = float(config["physcraper"]["trim_perc"])
         assert 0 < self.trim_perc < 1, (
                 "value `%s` is not between 0 and 1" % self.trim_perc
+        )
+        self.maxlen = float(config["physcraper"]["max_len"])
+        assert 1 < self.maxlen, (
+                "value `%s` is not larger than 1" % self.maxlen
         )
 
         # read in settings for internal Physcraper processes
@@ -793,12 +798,12 @@ class AlignTreeTax(object):
                             self.aln]
         # if sum(self.orig_seqlen) != 0:
         avg_seqlen = sum(self.orig_seqlen) / len(self.orig_seqlen)
-        seq_len_cutoff = avg_seqlen * self.config.seq_len_perc 
         # else:
         #     for tax, seq in self.aln.items():
         #         seqlen = len(self.aln[tax].symbols_as_string())
         #         break
         #     seq_len_cutoff = seqlen * min_seqlen_perc
+        seq_len_cutoff = avg_seqlen * self.config.seq_len_perc
         prune = []
         aln_ids = set()
         for tax, seq in self.aln.items():
