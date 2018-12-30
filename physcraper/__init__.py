@@ -1619,7 +1619,9 @@ class PhyscraperScrape(object):
         assert os.path.isdir(self.config.blastdb)
         with cd(self.config.blastdb):
             # this formats allows to get the taxonomic information at the same time
-            outfmt = " -outfmt '6 sseqid staxids sscinames pident evalue bitscore sseq stitle'"
+            # outfmt = " -outfmt '6 sseqid staxids sscinames pident evalue bitscore sseq stitle'"
+
+            outfmt = " -outfmt '6 sseqid staxids sscinames pident evalue bitscore sseq stitle sallseqid'"
             # outfmt = " -outfmt 5"  # format for xml file type
             # TODO query via stdin
             blastcmd = "blastn -query " + "{}/tmp.fas".format(abs_blastdir) + \
@@ -1795,7 +1797,9 @@ class PhyscraperScrape(object):
         query_dict = {}
         with open(fn_path, mode="r") as infile:
             for lin in infile:
-                sseqid, staxids, sscinames, pident, evalue, bitscore, sseq, stitle = lin.strip().split('\t')
+                # sseqid, staxids, sscinames, pident, evalue, bitscore, sseq, stitle = lin.strip().split('\t')
+                sseqid, staxids, sscinames, pident, evalue, bitscore, sseq, stitle, sallseqid = lin.strip().split('\t')
+
                 gi_id = int(sseqid.split("|")[1])
                 gb_acc = sseqid.split("|")[3]
                 sseq = sseq.replace("-", "")
@@ -1803,10 +1807,26 @@ class PhyscraperScrape(object):
                 pident = float(pident)
                 evalue = float(evalue)
                 bitscore = float(bitscore)
-                # NOTE: sometimes there are seq which are identical & are combined in the local blast db, just get first one
+                # NOTE: sometimes there are seq which are identical & are combined in the local blast db, get all of them!
                 if len(staxids.split(";")) > 1:
-                    staxids = int(staxids.split(";")[0])
-                    sscinames = sscinames.split(";")[0]
+                    # staxids = int(staxids.split(";")[0])
+                    # sscinames = sscinames.split(";")[0]
+                    staxids_l = staxids.split(";")
+                    sscinames_l = sscinames.split(";")
+                    sallseqid_l = sallseqid.split(";")
+                    for i in range(0,len(staxids_l)):
+                        self.ids.spn_to_ncbiid[sscinames_l[i]] = int(staxids_l[i])
+                        sscinames = sscinames_l[i]
+                        staxids = int(staxids_l[i]) 
+                        gb_acc = sallseqid_l[i].split("|")[3]
+                        if gb_acc not in self.ids.acc_ncbi_dict:  # fill up dict with more information.
+                            self.ids.acc_ncbi_dict[gb_acc] = staxids_l[i]
+                        if gb_acc not in query_dict and gb_acc not in self.newseqs_acc:
+                            query_dict[gb_acc] = {'^ncbi:gi': gi_id, 'accession': gb_acc, 'staxids': staxids,
+                                                  'sscinames': sscinames, 'pident': pident, 'evalue': evalue,
+                                                  'bitscore': bitscore, 'sseq': sseq, 'title': stitle}
+                            print(query_dict[gb_acc])
+                    # print(some)
                 else:
                     staxids = int(staxids)
                 assert type(staxids) is int
@@ -1857,14 +1877,17 @@ class PhyscraperScrape(object):
                         if local_id not in self.data.gb_dict:  # skip ones we already have
                             unpbl_local_id = "unpubl_{}".format(local_id)
                             self.new_seqs[unpbl_local_id] = hsp.sbjct
+                            # debug(self.new_seqs[unpbl_local_id])
                             self.data.gb_dict[unpbl_local_id] = {'title': "unpublished", 'localID': local_id}
-                            debug(self.data.unpubl_otu_json.keys())
-                            debug(local_id)
-                            debug(type(local_id))
-                            debug('otu{}'.format(local_id.replace("_", "").replace("-", "")))
+                            # debug(self.data.unpubl_otu_json)
+                            # debug(local_id)
+                            # debug(type(local_id))
+                            # debug('otu{}'.format(local_id.replace("_", "").replace("-", "")))
                             self.data.gb_dict[unpbl_local_id].update(
                                 self.data.unpubl_otu_json['otu{}'.format(local_id.replace("_", "").replace("-", ""))])
                             gb_counter += 1
+                            # debug(self.data.gb_dict[unpbl_local_id])
+                            # debug(some)
                     else:
                         fn.write("{}: {}".format(alignment.title.split("|")[-1].split(" ")[-1], hsp.expect))
                         if local_id not in self.gb_not_added:
@@ -2091,8 +2114,9 @@ class PhyscraperScrape(object):
                     del seq_dict[label]
                 if label in self.data.aln.taxon_namespace or label in self.data.tre.taxon_namespace:
                     self.data.remove_taxa_aln_tre(label)
-                else:
-                    debug("label was never added to aln or tre")
+                # should not be necessary, information what happened to seq should have been added in lines before
+                # else:
+                #     debug("label was never added to aln or tre")
                 # Note: should not be the word 'deleted', as this is used in self.seq_filter
                 # self.data.otu_dict[label]['^physcraper:status'] = "removed in seq dict build"
                 return seq_dict
