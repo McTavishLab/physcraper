@@ -371,13 +371,15 @@ def generate_ATT_from_phylesystem(aln,
                                   phylesystem_loc='api',
                                   ingroup_mrca=None):
     """gathers together tree, alignment, and study info - forces names to otu_ids.
-    Outputs AlignTreeTax object.
 
     Study and tree ID's can be obtained by using python ./scripts/find_trees.py LINEAGE_NAME
 
     Input must be a study ID and tree ID from OpenTree
 
     Alignment need to be a Dendropy DNA character matrix!
+
+    Spaces vs underscores kept being an issue, so all spaces are coerced to underscores when data are read in.
+
 
     :param aln: dendropy :class:`DnaCharacterMatrix <dendropy.datamodel.charmatrixmodel.DnaCharacterMatrix>` alignment object
     :param workdir: path to working directory
@@ -452,6 +454,8 @@ def generate_ATT_from_files(seqaln,
 
     If no ingroup mrca ott_id is provided, will use all taxa in tree to calc mrca.
     otu_json should encode the taxon names for each tip in json file format.
+
+    Spaces vs underscores kept being an issue, so all spaces are coerced to underscores when data are read in.
 
     Note: has test -> test_owndata.py
 
@@ -713,12 +717,17 @@ class AlignTreeTax(object):
         self._reconciled = False
         self.unpubl_otu_json = None
 
+    # def add_config_to_ATT(self, configclass):
+    #     """adds confic class to self in ATT. To have the settings available., which are needed for the functions.
+    #     But in extra function to not rewrite plenty of code"""
+    #     # TODO: should be done differently
+    #     self.config = configclass
+
     def _reconcile(self):
         """Taxa that are only found in the tree, or only in the alignment are deleted.
 
         This checks that the tree "original labels" from phylesystem
-        align with those found in the alignment. Spaces vs underscores
-        kept being an issue, so all spaces are coerced to underscores when data are read in.
+        align with those found in the alignment. 
         """
         debug("reconcile")
         treed_tax = set()
@@ -796,13 +805,7 @@ class AlignTreeTax(object):
         """
         self.orig_seqlen = [len(self.aln[tax].symbols_as_string().replace("-", "").replace("N", "")) for tax in
                             self.aln]
-        # if sum(self.orig_seqlen) != 0:
         avg_seqlen = sum(self.orig_seqlen) / len(self.orig_seqlen)
-        # else:
-        #     for tax, seq in self.aln.items():
-        #         seqlen = len(self.aln[tax].symbols_as_string())
-        #         break
-        #     seq_len_cutoff = seqlen * min_seqlen_perc
         seq_len_cutoff = avg_seqlen * self.config.seq_len_perc
         prune = []
         aln_ids = set()
@@ -961,7 +964,7 @@ class AlignTreeTax(object):
                 tax_name = self.gb_dict[gb_id]["sscinames"]
                 ncbi_id = self.gb_dict[gb_id]["staxids"] #
             else: #all web blast results
-                tax_name = ids_obj.find_name(acc=gb_id)  #todo check
+                tax_name = ids_obj.find_name(acc=gb_id)
                 if tax_name is None:
                     sys.stderr.write("no species name returned for {}".format(gb_id))
                 ncbi_id = ids_obj.map_acc_ncbi(gb_id)
@@ -985,8 +988,8 @@ class AlignTreeTax(object):
         if otu_id in self.otu_dict.keys():
             ott_name = ids_obj.ott_to_name.get(ott_id)
         else:
-	    ott_name = tax_name    # TODO MK: make new entry with ncbi: taxonnames!!!    
-	self.otu_dict[otu_id] = {}
+            ott_name = tax_name    # TODO MK: make new entry with ncbi: taxonnames!!!
+        self.otu_dict[otu_id] = {}
         self.otu_dict[otu_id]["^ncbi:title"] = self.gb_dict[gb_id]["title"]
         self.otu_dict[otu_id]["^ncbi:taxon"] = ncbi_id
         self.otu_dict[otu_id]["^ot:ottId"] = ott_id
@@ -1353,13 +1356,44 @@ class IdDicts(object):
                 self.otu_rank[tax_name] = {"taxon id": ncbi_id, "lineage": lineage, "rank": lineage2ranks}
         return tax_name
 
+    def find_tax_id(self, otu_dict_entry=None, acc=None):
+        """ Find the taxon id in the  otu_dict entry or of a Genbank accession number.
+        If not already known it will ask ncbi using the accession number
+
+        :param otu_dict_entry: otu_dict entry
+        :param acc: Genbank accession number
+        :return: ncbi taxon id
+        """
+        # debug("find tax id")
+        inputinfo = False
+        if otu_dict_entry is not None or acc is not None:
+            inputinfo = True
+        assert inputinfo is True
+        ncbi_id = None
+        if otu_dict_entry:
+            ncbi_id = otu_dict_entry["^ncbi:taxon"]
+        if ncbi_id is None:
+            gb_id = None
+            if acc:
+                gb_id = acc
+            elif "^ncbi:accession" in otu_dict_entry:
+                gb_id = otu_dict_entry["^ncbi:accession"]
+            if gb_id in self.acc_ncbi_dict:
+                ncbi_id = self.acc_ncbi_dict[gb_id]
+            else:
+                read_handle = self.entrez_efetch(gb_id)
+                ncbi_id = get_ncbi_tax_id(read_handle)
+                self.acc_ncbi_dict[gb_id] = ncbi_id
+            assert ncbi_id is not None
+        return ncbi_id
+
     def find_name(self, otu_dict_entry=None, acc=None):
         """ Find the taxon name in the  otu_dict entry or of a Genbank accession number.
         If not already known it will ask ncbi using the accession number
 
         :param otu_dict_entry: otu_dict entry
         :param acc: Genbank accession number
-        :return: ncbi taxon id
+        :return: ncbi taxon name
         """
         # debug("find_name")
         inputinfo = False
@@ -1409,7 +1443,7 @@ class IdDicts(object):
             assert ncbi_id is not None
         assert tax_name is not None
         tax_name = tax_name.replace(" ", "_")
-        return tax_name #todo return ncbi_id
+        return tax_name
 
     def entrez_efetch(self, gb_id):
         """ Wrapper function around efetch from ncbi to get taxonomic information if everything else is failing.
@@ -1559,10 +1593,6 @@ class PhyscraperScrape(object):
         self.repeat = 1  # used to determine if we continue updating the tree
         self.newseqs_acc = []  # all ever added Genbank accession numbers during any PhyScraper run, used to speed up adding process
         self.blacklist = []  # remove sequences by default
-        # self.acc_list_mrca = []  # all gb_ids of a given mrca. Used to limit possible seq to add.
-        # if self.config.blast_loc == 'local' and len(self.acc_list_mrca) == 0:
-        #     self.acc_list_mrca = self.get_all_acc_mrca()
-        # debug(self.acc_list_mrca)
         self.seq_filter = ['deleted', 'subsequence,', 'not', "removed", "deleted,",
                            "local"]  # TODO MK: try to move completely to FilterBlast class
         self.reset_markers()
@@ -1834,8 +1864,7 @@ class PhyscraperScrape(object):
                             query_dict[gb_acc] = {'^ncbi:gi': gi_id, 'accession': gb_acc, 'staxids': staxids,
                                                   'sscinames': sscinames, 'pident': pident, 'evalue': evalue,
                                                   'bitscore': bitscore, 'sseq': sseq, 'title': stitle}
-                            print(query_dict[gb_acc])
-                    # print(some)
+                            debug(query_dict[gb_acc])
                 else:
                     staxids = int(staxids)
                 assert type(staxids) is int
