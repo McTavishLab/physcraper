@@ -25,7 +25,7 @@ else:
 """Code used to concatenate different single PhyScraper runs into a concatenated one.
 """
 
-physcraper.debug("Current concat version number: 01-02-2019.0")
+print("Current concat version number: 01-02-2019.0")
 
 
 def remove_aln_tre_leaf(scrape):

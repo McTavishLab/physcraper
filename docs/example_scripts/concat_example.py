@@ -15,7 +15,7 @@ workdir_ETS = "tests/data/PS_tiny_comb_ets"
 email = "mk@xy.zt"
 percentage = 0.4
 
-pickle_fn = "scrape_checkpoint.p"
+pickle_fn = "final_ATT_checkpoint.p"
 
 workdir_comb = "docs/example_scripts/output/nr_concat"
 genelist = {"ITS": {"workdir": workdir_ITS, "pickle": pickle_fn}, 
