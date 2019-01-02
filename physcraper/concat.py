@@ -9,18 +9,17 @@ import subprocess
 import csv
 import pickle
 import random
+import physcraper
 
 from copy import deepcopy
 from dendropy import Tree, DnaCharacterMatrix
-from Bio import Entrez
 
 
-import physcraper
 
-if sys.version_info < (3, ):
-    from urllib2 import HTTPError
-else:
-    from urllib.error import HTTPError
+# if sys.version_info < (3, ):
+#     from urllib2 import HTTPError
+# else:
+#     from urllib.error import HTTPError
 
 """Code used to concatenate different single PhyScraper runs into a concatenated one.
 """
@@ -184,7 +183,6 @@ class Concat(object):
 
         Is a wrapper function around make_concat_id_dict(). It produces the parameters needed for the function.
         """
-
         physcraper.debug("combine")
         self.num_of_genes = len(self.single_runs)
         concat_id_counter = 1
@@ -207,11 +205,9 @@ class Concat(object):
         :param concat_id: unique identifier in the concat class
         :return: modified self.sp_acc_comb
         """
-
         data = self.single_runs[genename].otu_dict[otu]
         seq = str(self.single_runs[genename].aln[otu])
         tax_id = None
-
         # only add the information of sequences that were added
         if data['^physcraper:status'].split(' ')[0] not in self.seq_filter:
             if '^ncbi:taxon' in data:
@@ -318,7 +314,7 @@ class Concat(object):
             tmp_gene = deepcopy(self.genes_present)
             for gene in self.sp_acc_comb[tax_id]:
                 tmp_gene.remove(gene)
-                tax_new = tax_id   #.replace(" ", "_")
+                tax_new = tax_id   # .replace(" ", "_")
                 if tax_new in self.sp_counter:
                     self.sp_counter[tax_new][gene] = len(self.sp_acc_comb[tax_id][gene])
                 else:
@@ -427,8 +423,6 @@ class Concat(object):
         physcraper.debug(len(len_gene))
         physcraper.debug(range(0, (len(len_gene) - 1)))
         for item in range(0, (len(len_gene) - 1)):
-            # physcraper.debug(len_gene[item])
-            # physcraper.debug(len_gene[item+1])
             assert len_gene[item] == len_gene[item + 1]
         self.rename_drop_tips()
 
@@ -498,8 +492,6 @@ class Concat(object):
         self.sp_acc_comb[tax_id][gene][random_gen]["concat:status"] = "used in concat"
         seq = str(self.tmp_dict[tax_id][gene][random_gen]["seq"])
         tax_id_ = str(tax_id)  # .replace(" ", "_")
-        # tax_id_ = tax_id_.replace(".", "").replace("'", "")
-        
         if gene in self.comb_seq.keys():
             # physcraper.debug(self.comb_seq[gene].keys())
             if tax_id_ not in self.comb_seq[gene].keys():
@@ -814,14 +806,14 @@ class Concat(object):
                     num_threads = int(num_threads)
                     # debug(num_threads)
                     subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(num_threads), "-m", "GTRCAT",
-                                     "-f", "v", # "-q", "partition",
+                                     "-f", "v",  # "-q", "partition",
                                      "-s", "concat_red.fasta",
                                      "-t", "starting_red.tre",
                                      "-n", "PLACE"])
                 except:
                     physcraper.debug("except")
                     subprocess.call(["raxmlHPC", "-m", "GTRCAT",
-                                     "-f", "v", # "-q", "partition",
+                                     "-f", "v",  # "-q", "partition",
                                      "-s", "concat_red.fasta",
                                      "-t", "starting_red.tre",
                                      "-n", "PLACE"])
@@ -837,9 +829,8 @@ class Concat(object):
                                 preserve_underscores=True)
         else:
             placetre = Tree.get(path="{}/starting_red.tre".format(self.workdir),
-	                       schema="newick",
-	                       preserve_underscores=True)
-                           # suppress_internal_node_taxa=True, suppress_leaf_node_taxa=True)
+                                schema="newick", preserve_underscores=True)
+                                # suppress_internal_node_taxa=True, suppress_leaf_node_taxa=True)
         placetre.resolve_polytomies()
         physcraper.debug("rename place tree")
         for taxon in placetre.taxon_namespace:
@@ -1038,12 +1029,11 @@ class Concat(object):
                                         # gene_l.append(gene)
                                         found = True
                                         # physcraper.debug("found")
-                                    else:
-                                        if str(seq_id) == str(val['^user:TaxonName']) and val[u'^ncbi:taxon'] is not None:
-                                            tax_id = "taxid_{}".format(val[u'^ncbi:taxon'])
-                                            # gene_l.append(gene)
-                                            found = True
-                                            # physcraper.debug("found")
+                                    elif str(seq_id) == str(val['^user:TaxonName']) and val[u'^ncbi:taxon'] is not None:
+                                        tax_id = "taxid_{}".format(val[u'^ncbi:taxon'])
+                                        # gene_l.append(gene)
+                                        found = True
+                                        # physcraper.debug("found")
                                 elif '^user:TaxonName' in val:
                                     if str(seq_id) == str(val['^user:TaxonName']):
                                         tax_id = "taxid_{}".format(val['^user:TaxonName'].replace("_", "").replace(" ", ""))
@@ -1106,7 +1096,7 @@ class Concat(object):
                         missing_gene = [loci for loci in self.genes_present if loci not in gene_l]
                         for genes in missing_gene:
                             physcraper.debug(genes)
-                            #self.make_empty_seq(global_taxid, genes)
+                            # self.make_empty_seq(global_taxid, genes)
                             self.make_empty_seq(otu_, genes)
                             # physcraper.debug(some)
             #     if seq_id == "u'S_parvifolius'" and found == True:
@@ -1120,7 +1110,7 @@ class Concat(object):
             len_gene.append(gene_taxid)
             # physcraper.debug(len_gene)
         for i in range(0, (len(len_gene) - 1)):
-            #physcraper.debug(len_gene[i])
+            # physcraper.debug(len_gene[i])
             assert len_gene[i] == len_gene[i + 1], ([seq_id for seq_id in len_gene[i] if seq_id not in len_gene[i+1]])
 
     def dump(self, filename="concat_checkpoint.p"):
