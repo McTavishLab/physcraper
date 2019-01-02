@@ -864,9 +864,6 @@ class Concat(object):
                                      "-p", "1", "-q", partition,
                                      "-n", "concat"])
                 else:
-                    aln = "concat_red.fasta"
-                    partition = "partition"
-                    starting_fn = "place_resolve.tre"
                     subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(num_threads), "-m", "GTRCAT",
                                      "-s", aln, "--print-identical-sequences",
                                      "-r", "{}".format(starting_fn),
@@ -874,16 +871,13 @@ class Concat(object):
                                      "-n", "backbone_concat"])
             except:
                 if self.backbone is not True:
-                    subprocess.call(["raxmlHPC-PTHREADS", "-m", "GTRCAT",
+                    subprocess.call(["raxmlHPC", "-m", "GTRCAT",
                                      "-s", aln, "--print-identical-sequences",
                                      "-t", "{}".format(starting_fn),
                                      "-p", "1", "-q", partition,
                                      "-n", "concat"])
                 else:
-                    aln = "concat_red.fasta"
-                    partition = "partition"
-                    starting_fn = "place_resolve.tre"
-                    subprocess.call(["raxmlHPC-PTHREADS", "-m", "GTRCAT",
+                    subprocess.call(["raxmlHPC", "-m", "GTRCAT",
                                      "-s", aln, "--print-identical-sequences",
                                      "-r", "{}".format(starting_fn),
                                      "-p", "1", "-q", partition,

@@ -947,7 +947,7 @@ class AlignTreeTax(object):
         ncbi_id = None
         tax_name = None
         ott_id = None
-        if gb_id[:6] == "unpubl": #There may not be ncbi id, because they aren't published
+        if gb_id[:6] == "unpubl":  # There may not be ncbi id, because they aren't published
             tax_name = self.gb_dict[gb_id]["^ot:ottTaxonName"]
             ncbi_id = self.gb_dict[gb_id]["^ncbi:taxon"]
             ott_id = self.gb_dict[gb_id]["^ot:ottId"]
@@ -962,8 +962,8 @@ class AlignTreeTax(object):
         elif len(gb_id.split(".")) >= 2:  # used to figure out if gb_id is from Genbank
             if gb_id in self.gb_dict.keys() and "staxids" in self.gb_dict[gb_id].keys():
                 tax_name = self.gb_dict[gb_id]["sscinames"]
-                ncbi_id = self.gb_dict[gb_id]["staxids"] #
-            else: #all web blast results
+                ncbi_id = self.gb_dict[gb_id]["staxids"]
+            else:  # all web blast results
                 tax_name = ids_obj.find_name(acc=gb_id)
                 if tax_name is None:
                     sys.stderr.write("no species name returned for {}".format(gb_id))
@@ -974,7 +974,7 @@ class AlignTreeTax(object):
         if ncbi_id is None:
             debug("ncbi_id is none")
             if ids_obj.otu_rank is not None: 
-                ncbi_id = ids_obj.otu_rank[tax_name]["taxon id"] #todo why would be have found the ncbi id before, but not in find_name?
+                ncbi_id = ids_obj.otu_rank[tax_name]["taxon id"]
 #            else:
 #                ncbi_id = ids_obj.ncbi_parser.get_id_from_name(tax_name)
             ids_obj.acc_ncbi_dict[gb_id] = ncbi_id
@@ -1239,7 +1239,7 @@ class IdDicts(object):
             lii = lin.split(",")
             self.ott_to_ncbi[int(lii[0])] = int(lii[1])
             self.ncbi_to_ott[int(lii[1])] = int(lii[0])
-            self.ott_to_name[int(lii[0])] = lii[2].strip() #todo merge into ott_to_ncbi?
+            self.ott_to_name[int(lii[0])] = lii[2].strip()  # todo merge into ott_to_ncbi?
             assert len(self.ott_to_ncbi) > 0
             assert len(self.ncbi_to_ott) > 0
             assert len(self.ott_to_name) > 0
@@ -1414,7 +1414,7 @@ class IdDicts(object):
                 gb_id = acc
             elif "^ncbi:accession" in otu_dict_entry:
                 gb_id = otu_dict_entry["^ncbi:accession"]
-            #else:
+            # else:
             #    sys.stderr.write("There is no name supplied and no accession number. This should not happen! Check name!")
             if gb_id.split(".") == 1:
                 debug(gb_id)
@@ -1429,7 +1429,7 @@ class IdDicts(object):
                     self.ncbiid_to_spn[ncbi_id] = tax_name
                     self.acc_ncbi_dict[gb_id] = ncbi_id
                     if otu_dict_entry:
-                        otu_dict_entry["^ot:ottTaxonName"] = tax_name #TODO does this actually edit the dictionary entry?
+                        otu_dict_entry["^ot:ottTaxonName"] = tax_name  # TODO does this actually edit the dictionary entry?
                         otu_dict_entry["^ncbi:taxon"] = ncbi_id
             else:  # usually being used for web-queries, local blast searches should have the information
                 read_handle = self.entrez_efetch(gb_id)
@@ -1625,7 +1625,7 @@ class PhyscraperScrape(object):
                     # second condition for OToL unmapped taxa, not present in own_data
                     if u"^ot:treebaseOTUId" in self.data.otu_dict[key]:
                         self.data.remove_taxa_aln_tre(key)
-        elif  self.config.unmapped == "keep":
+        elif self.config.unmapped == "keep":
             i = 1
             for key in self.data.otu_dict:
                 i = i + 1
@@ -1853,7 +1853,7 @@ class PhyscraperScrape(object):
                     staxids_l = staxids.split(";")
                     sscinames_l = sscinames.split(";")
                     sallseqid_l = sallseqid.split(";")
-                    for i in range(0,len(staxids_l)):
+                    for i in range(0, len(staxids_l)):
                         self.ids.spn_to_ncbiid[sscinames_l[i]] = int(staxids_l[i])
                         sscinames = sscinames_l[i]
                         staxids = int(staxids_l[i]) 
@@ -2300,10 +2300,10 @@ class PhyscraperScrape(object):
             "^accession",
             "sscinames",
             "staxids",
-           # "title",
+            # "title",
             "length",
-            #"hsps",
-            #"pident",
+            # "hsps",
+            # "pident",
             "evalue",
             "bitscore"
             # "sseq"
@@ -3206,7 +3206,6 @@ class FilterBlast(PhyscraperScrape):
         }
         if new_taxon is False:
             assert original != 0 or seq_added != 0, ("count_dict `%s` has more seq added than threshold." % count_dict)
-        # assert seq_added != 0, ("count_dict `%s` has more seq added than threshold." % count_dict)
         if new_taxon is True:
             assert original == 0, ("count_dict `%s` has more seq added than threshold." % count_dict)
             assert seq_added == 0, ("count_dict `%s` has more seq added than threshold." % count_dict)
