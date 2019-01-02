@@ -262,43 +262,43 @@ class Concat(object):
         else:
             del self.single_runs[genename].otu_dict[otu]
 
-    # # Seems not to be used
-    # def get_taxon_info(self, key, data):
-    #     """If there are no taxon information (for what ever reason) try again to obtain sp names.
-    #
-    #     If the key is not part of data, it will get the name through a web query using the GI number.
-    #
-    #     :param key: key of otu_dict/data that shall contain the taxon name, e.g.^ot:ottTaxonName
-    #     :param data: otu_dict entry from single gene physcraper run
-    #     :return: taxon name
-    #     """
-    #     # physcraper.debug("get_rank_info")
-    #     tax_name = None
-    #     if key in data:
-    #         if data[key] is None:
-    #             if "^ncbi:accession" in data:
-    #                 gb_id = data["^ncbi:accession"]
-    #                 Entrez.email = self.email
-    #                 tries = 5
-    #                 for i in range(tries):
-    #                     try:
-    #                         handle = Entrez.efetch(db="nucleotide", id=gb_id, retmode="xml")
-    #                     except (IndexError, HTTPError) as err:
-    #                         sys.stderr.write(err)
-    #                         if i < tries - 1:  # i is zero indexed
-    #                             continue
-    #                         else:
-    #                             raise
-    #                     break
-    #                 read_handle = Entrez.read(handle)[0]
-    #                 tax_name = read_handle['GBSeq_feature-table'][0]['GBFeature_quals'][0]['GBQualifier_value']
-    #         else:
-    #             tax_name = data[key]
-    #     assert tax_name is not None
-    #     tax_name = tax_name.replace("_", " ")
-    #     tax_name = tax_name.replace(".", "").replace("'", "")
-    #     tax_name = tax_name.encode("ascii")
-    #     return tax_name
+    
+    def get_taxon_info(self, key, data):
+        """If there are no taxon information (for what ever reason) try again to obtain sp names.
+    
+        If the key is not part of data, it will get the name through a web query using the GI number.
+    
+        :param key: key of otu_dict/data that shall contain the taxon name, e.g.^ot:ottTaxonName
+        :param data: otu_dict entry from single gene physcraper run
+        :return: taxon name
+        """
+        # physcraper.debug("get_rank_info")
+        tax_name = None
+        if key in data:
+            if data[key] is None:
+                if "^ncbi:accession" in data:
+                    gb_id = data["^ncbi:accession"]
+                    Entrez.email = self.email
+                    tries = 5
+                    for i in range(tries):
+                        try:
+                            handle = Entrez.efetch(db="nucleotide", id=gb_id, retmode="xml")
+                        except (IndexError, HTTPError) as err:
+                            sys.stderr.write(err)
+                            if i < tries - 1:  # i is zero indexed
+                                continue
+                            else:
+                                raise
+                        break
+                    read_handle = Entrez.read(handle)[0]
+                    tax_name = read_handle['GBSeq_feature-table'][0]['GBFeature_quals'][0]['GBQualifier_value']
+            else:
+                tax_name = data[key]
+        assert tax_name is not None
+        tax_name = tax_name.replace("_", " ")
+        tax_name = tax_name.replace(".", "").replace("'", "")
+        tax_name = tax_name.encode("ascii")
+        return tax_name
 
     def sp_seq_counter(self):
         """Counts how many seq per sp and genes there are -is used by sp_to_keep.
