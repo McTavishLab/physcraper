@@ -704,6 +704,12 @@ class Concat(object):
                 prune_shortest.append(tax)
         self.short_concat_seq = prune_shortest
 
+        with open("{}/short_seq_deleted.csv".format(self.workdir), "w") as output:
+            writer = csv.writer(output)
+            writer.writerow("min len: {}".format(min_len))
+            for otu in self.short_concat_seq:
+                writer.writerow(otu)              
+
     def remove_short_seq(self):
         """Removes short seq that were found with get_short_seq
         and write it to file.
@@ -1002,9 +1008,9 @@ class Concat(object):
                                 if "^ncbi:accession" in val:
                                     if seq_id == val["^ncbi:accession"]:
                                         tax_id = "taxid_{}".format(val['^ncbi:taxon'])
-                                        gene_l.append(gene)
+                                        # gene_l.append(gene)
                                         found = True
-                                        physcraper.debug("found")
+                                        # physcraper.debug("found")
                                 else:
                                     physcraper.debug("SOMETHING IS HAPPENING: no acc")
                             else:
@@ -1045,7 +1051,7 @@ class Concat(object):
                                     global_taxid = tax_id
                                     for key2, val2 in self.sp_acc_comb[tax_id][gene].items():
                                         cond = False
-                                        physcraper.debug(val2)
+                                        # physcraper.debug(val2)
                                         if len(seq_id.split(".")) >= 2 and val2["unique_id"] == seq_id:
                                             cond = True
                                         else:
@@ -1089,7 +1095,7 @@ class Concat(object):
                     if len(gene_l) == len(concat_l):
                         missing_gene = [loci for loci in self.genes_present if loci not in gene_l]
                         for genes in missing_gene:
-                            physcraper.debug(genes)
+                            # physcraper.debug(genes)
                             # self.make_empty_seq(global_taxid, genes)
                             self.make_empty_seq(otu_, genes)
                             # physcraper.debug(some)
@@ -1147,5 +1153,4 @@ class Concat(object):
                             else:
                                 rowinfo_details.append("-")
                         # physcraper.debug(rowinfo_details)
-                        writer.writerow(rowinfo_details)                
-
+                        writer.writerow(rowinfo_details)
