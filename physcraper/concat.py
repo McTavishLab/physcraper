@@ -16,12 +16,56 @@ from dendropy import Tree, DnaCharacterMatrix
 from Bio import AlignIO, SeqIO, Entrez
 
 import physcraper
-
+# from __init__ import cd
 
 # if sys.version_info < (3, ):
 #     from urllib2 import HTTPError
 # else:
 #     from urllib.error import HTTPError
+import logging
+# global logger
+# http://docs.python.org/library/logging.html
+#LOG = logging.getLogger("")
+#logging.basicConfig(filename='debug.log',level=logging.DEBUG,
+#                    format='%(levelname)s [%(asctime)s]: %(message)s')
+
+def setup_logger(name, log_file, level=logging.INFO, writemode="w"):
+    """setups as many loggers as you want.
+    """
+    formatter = logging.basicConfig(filemode="w+", format='%(levelname)s [%(asctime)s]: %(message)s')
+
+    log_fn = "{}".format(log_file)
+    handler = logging.FileHandler(log_fn)        
+    handler.setFormatter(formatter)
+
+    logger = logging.getLogger(name)
+    logger.setLevel(level)
+    logger.addHandler(handler)
+
+    return logger
+    
+# setup different loggers
+log_dict = {}
+
+log_dict2 = {}
+
+def log_info(text, wd):
+    """
+    setup info logger"""
+    if wd not in log_dict:
+        dlog = setup_logger("info_log", '{}/info.log'.format(wd), level=logging.INFO, writemode="w+")
+        dlog.propagate = True  # logs to file and console
+        log_dict[wd] = dlog
+    log_dict[wd].info(text)
+    
+def log_debug(text, wd):
+    """
+    setup debug logger"""
+    if wd not in log_dict2:
+        dlog = setup_logger("debug_log", '{}/debug.log'.format(wd), level=logging.DEBUG, writemode="w+")
+        dlog.propagate = False  # logs to file only
+        log_dict2[wd] = dlog
+    log_dict2[wd].debug(text)
 
 """Code used to concatenate different single PhyScraper runs into a concatenated one.
 """
@@ -164,17 +208,24 @@ class Concat(object):
         self.seq_filter = ['deleted', 'subsequence,', 'not', "removed", "deleted,",
                            "local"]  # TODO: Copy from physcraper class settings, try to import and read in here
 
+    # debug file logger       
+    def li(self, text):
+        log_info(text, self.workdir)  
+
+    def ld(self, text):
+        log_debug(text, self.workdir)  
+
     def load_single_genes(self, workdir, pickle_fn, genename):
         """Load PhyScraper class objects and make a single dict per run.
 
-        Removes abandoned nodes first.
+        Removes abandoned nodes and gap only columns first.
 
         :param workdir: directory of single gene run
         :param pickle_fn: path to pickled file of the Physcraper run
         :param genename: string, name for locus provided by user
         :return: self.single_runs
         """
-        physcraper.debug("load_single_genes: {}".format(genename))
+        self.li("load_single_genes: {}".format(genename))
         scrape = pickle.load(open("{}/{}".format(workdir, pickle_fn), "rb"))
         scrape = remove_aln_tre_leaf(scrape)
         self.single_runs[genename] = deepcopy(scrape)
@@ -187,7 +238,7 @@ class Concat(object):
 
         Is a wrapper function around make_concat_id_dict(). It produces the parameters needed for the function.
         """
-        physcraper.debug("combine")
+        self.li("combine data")
         self.num_of_genes = len(self.single_runs)
         concat_id_counter = 1
         for genename in self.single_runs:
@@ -217,7 +268,6 @@ class Concat(object):
             if '^ncbi:taxon' in data:
                 tax_id = "taxid_{}".format(data['^ncbi:taxon'])
             if tax_id is None or tax_id == "taxid_None":
-                print("think about it")
                 tn = data['^user:TaxonName'].replace("_", "").replace(" ", "")
                 # physcraper.debug(tn)
                 tax_id = "taxid_{}".format(tn).encode("ascii")
@@ -246,7 +296,8 @@ class Concat(object):
                 }
                 self.sp_acc_comb[tax_id][genename][concat_id] = concat_dict
             else:
-                physcraper.debug(
+                self.ld("make_concat_id_dict")
+                self.ld(
                     "something goes wrong, you should not try to add the same id several times...."
                 )
             if concat_dict["sp_id"] is "taxid_None":
@@ -255,7 +306,7 @@ class Concat(object):
                     "There is no species name for the seq. Do not know how to concatenate then. "
                     "Please remove seq from aln: {}.".format(data["^ncbi:accession"])
                 )
-                physcraper.debug("THERE IS A SERIOUS PROBLEM....spn is none")
+                self.ld("THERE IS A SERIOUS PROBLEM....spn is none")
                 if u'original_PS_id' in data:
                     tax_id = "taxid_{}".format(data[u'original_PS_id'])
                 else:
@@ -311,6 +362,7 @@ class Concat(object):
 
         :return: builds self.sp_counter
         """
+        self.li("sp_seq_counter")
         for tax_id in self.sp_acc_comb:
             # physcraper.debug(tax_id)
             assert tax_id is not None, "tax_id `%s` is not known" % tax_id
@@ -326,8 +378,8 @@ class Concat(object):
                 if tax_id in self.sp_counter:
                     self.sp_counter[tax_id][item] = 0
                 else:
-        physcraper.debug(self.sp_counter)
                     self.sp_counter[tax_id] = {item: 0}
+        self.li(self.sp_counter)
 
     def get_largest_tre(self):
         """Find the single gene tree with the most tips, which will be used as
@@ -335,7 +387,7 @@ class Concat(object):
 
         :return: fills in selfs to know which data is used as starting tree
         """
-        physcraper.debug("get_largest_tre")
+        self.li("get_largest_tre")
         first = True
         len_all_taxa = {}
         for gene in self.single_runs:
@@ -361,7 +413,7 @@ class Concat(object):
         dendropy :class:`DnaCharacterMatrix <dendropy.datamodel.charmatrixmodel.DnaCharacterMatrix>` alignment object
         """
         count = 2
-        physcraper.debug("make_sp_gene_dict")
+        self.li("make_sp_gene_dict")
         if self.concatfile is not None:
             self.user_defined_concat()
         else:
@@ -412,19 +464,19 @@ class Concat(object):
                         # physcraper.debug(self.tmp_dict.keys())
                         del self.tmp_dict[tax_id]
                     else:
-                        physcraper.debug("selse")
+                        self.ld("selse")
                         for gene in self.tmp_dict[tax_id]:
                             del_acc = self.select_rnd_seq(tax_id, gene, del_acc)
                         self.rm_rnd_sp(del_acc)
                     self.rm_empty_spn_entries(del_acc)
         # make sure all are of same length
-        physcraper.debug("end of sp gene dict")
+        self.ld("end of sp gene dict")
         len_gene = []
         for gen in self.comb_seq.keys():
             gene_taxid = (self.comb_seq[gen].keys())
             len_gene.append(gene_taxid)
-        physcraper.debug(len(len_gene))
-        physcraper.debug(range(0, (len(len_gene) - 1)))
+        self.ld(len(len_gene))
+        self.ld(range(0, (len(len_gene) - 1)))
         for item in range(0, (len(len_gene) - 1)):
             assert len_gene[item] == len_gene[item + 1]
         self.rename_drop_tips()
@@ -433,7 +485,7 @@ class Concat(object):
         """ Removes tips from tre as start that are not present in the concatenated aln
         and renames tips that are present.
         """
-        physcraper.debug("rename_drop_tips")
+        self.li("rename_drop_tips")
         # leaf.taxon is never in concat_tips
         concat_tax = set()
         for leaf in self.tre_as_start.leaf_nodes():
@@ -462,7 +514,7 @@ class Concat(object):
 
         :return: dictionary with taxon name and number saying how many genes are missing
         """
-        physcraper.debug("sp to keep")
+        self.li("sp to keep")
         sp_to_keep = {}
         for tax_id in self.sp_counter:
             seq_counter = True
@@ -487,9 +539,9 @@ class Concat(object):
         :param del_acc: dictionary that contains gene name: dict(spn: concat_id of random seq)
         :return: del_acc
         """
-        physcraper.debug("select_rnd_seq")
-        physcraper.debug(tax_id)
-        physcraper.debug(gene)
+        self.ld("select_rnd_seq")
+        self.ld(tax_id)
+        self.ld(gene)
         count = 2
         random_gen = random.choice(list(self.tmp_dict[tax_id][gene]))
         self.sp_acc_comb[tax_id][gene][random_gen]["concat:status"] = "used in concat"
@@ -498,7 +550,7 @@ class Concat(object):
         if gene in self.comb_seq.keys():
             # physcraper.debug(self.comb_seq[gene].keys())
             if tax_id_ not in self.comb_seq[gene].keys():
-                physcraper.debug("taxid not present")
+                self.ld("taxid not present")
                 # TODO: write check that for every tax_id, we add something to each comb_seq[gene]
                 self.comb_seq[gene][tax_id_] = seq
                 if gene in self.comb_acc:
@@ -511,12 +563,12 @@ class Concat(object):
                 else:
                     del_acc[gene] = {tax_id: random_gen}
             else:
-                physcraper.debug("tax_id present")
+                self.ld("tax_id present")
                 tax_id_new = "{}_{}".format(tax_id_, count)
                 while tax_id_new in self.comb_seq[gene].keys():
                     count += 1
                     tax_id_new = "{}_{}".format(tax_id_, count)
-                physcraper.debug(tax_id_new)
+                self.ld(tax_id_new)
                 self.comb_seq[gene][tax_id_new] = seq
                 self.comb_acc[gene][tax_id_new] = random_gen
                 self.sp_acc_comb[tax_id][gene][random_gen]["new tipname"] = tax_id_new
@@ -528,7 +580,7 @@ class Concat(object):
                 else:
                     del_acc[gene] = {tax_id: random_gen}
         else:
-            physcraper.debug("in else")
+            self.ld("in else")
             self.comb_seq[gene] = {tax_id_: seq}
             self.comb_acc[gene] = {tax_id_: random_gen}
             if gene in del_acc.keys():
@@ -563,7 +615,7 @@ class Concat(object):
         :return: self.concat_tips
         """
         if self.tre_start_gene == gene:
-            # physcraper.debug(self.sp_acc_comb.keys())
+            # self.ld(self.sp_acc_comb.keys())
             former_otu = self.sp_acc_comb[tax_id][gene][random_gen]['original_PS_id']
             for otu in self.tre_as_start.taxon_namespace:
                 if otu.label == former_otu:
@@ -579,14 +631,14 @@ class Concat(object):
         Dendropy needs same taxon_namespace and number otu's for concatenation. It will just make an empty sequence of
         the same length.
         """
-        # physcraper.debug("make_empty_seq")
+        # self.ld("make_empty_seq")
         len_gene_aln = 0
         for tax, seq in self.single_runs[gene].aln.items():
             len_gene_aln = len(seq)
             break
         assert len_gene_aln != 0
-        # physcraper.debug([gene, tax_id])
         empty_seq = "-" * len_gene_aln
+        # self.ld([gene, tax_id])
         if gene in self.comb_seq:
             self.comb_seq[gene][str(tax_id)] = empty_seq
         else:
@@ -595,7 +647,7 @@ class Concat(object):
     def rm_rnd_sp(self, del_acc):
         """Removes the random selected seq from the tmp_dict, so that it cannot be selected again.
         """
-        physcraper.debug("rm_rnd sp")
+        self.ld("rm_rnd sp")
         for tax_id2 in self.tmp_dict:
             for gene2 in self.tmp_dict[tax_id2]:
                 if gene2 in del_acc:
@@ -607,7 +659,7 @@ class Concat(object):
     def rm_empty_spn_entries(self, del_acc):
         """Removes keys from tmp dict, if the key/sp has no value anymore. Helper function.
         """
-        physcraper.debug("rm_empty_spn_entries")
+        self.ld("rm_empty_spn_entries")
         del_taxid = None
         for tax_id2 in self.tmp_dict:
             for gene2 in self.tmp_dict[tax_id2]:
@@ -626,11 +678,12 @@ class Concat(object):
     def make_alns_dict(self):
         """Makes dendropy aln out of dict self.comb_seq for all genes.
         """
-        physcraper.debug("make_alns_dict")
+        self.li("make_alns_dict")
+
         firstelement = True
         count = 0
         for gene in self.comb_seq.keys():
-            physcraper.debug(gene)
+            self.ld(gene)
             # physcraper.debug(self.comb_seq[gene].keys())
             if count == 0:
                 len1 = len(self.comb_seq[gene].keys())
@@ -641,7 +694,7 @@ class Concat(object):
             assert len1 == len2
             # physcraper.debug([len1, len2])
         for gene in self.comb_seq.keys():
-            physcraper.debug(count)
+            self.ld(count)
             if firstelement:
                 aln1 = DnaCharacterMatrix.from_dict(self.comb_seq[gene])
                 firstelement = False
@@ -655,7 +708,7 @@ class Concat(object):
     def concatenate_alns(self):
         """Concatenate all alns into one aln.
         """
-        physcraper.debug("concat alns")
+        self.ld("concat alns")
         count = 0
         for gene in self.aln_all:
             if count == 0:
@@ -730,7 +783,7 @@ class Concat(object):
         The default is so low, as I want to keep taxa that have only a single locus
         and which is not the longest among the loci within the aln.
         """
-        physcraper.debug("get_short_seq_from_concat")
+        self.li("get_short_seq_from_concat")
         seq_len = {}
         num_tax = 0
         for tax, seq in self.concatenated_aln.items():
@@ -759,7 +812,7 @@ class Concat(object):
         """Removes short seq that were found with get_short_seq
         and write it to file.
         """
-        physcraper.debug("remove_short_seq")
+        self.li("remove_short_seq")
         self.concatenated_aln.remove_sequences(self.short_concat_seq)
         for leaf in self.tre_as_start.leaf_nodes():
             for tax in self.short_concat_seq:
@@ -825,7 +878,7 @@ class Concat(object):
         
         Takes the info from rm_gap_only to reduce the partition by the columns that have been removed.
         """
-        physcraper.debug("write_partition")
+        self.ld("write_partition")
         count = 0
         len_gene = 0
         for gene in self.single_runs:
@@ -867,12 +920,15 @@ class Concat(object):
         """Places the new seqs (that are only found in loci which is not the starting tree)
         onto one (the one with most taxa) of the single run trees.
         """
-        physcraper.debug("place_new_seqs")
         if self.backbone is None:
+            self.li("place_new_seqs")
             if len(self.concatenated_aln.taxon_namespace)-len(self.short_concat_seq) > len(self.tre_as_start.leaf_nodes()):
                 if os.path.exists("RAxML_labelledTree.PLACE"):
                     os.rename("RAxML_labelledTree.PLACE", "RAxML_labelledTreePLACE.tmp")
                 with physcraper.cd(self.workdir):
+                    # cwd = os.getcwd()
+                    # os.chdir(self.workdir)
+                    self.ld("make place-tree")
                     try:
                         physcraper.debug("try")
                         num_threads = int(num_threads)
@@ -883,11 +939,13 @@ class Concat(object):
                                          "-t", "starting_red.tre",
                                          "-n", "PLACE"])
                     except:
+                        self.ld("except")
                         subprocess.call(["raxmlHPC", "-m", "GTRCAT",
                                          "-f", "v", "-q", "partition",
                                          "-s", "concat_red.fasta",
                                          "-t", "starting_red.tre",
                                          "-n", "PLACE"])
+                self.ld("read place tree")
                 placetre = Tree.get(path="{}/RAxML_labelledTree.PLACE".format(self.workdir),
                                     schema="newick",
                                     preserve_underscores=True)
@@ -896,6 +954,7 @@ class Concat(object):
                                     schema="newick", preserve_underscores=True)
                                     # suppress_internal_node_taxa=True, suppress_leaf_node_taxa=True)
             placetre.resolve_polytomies()
+            self.ld("rename place tree")
             for taxon in placetre.taxon_namespace:
                 if taxon.label.startswith("QUERY"):
                     taxon.label = taxon.label.replace("QUERY___", "")
@@ -905,8 +964,9 @@ class Concat(object):
     def est_full_tree(self, num_threads=None):
         """Full raxml run from the placement tree as starting tree.
         """
-        physcraper.debug("run full tree")
+        self.li("run full tree")
         with physcraper.cd(self.workdir):
+            self.ld(os.path.exists("place_resolve.tre"))
             if os.path.exists("place_resolve.tre"):
                 starting_fn = "place_resolve.tre"
             else:
@@ -917,7 +977,7 @@ class Concat(object):
             else:
                 aln = "concat_red.fasta"
                 partition = "partition"
-            physcraper.debug([aln, starting_fn])
+            self.ld([aln, starting_fn])
             try:
                 num_threads = int(num_threads)
                 if self.backbone is not True:
@@ -958,7 +1018,7 @@ class Concat(object):
         -b: bootstrap random seed
         -#: bootstrap stopping criteria
         """
-        physcraper.debug("calc bootstrap")
+        self.li("calc bootstrap")
         with physcraper.cd(self.workdir):
             if os.path.exists("concat_red.fasta.reduced"):
                 aln = "concat_red.fasta.reduced"
@@ -1006,7 +1066,7 @@ class Concat(object):
         """If a user gave an input file to concatenate data. Fills in the data for self.comb_seq, self.comb_acc
         (is the replacement function for select_rnd_seq).
         """
-        physcraper.debug("user_defined_concat")
+        self.li("user_defined_concat")
         has_header = True
         with open("{}/{}".format(self.workdir, self.concatfile), mode="r") as infile:
             reader = csv.reader(infile)
@@ -1072,7 +1132,7 @@ class Concat(object):
                                         found = True
                                         # physcraper.debug("found")
                                 else:
-                                    physcraper.debug("SOMETHING IS HAPPENING: no acc")
+                                    self.ld("SOMETHING IS HAPPENING: no acc")
                             else:
                                 # physcraper.debug(val)
                                 if "^ncbi:accession" in val:
@@ -1102,7 +1162,7 @@ class Concat(object):
                                     # else:
                                         # physcraper.debug("not same orig label?")
                                 else:
-                                    physcraper.debug("SOMETHING IS HAPPENING")
+                                    self.ld("SOMETHING IS HAPPENING")
 
                             if found:
                                 gene_l.append(gene)
@@ -1148,10 +1208,10 @@ class Concat(object):
                                             break
                                 if tax_id is not None:
                                     break
-                    physcraper.debug(len(self.comb_seq))
+                    self.ld(len(self.comb_seq))
                     # if otu == "taxid_1129161":
                     #     print(some)
-                    physcraper.debug(len(gene_l) == len(concat_l))
+                    self.ld(len(gene_l) == len(concat_l))
                     if len(gene_l) == len(concat_l):
                         missing_gene = [loci for loci in self.genes_present if loci not in gene_l]
                         for genes in missing_gene:
@@ -1188,7 +1248,7 @@ class Concat(object):
         :param downtorank: hierarchical filter
         :return: writes output to file
         """   
-        physcraper.debug("write_otu_info")
+        self.ld("write_otu_info")
         otu_dict_keys = [
             "unique_id", "sp_id", "original_PS_id", "concat:status"]
         with open("{}/otu_seq_info.csv".format(self.workdir), "w") as output:
