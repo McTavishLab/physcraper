@@ -244,7 +244,7 @@ class ConfigObj(object):
         # check database status
         if interactive is None:
             interactive = sys.stdin.isatty()
-            if interactive == False:
+            if interactive is False:
                 print("REMEMBER TO UPDATE THE NCBI DATABASES REGULARLY!!")
                 sys.stdout.write("REMEMBER TO UPDATE THE NCBI DATABASES REGULARLY!!")
         if interactive is True:
@@ -1930,7 +1930,7 @@ class PhyscraperScrape(object):
                         fn.write("{}: {}".format(alignment.title.split("|")[-1].split(" ")[-1], hsp.expect))
                         if local_id not in self.gb_not_added:
                             self.gb_not_added.append(local_id)
-                            self.write_not_added_info("threshold not passed")
+                            self.write_not_added_info(local_id, "threshold not passed")
                         # print(some)
         with open(self.logfile, "a") as log:
             log.write("{} new sequences added from unpublished database\n".format(len(self.new_seqs)))
@@ -1972,7 +1972,7 @@ class PhyscraperScrape(object):
                         else:
                             if gb_id not in self.gb_not_added:
                                 self.gb_not_added.append(gb_id)
-                                self.write_not_added_info("threshold not passed")
+                                self.write_not_added_info(gb_id, "threshold not passed")
         except ValueError:
             sys.stderr.write("Problem reading {}, skipping\n".format(fn_path))
 
@@ -2256,7 +2256,7 @@ class PhyscraperScrape(object):
                         else:
                             if gb_id not in self.gb_not_added:
                                 self.gb_not_added.append(gb_id)
-                                # self.write_not_added_info("not_part_of_mrca")
+                                # self.write_not_added_info(gb_id, "not_part_of_mrca")
                                 fn = open("{}/not_added_seq.csv".format(self.workdir), "a+")
                                 fn.write("not_part_of_mrca, {}, rankid: {}, ncbi_id:{}, tax_name:{}\n".format(gb_id, input_rank_id, ncbi_id, tax_name))
                                 fn.close()
@@ -2267,7 +2267,7 @@ class PhyscraperScrape(object):
                 else:
                     if gb_id not in self.gb_not_added:
                         self.gb_not_added.append(gb_id)
-                        # self.write_not_added_info("seqlen_threshold_not_passed")
+                        # self.write_not_added_info(gb_id, "seqlen_threshold_not_passed")
                         len_seq = len(seq.replace("-", "").replace("N", ""))
                         fn = open("{}/not_added_seq.csv".format(self.workdir), "a+")
                         fn.write(
@@ -2288,11 +2288,12 @@ class PhyscraperScrape(object):
         # debug(some)
         self.data.dump()
 
-    def write_not_added_info(self, reason=None):
+    def write_not_added_info(self, item, reason=None):
         """Writes out infos of not added seq based on information provided in reason.
 
         Is not used, as the output file can easily get to 100GB.
 
+        item is retrieved seq that was not added
         """
         # debug("write not added infos")
         tab_keys = [
