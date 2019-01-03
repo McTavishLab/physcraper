@@ -71,6 +71,7 @@ Depending on the size of your tree to be updated, there are things to consider.
         * `update_blastdb nt`
         * `cat *.tar.gz | tar -xvzf - -i`  # macOS `tar` does not support the `-i` flag,  you need to use homebrew to `brew install gnu-tar` and replace the `tar` command by `gtar`
         * `blastdbcmd -db nt -info`
+        * `rm *.tar.gz*`
           
          The last command shows you if it worked correctly. 'nt' means, we are making the nucleotide database.
          The database needs to be update regularly, the program will check the dates of your databases and will ask you to update the databases after 60 days. If your databases are older, you will be asked for input, if you want to update the databases. 
@@ -86,11 +87,14 @@ Depending on the size of your tree to be updated, there are things to consider.
           * `cd /to/the/folder/of/your/blastdb`
           * `wget 'ftp://ftp.ncbi.nlm.nih.gov/blast/db/taxdb.tar.gz'` # Download the taxdb archive
           * `gunzip -cd taxdb.tar.gz | (tar xvf - )`  # Install it in the BLASTDB directory
+          * `rm *.tar.gz*`
 
     * install the taxonomic rank database:
          *  `wget 'ftp://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdump.tar.gz'`
          *  `gunzip  -cd taxdump.tar.gz | (tar xvf - names.dmp nodes.dmp)`  
          *  move files into `tests/data/`
+         *  `rm taxdump.tar.gz`
+
          
     * updating the databases:
     

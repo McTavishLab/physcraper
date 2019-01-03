@@ -92,6 +92,7 @@ def is_number(s):
 debug("Current --init-- version number: 12-17-2018.0")
 debug(os.path.realpath(__file__))
 
+
 def get_user_input():
     """Asks for yes or no user input.
 
@@ -1004,6 +1005,7 @@ class AlignTreeTax(object):
         else:
             self.otu_dict[otu_id]["^ncbi:gi"] = self.gb_dict[gb_id]["^ncbi:gi"]
             self.otu_dict[otu_id]["^ncbi:accession"] = gb_id
+
         if _DEBUG >= 2:
             sys.stderr.write("acc:{} assigned new otu: {}\n".format(gb_id, otu_id))
         return otu_id
@@ -1169,9 +1171,8 @@ def get_mrca_ott(ott_ids):
         sys.exit(-4)
     return tax_id
 
-
-
 #####################################
+
 
 class IdDicts(object):
     """Class contains different taxonomic identifiers and helps to find the corresponding ids between ncbi and OToL
@@ -1838,7 +1839,6 @@ class PhyscraperScrape(object):
             for lin in infile:
                 # sseqid, staxids, sscinames, pident, evalue, bitscore, sseq, stitle = lin.strip().split('\t')
                 sseqid, staxids, sscinames, pident, evalue, bitscore, sseq, stitle, sallseqid = lin.strip().split('\t')
-
                 gi_id = int(sseqid.split("|")[1])
                 gb_acc = sseqid.split("|")[3]
                 sseq = sseq.replace("-", "")
@@ -1867,14 +1867,16 @@ class PhyscraperScrape(object):
                             debug(query_dict[gb_acc])
                 else:
                     staxids = int(staxids)
-                assert type(staxids) is int
-                self.ids.spn_to_ncbiid[sscinames] = staxids
-                if gb_acc not in self.ids.acc_ncbi_dict:  # fill up dict with more information.
-                    self.ids.acc_ncbi_dict[gb_acc] = staxids
-                if gb_acc not in query_dict and gb_acc not in self.newseqs_acc:
-                    query_dict[gb_acc] = {'^ncbi:gi': gi_id, 'accession': gb_acc, 'staxids': staxids,
-                                          'sscinames': sscinames, 'pident': pident, 'evalue': evalue,
-                                          'bitscore': bitscore, 'sseq': sseq, 'title': stitle}
+                    self.ids.spn_to_ncbiid[sscinames] = staxids
+                    if gb_acc not in self.ids.acc_ncbi_dict:  # fill up dict with more information.
+                        self.ids.acc_ncbi_dict[gb_acc] = staxids
+                    if gb_acc not in query_dict and gb_acc not in self.newseqs_acc:
+                        query_dict[gb_acc] = {'^ncbi:gi': gi_id, 'accession': gb_acc, 'staxids': staxids,
+                                              'sscinames': sscinames, 'pident': pident, 'evalue': evalue,
+                                              'bitscore': bitscore, 'sseq': sseq, 'title': stitle}
+                if len(sscinames.split(" ")) == 1:
+                    print(sscinames, gb_acc)
+                
         # debug("key in query")
         for key in query_dict.keys():
             if float(query_dict[key]["evalue"]) < float(self.config.e_value_thresh):
@@ -2072,6 +2074,7 @@ class PhyscraperScrape(object):
         :param seq_dict: the tmp_dict generated in add_otu()
         :return: updated seq_dict
         """
+
         id_of_label = self.get_sp_id_of_otulabel(label)
         new_seq = seq.replace("-", "")
         tax_list = deepcopy(seq_dict.keys())
@@ -2313,19 +2316,17 @@ class PhyscraperScrape(object):
             with open("{}/info_not_added_seq.csv".format(self.workdir), "w+") as output:
                 writer = csv.writer(output)
                 writer.writerow(tab_keys)
-
         with open("{}/info_not_added_seq.csv".format(self.workdir), "a") as output:
             writer = csv.writer(output)
-            for otu in self.data.gb_dict.keys():
-                rowinfo = [otu]
-                for item in tab_keys:
-                    if item in self.data.gb_dict[otu].keys():
-                        tofile = str(self.data.gb_dict[otu][item]).replace("_", " ")
-                        rowinfo.append(tofile)
-                    else:
-                        rowinfo.append("-")
-                rowinfo.append(reason)
-                writer.writerow(rowinfo)
+            rowinfo = [self.data.gb_dict[item]]
+            for key in tab_keys:
+                if key in self.data.gb_dict[item].keys():
+                    tofile = str(self.data.gb_dict[item][key]).replace("_", " ")
+                    rowinfo.append(tofile)
+                else:
+                    rowinfo.append("-")
+            rowinfo.append(reason)
+            writer.writerow(rowinfo)
 
     def find_otudict_gi(self):
         """Used to find seqs that were added twice. Debugging function.
@@ -2474,7 +2475,10 @@ class PhyscraperScrape(object):
         self._query_seqs_placed = 1
 
     def est_full_tree(self):
-        """Full raxml run from the placement tree as starting tree"""
+        """Full raxml run from the placement tree as starting tree.
+        The PTHREAD version is the faster one, hopefully people install it. if not it falls back to the normal raxml.
+        the backbone options allows to fix the sceleton of the starting tree and just newly estimates the other parts.
+        """
         with cd(self.workdir):
             for filename in glob.glob('{}/RAxML*'.format(self.workdir)):
                 os.rename(filename, "{}/{}_tmp".format(self.workdir, filename.split("/")[-1]))
@@ -3185,6 +3189,7 @@ class FilterBlast(PhyscraperScrape):
         query_count = 0
         debug(self.sp_d[tax_id][0]["^ot:ottTaxonName"])
         for item in self.sp_d[tax_id]:
+
             if '^physcraper:status' in item and item['^physcraper:status'].split(' ')[0] not in self.seq_filter:
                 debug(item['^physcraper:status'])
                 item_split = item['^physcraper:status'].split(' ')[0]
