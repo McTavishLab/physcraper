@@ -311,7 +311,6 @@ class Concat(object):
 
         :return: builds self.sp_counter
         """
-        physcraper.debug("sp_seq_counter")
         for tax_id in self.sp_acc_comb:
             # physcraper.debug(tax_id)
             assert tax_id is not None, "tax_id `%s` is not known" % tax_id
