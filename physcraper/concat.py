@@ -9,11 +9,13 @@ import subprocess
 import csv
 import pickle
 import random
-import physcraper
+import dendropy
 
 from copy import deepcopy
 from dendropy import Tree, DnaCharacterMatrix
+from Bio import AlignIO, SeqIO, Entrez
 
+import physcraper
 
 
 # if sys.version_info < (3, ):
@@ -24,7 +26,7 @@ from dendropy import Tree, DnaCharacterMatrix
 """Code used to concatenate different single PhyScraper runs into a concatenated one.
 """
 
-print("Current concat version number: 01-02-2019.0")
+print("Current concat version number: 01-03-2019.0")
 
 
 def remove_aln_tre_leaf(scrape):
@@ -176,6 +178,8 @@ class Concat(object):
         scrape = pickle.load(open("{}/{}".format(workdir, pickle_fn), "rb"))
         scrape = remove_aln_tre_leaf(scrape)
         self.single_runs[genename] = deepcopy(scrape)
+        # remove gap only char from input aln and return modified aln
+        self.rm_gap_only(self.single_runs[genename].aln, "{}.fas".format(genename))
         return
 
     def combine(self):
@@ -215,9 +219,9 @@ class Concat(object):
             if tax_id is None or tax_id == "taxid_None":
                 print("think about it")
                 tn = data['^user:TaxonName'].replace("_", "").replace(" ", "")
-                # print(tn)
+                # physcraper.debug(tn)
                 tax_id = "taxid_{}".format(tn).encode("ascii")
-                # print(tax_id)
+                # physcraper.debug(tax_id)
             assert tax_id.split("_")[1] is not None
             assert tax_id.split("_")[1] != "None"
             assert tax_id.split("_")[1] != ""
@@ -309,22 +313,22 @@ class Concat(object):
         """
         physcraper.debug("sp_seq_counter")
         for tax_id in self.sp_acc_comb:
-            # print(spn)
+            # physcraper.debug(tax_id)
             assert tax_id is not None, "tax_id `%s` is not known" % tax_id
             tmp_gene = deepcopy(self.genes_present)
             for gene in self.sp_acc_comb[tax_id]:
                 tmp_gene.remove(gene)
-                tax_new = tax_id   # .replace(" ", "_")
-                if tax_new in self.sp_counter:
-                    self.sp_counter[tax_new][gene] = len(self.sp_acc_comb[tax_id][gene])
+                # tax_new = tax_id   # .replace(" ", "_")
+                if tax_id in self.sp_counter:
+                    self.sp_counter[tax_id][gene] = len(self.sp_acc_comb[tax_id][gene])
                 else:
-                    self.sp_counter[tax_new] = {gene: len(self.sp_acc_comb[tax_id][gene])}
+                    self.sp_counter[tax_id] = {gene: len(self.sp_acc_comb[tax_id][gene])}
             for item in tmp_gene:
-                if tax_new in self.sp_counter:
-                    self.sp_counter[tax_new][item] = 0
+                if tax_id in self.sp_counter:
+                    self.sp_counter[tax_id][item] = 0
                 else:
-                    self.sp_counter[tax_new] = {item: 0}
         physcraper.debug(self.sp_counter)
+                    self.sp_counter[tax_id] = {item: 0}
 
     def get_largest_tre(self):
         """Find the single gene tree with the most tips, which will be used as
@@ -582,8 +586,8 @@ class Concat(object):
             len_gene_aln = len(seq)
             break
         assert len_gene_aln != 0
-        empty_seq = "?" * len_gene_aln
         # physcraper.debug([gene, tax_id])
+        empty_seq = "-" * len_gene_aln
         if gene in self.comb_seq:
             self.comb_seq[gene][str(tax_id)] = empty_seq
         else:
@@ -672,9 +676,51 @@ class Concat(object):
                     len_aln2 += 1
                 assert len_aln1 == len_aln2, (len_aln1, len_aln2)
                 aln1 = DnaCharacterMatrix.concatenate([aln1, aln2])
+        self.concatenated_aln = aln1
         aln1.write(path="{}/concat.fas".format(self.workdir),
                    schema="fasta")
-        self.concatenated_aln = aln1
+        self.rm_gap_only(self.concatenated_aln, "concat.fas")
+        self.concatenated_aln = dendropy.DnaCharacterMatrix.get(file=open("{}/concat_nogap.fas".format(self.workdir)), schema="fasta")
+        self.concatenated_aln.write(path="{}/concat.fas".format(self.workdir),
+                                    schema="fasta")
+
+    def rm_gap_only(self, input_aln, fn="concat.fas", mformat="fasta"):
+        """
+        remove gap only char from input aln and writes out and reloads modified aln.
+
+        Partial copy from https://stackoverflow.com/questions/28220301/python-remove-special-column-from-multiple-sequence-alignment
+        """
+        self.del_columns = []
+        fn_begin = fn.split(".")[0]
+        fn_end = fn.split(".")[1]
+        input_aln.write(path="{}/{}".format(self.workdir, fn),schema="fasta")
+        aln = AlignIO.read("{}/{}".format(self.workdir, fn), mformat)
+        self.ld(aln)
+        n_row = float(len(aln))
+        n_col = float(len(aln[0]))
+        i = 0
+        while i < n_col:
+            ct = 0
+            while i+ct < n_col and aln[:, i+ct].count('-') / n_row == 1:
+                ct += 1
+                # self.ld("del")
+                # self.ld(i+ct)
+                self.del_columns.append(i+ct)
+            if ct > 0:     #  delete columns [i:i+ct]
+                if i == 0:
+                    aln = aln[:, ct:]
+                elif i+ct == n_col:
+                    aln = aln[:, :i]
+                else:
+                    aln = aln[:, :i] + aln[:, i+ct:]
+                n_col -= ct    #  seq. ct positions shorter
+            else:  # nothing to delete, proceed
+                i += 1
+        self.ld(aln)
+        SeqIO.write(aln, "{}/{}_nogap.fas".format(self.workdir, fn_begin), mformat)
+        input_aln = dendropy.DnaCharacterMatrix.get(file=open("{}/{}_nogap.fas".format(self.workdir, fn_begin)), schema=mformat)
+        return input_aln
+
 
     def get_short_seq_from_concat(self, percentage=0.37):
         """Finds short sequences, all below a certain threshold will be removed,
@@ -706,7 +752,7 @@ class Concat(object):
 
         with open("{}/short_seq_deleted.csv".format(self.workdir), "w") as output:
             writer = csv.writer(output)
-            writer.writerow("min len: {}".format(min_len))
+            writer.writerow(["min len: {}".format(min_len)])
             for otu in self.short_concat_seq:
                 writer.writerow(otu)              
 
@@ -734,12 +780,15 @@ class Concat(object):
         for tax in self.concatenated_aln.taxon_namespace:
             tax.label = tax.label.replace(" ", "_")
         self.concatenated_aln.write(path="{}/{}".format(self.workdir, "concat_red.fasta"), schema="fasta")
+        # does not work here, seq not yet in tree
         tre_ids = set()
         for tax in self.tre_as_start.taxon_namespace:
             tre_ids.add(tax.label)
         aln_ids = set()
         for tax in self.concatenated_aln.taxon_namespace:
             aln_ids.add(tax.label)
+        # assert aln_ids == tre_ids
+        assert tre_ids.issubset(aln_ids)
 
     def make_concat_table(self):
         """ Makes a table that shows which gi numbers were combined.
@@ -774,6 +823,8 @@ class Concat(object):
 
     def write_partition(self):
         """Write the partitioning file for RAxML.
+        
+        Takes the info from rm_gap_only to reduce the partition by the columns that have been removed.
         """
         physcraper.debug("write_partition")
         count = 0
@@ -783,12 +834,31 @@ class Concat(object):
                 len_gene = len(seq.symbols_as_string())
                 break
             if count == 0:
+                # subtract removed columns (rm_gap_only) from len_gene
+                # count number of cols which are smaller than len_gene
+                rm_col_a = []
+                for num in self.del_columns:
+                    # physcraper.debug(num)
+                    if num <= len_gene:
+                        rm_col_a.append(num)
+                # physcraper.debug(rm_col_a)
+                len_gene = len_gene - len(rm_col_a)
+                self.part_len = len_gene
+                # physcraper.debug(self.part_len)
                 with open("{}/partition".format(self.workdir), "w") as partition:
                     partition.write("DNA, {} = 1-{}\n".format(gene, len_gene))
-                self.part_len = len_gene
                 count = 1
             else:
                 start = self.part_len + 1
+                # subtract removed columns from len_gene
+                # count number of cols which are smaller than len_gene, must be done with original col length (rm_col_a))
+                rm_col = []
+                for num in self.del_columns:
+                    if num > rm_col_a and num <= rm_col_a + len_gene :
+                        # physcraper.debug(num)
+                        rm_col.append(num)
+                # physcraper.debug(rm_col)
+                len_gene = len_gene - len(rm_col)
                 end = self.part_len + len_gene
                 self.part_len = self.part_len + len_gene
                 with open("{}/partition".format(self.workdir), "a") as partition:
@@ -796,54 +866,42 @@ class Concat(object):
 
     def place_new_seqs(self, num_threads=None):
         """Places the new seqs (that are only found in loci which is not the starting tree)
-        onto one of the single run trees.
+        onto one (the one with most taxa) of the single run trees.
         """
         physcraper.debug("place_new_seqs")
-        if len(self.concatenated_aln.taxon_namespace)-len(self.short_concat_seq) > len(self.tre_as_start.leaf_nodes()):
-            if os.path.exists("RAxML_labelledTree.PLACE"):
-                os.rename("RAxML_labelledTree.PLACE", "RAxML_labelledTreePLACE.tmp")
+        if self.backbone is None:
+            if len(self.concatenated_aln.taxon_namespace)-len(self.short_concat_seq) > len(self.tre_as_start.leaf_nodes()):
+                if os.path.exists("RAxML_labelledTree.PLACE"):
+                    os.rename("RAxML_labelledTree.PLACE", "RAxML_labelledTreePLACE.tmp")
+                with physcraper.cd(self.workdir):
+                    try:
+                        physcraper.debug("try")
+                        num_threads = int(num_threads)
+                        # debug(num_threads)
+                        subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(num_threads), "-m", "GTRCAT",
+                                         "-f", "v", "-q", "partition",
+                                         "-s", "concat_red.fasta",
+                                         "-t", "starting_red.tre",
+                                         "-n", "PLACE"])
+                    except:
+                        subprocess.call(["raxmlHPC", "-m", "GTRCAT",
+                                         "-f", "v", "-q", "partition",
+                                         "-s", "concat_red.fasta",
+                                         "-t", "starting_red.tre",
+                                         "-n", "PLACE"])
+                placetre = Tree.get(path="{}/RAxML_labelledTree.PLACE".format(self.workdir),
+                                    schema="newick",
+                                    preserve_underscores=True)
+            else:
+                placetre = Tree.get(path="{}/starting_red.tre".format(self.workdir),
+                                    schema="newick", preserve_underscores=True)
+                                    # suppress_internal_node_taxa=True, suppress_leaf_node_taxa=True)
+            placetre.resolve_polytomies()
+            for taxon in placetre.taxon_namespace:
+                if taxon.label.startswith("QUERY"):
+                    taxon.label = taxon.label.replace("QUERY___", "")
+            placetre.write(path="{}/place_resolve.tre".format(self.workdir), schema="newick", unquoted_underscores=True)
 
-            with physcraper.cd(self.workdir):
-                # cwd = os.getcwd()
-                # os.chdir(self.workdir)
-                physcraper.debug("make place-tree")
-                try:
-                    physcraper.debug("try")
-                    num_threads = int(num_threads)
-                    # debug(num_threads)
-                    subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(num_threads), "-m", "GTRCAT",
-                                     "-f", "v",  # "-q", "partition",
-                                     "-s", "concat_red.fasta",
-                                     "-t", "starting_red.tre",
-                                     "-n", "PLACE"])
-                except:
-                    physcraper.debug("except")
-                    subprocess.call(["raxmlHPC", "-m", "GTRCAT",
-                                     "-f", "v",  # "-q", "partition",
-                                     "-s", "concat_red.fasta",
-                                     "-t", "starting_red.tre",
-                                     "-n", "PLACE"])
-                # os.chdir(cwd)
-            physcraper.debug("read place tree")
-            # # TODO MK CHRISTMAS: has non-labelled tree at the end, here might be the problem
-            # placetre = Tree.get(path="{}/starting_red.tre".format(self.workdir),
-            #                    schema="newick",
-            #                    preserve_underscores=True,
-            #                    suppress_internal_node_taxa=True, suppress_leaf_node_taxa=True)
-            placetre = Tree.get(path="{}/RAxML_labelledTree.PLACE".format(self.workdir),
-                                schema="newick",
-                                preserve_underscores=True)
-        else:
-            placetre = Tree.get(path="{}/starting_red.tre".format(self.workdir),
-                                schema="newick", preserve_underscores=True)
-                                # suppress_internal_node_taxa=True, suppress_leaf_node_taxa=True)
-        placetre.resolve_polytomies()
-        physcraper.debug("rename place tree")
-        for taxon in placetre.taxon_namespace:
-            if taxon.label.startswith("QUERY"):
-                taxon.label = taxon.label.replace("QUERY___", "")
-            
-        placetre.write(path="{}/place_resolve.tre".format(self.workdir), schema="newick", unquoted_underscores=True)
 
     def est_full_tree(self, num_threads=None):
         """Full raxml run from the placement tree as starting tree.
@@ -870,6 +928,8 @@ class Concat(object):
                                      "-p", "1", "-q", partition,
                                      "-n", "concat"])
                 else:
+                    # -r constraint tree
+                    starting_fn = "starting_red.tre"
                     subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(num_threads), "-m", "GTRCAT",
                                      "-s", aln, "--print-identical-sequences",
                                      "-r", "{}".format(starting_fn),
@@ -883,6 +943,7 @@ class Concat(object):
                                      "-p", "1", "-q", partition,
                                      "-n", "concat"])
                 else:
+                    starting_fn = "starting_red.tre"
                     subprocess.call(["raxmlHPC", "-m", "GTRCAT",
                                      "-s", aln, "--print-identical-sequences",
                                      "-r", "{}".format(starting_fn),
