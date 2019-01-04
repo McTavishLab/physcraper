@@ -246,7 +246,7 @@ class ConfigObj(object):
         if interactive is None:
             interactive = sys.stdin.isatty()
             if interactive is False:
-                print("REMEMBER TO UPDATE THE NCBI DATABASES REGULARLY!!")
+                # print("REMEMBER TO UPDATE THE NCBI DATABASES REGULARLY!!")
                 sys.stdout.write("REMEMBER TO UPDATE THE NCBI DATABASES REGULARLY!!")
         if interactive is True:
             self._download_ncbi_parser()
@@ -493,7 +493,7 @@ def generate_ATT_from_files(seqaln,
     assert tre.taxon_namespace is aln.taxon_namespace
     otu_newick = tre.as_string(schema=schema_trf)
     otu_dict = json.load(open(otu_json, "r"))
-    debug("get mrca")
+    debug("get mrca: ")
     debug(ingroup_mrca)
     if ingroup_mrca:
         if type(ingroup_mrca) == list:
@@ -1846,7 +1846,7 @@ class PhyscraperScrape(object):
                 pident = float(pident)
                 evalue = float(evalue)
                 bitscore = float(bitscore)
-                # NOTE: sometimes there are seq which are identical & are combined in the local blast db, get all of them!
+                # NOTE: sometimes there are seq which are identical & are combined in the local blast db, get all of them! (get redundant seq info)
                 if len(staxids.split(";")) > 1:
                     # staxids = int(staxids.split(";")[0])
                     # sscinames = sscinames.split(";")[0]
@@ -2089,7 +2089,7 @@ class PhyscraperScrape(object):
                 debug("seq not added because it's to long...")
             elif len(inc_seq) >= len(new_seq):  # if seq is identical and shorter
                 if inc_seq.find(new_seq) != -1:
-                    if type(existing_id) == int and existing_id != id_of_label:
+                    if type(existing_id) == int and existing_id != id_of_label:  # different otus, add
                         if _VERBOSE:
                             sys.stdout.write("seq {} is subsequence of {}, "
                                              "but different species name\n".format(label, tax_lab))
@@ -2099,7 +2099,7 @@ class PhyscraperScrape(object):
                         debug("{} and {} are subsequences, but different sp. concept".format(id_of_label, existing_id))
                         continue_search = True
                         continue
-                    else:  # subseq of same sp.
+                    else:  # subseq of same otu
                         if _VERBOSE:
                             sys.stdout.write("seq {} is subsequence of {}, not added\n".format(label, tax_lab))
                         self.data.otu_dict[label]['^physcraper:status'] = "subsequence, not added"

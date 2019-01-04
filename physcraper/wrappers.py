@@ -485,41 +485,41 @@ def concat(genelistdict, workdir_comb, email, num_threads=None, percentage=0.37,
     """
     if not os.path.exists(path="{}/concat_checkpoint.p".format(workdir_comb)):
         if not os.path.exists(path="{}/load_single_data.p".format(workdir_comb)):
-            concat = wrappers.Concat(workdir_comb, email)
-            concat.concatfile = user_concat_fn
+            conc = concat.Concat(workdir_comb, email)
+            conc.concatfile = user_concat_fn
             for item in genelistdict.keys():
-                concat.load_single_genes(genelistdict[item]["workdir"], genelistdict[item]["pickle"], item)
-            concat.combine()
+                conc.load_single_genes(genelistdict[item]["workdir"], genelistdict[item]["pickle"], item)
+            conc.combine()
         else:
             sys.stdout.write("load single data dump file")
-            concat = pickle.load(open("{}/load_single_data.p".format(workdir_comb), "rb"))
-            #concat.dump()
+            conc = pickle.load(open("{}/load_single_data.p".format(workdir_comb), "rb"))
+            #conc.dump()
         
-        concat.sp_seq_counter()
-        concat.get_largest_tre()
-        concat.make_sp_gene_dict()
-        concat.make_alns_dict()
-        concat.concatenate_alns()
-        concat.get_short_seq_from_concat(percentage)
-        concat.remove_short_seq()
-        concat.dump()
+        conc.sp_seq_counter()
+        conc.get_largest_tre()
+        conc.make_sp_gene_dict()
+        conc.make_alns_dict()
+        conc.concatenate_alns()
+        conc.get_short_seq_from_concat(percentage)
+        conc.remove_short_seq()
+        conc.dump()
     else:
         sys.stdout.write("load concat_checkpoint dump file")
-        concat = pickle.load(open("{}/concat_checkpoint.p".format(workdir_comb), "rb")) 
-    concat.backbone = backbone
+        conc = pickle.load(open("{}/concat_checkpoint.p".format(workdir_comb), "rb")) 
+    conc.backbone = backbone
     
-    concat.make_concat_table()
-    concat.write_partition()
-    concat.place_new_seqs()
+    conc.make_concat_table()
+    conc.write_partition()
+    conc.place_new_seqs()
 
-    concat.est_full_tree(num_threads)
+    conc.est_full_tree(num_threads)
     if backbone == False:    
-        concat.calculate_bootstrap(num_threads)
-    concat.write_otu_info()
+        conc.calculate_bootstrap(num_threads)
+    conc.write_otu_info()
 
     save_copy_code(workdir_comb)
 
-    return concat
+    return conc
 
 
 def save_copy_code(workdir_comb):
