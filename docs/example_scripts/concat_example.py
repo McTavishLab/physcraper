@@ -15,6 +15,8 @@ workdir_ETS = "tests/data/PS_tiny_comb_ets"
 email = "mk@xy.zt"
 percentage = 0.4
 
+num_threads = 4  # number of threads to use, to make it run faster
+
 pickle_fn = "final_ATT_checkpoint.p"
 
 workdir_comb = "docs/example_scripts/output/nr_concat"
@@ -23,5 +25,4 @@ genelist = {"ITS": {"workdir": workdir_ITS, "pickle": pickle_fn},
             }
 
 conc = wrappers.concat(genelistdict=genelist, workdir_comb=workdir_comb,
-                       email=email, percentage=percentage, user_concat_fn=None)
-
+                       email=email, num_threads=num_threads, percentage=percentage, user_concat_fn=None, backbone=None)

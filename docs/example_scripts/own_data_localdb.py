@@ -8,14 +8,13 @@ mattype = "fasta"
 trfn = "tests/data/tiny_comb_its/tiny_comb_its.tre"
 schema_trf = "newick"
 blacklist = None
-workdir="tests/output/impl_addLocal"
+workdir="tests/output/addLocal"
 
 id_to_spn = r"tests/data/tiny_comb_its/nicespl.csv"
 otu_jsonfi = "{}/otu_dict.json".format(workdir)
 otu_jsonfi_local = "{}/otu_dict_local.json".format(workdir)
 
 configfi = "tests/data/localblast.config"
-cwd = os.getcwd() 
 threshold=10
 selectby="blast" 
 downto= None
@@ -59,6 +58,6 @@ wrappers.filter_data_run(seqaln,
                          configfi,
                          selectby=selectby, 
                          downtorank=downto,
-      			 ingroup_mrca=ingroup_mrca,
+      			         ingroup_mrca=ingroup_mrca,
                          add_unpubl_seq=add_unpubl_seq,
                          id_to_spn_addseq_json=otu_json_local)

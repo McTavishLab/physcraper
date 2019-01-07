@@ -982,7 +982,7 @@ class AlignTreeTax(object):
         if otu_id in self.otu_dict.keys():
             ott_name = ids_obj.ott_to_name.get(ott_id)
         else:
-            ott_name = None    # TODO MK: make new entry with ncbi: taxonnames!!!
+            ott_name = None    # TODO MK: make new entry with ncbi: taxonnames!!! does it work now?
         self.otu_dict[otu_id] = {}
         self.otu_dict[otu_id]["^ncbi:title"] = self.gb_dict[gb_id]["title"]
         self.otu_dict[otu_id]["^ncbi:taxon"] = ncbi_id
@@ -999,7 +999,14 @@ class AlignTreeTax(object):
         else:
             self.otu_dict[otu_id]["^ncbi:gi"] = self.gb_dict[gb_id]["^ncbi:gi"]
             self.otu_dict[otu_id]["^ncbi:accession"] = gb_id
-
+        # get a name for the OTU, no matter from which source
+        if tax_name is not None:
+            self.otu_dict[otu_id]["^physcraper:TaxonName"] = tax_name
+        elif ott_name is not None:
+            self.otu_dict[otu_id]["^physcraper:TaxonName"] = ott_name
+        elif self.otu_dict[otu_id]['^user:TaxonName']:
+            self.otu_dict[otu_id]["^physcraper:TaxonName"] = self.otu_dict[otu_id]['^user:TaxonName']
+        assert self.otu_dict[otu_id]["^physcraper:TaxonName"] is not None
         if _DEBUG >= 2:
             sys.stderr.write("acc:{} assigned new otu: {}\n".format(gb_id, otu_id))
         return otu_id
@@ -1338,7 +1345,7 @@ class IdDicts(object):
     def get_rank_info_from_web(self, taxon_name):
         """Collects rank and lineage information from ncbi,
         used to delimit the sequences from blast,
-        when you use the web blast service.
+        when the web blast service is used.
         """
         tax_name = taxon_name.replace(" ", "_")
         if tax_name not in self.otu_rank.keys():
@@ -1351,11 +1358,12 @@ class IdDicts(object):
                 lineage2ranks = ncbi.get_rank(lineage)
                 tax_name = str(tax_name).replace(" ", "_")
                 assert type(ncbi_id) is int
-                self.otu_rank[tax_name] = {"taxon id": ncbi_id, "lineage": lineage, "rank": lineage2ranks}
+                self.otu_rank[ncbi_id] = \
+                    {"taxon id": ncbi_id, "lineage": lineage, "rank": lineage2ranks, "taxon name": tax_name}
         return tax_name
 
     def find_tax_id(self, otu_dict_entry=None, acc=None):
-        """ Find the taxon id in the  otu_dict entry or of a Genbank accession number.
+        """ Find the taxon id in the  otu_dict entry or of a Genbank accession number if no name is given.
         If not already known it will ask ncbi using the accession number
 
         :param otu_dict_entry: otu_dict entry
@@ -2922,7 +2930,7 @@ class FilterBlast(PhyscraperScrape):
                             # debug(item.split(":")[0])
                             if item.split(":")[0] == "ncbi":
                                 tax_id = item.split(":")[1]
-                            # tax_id = self.ids.ott_id_to_ncbiid(ott_id)
+                            # tax_id = self.ids.ottid_to_ncbiid(ott_id)
                 if self.downtorank is not None:
                     downtorank_name = None
                     downtorank_id = None

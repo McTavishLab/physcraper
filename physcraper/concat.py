@@ -733,8 +733,8 @@ class Concat(object):
                    schema="fasta")
         self.rm_gap_only(self.concatenated_aln, "concat.fas")
         self.concatenated_aln = dendropy.DnaCharacterMatrix.get(file=open("{}/concat_nogap.fas".format(self.workdir)), schema="fasta")
-        self.concatenated_aln.write(path="{}/concat.fas".format(self.workdir),
-                                    schema="fasta")
+        # self.concatenated_aln.write(path="{}/concat.fas".format(self.workdir),
+                                    # schema="fasta")
 
     def rm_gap_only(self, input_aln, fn="concat.fas", mformat="fasta"):
         """
