@@ -246,7 +246,6 @@ class ConfigObj(object):
         if interactive is None:
             interactive = sys.stdin.isatty()
             if interactive is False:
-                # print("REMEMBER TO UPDATE THE NCBI DATABASES REGULARLY!!")
                 sys.stdout.write("REMEMBER TO UPDATE THE NCBI DATABASES REGULARLY!!")
         if interactive is True:
             self._download_ncbi_parser()
@@ -261,7 +260,7 @@ class ConfigObj(object):
             # next line of codes exists to have interactive mode enabled while testing
             # this allows to not actually have a local ncbi database downloaded
             if not os.path.isfile("{}/empty_local_db_for_testing.nhr".format(self.blastdb)):
-                if not os.path.isfile("{}/nt.60.nhr".format(self.blastdb)):
+                if not os.path.isfile("{}/nt.69.nhr".format(self.blastdb)):
                     print("Do you want to download the blast nt databases from ncbi? Note: "
                           "This is a US government website! You agree to their terms")
                     x = get_user_input()
@@ -684,7 +683,7 @@ class AlignTreeTax(object):
         The physcraper class is then updating: 
 
           * self.aln, self.tre and self.otu_dict, self.ps_otu, self.gi_dict
- """
+    """
 
     def __init__(self, newick, otu_dict, alignment, ingroup_mrca, workdir, config_obj, schema=None, taxon_namespace=None):
         debug("build ATT class")
@@ -717,12 +716,6 @@ class AlignTreeTax(object):
         self.gb_dict = {}  # has all info about new blast seq 
         self._reconciled = False
         self.unpubl_otu_json = None
-
-    # def add_config_to_ATT(self, configclass):
-    #     """adds confic class to self in ATT. To have the settings available., which are needed for the functions.
-    #     But in extra function to not rewrite plenty of code"""
-    #     # TODO: should be done differently
-    #     self.config = configclass
 
     def _reconcile(self):
         """Taxa that are only found in the tree, or only in the alignment are deleted.
@@ -989,10 +982,11 @@ class AlignTreeTax(object):
         if otu_id in self.otu_dict.keys():
             ott_name = ids_obj.ott_to_name.get(ott_id)
         else:
-            ott_name = tax_name    # TODO MK: make new entry with ncbi: taxonnames!!!
+            ott_name = None    # TODO MK: make new entry with ncbi: taxonnames!!!
         self.otu_dict[otu_id] = {}
         self.otu_dict[otu_id]["^ncbi:title"] = self.gb_dict[gb_id]["title"]
         self.otu_dict[otu_id]["^ncbi:taxon"] = ncbi_id
+        self.otu_dict[otu_id]["^ncbi:TaxonName"] = tax_name
         self.otu_dict[otu_id]["^ot:ottId"] = ott_id
         self.otu_dict[otu_id]["^physcraper:status"] = "query"
         self.otu_dict[otu_id]["^ot:ottTaxonName"] = ott_name
@@ -1060,7 +1054,7 @@ class AlignTreeTax(object):
             treepath = "{}/{}".format(self.workdir, "labelled.tre")
         if alnpath is None:
             alnpath = "{}/{}".format(self.workdir, 'labelled.aln')
-        assert label in ['^ot:ottTaxonName', '^user:TaxonName', "^ot:originalLabel", "^ot:ottId", "^ncbi:taxon"]
+        assert label in ['^ot:ottTaxonName', '^user:TaxonName', '^physcraper:TaxonName', "^ot:originalLabel", "^ot:ottId", "^ncbi:taxon"]
         tmp_newick = self.tre.as_string(schema="newick")
         tmp_tre = Tree.get(data=tmp_newick,
                            schema="newick",
@@ -1077,7 +1071,7 @@ class AlignTreeTax(object):
                     new_label = "orig_{}".format(self.otu_dict[taxon.label]["^ot:originalLabel"])
                 else:
                     new_label = "ncbi_{}_ottname_{}".format(self.otu_dict[taxon.label].get("^ncbi:taxon", "unk"),
-                                                            self.otu_dict[taxon.label].get('^ot:ottTaxonName', "unk"))
+                                                            self.otu_dict[taxon.label].get('^physcraper:TaxonName', "unk"))
             new_label = str(new_label).replace(' ', '_')
             if add_gb_id:
                 gb_id = self.otu_dict[taxon.label].get('^ncbi:accession')
@@ -1264,7 +1258,7 @@ class IdDicts(object):
             self.ott_id_to_ncbiid(self.mrca_ott)
 
     def ott_id_to_ncbiid(self, ott_id):
-        """ Find ncbi Id for ott id. Is only used for the mrca list thing!
+        """ Find ncbi id for ott id. Is only used for the mrca list thing!
         """
         # TODO MK: Probably could be made more universal, maybe there is somewhere something already, check?!
 
@@ -1333,7 +1327,7 @@ class IdDicts(object):
                                      "correctly: {}! We set it to unidentified".format(tax_name))
                     tax_name = 'unidentified'
                     ncbi_id = 0
-                    # TODO: ADD otudict entries....
+                    # TODO: ADD otudict entries....wrong class, otudict is in ATT
         assert type(ncbi_id) is int
         self.spn_to_ncbiid[tax_name] = ncbi_id
         return ncbi_id
@@ -1405,8 +1399,8 @@ class IdDicts(object):
         ncbi_id = None
         if otu_dict_entry:
             # debug(otu_dict_entry)
-            if "^ot:ottTaxonName" in otu_dict_entry:
-                tax_name = otu_dict_entry["^ot:ottTaxonName"]
+            if "^physcraper:TaxonName" in otu_dict_entry:
+                tax_name = otu_dict_entry["^physcraper:TaxonName"]
             elif "^user:TaxonName" in otu_dict_entry:
                 tax_name = otu_dict_entry["^user:TaxonName"]
         if tax_name is None:
@@ -1430,7 +1424,9 @@ class IdDicts(object):
                     self.ncbiid_to_spn[ncbi_id] = tax_name
                     self.acc_ncbi_dict[gb_id] = ncbi_id
                     if otu_dict_entry:
-                        otu_dict_entry["^ot:ottTaxonName"] = tax_name  # TODO does this actually edit the dictionary entry?
+                        otu_dict_entry["^ncbi:TaxonName"] = tax_name  # TODO does this actually edit the dictionary entry?
+                        otu_dict_entry["^ncbi:TaxonName"] = tax_name
+                        otu_dict_entry["^physcraper:TaxonName"] = tax_name
                         otu_dict_entry["^ncbi:taxon"] = ncbi_id
             else:  # usually being used for web-queries, local blast searches should have the information
                 read_handle = self.entrez_efetch(gb_id)
@@ -1439,7 +1435,9 @@ class IdDicts(object):
                 self.ncbiid_to_spn[ncbi_id] = tax_name
                 self.acc_ncbi_dict[gb_id] = ncbi_id
                 if otu_dict_entry:
-                    otu_dict_entry["^ot:ottTaxonName"] = tax_name
+                    otu_dict_entry["^ncbi:TaxonName"] = tax_name
+                    otu_dict_entry["^ncbi:TaxonName"] = tax_name
+                    otu_dict_entry["^physcraper:TaxonName"] = tax_name
                     otu_dict_entry["^ncbi:taxon"] = ncbi_id
             assert ncbi_id is not None
         assert tax_name is not None
@@ -1574,7 +1572,8 @@ class PhyscraperScrape(object):
     """
 
     def __init__(self, data_obj, ids_obj):
-        # todo check input types assert()
+        assert isinstance(data_obj, AlignTreeTax)
+        assert isinstance(ids_obj, IdDicts)
         debug("start base class init")
         self.workdir = data_obj.workdir
         self.logfile = "{}/logfile".format(self.workdir)
@@ -1585,7 +1584,7 @@ class PhyscraperScrape(object):
         self.new_seqs = {}  # all new seq after read_blast_wrapper
         self.new_seqs_otu_id = {}  # only new seq which passed remove_identical
         self.mrca_ncbi = ids_obj.ott_to_ncbi[data_obj.ott_mrca]
-        self.tmpfi = "{}/physcraper_run_in_progress".format(self.workdir)  # TODO: For what do we want to use this?
+        self.tmpfi = "{}/physcraper_run_in_progress".format(self.workdir)  # TODO: For what do we want to use this? Unused!
         self.blast_subdir = "{}/current_blast_run".format(self.workdir)
         if not os.path.exists(self.workdir):
             os.makedirs(self.workdir)
@@ -1608,7 +1607,7 @@ class PhyscraperScrape(object):
         if _deep_debug == 1:
             self.newadd_gi_otu = {}  # search for doubles!
 
-    # TODO is this the right place for this?
+    # TODO is this the right place for this? According to PEP8, no...
     def reset_markers(self):
         self._blasted = 0
         self._blast_read = 0
@@ -2029,7 +2028,7 @@ class PhyscraperScrape(object):
 
         self._blast_read = 1
 
-    # TODO this should go back in the class and should prune the tree
+    # TODO this should go back in the class and should prune the tree. MK: about which method are we talking and back to which class?
 
     def get_sp_id_of_otulabel(self, label):
         """Get the species name and the corresponding ncbi id of the otu.
@@ -2644,7 +2643,7 @@ class PhyscraperScrape(object):
                     os.rename(filename, "{}/previous_run/{}".format(self.workdir, filename.split("/")[-1]))
                 os.rename("{}/{}".format(self.workdir, self.newseqs_file),
                           "{}/previous_run/newseqs.fasta".format(self.workdir))
-                self.data.write_labelled(label='^ot:ottTaxonName', add_gb_id=True)
+                self.data.write_labelled(label='^physcraper:TaxonName', add_gb_id=True)
                 self.data.write_otus("otu_info", schema='table')
                 self.new_seqs = {}  # Wipe for next run
                 self.new_seqs_otu_id = {}
@@ -2785,9 +2784,11 @@ class PhyscraperScrape(object):
             "^ot:originalLabel",
             "^physcraper:last_blasted",
             "^physcraper:status",
+            "^physcraper:TaxonName",
             "^ot:ottId",
             "^ncbi:taxon",
-            "^ncbi:title"
+            "^ncbi:title",
+            "^ncbi:TaxonName"
         ]
         with open("{}/otu_seq_info.csv".format(self.workdir), "w") as output:
             writer = csv.writer(output)
@@ -2896,7 +2897,7 @@ class FilterBlast(PhyscraperScrape):
                         if gb_id in self.ids.acc_ncbi_dict:
                             tax_id = self.ids.acc_ncbi_dict[gb_id]
                     tax_name = self.ids.get_rank_info_from_web(taxon_name=tax_name)
-                    tax_id = self.ids.otu_rank[tax_name]["taxon id"]  # TODO MK: rewrite to taxonid as key 
+                    tax_id = self.ids.otu_rank[tax_name]["taxon id"]
                 else:
                     try:
                         tax_id = self.ids.ncbi_parser.get_id_from_name(tax_name)
@@ -2955,7 +2956,7 @@ class FilterBlast(PhyscraperScrape):
         """
         debug("make_sp_seq_dict")
         for key in self.sp_d:
-            # loop to populate dict. key1 = sp name, key2= gb id, value = seq,
+            # loop to populate dict. key1 = sp id, key2= gb id, value = seq,
             # number of items in key2 will be filtered according to threshold and already present seq
             seq_d = {}
             for otu_id in self.sp_d[key]:
@@ -2965,13 +2966,16 @@ class FilterBlast(PhyscraperScrape):
                     # I am using the next if to delimit which seq where already present from an earlier run,
                     if otu_id['^physcraper:last_blasted'] != '1800/01/01':
                         tax_name = self.ids.find_name(otu_dict_entry=otu_id)
-                        for user_name_aln, seq in self.data.aln.items():  # TODO MK: rewrite to tip_name - is no user name
-                            otu_dict_label = self.ids.find_name(otu_dict_entry=self.data.otu_dict[user_name_aln.label])
-                            # TODO MK: rewrite to use ids instead of names! 
-                            if tax_name == otu_dict_label:
+                        tax_id = key
+                        for alntipname, seq in self.data.aln.items():
+                            otu_dict_label = self.ids.find_name(otu_dict_entry=self.data.otu_dict[alntipname.label])
+                            aln_tip_id = self.get_sp_id_of_otulabel(alntipname.label)
+                            #if tax_name == otu_dict_label:
+                            if tax_id == aln_tip_id:
+                                print(tax_id, aln_tip_id)
                                 seq = seq.symbols_as_string().replace("-", "")
                                 seq = seq.replace("?", "")
-                                seq_d[user_name_aln.label] = seq
+                                seq_d[alntipname.label] = seq
                     else:
                         if '^ncbi:accession' in otu_id:  # this should not be needed: all new blast seq have gb_id
                             gb_id = otu_id['^ncbi:accession']
@@ -3002,7 +3006,6 @@ class FilterBlast(PhyscraperScrape):
         :param count: self.count_num_seq(tax_id)["seq_present"]
         :return: self.filtered_seq
         """
-        # TODO MK: add threshold and downto to self
         debug("select_seq_by_local_blast")
         self.threshold = threshold
         # debug([seq_d, fn])
@@ -3147,8 +3150,10 @@ class FilterBlast(PhyscraperScrape):
                     tax_name = self.ids.find_name(otu_dict_entry=otu_id)
                     for tax_name_aln, seq in self.data.aln.items():
                         otu_dict_name = self.ids.find_name(otu_dict_entry=self.data.otu_dict[tax_name_aln.label])
-                        # TODO MK: rewrite to use id instead of name
-                        if tax_name == otu_dict_name:
+                        tax_id = key
+                        aln_tip_id = self.get_sp_id_of_otulabel(tax_name_aln.label)
+                        # if tax_name == otu_dict_name:
+                        if tax_id == aln_tip_id:
                             debug([tax_name_aln, tax_name_aln.label])
                             local_blast.write_filterblast_files(self.workdir, tax_name_aln.label, seq, fn=nametoreturn)
                 else:
@@ -3190,7 +3195,6 @@ class FilterBlast(PhyscraperScrape):
         query_count = 0
         debug(self.sp_d[tax_id][0]["^ot:ottTaxonName"])
         for item in self.sp_d[tax_id]:
-
             if '^physcraper:status' in item and item['^physcraper:status'].split(' ')[0] not in self.seq_filter:
                 debug(item['^physcraper:status'])
                 item_split = item['^physcraper:status'].split(' ')[0]
