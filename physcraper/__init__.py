@@ -1249,19 +1249,22 @@ class IdDicts(object):
             self.get_ncbi_mrca()
 
     def get_ncbi_mrca(self):
-        """ get the ncbi tax ids from a list of mrca.
+        """ get the ncbi tax ids from a list of mrca ott ids.
         """
         if type(self.mrca_ott) is not int:
             for ott_id in self.mrca_ott:
-                self.ott_id_to_ncbiid(ott_id)
+                ncbi_id = self.ottid_to_ncbiid(ott_id)
+                if ncbi_id is not None:
+                    self.mrca_ncbi.add(ncbi_id)
         else:
-            self.ott_id_to_ncbiid(self.mrca_ott)
+            ncbi_id = self.ottid_to_ncbiid(self.mrca_ott)
+            if ncbi_id is not None:
+                self.mrca_ncbi.add(ncbi_id)
 
-    def ott_id_to_ncbiid(self, ott_id):
-        """ Find ncbi id for ott id. Is only used for the mrca list thing!
+    def ottid_to_ncbiid(self, ott_id):
+        """ Find ncbi id for ott id.
+        Is only used for the mrca list thing!
         """
-        # TODO MK: Probably could be made more universal, maybe there is somewhere something already, check?!
-
         debug("ottid to ncbiid")
         debug(ott_id)
         if ott_id in self.ott_to_ncbi:
@@ -1273,7 +1276,7 @@ class IdDicts(object):
                 ncbi_id = self.otu_rank[ott_name]["taxon id"]
             else:
                 ncbi_id = self.ncbi_parser.get_id_from_name(ott_name)
-        else:
+        else:  # with new ncbi taxa there might be no match in ott_to_ncbi
             tx = APIWrapper().taxomachine
             nms = tx.taxon(ott_id)
             debug(nms)
@@ -1281,8 +1284,8 @@ class IdDicts(object):
             ncbi_id = None
             if u"ncbi" in nms[u"tax_sources"]:
                 ncbi_id = nms[u"tax_sources"][u"ncbi"]
-        if ncbi_id is not None:
-            self.mrca_ncbi.add(ncbi_id)
+        return ncbi_id
+        
 
     def get_ncbiid_from_tax_name(self, tax_name):
         """Get the ncbi_id from the species name using ncbi web query.
@@ -1327,7 +1330,7 @@ class IdDicts(object):
                                      "correctly: {}! We set it to unidentified".format(tax_name))
                     tax_name = 'unidentified'
                     ncbi_id = 0
-                    # TODO: ADD otudict entries....wrong class, otudict is in ATT
+                    # TODO: ADD otudict entries....MK: wrong class, otudict is in ATT
         assert type(ncbi_id) is int
         self.spn_to_ncbiid[tax_name] = ncbi_id
         return ncbi_id
@@ -1542,7 +1545,7 @@ class PhyscraperScrape(object):
             * key:
             * value:
           * **self._to_be_pruned**: list that contains ????
-          * **self.mrca_ncbi**: ncbi identifier of mrca
+          * **self.mrca_ncbi**: int or list of ncbi identifier of mrca
 
           * **self.tmpfi**: path to a file or folder???
           * **self.blast_subdir**: path to folder that contains the files writen during blast
@@ -1770,7 +1773,7 @@ class PhyscraperScrape(object):
                                 if len(self.ids.mrca_ncbi) >= 2:
                                     len_ncbi = len(self.ids.mrca_ncbi)
                                     equery = ''
-                                    for ncbi_id in self.ids.mrca_ncbi:
+                                    for ncbi_id in self.ids.mrca_ncbi:  # add taxids of list to blast search
                                         if len_ncbi >= 2:
                                             equery = equery + "txid{}[orgn] OR ".format(ncbi_id)
                                             len_ncbi = len_ncbi - 1
@@ -2247,8 +2250,15 @@ class PhyscraperScrape(object):
                         assert ncbi_id is not None
                         tax_name = str(tax_name).replace(" ", "_")
                         # input_rank_id = self.ids.ncbi_parser.get_downtorank_id(ncbi_id, rank_mrca_ncbi)
-                        debug(tax_name)
-                        input_rank_id = self.ids.ncbi_parser.match_id_to_mrca(ncbi_id, mrca_ncbi)
+                        debug([ncbi_id, mrca_ncbi])
+                        try:  # sometimes ncbi has wrong id linked: since update of db 01/01/2019 or since retrieval of redundant seq information
+                            input_rank_id = self.ids.ncbi_parser.match_id_to_mrca(ncbi_id, mrca_ncbi)
+                        except:  # get right tax_id and do search again
+                            debug("wrong tax_id given by ncbi?")
+                            ncbi_id = self.ids.ncbi_parser.get_id_from_name(tax_name)
+                            self.data.gb_dict[gb_id]['staxids'] = ncbi_id
+                            input_rank_id = self.ids.ncbi_parser.match_id_to_mrca(ncbi_id, mrca_ncbi)
+
                         # #######################################################
                         if int(input_rank_id) == int(mrca_ncbi):  # belongs to ingroup mrca -> add to data, if not, leave it out
                             # debug("input belongs to same mrca")
