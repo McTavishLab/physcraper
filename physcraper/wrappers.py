@@ -510,7 +510,7 @@ def concat(genelistdict, workdir_comb, email, num_threads=None, percentage=0.37,
     
     conc.make_concat_table()
     conc.write_partition()
-    conc.place_new_seqs()
+    conc.place_new_seqs(num_threads)
 
     conc.est_full_tree(num_threads)
     if backbone == False:    
