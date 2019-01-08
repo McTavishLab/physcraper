@@ -57,9 +57,9 @@ def load_ids_obj(conf, workdir):
     :param workdir: working directory
     :return:
     """
-    if os.path.isfile(conf.id_pickle):
+    if os.path.isfile("id_pickle.p"):
         sys.stdout.write("Reloading id dicts from {}\n".format(conf.id_pickle))
-        ids = pickle.load(open(conf.id_pickle, "rb"))
+        ids = pickle.load(open("id_pickle.p", "rb"))
     else:
         sys.stdout.write("setting up ID dictionaries\n")
         sys.stdout.flush()
