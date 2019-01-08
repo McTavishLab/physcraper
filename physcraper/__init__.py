@@ -986,8 +986,10 @@ class AlignTreeTax(object):
         else:
             debug("{} Ncbi id not found in ott_ncbi dictionaries\n".format(ncbi_id))
 
-        if otu_id in self.otu_dict.keys():
-            ott_name = ids_obj.ott_to_name.get(ott_id)
+        if ott_id in ids_obj.ids.ott_to_name:
+            ott_name = ids_obj.ids.ott_to_name[ott_id]
+        # if otu_id in self.otu_dict.keys():
+        #     ott_name = ids_obj.ott_to_name.get(ott_id)
         else:
             ott_name = None    # TODO MK: make new entry with ncbi: taxonnames!!! does it work now?
         self.otu_dict[otu_id] = {}
@@ -1013,7 +1015,7 @@ class AlignTreeTax(object):
             self.otu_dict[otu_id]["^physcraper:TaxonName"] = ott_name
         elif self.otu_dict[otu_id]['^user:TaxonName']:
             self.otu_dict[otu_id]["^physcraper:TaxonName"] = self.otu_dict[otu_id]['^user:TaxonName']
-        assert self.otu_dict[otu_id]["^physcraper:TaxonName"] is not None
+        assert self.otu_dict[otu_id]["^physcraper:TaxonName"]  # is not None
         if _DEBUG >= 2:
             sys.stderr.write("acc:{} assigned new otu: {}\n".format(gb_id, otu_id))
         return otu_id
@@ -2642,9 +2644,9 @@ class PhyscraperScrape(object):
         if len(self.new_seqs) > 0:
             self.data.write_files()  # should happen before aligning in case of pruning
             if len(self.new_seqs_otu_id) > 0:  # TODO rename to something more intuitive
+                self.data.check_tre_in_aln()
                 self.write_query_seqs()
                 self.align_query_seqs()
-                self.data.check_tre_in_aln()
                 self.place_query_seqs()
                 self.data.prune_short()
                 self.data.trim()
@@ -2824,7 +2826,10 @@ class PhyscraperScrape(object):
             "^ncbi:title",
             "^ncbi:TaxonName"
         ]
-        with open("{}/otu_seq_info.csv".format(self.workdir), "w") as output:
+        with open("{}/info_not_added_seq.csv".format(self.workdir), "w+") as output:
+                writer = csv.writer(output)
+                writer.writerow(otu_dict_keys)
+        with open("{}/otu_seq_info.csv".format(self.workdir), "a") as output:
             writer = csv.writer(output)
             for otu in self.data.otu_dict.keys():
                 rowinfo = [otu]
