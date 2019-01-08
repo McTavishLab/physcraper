@@ -35,7 +35,7 @@ from peyotl.nexson_syntax import (
 # extension functions
 from . import concat  # is the local concat class
 from . import ncbi_data_parser  # is the ncbi data parser class and associated functions
-from . import local_blast
+from . import filter_by_local_blast
 from . import opentree_helpers
 
 if sys.version_info < (3,):
