@@ -196,6 +196,12 @@ class ConfigObj(object):
             if self.blast_loc == "local":
                 sys.stdout.write("local blast db {}\n".format(self.blastdb))
         self.num_threads = config["blast"].get("num_threads")
+        print("slurm threads")
+        print(os.environ.get('SLURM_JOB_CPUS_PER_NODE'))
+        if os.environ.get('SLURM_JOB_CPUS_PER_NODE'):
+            self.num_threads = int(os.environ.get('SLURM_JOB_CPUS_PER_NODE'))
+
+        debug(self.num_threads)
         self.gb_id_filename = config["blast"].get("gb_id_filename", False)
         if self.gb_id_filename is not False:
             if self.gb_id_filename == "True" or self.gb_id_filename == "true":
@@ -897,6 +903,7 @@ class AlignTreeTax(object):
             treed_taxa.add(leaf.taxon)
         for leaf in self.tre.leaf_nodes():
             if leaf.taxon not in aln_ids:
+                debug(leaf.taxon)
                 self.tre.prune_taxa([leaf])
                 self.tre.prune_taxa_with_labels([leaf.taxon])
                 self.tre.prune_taxa_with_labels([leaf])
@@ -2466,7 +2473,7 @@ class PhyscraperScrape(object):
             sys.stdout.write("placing query sequences \n")
         with cd(self.workdir):
             try:
-                subprocess.call(["raxmlHPC", "-m", "GTRCAT",
+                subprocess.call(["raxmlHPC", "-T", "{}".format(self.config.num_threads), "-m", "GTRCAT",
                                  "-f", "v",
                                  "-s", "papara_alignment.extended",
                                  "-t", "random_resolve.tre",
@@ -2546,13 +2553,21 @@ class PhyscraperScrape(object):
                 num_threads = int(self.config.num_threads)
                 debug(num_threads)
                 # run bootstrap
-                subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(num_threads), "-m", "GTRCAT",
+                mpicores = int(os.environ.get('SLURM_NTASKS_PER_NODE', '8')) + int(os.environ.get('SLURM_JOB_NODES', '8'))
+
+                print(mpicores)
+
+                subprocess.call(["mpiexec", "-n", "{}".format(int(mpicores)), "raxmlHPC-MPI-AVX2", 
+                                #"raxmlHPC-PTHREADS", "-T", "{}".format(num_threads), 
+                                "-m", "GTRCAT",
                                  "-s", "papara_alignment.extended",
                                  "-p", "1", "-b", "1", "-#", "autoMRE",
                                  "-n", "{}".format(self.date)])
                 # make bipartition tree
                 # is the -f b command
-                subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(num_threads), "-m", "GTRCAT",
+                subprocess.call(["mpiexec", "-n", "{}".format(int(mpicores)), "raxmlHPC-MPI-AVX2", 
+                                # "raxmlHPC-PTHREADS", "-T", "{}".format(num_threads), 
+                                "-m", "GTRCAT",
                                  "-s", "previous_run/papara_alignment.extended",
                                  "-p", "1", "-f", "a", "-x", "1", "-#", "autoMRE",
                                  "-n", "all{}".format(self.date)])
