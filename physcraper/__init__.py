@@ -2677,7 +2677,7 @@ class PhyscraperScrape(object):
         self.reset_markers()
         self.data.dump("{}/final_ATT_checkpoint.p".format(self.workdir))
 
-        local_blast.del_blastfiles(self.workdir)  # delete local blast db
+        filter_by_local_blast.del_blastfiles(self.workdir)  # delete local blast db
         self.data.dump()
         json.dump(self.data.otu_dict, open('{}/otu_dict.json'.format(self.workdir), 'wb'))
 
@@ -2725,7 +2725,7 @@ class PhyscraperScrape(object):
                 key = gb_id_l[i].replace(">", "")
                 count = count + 1
                 seq = seq_l[i]
-                local_blast.write_filterblast_files(self.workdir, key, seq, db=True, fn="local_unpubl_seq")
+                filter_by_local_blast.write_filterblast_files(self.workdir, key, seq, db=True, fn="local_unpubl_seq")
         with cd(os.path.join(self.workdir, "blast")):
             cmd1 = "makeblastdb -in {}_db -dbtype nucl".format("local_unpubl_seq")
             os.system(cmd1)
@@ -3025,7 +3025,7 @@ class FilterBlast(PhyscraperScrape):
         debug("select_seq_by_local_blast")
         self.threshold = threshold
         # debug([seq_d, fn])
-        seq_blast_score = local_blast.read_filter_blast(self.workdir, seq_d, fn)
+        seq_blast_score = filter_by_local_blast.read_filter_blast(self.workdir, seq_d, fn)
         random_seq_ofsp = {}
         if (threshold - count) <= 0:
             debug("already too many samples of sp in aln, skip adding more.")
@@ -3171,7 +3171,7 @@ class FilterBlast(PhyscraperScrape):
                         # if tax_name == otu_dict_name:
                         if tax_id == aln_tip_id:
                             debug([tax_name_aln, tax_name_aln.label])
-                            local_blast.write_filterblast_files(self.workdir, tax_name_aln.label, seq, fn=nametoreturn)
+                            filter_by_local_blast.write_filterblast_files(self.workdir, tax_name_aln.label, seq, fn=nametoreturn)
                 else:
                     if '^ncbi:accession' in otu_id:
                         gb_id = otu_id['^ncbi:accession']
@@ -3184,7 +3184,7 @@ class FilterBlast(PhyscraperScrape):
                             if '^physcraper:status' in otu_id:
                                 if otu_id['^physcraper:status'].split(' ')[0] not in self.seq_filter:
                                     seq = self.sp_seq_d[key][gb_id]
-                                    local_blast.write_filterblast_files(self.workdir, gb_id, seq, db=True,
+                                    filter_by_local_blast.write_filterblast_files(self.workdir, gb_id, seq, db=True,
                                                                         fn=nametoreturn)
                     name_gbid = key
         if self.downtorank is not None:
@@ -3270,15 +3270,15 @@ class FilterBlast(PhyscraperScrape):
                                 # debug(self.sp_seq_d[tax_id].keys())
                                 blast_seq_id = self.sp_seq_d[tax_id].keys()[0]
                                 seq = self.sp_seq_d[tax_id][blast_seq_id]
-                                local_blast.write_filterblast_files(self.workdir, blast_seq_id, seq,
+                                filter_by_local_blast.write_filterblast_files(self.workdir, blast_seq_id, seq,
                                                                     fn=tax_id)  # blast guy
                                 blast_db = self.sp_seq_d[tax_id].keys()[1:]
                                 for blast_key in blast_db:
                                     seq = self.sp_seq_d[tax_id][blast_key]
-                                    local_blast.write_filterblast_files(self.workdir, blast_key, seq, db=True,
+                                    filter_by_local_blast.write_filterblast_files(self.workdir, blast_key, seq, db=True,
                                                                         fn=tax_id)
                                 # make local blast of sequences
-                                local_blast.run_filter_blast(self.workdir, tax_id, tax_id)
+                                filter_by_local_blast.run_filter_blast(self.workdir, tax_id, tax_id)
                                 if len(self.sp_seq_d[tax_id]) + seq_present >= threshold:
                                     self.select_seq_by_local_blast(self.sp_seq_d[tax_id], tax_id, threshold,
                                                                    seq_present)
@@ -3293,7 +3293,7 @@ class FilterBlast(PhyscraperScrape):
                                     # debug([tax_id, taxonfn])
                                     if self.downtorank is not None:
                                         taxonfn = tax_id
-                                    local_blast.run_filter_blast(self.workdir, taxonfn, taxonfn)
+                                    filter_by_local_blast.run_filter_blast(self.workdir, taxonfn, taxonfn)
                                     self.select_seq_by_local_blast(self.sp_seq_d[tax_id], taxonfn, threshold,
                                                                    seq_present)
                                     # debug([tax_id])
