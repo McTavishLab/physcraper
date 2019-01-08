@@ -986,8 +986,8 @@ class AlignTreeTax(object):
         else:
             debug("{} Ncbi id not found in ott_ncbi dictionaries\n".format(ncbi_id))
 
-        if ott_id in ids_obj.ids.ott_to_name:
-            ott_name = ids_obj.ids.ott_to_name[ott_id]
+        if ott_id in ids_obj.ott_to_name:
+            ott_name = ids_obj.ott_to_name[ott_id]
         # if otu_id in self.otu_dict.keys():
         #     ott_name = ids_obj.ott_to_name.get(ott_id)
         else:
@@ -2562,7 +2562,7 @@ class PhyscraperScrape(object):
                 subprocess.call(["mpiexec", "-n", "{}".format(int(mpicores)), "raxmlHPC-MPI-AVX2", 
                                 #"raxmlHPC-PTHREADS", "-T", "{}".format(num_threads), 
                                 "-m", "GTRCAT",
-                                 "-s", "papara_alignment.extended",
+                                 "-s", "previous_run/papara_alignment.extended",
                                  "-p", "1", "-b", "1", "-#", "autoMRE",
                                  "-n", "{}".format(self.date)])
                 # make bipartition tree
@@ -2570,7 +2570,7 @@ class PhyscraperScrape(object):
                 subprocess.call(["mpiexec", "-n", "{}".format(int(mpicores)), "raxmlHPC-MPI-AVX2", 
                                 # "raxmlHPC-PTHREADS", "-T", "{}".format(num_threads), 
                                 "-m", "GTRCAT",
-                                 "-s", "papara_alignment.extended",
+                                 "-s", "previous_run/papara_alignment.extended",
                                  "-p", "1", "-f", "a", "-x", "1", "-#", "autoMRE",
                                  "-n", "all{}".format(self.date)])
                 # strict consensus:
@@ -2592,13 +2592,13 @@ class PhyscraperScrape(object):
                 sys.stderr.write("You do not have the raxmlHPC-PTHREADS installed, will fall down to slow version!")
                 # run bootstrap
                 subprocess.call(["raxmlHPC", "-m", "GTRCAT",
-                                 "-s", "papara_alignment.extended",
+                                 "-s", "previous_run/papara_alignment.extended",
                                  "-p", "1", "-b", "1", "-#", "autoMRE",
                                  "-n", "{}".format(self.date)])
                 # make bipartition tree
                 # is the -f b command
                 subprocess.call(["raxmlHPC", "-m", "GTRCAT",
-                                 "-s", "papara_alignment.extended",
+                                 "-s", "previous_run/papara_alignment.extended",
                                  "-p", "1", "-f", "a", "-x", "1", "-#", "autoMRE",
                                  "-n", "all{}".format(self.date)])
                 # strict consensus:
