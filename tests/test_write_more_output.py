@@ -2,7 +2,7 @@ import os
 import sys
 import pickle
 import physcraper
-import physcraper.local_blast as local_blast
+import physcraper.filter_by_local_blast as local_blast
 
 import pytest
 

@@ -5,7 +5,7 @@ from math import sqrt
 from Bio.Blast import NCBIXML
 #from physcraper import ConfigObj, IdDicts, FilterBlast
 import physcraper
-import physcraper.local_blast as local_blast
+import physcraper.filter_by_local_blast as local_blast
 
 
 sys.stdout.write("\ntests calculate_mean_sd\n")

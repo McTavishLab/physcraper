@@ -3,7 +3,7 @@ import os
 #from physcraper import ConfigObj, IdDicts, FilterBlast
 import pickle#
 import physcraper
-import physcraper.local_blast as local_blast
+import physcraper.filter_by_local_blast as local_blast
 
 
 sys.stdout.write("\ntests select_seq_by_local_blast\n")
