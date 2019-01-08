@@ -1412,6 +1412,8 @@ class IdDicts(object):
             # debug(otu_dict_entry)
             if "^physcraper:TaxonName" in otu_dict_entry:
                 tax_name = otu_dict_entry["^physcraper:TaxonName"]
+            elif "^ot:ottTaxonName" in otu_dict_entry:
+                tax_name = otu_dict_entry["^ot:ottTaxonName"]
             elif "^user:TaxonName" in otu_dict_entry:
                 tax_name = otu_dict_entry["^user:TaxonName"]
         if tax_name is None:
@@ -1436,7 +1438,6 @@ class IdDicts(object):
                     self.acc_ncbi_dict[gb_id] = ncbi_id
                     if otu_dict_entry:
                         otu_dict_entry["^ncbi:TaxonName"] = tax_name  # TODO does this actually edit the dictionary entry?
-                        otu_dict_entry["^ncbi:TaxonName"] = tax_name
                         otu_dict_entry["^physcraper:TaxonName"] = tax_name
                         otu_dict_entry["^ncbi:taxon"] = ncbi_id
             else:  # usually being used for web-queries, local blast searches should have the information
@@ -1446,7 +1447,6 @@ class IdDicts(object):
                 self.ncbiid_to_spn[ncbi_id] = tax_name
                 self.acc_ncbi_dict[gb_id] = ncbi_id
                 if otu_dict_entry:
-                    otu_dict_entry["^ncbi:TaxonName"] = tax_name
                     otu_dict_entry["^ncbi:TaxonName"] = tax_name
                     otu_dict_entry["^physcraper:TaxonName"] = tax_name
                     otu_dict_entry["^ncbi:taxon"] = ncbi_id
@@ -1618,7 +1618,7 @@ class PhyscraperScrape(object):
         if _deep_debug == 1:
             self.newadd_gi_otu = {}  # search for doubles!
 
-    # TODO is this the right place for this? According to PEP8, no...
+    # TODO is this the right place for this? MK: According to PEP8, no...
     def reset_markers(self):
         self._blasted = 0
         self._blast_read = 0
@@ -1668,9 +1668,8 @@ class PhyscraperScrape(object):
         toblast.close()
         assert os.path.isdir(self.config.blastdb)
         with cd(self.config.blastdb):
-            # this formats allows to get the taxonomic information at the same time
+            # this format (6) allows to get the taxonomic information at the same time
             # outfmt = " -outfmt '6 sseqid staxids sscinames pident evalue bitscore sseq stitle'"
-
             outfmt = " -outfmt '6 sseqid staxids sscinames pident evalue bitscore sseq stitle sallseqid'"
             # outfmt = " -outfmt 5"  # format for xml file type
             # TODO query via stdin
@@ -2274,8 +2273,7 @@ class PhyscraperScrape(object):
                             otu_id = self.data.add_otu(gb_id, self.ids)
                             self.seq_dict_build(seq, otu_id, tmp_dict)
                             # debug(some)
-                        else:
-                            if gb_id not in self.gb_not_added:
+                        elif gb_id not in self.gb_not_added:
                                 self.gb_not_added.append(gb_id)
                                 # self.write_not_added_info(gb_id, "not_part_of_mrca")
                                 fn = open("{}/not_added_seq.csv".format(self.workdir), "a+")
@@ -2304,7 +2302,7 @@ class PhyscraperScrape(object):
         debug("len new seqs dict after remove identical")
         debug(len(self.new_seqs_otu_id))
         with open(self.logfile, "a") as log:
-            log.write("{} new sequences added from genbank after removing identical seq, "
+            log.write("{} new sequences added from Genbank after removing identical seq, "
                       "of {} before filtering\n".format(len(self.new_seqs_otu_id), len(self.new_seqs)))
         # debug(some)
         self.data.dump()
@@ -2877,7 +2875,7 @@ class FilterBlast(PhyscraperScrape):
         self.downtorank = downtorank
 
     def sp_dict(self, downtorank=None):
-        """Takes the information from the Physcraper otu_dict and makes a dict with species name as key and
+        """Takes the information from the Physcraper otu_dict and makes a dict with species id as key and
         the corresponding seq information from aln and blast seq, it returns self.sp_d.
 
         This is generated to make information for the filtering class more easily available. self.sp_d sums up which
@@ -2892,24 +2890,24 @@ class FilterBlast(PhyscraperScrape):
         self.downtorank = downtorank
         debug("make sp_dict")
         self.sp_d = {}
-        for key in self.data.otu_dict:
-            if self.data.otu_dict[key]['^physcraper:status'].split(' ')[0] not in self.seq_filter:
-                tax_name = self.ids.find_name(otu_dict_entry=self.data.otu_dict[key])
-                # TODO: next lines are likely doubled in find_name, remove lines below!
-                if tax_name is None:
-                    gb_id = self.data.otu_dict[key]['^ncbi:accession']
-                    if gb_id.split(".") == 1:
-                        debug(gb_id)
-                    tax_name = self.ids.find_name(acc=gb_id)
-                    if tax_name is None:
-                        debug("something is going wrong!Check species name")
-                        sys.stderr.write("{} has no corresponding tax_name! Check what is wrong!".format(key))
+        for otu_id in self.data.otu_dict:
+            if self.data.otu_dict[otu_id]['^physcraper:status'].split(' ')[0] not in self.seq_filter:
+                tax_name = self.ids.find_name(otu_dict_entry=self.data.otu_dict[otu_id])
+                # # TODO: next lines are likely doubled in find_name, remove lines below!
+                # if tax_name is None:
+                #     gb_id = self.data.otu_dict[otu_id]['^ncbi:accession']
+                #     if gb_id.split(".") == 1:
+                #         debug(gb_id)
+                #     tax_name = self.ids.find_name(acc=gb_id)
+                #     if tax_name is None:
+                #         debug("something is going wrong!Check species name")
+                #         sys.stderr.write("{} has no corresponding tax_name! Check what is wrong!".format(otu_id))
                 if len(tax_name.split("(")) > 1:
                     tax_name = tax_name.split("(")[0]
                 tax_name = str(tax_name).replace(" ", "_")
                 if self.config.blast_loc == 'remote':
-                    if '^ncbi:accession' in self.data.otu_dict[key]:
-                        gb_id = self.data.otu_dict[key]['^ncbi:accession']
+                    if '^ncbi:accession' in self.data.otu_dict[otu_id]:
+                        gb_id = self.data.otu_dict[otu_id]['^ncbi:accession']
                         if gb_id.split(".") == 1:
                             debug(gb_id)
                         if gb_id in self.ids.acc_ncbi_dict:
@@ -2920,7 +2918,7 @@ class FilterBlast(PhyscraperScrape):
                     try:
                         tax_id = self.ids.ncbi_parser.get_id_from_name(tax_name)
                     except UnboundLocalError:
-                        ott_id = self.data.otu_dict[key][u'^ot:ottId']
+                        ott_id = self.data.otu_dict[otu_id][u'^ot:ottId']
                         tx = APIWrapper().taxomachine
                         nms = tx.taxon(ott_id)
                         # debug(nms)
@@ -2956,9 +2954,9 @@ class FilterBlast(PhyscraperScrape):
                 self.ids.spn_to_ncbiid[tax_name] = tax_id
                 self.ids.ncbiid_to_spn[tax_id] = tax_name
                 if tax_id in self.sp_d:
-                    self.sp_d[tax_id].append(self.data.otu_dict[key])
+                    self.sp_d[tax_id].append(self.data.otu_dict[otu_id])
                 else:
-                    self.sp_d[tax_id] = [self.data.otu_dict[key]]
+                    self.sp_d[tax_id] = [self.data.otu_dict[otu_id]]
         return self.sp_d
 
     def make_sp_seq_dict(self):
@@ -3268,7 +3266,8 @@ class FilterBlast(PhyscraperScrape):
                             self.select_seq_by_length(tax_id, threshold, seq_present)
                         elif selectby == "blast":
                             if seq_present == 0 and new_taxon is True and query_count >= 1:  # if new taxon
-                                debug("new taxon")
+                                # debug("new taxon")
+                                # debug(self.sp_seq_d[tax_id].keys())
                                 blast_seq_id = self.sp_seq_d[tax_id].keys()[0]
                                 seq = self.sp_seq_d[tax_id][blast_seq_id]
                                 local_blast.write_filterblast_files(self.workdir, blast_seq_id, seq,
@@ -3287,23 +3286,21 @@ class FilterBlast(PhyscraperScrape):
                                     self.add_all(tax_id)
                             elif 1 <= seq_present < threshold and new_taxon is False and query_count != 0:
                                 # species is not new in alignment, make blast with existing seq
-                                debug("old_taxon")
-                                debug([seq_present, query_count])
+                                # debug("old_taxon")
+                                # debug([seq_present, query_count])
                                 if query_count + seq_present > threshold:
                                     taxonfn = self.loop_for_write_blast_files(tax_id)
-                                    debug([tax_id, taxonfn])
+                                    # debug([tax_id, taxonfn])
                                     if self.downtorank is not None:
                                         taxonfn = tax_id
                                     local_blast.run_filter_blast(self.workdir, taxonfn, taxonfn)
                                     self.select_seq_by_local_blast(self.sp_seq_d[tax_id], taxonfn, threshold,
                                                                    seq_present)
-                                    debug([tax_id])
-                                    debug(self.filtered_seq)
-                                    # debug(some)
+                                    # debug([tax_id])
+                                    # debug(self.filtered_seq)
                                 elif query_count + seq_present <= threshold:
                                     self.add_all(tax_id)
         # debug(self.filtered_seq)
-        # debug(some)
         return
 
     def replace_new_seq(self):

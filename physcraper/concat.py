@@ -25,9 +25,10 @@ import physcraper
 import logging
 # global logger
 # http://docs.python.org/library/logging.html
-#LOG = logging.getLogger("")
-#logging.basicConfig(filename='debug.log',level=logging.DEBUG,
+# LOG = logging.getLogger("")
+# logging.basicConfig(filename='debug.log',level=logging.DEBUG,
 #                    format='%(levelname)s [%(asctime)s]: %(message)s')
+
 
 def setup_logger(name, log_file, level=logging.INFO, writemode="w"):
     """setups as many loggers as you want.
@@ -43,11 +44,13 @@ def setup_logger(name, log_file, level=logging.INFO, writemode="w"):
     logger.addHandler(handler)
 
     return logger
-    
+
+
 # setup different loggers
 log_dict = {}
 
 log_dict2 = {}
+
 
 def log_info(text, wd):
     """
@@ -57,7 +60,8 @@ def log_info(text, wd):
         dlog.propagate = True  # logs to file and console
         log_dict[wd] = dlog
     log_dict[wd].info(text)
-    
+
+
 def log_debug(text, wd):
     """
     setup debug logger"""
@@ -66,6 +70,7 @@ def log_debug(text, wd):
         dlog.propagate = False  # logs to file only
         log_dict2[wd] = dlog
     log_dict2[wd].debug(text)
+
 
 """Code used to concatenate different single PhyScraper runs into a concatenated one.
 """
@@ -94,6 +99,7 @@ def remove_aln_tre_leaf(scrape):
     assert treed_taxa.issubset(aln_ids)
     return scrape
 
+    
 # # seems not to be used anymore
 # def add_to_del_acc(del_acc, gene, spn, random_gen):
 #     """
@@ -179,7 +185,7 @@ class Concat(object):
         self.concatfile = path to file if user supplied concatenation file is used
         self.concatenated_aln = concatenated alignment
         self.tmp_dict = subset of self.sp_acc_comb
-        self.part_len = holds sequence partition position to write the partitioning file
+        # self.part_len = holds sequence partition position to write the partitioning file
         self.backbone = T/F, if you want to keep one of the phylogenies as constraint backbone
     """
 
@@ -200,7 +206,7 @@ class Concat(object):
         self.tre_start_gene = None
         self.short_concat_seq = None
         self.concatfile = None
-        self.part_len = None  # ! TODO MK: might not need to be self
+        # self.part_len = None  # ! TODO MK: might not need to be self
         self.concatenated_aln = None
         self.tmp_dict = None
         self.concat_tips = {}
@@ -479,6 +485,7 @@ class Concat(object):
         self.ld(range(0, (len(len_gene) - 1)))
         for item in range(0, (len(len_gene) - 1)):
             assert len_gene[item] == len_gene[item + 1]
+        self.dump("bf_rename_drop_tips.p")
         self.rename_drop_tips()
 
     def rename_drop_tips(self):
@@ -490,6 +497,7 @@ class Concat(object):
         concat_tax = set()
         for leaf in self.tre_as_start.leaf_nodes():
             if leaf.taxon.label not in self.concat_tips.keys():
+                self.ld(leaf.taxon.label)
                 self.tre_as_start.prune_taxa([leaf])
                 self.tre_as_start.prune_taxa_with_labels([leaf.label])
                 self.tre_as_start.prune_taxa_with_labels([leaf])
@@ -682,6 +690,8 @@ class Concat(object):
 
         firstelement = True
         count = 0
+        len1 = 0
+        len2 = 0
         for gene in self.comb_seq.keys():
             self.ld(gene)
             # physcraper.debug(self.comb_seq[gene].keys())
@@ -895,13 +905,18 @@ class Concat(object):
                         rm_col_a.append(num)
                 # physcraper.debug(rm_col_a)
                 len_gene = len_gene - len(rm_col_a)
-                self.part_len = len_gene
+                # self.part_len = len_gene
+                part_len0 = len_gene
                 # physcraper.debug(self.part_len)
                 with open("{}/partition".format(self.workdir), "w") as partition:
                     partition.write("DNA, {} = 1-{}\n".format(gene, len_gene))
                 count = 1
             else:
-                start = self.part_len + 1
+                # physcraper.debug("else")
+                start = part_len0 + 1
+                # physcraper.debug(len_gene)
+                # physcraper.debug(self.part_len)
+                # physcraper.debug(rm_col_a)
                 # subtract removed columns from len_gene
                 # count number of cols which are smaller than len_gene, must be done with original col length (rm_col_a))
                 rm_col = []
@@ -911,8 +926,8 @@ class Concat(object):
                         rm_col.append(num)
                 # physcraper.debug(rm_col)
                 len_gene = len_gene - len(rm_col)
-                end = self.part_len + len_gene
-                self.part_len = self.part_len + len_gene
+                end = part_len0 + len_gene
+                part_len0 = part_len0 + len_gene
                 with open("{}/partition".format(self.workdir), "a") as partition:
                     partition.write("DNA, {} = {}-{}\n".format(gene, start, end))
 
@@ -1098,8 +1113,11 @@ class Concat(object):
                 #     physcraper.debug(some)
                 # if seq_id == u'S_parvifolius':
                 #     physcraper.debug(some)
-                for gene in genel:
-                # for gene in self.single_runs:
+                # genel = genel[1][1:-1].split(",")
+                # print(genel)
+                # for gene in genel:
+                    # print(gene)
+                for gene in self.single_runs:
                     physcraper.debug(gene)
                     tax_id = None
                     # filter to existing species
