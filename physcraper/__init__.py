@@ -1904,7 +1904,7 @@ class PhyscraperScrape(object):
                 fn = open("{}/blast_threshold_not_passed.csv".format(self.workdir), "a+")
                 fn.write("blast_threshold_not_passed:\n")
                 fn.write("{}, {}, {}".format(query_dict[key]["sscinames"], query_dict[key]["accession"],
-                                             query_dict[key]["evalue"]))
+                                             query_dict[key]["evalue"], "\n"))
                 fn.close()
 
     def read_unpublished_blast_query(self):
@@ -2568,7 +2568,7 @@ class PhyscraperScrape(object):
                 subprocess.call(["mpiexec", "-n", "{}".format(int(mpicores)), "raxmlHPC-MPI-AVX2", 
                                 # "raxmlHPC-PTHREADS", "-T", "{}".format(num_threads), 
                                 "-m", "GTRCAT",
-                                 "-s", "previous_run/papara_alignment.extended",
+                                 "-s", "papara_alignment.extended",
                                  "-p", "1", "-f", "a", "-x", "1", "-#", "autoMRE",
                                  "-n", "all{}".format(self.date)])
                 # strict consensus:
@@ -2596,7 +2596,7 @@ class PhyscraperScrape(object):
                 # make bipartition tree
                 # is the -f b command
                 subprocess.call(["raxmlHPC", "-m", "GTRCAT",
-                                 "-s", "previous_run/papara_alignment.extended",
+                                 "-s", "papara_alignment.extended",
                                  "-p", "1", "-f", "a", "-x", "1", "-#", "autoMRE",
                                  "-n", "all{}".format(self.date)])
                 # strict consensus:
@@ -2684,13 +2684,16 @@ class PhyscraperScrape(object):
                     sys.stdout.write("No new sequences after filtering.\n")
                 # self.repeat = 0
                 self.calculate_final_tree()
+                self.data.dump("{}/final_ATT_checkpoint.p".format(self.workdir))
+
         else:
             if _VERBOSE:
                 sys.stdout.write("No new sequences found.\n")
             # self.repeat = 0
             self.calculate_final_tree()
+            self.data.dump("{}/final_ATT_checkpoint.p".format(self.workdir))
+
         self.reset_markers()
-        self.data.dump("{}/final_ATT_checkpoint.p".format(self.workdir))
 
         filter_by_local_blast.del_blastfiles(self.workdir)  # delete local blast db
         self.data.dump()
