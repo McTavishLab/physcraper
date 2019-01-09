@@ -153,9 +153,9 @@ def test_reconcile():
 
     for otu in data_obj.otu_dict:
         if data_obj.otu_dict[otu][u'^ot:originalLabel'] == '2029_doronicum':
-            assert data_obj.otu_dict[otu]['^physcraper:status'] == "deleted in name reconciliation"
+            assert data_obj.otu_dict[otu]['^physcraper:status'] == "deleted in reconciliation"
 
     for otu in data_obj.otu_dict:
         if data_obj.otu_dict[otu][u'^ot:originalLabel'] == 'S_scopolii':
-            assert data_obj.otu_dict[otu]['^physcraper:status'] == "deleted in name reconciliation"
+            assert data_obj.otu_dict[otu]['^physcraper:status'] == "deleted in reconciliation"
 
