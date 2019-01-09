@@ -2420,6 +2420,7 @@ class PhyscraperScrape(object):
             aln_tax.add(tax)
         prune = treed_tax ^ aln_tax
         del_tre = []
+        del_aln = []
         for taxon in prune:
             assert (taxon in aln_tax) or (taxon in treed_tax)
             if taxon in aln_tax:
