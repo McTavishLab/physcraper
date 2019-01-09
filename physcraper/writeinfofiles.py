@@ -2,6 +2,8 @@ import csv
 import os
 
 _DEBUG_MK = 0
+
+
 def debug(msg):
     """short debugging command
     """
@@ -10,6 +12,7 @@ def debug(msg):
 
 """
 Functions that write out additional sampling information for a PhyScraper run."""
+
 
 def get_additional_GB_info(physcraper_obj):
     """Retrieves additional information given during the Genbank sequence submission
@@ -139,7 +142,7 @@ def write_not_added_info(physcraper_obj, item, reason=None):
 
     :param physcraper_obj: PhyScraper Scrape object
     :param item:  retrieved seq that was not added
-    :param: reason: optional argument to give reason for not adding
+    :param reason: optional argument to give reason for not adding
     :return: writes output to file
     """
     debug("write not added infos")

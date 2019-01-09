@@ -999,7 +999,7 @@ class AlignTreeTax(object):
         # if otu_id in self.otu_dict.keys():
         #     ott_name = ids_obj.ott_to_name.get(ott_id)
         else:
-            ott_name = None    # TODO MK: make new entry with ncbi: taxonnames!!! does it work now?
+            ott_name = None
         self.otu_dict[otu_id] = {}
         self.otu_dict[otu_id]["^ncbi:title"] = self.gb_dict[gb_id]["title"]
         self.otu_dict[otu_id]["^ncbi:taxon"] = ncbi_id

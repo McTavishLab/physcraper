@@ -118,6 +118,7 @@ def make_otujsondict(id_to_spn, workdir, ids):
     Generate a dictionary equivalent to the OToL one.
 
     :param id_to_spn: csv delimited file, where tipnames correspond to species names
+    :param workdir: the working directory
     :param ids: physcraper Id object
     :return: otu dict as json file
     """
@@ -211,8 +212,8 @@ def PS_standard_run(data_obj, ids, shared_blast_folder):
         scraper.remove_identical_seqs()
         scraper.generate_streamed_alignment()
         scraper.dump()
-        writeinfofiles.write_out_files(scraper)
-    writeinfofiles.get_additional_GB_info(scraper.workdir, scraper.data, scraper.seq_filter, scraper.ids)
+        write_out_files(scraper)
+    writeinfofiles.get_additional_GB_info(scraper)
     return scraper
 
 
@@ -241,7 +242,7 @@ def PS_filter_run(add_unpubl_seq, blacklist, data_obj, downtorank, id_to_spn_add
     else:
         # Now combine the data, the ids, and the configuration into a single physcraper scrape object
         filteredScrape = FilterBlast(data_obj, ids)
-        if backbone == True:
+        if backbone is True:
             filteredScrape.backbone = backbone
             filteredScrape.data.write_files(treepath="backbone.tre", alnpath="backbone.fas")
         else:
@@ -310,28 +311,6 @@ def PS_filter_run(add_unpubl_seq, blacklist, data_obj, downtorank, id_to_spn_add
             filteredScrape.repeat = 0
     writeinfofiles.get_additional_GB_info(filteredScrape)
     return filteredScrape
-
-
-
-
-def write_out_files(obj, downtorank=None):
-    """Wrapper function for writing information output files.
-
-    Writes different output tables to file: Makes reading important information less code heavy.
-
-    1. table with taxon names and sampling.
-    2. a file with all relevant GenBank info to file (otu_dict).
-
-    It uses the self.sp_d to get sampling information, that's why the downtorank is required.
-
-    :param obj: either FilterBlast or PhyScraper Scrape object
-    :param downtorank: hierarchical filter
-    :return: writes output to file
-    """
-
-    writeinfofiles.write_otu_info(obj)
-    if isinstance(obj, FilterBlast):
-        writeinfofiles.taxon_sampling(obj, downtorank)
 
 
 def standard_run(study_id,
@@ -469,7 +448,6 @@ def filter_data_run(seqaln,
     save_copy_code(workdir)
     return filteredScrape
 
-# # # # # # # # # # # # # #
 
 def add_unpubl_to_backbone(seqaln,
                            mattype,
@@ -518,7 +496,7 @@ def concat(genelistdict, workdir_comb, email, num_threads=None, percentage=0.37,
         else:
             sys.stdout.write("load single data dump file")
             conc = pickle.load(open("{}/load_single_data.p".format(workdir_comb), "rb"))
-            #conc.dump()
+            # conc.dump()
         
         conc.sp_seq_counter()
         conc.get_largest_tre()
@@ -657,3 +635,23 @@ def run_with_settings(settings):
     shutil.copytree("./physcraper", "{}/physcraper_runcopy".format(settings.workdir))
 
     return filteredScrape
+
+
+def write_out_files(obj, downtorank=None):
+    """Wrapper function for writing information output files.
+
+    Writes different output tables to file: Makes reading important information less code heavy.
+
+    1. table with taxon names and sampling.
+    2. a file with all relevant GenBank info to file (otu_dict).
+
+    It uses the self.sp_d to get sampling information, that's why the downtorank is required.
+
+    :param obj: either FilterBlast or PhyScraper Scrape object
+    :param downtorank: hierarchical filter
+    :return: writes output to file
+    """
+
+    writeinfofiles.write_otu_info(obj)
+    if isinstance(obj, FilterBlast):
+        writeinfofiles.taxon_sampling(obj, downtorank)
