@@ -2413,10 +2413,10 @@ class PhyscraperScrape(object):
         This function ensures they are properly removed."""
 
         treed_tax = set()
-        for leaf in self.tre.leaf_nodes():
+        for leaf in self.data.tre.leaf_nodes():
             treed_tax.add(leaf.taxon)
         aln_tax = set()
-        for tax, seq in self.aln.items():
+        for tax, seq in self.data.aln.items():
             aln_tax.add(tax)
         prune = treed_tax ^ aln_tax
         del_tre = []
@@ -2429,8 +2429,8 @@ class PhyscraperScrape(object):
                 del_tre.append(taxon)
         # debug(del_aln)
         # debug(del_tre)
-        self.aln.remove_sequences(del_aln)
-        self.tre.prune_taxa(del_tre)
+        self.data.aln.remove_sequences(del_aln)
+        self.data.tre.prune_taxa(del_tre)
 
 
         for tax_lab in self.data.aln.taxon_namespace:
