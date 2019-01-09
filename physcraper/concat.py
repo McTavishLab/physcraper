@@ -1051,18 +1051,30 @@ class Concat(object):
             # is the -f b command
             # -z specifies file with multiple trees
             try:
-                num_threads = int(num_threads)
-                subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(num_threads), "-m", "GTRCAT",
+                
+                if os.environ.get('SLURM_NTASKS_PER_NODE'):  # if it runs on a slurm cluster
+                    mpicores = int(os.environ.get('SLURM_NTASKS_PER_NODE', '8')) + int(os.environ.get('SLURM_JOB_NODES', '8'))
+                    print(mpicores)
+                    subprocess.call(["mpiexec", "-n", "{}".format(int(mpicores)), "raxmlHPC-MPI-AVX2", 
+                                 "-m", "GTRCAT",
+                                 "-s", aln, "-q", partition,
+                                 "-p", "1", "-f", "a", "-x", "1", "-#", "autoMRE",
+                                 "-n", "autoMRE_fa"])
+                else:
+                   subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(num_threads),
+                                 "-m", "GTRCAT",
                                  "-s", aln, "-q", partition,
                                  "-p", "1", "-f", "a", "-x", "1", "-#", "autoMRE",
                                  "-n", "autoMRE_fa"])
                 # strict consensus:
-                subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(num_threads), "-m", "GTRCAT",
+                subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(num_threads),
+                                 "-m", "GTRCAT",
                                  "-J", "STRICT",
                                  "-z", "RAxML_bootstrap.autoMRE_fa",
                                  "-n", "StrictCon"])
                 # majority rule:
-                subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(num_threads), "-m", "GTRCAT",
+                subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(num_threads),
+                                 "-m", "GTRCAT",
                                  "-J", "MR",
                                  "-z", "RAxML_bootstrap.autoMRE_fa",
                                  "-n", "MR"])
