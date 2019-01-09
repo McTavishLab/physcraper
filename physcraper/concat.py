@@ -842,6 +842,7 @@ class Concat(object):
         fi.close()
         for tax in self.concatenated_aln.taxon_namespace:
             tax.label = tax.label.replace(" ", "_")
+        self.rm_gap_only(self.concatenated_aln, "concat.fas")
         self.concatenated_aln.write(path="{}/{}".format(self.workdir, "concat_red.fasta"), schema="fasta")
         # does not work here, seq not yet in tree
         tre_ids = set()
