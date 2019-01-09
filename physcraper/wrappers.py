@@ -482,7 +482,7 @@ def add_unpubl_to_backbone(seqaln,
     return filteredScrape
 
 
-def concat(genelistdict, workdir_comb, email, num_threads=None, percentage=0.37, user_concat_fn=None, backbone=None):
+def concat(genelistdict, workdir_comb, email, num_threads=None, percentage=0.37, user_concat_fn=None, backbone=False):
     """This is to concatenate different physcraper runs into a single alignment and tree.
     genelistdict is a dict with gene names as key and the corresponding workdir
     """
@@ -494,7 +494,7 @@ def concat(genelistdict, workdir_comb, email, num_threads=None, percentage=0.37,
                 conc.load_single_genes(genelistdict[item]["workdir"], genelistdict[item]["pickle"], item)
             conc.combine()
         else:
-            sys.stdout.write("load single data dump file")
+            sys.stdout.write("load single data dump file\n")
             conc = pickle.load(open("{}/load_single_data.p".format(workdir_comb), "rb"))
             # conc.dump()
         
@@ -507,7 +507,7 @@ def concat(genelistdict, workdir_comb, email, num_threads=None, percentage=0.37,
         conc.remove_short_seq()
         conc.dump()
     else:
-        sys.stdout.write("load concat_checkpoint dump file")
+        sys.stdout.write("load concat_checkpoint dump file\n")
         conc = pickle.load(open("{}/concat_checkpoint.p".format(workdir_comb), "rb")) 
     conc.backbone = backbone
     

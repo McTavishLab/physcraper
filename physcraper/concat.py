@@ -237,6 +237,7 @@ class Concat(object):
         self.single_runs[genename] = deepcopy(scrape)
         # remove gap only char from input aln and return modified aln
         self.rm_gap_only(self.single_runs[genename].aln, "{}.fas".format(genename))
+        self.concatenated_aln = dendropy.DnaCharacterMatrix.get(file=open("{}/{}_nogap.fas".format(self.workdir, genename)), schema="fasta")
         return
 
     def combine(self):
@@ -843,7 +844,7 @@ class Concat(object):
         for tax in self.concatenated_aln.taxon_namespace:
             tax.label = tax.label.replace(" ", "_")
         self.rm_gap_only(self.concatenated_aln, "concat_red.fas")
-        self.concatenated_aln.DnaCharacterMatrix.get(path="{}/{}".format(self.workdir, "concat_red_nogap.fas"), schema="fasta")
+        self.concatenated_aln = DnaCharacterMatrix.get(path="{}/{}".format(self.workdir, "concat_red_nogap.fas"), schema="fasta")
         # self.concatenated_aln.write(path="{}/{}".format(self.workdir, "concat_red_nogap.fas"), schema="fasta")
         # does not work here, seq not yet in tree
         tre_ids = set()
@@ -954,14 +955,14 @@ class Concat(object):
                         # debug(num_threads)
                         subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(num_threads), "-m", "GTRCAT",
                                          "-f", "v", "-q", "partition",
-                                         "-s", "concat_red_nogap.fasta",
+                                         "-s", "concat_red_nogap.fas",
                                          "-t", "starting_red.tre",
                                          "-n", "PLACE"])
                     except:
                         self.ld("except")
                         subprocess.call(["raxmlHPC", "-m", "GTRCAT",
                                          "-f", "v", "-q", "partition",
-                                         "-s", "concat_red_nogap.fasta",
+                                         "-s", "concat_red_nogap.fas",
                                          "-t", "starting_red.tre",
                                          "-n", "PLACE"])
                 self.ld("read place tree")
@@ -990,11 +991,11 @@ class Concat(object):
                 starting_fn = "place_resolve.tre"
             else:
                 starting_fn = "starting_red.tre"
-            if os.path.exists("concat_red_nogap.fasta.reduced") and os.path.exists("partition.reduced"):
-                aln = "concat_red_nogap.fasta.reduced"
+            if os.path.exists("concat_red_nogap.fas.reduced") and os.path.exists("partition.reduced"):
+                aln = "concat_red_nogap.fas.reduced"
                 partition = "partition.reduced"
             else:
-                aln = "concat_red_nogap.fasta"
+                aln = "concat_red_nogap.fas"
                 partition = "partition"
             self.ld([aln, starting_fn])
             try:
@@ -1039,11 +1040,11 @@ class Concat(object):
         """
         self.li("calc bootstrap")
         with physcraper.cd(self.workdir):
-            if os.path.exists("concat_red_nogap.fasta.reduced"):
-                aln = "concat_red_nogap.fasta.reduced"
+            if os.path.exists("concat_red_nogap.fas.reduced"):
+                aln = "concat_red_nogap.fas.reduced"
                 partition = "partition.reduced"
             else:
-                aln = "concat_red_nogap.fasta"
+                aln = "concat_red_nogap.fas"
                 partition = "partition"
             # run bootstrap
             # make bipartition tree
