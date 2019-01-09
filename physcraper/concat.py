@@ -842,8 +842,8 @@ class Concat(object):
         fi.close()
         for tax in self.concatenated_aln.taxon_namespace:
             tax.label = tax.label.replace(" ", "_")
-        self.rm_gap_only(self.concatenated_aln, "concat.fas")
-        self.concatenated_aln.write(path="{}/{}".format(self.workdir, "concat_red.fasta"), schema="fasta")
+        self.rm_gap_only(self.concatenated_aln, "concat_red.fas")
+        self.concatenated_aln.write(path="{}/{}".format(self.workdir, "concat_red_nogap.fasta"), schema="fasta")
         # does not work here, seq not yet in tree
         tre_ids = set()
         for tax in self.tre_as_start.taxon_namespace:
@@ -953,14 +953,14 @@ class Concat(object):
                         # debug(num_threads)
                         subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(num_threads), "-m", "GTRCAT",
                                          "-f", "v", "-q", "partition",
-                                         "-s", "concat_red.fasta",
+                                         "-s", "concat_red_nogap.fasta",
                                          "-t", "starting_red.tre",
                                          "-n", "PLACE"])
                     except:
                         self.ld("except")
                         subprocess.call(["raxmlHPC", "-m", "GTRCAT",
                                          "-f", "v", "-q", "partition",
-                                         "-s", "concat_red.fasta",
+                                         "-s", "concat_red_nogap.fasta",
                                          "-t", "starting_red.tre",
                                          "-n", "PLACE"])
                 self.ld("read place tree")
@@ -989,11 +989,11 @@ class Concat(object):
                 starting_fn = "place_resolve.tre"
             else:
                 starting_fn = "starting_red.tre"
-            if os.path.exists("concat_red.fasta.reduced") and os.path.exists("partition.reduced"):
-                aln = "concat_red.fasta.reduced"
+            if os.path.exists("concat_red_nogap.fasta.reduced") and os.path.exists("partition.reduced"):
+                aln = "concat_red_nogap.fasta.reduced"
                 partition = "partition.reduced"
             else:
-                aln = "concat_red.fasta"
+                aln = "concat_red_nogap.fasta"
                 partition = "partition"
             self.ld([aln, starting_fn])
             try:
@@ -1038,11 +1038,11 @@ class Concat(object):
         """
         self.li("calc bootstrap")
         with physcraper.cd(self.workdir):
-            if os.path.exists("concat_red.fasta.reduced"):
-                aln = "concat_red.fasta.reduced"
+            if os.path.exists("concat_red_nogap.fasta.reduced"):
+                aln = "concat_red_nogap.fasta.reduced"
                 partition = "partition.reduced"
             else:
-                aln = "concat_red.fasta"
+                aln = "concat_red_nogap.fasta"
                 partition = "partition"
             # run bootstrap
             # make bipartition tree
