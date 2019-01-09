@@ -816,7 +816,8 @@ class Concat(object):
             writer = csv.writer(output)
             writer.writerow(["min len: {}".format(min_len)])
             for otu in self.short_concat_seq:
-                writer.writerow(otu)              
+                writer.writerow([otu])              
+
 
     def remove_short_seq(self):
         """Removes short seq that were found with get_short_seq
@@ -904,12 +905,13 @@ class Concat(object):
                     if num <= len_gene:
                         rm_col_a.append(num)
                 # physcraper.debug(rm_col_a)
+                len_gene0 = len_gene
                 len_gene = len_gene - len(rm_col_a)
                 # self.part_len = len_gene
                 part_len0 = len_gene
                 # physcraper.debug(self.part_len)
                 with open("{}/partition".format(self.workdir), "w") as partition:
-                    partition.write("DNA, {} = 1-{}\n".format(gene, len_gene))
+                    partition.write("DNA, {} = 1-{}\n".format(gene, part_len0))
                 count = 1
             else:
                 # physcraper.debug("else")
@@ -921,7 +923,7 @@ class Concat(object):
                 # count number of cols which are smaller than len_gene, must be done with original col length (rm_col_a))
                 rm_col = []
                 for num in self.del_columns:
-                    if num > rm_col_a and num <= rm_col_a + len_gene :
+                    if num > len_gene0 and num <= len_gene0 + len_gene :
                         # physcraper.debug(num)
                         rm_col.append(num)
                 # physcraper.debug(rm_col)
