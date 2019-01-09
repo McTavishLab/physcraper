@@ -86,7 +86,7 @@ def test_filter_length():
     if threshold is not None:
         filteredScrape.sp_dict(downtorank)
         filteredScrape.make_sp_seq_dict()
-        filteredScrape.how_many_sp_to_keep(threshold=threshold, selectby=selectby)
+        filteredScrape.how_many_sp_to_keep(selectby=selectby)
         filteredScrape.replace_new_seq()
 
     length_filtered = len(filteredScrape.new_seqs)

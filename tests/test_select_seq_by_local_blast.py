@@ -98,7 +98,7 @@ def test_select_seq_by_local_blast():
                 # print(threshold - count2)
                 count = count - thres_minus
 
-    filteredScrape.how_many_sp_to_keep(threshold, selectby)
+    filteredScrape.how_many_sp_to_keep(selectby)
     # print(count, len(filteredScrape.filtered_seq))
     assert count == len(filteredScrape.filtered_seq) and count>0
   

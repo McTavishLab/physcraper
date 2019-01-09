@@ -276,7 +276,7 @@ def PS_filter_run(add_unpubl_seq, blacklist, data_obj, downtorank, id_to_spn_add
             if threshold is not None:
                 filteredScrape.sp_dict(downtorank)
                 filteredScrape.make_sp_seq_dict()
-                filteredScrape.how_many_sp_to_keep(threshold=threshold, selectby=selectby)
+                filteredScrape.how_many_sp_to_keep(selectby=selectby)
                 filteredScrape.replace_new_seq()
             sys.stdout.write("Calculate the phylogeny\n")
             filteredScrape.generate_streamed_alignment()
@@ -300,7 +300,7 @@ def PS_filter_run(add_unpubl_seq, blacklist, data_obj, downtorank, id_to_spn_add
         if threshold is not None:
             filteredScrape.sp_dict(downtorank)
             filteredScrape.make_sp_seq_dict()
-            filteredScrape.how_many_sp_to_keep(threshold=threshold, selectby=selectby)
+            filteredScrape.how_many_sp_to_keep(selectby=selectby)
             filteredScrape.replace_new_seq()
         filteredScrape.data.prune_short()
         sys.stdout.write("calculate the phylogeny\n")
@@ -603,7 +603,7 @@ def run_with_settings(settings):
             filteredScrape.generate_streamed_alignment()
             filteredScrape.unpublished = False
 
-        # run the ananlyses
+        # run the analysis
         if filteredScrape.unpublished is not True:
             filteredScrape.run_blast_wrapper()
             filteredScrape.read_blast_wrapper(blast_dir=settings.shared_blast_folder)
@@ -612,7 +612,7 @@ def run_with_settings(settings):
             if settings.threshold is not None:
                 filteredScrape.sp_dict(settings.downtorank)
                 filteredScrape.make_sp_seq_dict()
-                filteredScrape.how_many_sp_to_keep(threshold=settings.threshold, selectby=settings.selectby)
+                filteredScrape.how_many_sp_to_keep(selectby=settings.selectby)
                 filteredScrape.replace_new_seq()
             debug("from replace to streamed aln")
             filteredScrape.generate_streamed_alignment()
@@ -626,7 +626,7 @@ def run_with_settings(settings):
         if settings.threshold is not None:
             filteredScrape.sp_dict(settings.downtorank)
             filteredScrape.make_sp_seq_dict()
-            filteredScrape.how_many_sp_to_keep(threshold=settings.threshold, selectby=settings.selectby)
+            filteredScrape.how_many_sp_to_keep(selectby=settings.selectby)
             filteredScrape.replace_new_seq()
         filteredScrape.generate_streamed_alignment()
         filteredScrape.dump()
