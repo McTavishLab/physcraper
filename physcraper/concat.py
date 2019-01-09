@@ -549,8 +549,8 @@ class Concat(object):
         :return: del_acc
         """
         self.ld("select_rnd_seq")
-        self.ld(tax_id)
-        self.ld(gene)
+        # self.ld(tax_id)
+        # self.ld(gene)
         count = 2
         random_gen = random.choice(list(self.tmp_dict[tax_id][gene]))
         self.sp_acc_comb[tax_id][gene][random_gen]["concat:status"] = "used in concat"
@@ -559,7 +559,7 @@ class Concat(object):
         if gene in self.comb_seq.keys():
             # physcraper.debug(self.comb_seq[gene].keys())
             if tax_id_ not in self.comb_seq[gene].keys():
-                self.ld("taxid not present")
+                # self.ld("taxid not present")
                 # TODO: write check that for every tax_id, we add something to each comb_seq[gene]
                 self.comb_seq[gene][tax_id_] = seq
                 if gene in self.comb_acc:
@@ -572,7 +572,7 @@ class Concat(object):
                 else:
                     del_acc[gene] = {tax_id: random_gen}
             else:
-                self.ld("tax_id present")
+                # self.ld("tax_id present")
                 tax_id_new = "{}_{}".format(tax_id_, count)
                 while tax_id_new in self.comb_seq[gene].keys():
                     count += 1
@@ -589,7 +589,7 @@ class Concat(object):
                 else:
                     del_acc[gene] = {tax_id: random_gen}
         else:
-            self.ld("in else")
+            # self.ld("in else")
             self.comb_seq[gene] = {tax_id_: seq}
             self.comb_acc[gene] = {tax_id_: random_gen}
             if gene in del_acc.keys():
@@ -694,7 +694,7 @@ class Concat(object):
         len1 = 0
         len2 = 0
         for gene in self.comb_seq.keys():
-            self.ld(gene)
+            # self.ld(gene)
             # physcraper.debug(self.comb_seq[gene].keys())
             if count == 0:
                 len1 = len(self.comb_seq[gene].keys())

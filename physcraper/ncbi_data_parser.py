@@ -270,5 +270,5 @@ class Parser:
                 )
                 tax_id = names[names["name_txt"] == tax_name]["tax_id"].values[0]
             else:
-                print("something else is going wrong: {}".format(tax_name))
+                sys.stdout.write("something else is going wrong: {}".format(tax_name))
         return tax_id

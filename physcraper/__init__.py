@@ -599,17 +599,23 @@ def OtuJsonDict(id_to_spn, id_dict):
                     sys.stderr.write("match to taxon {} not found in open tree taxonomy or NCBI. "
                                      "Proceeding without taxon info\n".format(spn))
                     nosp.append(spn)
+            if ncbiid in id_dict.ncbiid_to_spn:
+                ncbi_spn = id_dict.ncbiid_to_spn(ncbiid)
+            else:
+                ncbi_spn = id_dict.ott_to_ncbi(ottid)
             sp_info_dict[otu_id] = {
                 "^ncbi:taxon": ncbiid,
+                "^ncbi:TaxonName": ncbi_spn
                 "^ot:ottTaxonName": ottname,
                 "^ot:ottId": ottid,
                 "^ot:originalLabel": tipname,
                 "^user:TaxonName": species,
                 "^physcraper:status": "original",
                 "^physcraper:last_blasted": "1900/01/01",
-
                 }
-            if ottname is not None:
+            if ncbi_spn is not None:
+                sp_info_dict[otu_id]["^physcraper:TaxonName"] = ncbi_spn
+            elif ottname is not None:
                 sp_info_dict[otu_id]["^physcraper:TaxonName"] = ottname
             elif sp_info_dict[otu_id]['^user:TaxonName']: 
                 sp_info_dict[otu_id]["^physcraper:TaxonName"] = sp_info_dict[otu_id]['^user:TaxonName']
@@ -2371,6 +2377,7 @@ class PhyscraperScrape(object):
             os.rename(filename, "{}/{}_tmp".format(self.workdir, filename.split("/")[-1]))
         if _VERBOSE:
             sys.stdout.write("aligning query sequences \n")
+        self._reconcile()  # I think reconcile is what was needed here...instead of alien hack
         # note: sometimes there are still sp in any of the aln/tre
         # hack for the alien taxa thing
         self.remove_alien_aln_tre()
