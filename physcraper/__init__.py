@@ -930,6 +930,7 @@ class AlignTreeTax(object):
         tax2 = self.tre.taxon_namespace.get_taxon(taxon_label)
         if tax:
             self.aln.remove_sequences([tax])
+            self.aln.discard_sequences([tax])
             self.aln.taxon_namespace.remove_taxon_label(taxon_label)  # raises an error if label not found
             # the first prune does not remove it sometimes...
             self.tre.prune_taxa([tax2])
