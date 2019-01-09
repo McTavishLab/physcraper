@@ -768,10 +768,10 @@ class AlignTreeTax(object):
             found = 0
             for otu in self.otu_dict:
                 if self.otu_dict[otu][u'^ot:originalLabel'] == tax.label:
-                    self.otu_dict[otu]['^physcraper:status'] = "deleted in name reconciliation"
+                    self.otu_dict[otu]['^physcraper:status'] = "deleted in reconciliation"
                     found = 1
             if found == 0:
-                sys.stderr.write("lost taxon {} in name reconcilliation \n".format(tax.label))
+                sys.stderr.write("lost taxon {} in reconcilliation \n".format(tax.label))
             self.aln.taxon_namespace.remove_taxon(tax)
         assert self.aln.taxon_namespace == self.tre.taxon_namespace
 
@@ -933,6 +933,7 @@ class AlignTreeTax(object):
             self.aln.discard_sequences([tax])
             self.aln.taxon_namespace.remove_taxon_label(taxon_label)  # raises an error if label not found
             # the first prune does not remove it sometimes...
+        if tax2:    
             self.tre.prune_taxa([tax2])
             self.tre.prune_taxa_with_labels([taxon_label])
             self.tre.prune_taxa_with_labels([tax2])
@@ -2410,6 +2411,28 @@ class PhyscraperScrape(object):
         """Sometimes there were alien entries in self.tre and self.aln.
 
         This function ensures they are properly removed."""
+
+        treed_tax = set()
+        for leaf in self.tre.leaf_nodes():
+            treed_tax.add(leaf.taxon)
+        aln_tax = set()
+        for tax, seq in self.aln.items():
+            aln_tax.add(tax)
+        prune = treed_tax ^ aln_tax
+        del_tre = []
+        for taxon in prune:
+            assert (taxon in aln_tax) or (taxon in treed_tax)
+            if taxon in aln_tax:
+                # debug(taxon)
+                del_aln.append(taxon)
+            if taxon in treed_tax:
+                del_tre.append(taxon)
+        # debug(del_aln)
+        # debug(del_tre)
+        self.aln.remove_sequences(del_aln)
+        self.tre.prune_taxa(del_tre)
+
+
         for tax_lab in self.data.aln.taxon_namespace:
             if tax_lab not in self.data.tre.taxon_namespace:
                 sys.stderr.write("tax {} not in tre. This is an alien name in the data.\n".format(tax_lab))
@@ -2735,8 +2758,6 @@ class PhyscraperScrape(object):
         with cd(os.path.join(self.workdir, "blast")):
             cmd1 = "makeblastdb -in {}_db -dbtype nucl".format("local_unpubl_seq")
             os.system(cmd1)
-
-
 
 
 class FilterBlast(PhyscraperScrape):
