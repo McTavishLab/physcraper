@@ -607,7 +607,14 @@ def OtuJsonDict(id_to_spn, id_dict):
                 "^user:TaxonName": species,
                 "^physcraper:status": "original",
                 "^physcraper:last_blasted": "1900/01/01",
-            }
+
+                }
+            if ottname is not None:
+                sp_info_dict[otu_id]["^physcraper:TaxonName"] = ottname
+            elif sp_info_dict[otu_id]['^user:TaxonName']: 
+                sp_info_dict[otu_id]["^physcraper:TaxonName"] = sp_info_dict[otu_id]['^user:TaxonName']
+            #elif self.otu_dict[otu_id][]
+            assert sp_info_dict[otu_id]["^physcraper:TaxonName"]  # is not None
     return sp_info_dict
 
 
@@ -2499,7 +2506,7 @@ class PhyscraperScrape(object):
             placetre.write(path="place_resolve.tre", schema="newick", unquoted_underscores=True)
         self._query_seqs_placed = 1
 
-    def est_full_tree(self):
+    def est_full_tree(self, path="."):
         """Full raxml run from the placement tree as starting tree.
         The PTHREAD version is the faster one, hopefully people install it. if not it falls back to the normal raxml.
         the backbone options allows to fix the sceleton of the starting tree and just newly estimates the other parts.
@@ -2511,13 +2518,13 @@ class PhyscraperScrape(object):
                 num_threads = int(self.config.num_threads)
                 if self.backbone is not True:
                     subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(num_threads), "-m", "GTRCAT",
-                                     "-s", "papara_alignment.extended",
+                                     "-s", "{}/papara_alignment.extended".format(path),
                                      "-t", "place_resolve.tre",
                                      "-p", "1",
                                      "-n", "{}".format(self.date)])
                 else:
                     subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(num_threads), "-m", "GTRCAT",
-                                     "-s", "papara_alignment.extended",
+                                     "-s", "{}/papara_alignment.extended".format(path),
                                      "-r", "backbone.tre",
                                      "-p", "1",
                                      "-n", "{}".format(self.date)])
@@ -2526,13 +2533,13 @@ class PhyscraperScrape(object):
 
                 if self.backbone is not True:
                     subprocess.call(["raxmlHPC", "-m", "GTRCAT",
-                                     "-s", "papara_alignment.extended",
+                                     "-s", "{}/papara_alignment.extended".format(path),
                                      "-t", "place_resolve.tre",
                                      "-p", "1",
                                      "-n", "{}".format(self.date)])
                 else:
                     subprocess.call(["raxmlHPC", "-m", "GTRCAT",
-                                     "-s", "papara_alignment.extended",
+                                     "-s", "{}/papara_alignment.extended".format(path),
                                      "-r", "backbone.tre",
                                      "-p", "1",
                                      "-n", "{}".format(self.date)])
@@ -2558,21 +2565,34 @@ class PhyscraperScrape(object):
                 mpicores = int(os.environ.get('SLURM_NTASKS_PER_NODE', '8')) + int(os.environ.get('SLURM_JOB_NODES', '8'))
 
                 print(mpicores)
-
-                subprocess.call(["mpiexec", "-n", "{}".format(int(mpicores)), "raxmlHPC-MPI-AVX2", 
-                                #"raxmlHPC-PTHREADS", "-T", "{}".format(num_threads), 
+                if os.environ.get('SLURM_NTASKS_PER_NODE'):  # if it runs on a slurm cluster
+                    subprocess.call(["mpiexec", "-n", "{}".format(int(mpicores)), "raxmlHPC-MPI-AVX2", 
+                                    #"raxmlHPC-PTHREADS", "-T", "{}".format(num_threads), 
+                                    "-m", "GTRCAT",
+                                     "-s", "previous_run/papara_alignment.extended",
+                                     "-p", "1", "-b", "1", "-#", "autoMRE",
+                                     "-n", "{}".format(self.date)])
+                    # make bipartition tree
+                    # is the -f b command
+                    subprocess.call(["mpiexec", "-n", "{}".format(int(mpicores)), "raxmlHPC-MPI-AVX2", 
+                                    # "raxmlHPC-PTHREADS", "-T", "{}".format(num_threads), 
+                                    "-m", "GTRCAT",
+                                     "-s", "previous_run/papara_alignment.extended",
+                                     "-p", "1", "-f", "a", "-x", "1", "-#", "autoMRE",
+                                     "-n", "all{}".format(self.date)])
+                else:
+                    subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(num_threads), 
                                 "-m", "GTRCAT",
                                  "-s", "previous_run/papara_alignment.extended",
                                  "-p", "1", "-b", "1", "-#", "autoMRE",
                                  "-n", "{}".format(self.date)])
-                # make bipartition tree
-                # is the -f b command
-                subprocess.call(["mpiexec", "-n", "{}".format(int(mpicores)), "raxmlHPC-MPI-AVX2", 
-                                # "raxmlHPC-PTHREADS", "-T", "{}".format(num_threads), 
-                                "-m", "GTRCAT",
-                                 "-s", "previous_run/papara_alignment.extended",
-                                 "-p", "1", "-f", "a", "-x", "1", "-#", "autoMRE",
-                                 "-n", "all{}".format(self.date)])
+                    # make bipartition tree
+                    # is the -f b command
+                    subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(num_threads), 
+                                    "-m", "GTRCAT",
+                                     "-s", "previous_run/papara_alignment.extended",
+                                     "-p", "1", "-f", "a", "-x", "1", "-#", "autoMRE",
+                                     "-n", "all{}".format(self.date)])
                 # strict consensus:
                 subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(num_threads), "-m", "GTRCAT",
                                  "-J", "STRICT",
@@ -2641,7 +2661,13 @@ class PhyscraperScrape(object):
             self.remove_blacklistitem()
         debug(len(self.new_seqs))
         debug(len(self.new_seqs_otu_id))
-        if len(self.new_seqs) > 0:
+        if len(self.new_seqs) == 0 or len(self.new_seqs_otu_id) == 0:
+            if _VERBOSE:
+                sys.stdout.write("No new sequences found.\n")
+            # self.repeat = 0
+            self.calculate_final_tree()
+            self.data.dump("{}/final_ATT_checkpoint.p".format(self.workdir))
+        elif len(self.new_seqs) > 0:
             self.data.write_files()  # should happen before aligning in case of pruning
             if len(self.new_seqs_otu_id) > 0:  # TODO rename to something more intuitive
                 self.data.check_tre_in_aln()
@@ -2681,19 +2707,19 @@ class PhyscraperScrape(object):
                 self.new_seqs = {}  # Wipe for next run
                 self.new_seqs_otu_id = {}
                 self.repeat = 1
-            else:
-                if _VERBOSE:
-                    sys.stdout.write("No new sequences after filtering.\n")
-                # self.repeat = 0
-                self.calculate_final_tree()
-                self.data.dump("{}/final_ATT_checkpoint.p".format(self.workdir))
+        #     else:
+        #         if _VERBOSE:
+        #             sys.stdout.write("No new sequences after filtering.\n")
+        #         # self.repeat = 0
+        #         self.calculate_final_tree()
+        #         self.data.dump("{}/final_ATT_checkpoint.p".format(self.workdir))
 
-        else:
-            if _VERBOSE:
-                sys.stdout.write("No new sequences found.\n")
-            # self.repeat = 0
-            self.calculate_final_tree()
-            self.data.dump("{}/final_ATT_checkpoint.p".format(self.workdir))
+        # else:
+        #     if _VERBOSE:
+        #         sys.stdout.write("No new sequences found.\n")
+        #     # self.repeat = 0
+        #     self.calculate_final_tree()
+        #     self.data.dump("{}/final_ATT_checkpoint.p".format(self.workdir))
 
         self.reset_markers()
 
@@ -2706,10 +2732,12 @@ class PhyscraperScrape(object):
 
         :return: final PS data
         """
+        debug("calculate final tree")
+        self.data.write_files(treepath="physcraper_final_notrim.tre", alnpath="physcraper_final_notrim.fas")
         self.data.prune_short()
         self.data.trim()
-        self.est_full_tree()
         self.data.write_files(treepath="physcraper_final_trim.tre", alnpath="physcraper_final_trim.fas")
+        self.est_full_tree(path="previous_run")
         self.repeat = 0
         self.calculate_bootstrap()
 
@@ -2814,21 +2842,24 @@ class PhyscraperScrape(object):
         """
         debug("write out infos")
         otu_dict_keys = [
-            "^ot:ottTaxonName",
             "^ncbi:gi",
             "^ncbi:accession",
             "^ot:originalLabel",
             "^physcraper:last_blasted",
             "^physcraper:status",
             "^physcraper:TaxonName",
-            "^ot:ottId",
-            "^ncbi:taxon",
             "^ncbi:title",
-            "^ncbi:TaxonName"
+            "^ncbi:taxon",
+            "^ncbi:TaxonName",
+            "^ot:ottId",
+            "^ot:ottTaxonName"
         ]
-        with open("{}/info_not_added_seq.csv".format(self.workdir), "w+") as output:
+        with open("{}/otu_seq_info.csv".format(self.workdir), "w+") as output:
                 writer = csv.writer(output)
-                writer.writerow(otu_dict_keys)
+                wr = ["otuID"]
+                for key in otu_dict_keys:
+                    wr.append(key)
+                writer.writerow(wr)
         with open("{}/otu_seq_info.csv".format(self.workdir), "a") as output:
             writer = csv.writer(output)
             for otu in self.data.otu_dict.keys():
