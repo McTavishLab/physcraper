@@ -3,6 +3,7 @@ import sys
 import pickle
 import physcraper
 import physcraper.filter_by_local_blast as local_blast
+import physcraper.wrappers as wrappers
 
 import pytest
 
@@ -32,7 +33,7 @@ def test_write_outputinfo():
 
     filteredScrape.generate_streamed_alignment()
 
-    filteredScrape.write_out_files(downtorank)
+    wrappers.write_out_files(filteredScrape, downtorank)
 
     with open(fn_otu) as fn:
         line = fn.readline()
