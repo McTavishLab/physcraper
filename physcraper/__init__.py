@@ -252,7 +252,7 @@ class ConfigObj(object):
         if interactive is None:
             interactive = sys.stdin.isatty()
             if interactive is False:
-                sys.stdout.write("REMEMBER TO UPDATE THE NCBI DATABASES REGULARLY!!")
+                sys.stdout.write("REMEMBER TO UPDATE THE NCBI DATABASES REGULARLY!!\n")
         if interactive is True:
             self._download_ncbi_parser()
             self._download_localblastdb()
@@ -279,6 +279,7 @@ class ConfigObj(object):
                             os.system("update_blastdb nt")
                             os.system("cat *.tar.gz | tar -xvzf - -i")
                             os.system("gunzip -cd taxdb.tar.gz | (tar xvf - )")
+                            os.system("rm *.tar.gz*")
                     elif x == "no":
                         print(
                             "You did not agree to download data from ncbi. Program will default to blast web-queries.")
@@ -302,6 +303,7 @@ class ConfigObj(object):
                                 os.system("cat *.tar.gz | tar -xvzf - -i")
                                 os.system("update_blastdb taxdb")
                                 os.system("gunzip -cd taxdb.tar.gz | (tar xvf - )")
+                                os.system("rm *.tar.gz*")
                         elif x == "no":
                             print("You did not agree to update data from ncbi. Old database files will be used.")
                         else:
@@ -321,6 +323,7 @@ class ConfigObj(object):
                     os.system("gunzip -f -cd ./tests/data/taxdump.tar.gz | (tar xvf - names.dmp nodes.dmp)")
                     os.system("mv nodes.dmp ./tests/data/")
                     os.system("mv names.dmp ./tests/data/")
+                    os.system("rm taxdump.tar.gz")
                 elif x == "no":
                     print("You did not agree to download data from ncbi. Program will default to blast web-queries.")
                     print("This is slow and crashes regularly!")
@@ -599,13 +602,14 @@ def OtuJsonDict(id_to_spn, id_dict):
                     sys.stderr.write("match to taxon {} not found in open tree taxonomy or NCBI. "
                                      "Proceeding without taxon info\n".format(spn))
                     nosp.append(spn)
+            ncbi_spn = None
             if ncbiid in id_dict.ncbiid_to_spn:
                 ncbi_spn = id_dict.ncbiid_to_spn(ncbiid)
-            else:
-                ncbi_spn = id_dict.ott_to_ncbi(ottid)
+            # else:
+            #     ncbi_spn = id_dict.ott_to_ncbi[ottid]
             sp_info_dict[otu_id] = {
                 "^ncbi:taxon": ncbiid,
-                "^ncbi:TaxonName": ncbi_spn
+
                 "^ot:ottTaxonName": ottname,
                 "^ot:ottId": ottid,
                 "^ot:originalLabel": tipname,
@@ -615,6 +619,7 @@ def OtuJsonDict(id_to_spn, id_dict):
                 }
             if ncbi_spn is not None:
                 sp_info_dict[otu_id]["^physcraper:TaxonName"] = ncbi_spn
+                sp_info_dict[otu_id]["^ncbi:TaxonName"] = ncbi_spn
             elif ottname is not None:
                 sp_info_dict[otu_id]["^physcraper:TaxonName"] = ottname
             elif sp_info_dict[otu_id]['^user:TaxonName']: 
@@ -725,7 +730,6 @@ class AlignTreeTax(object):
         self.ps_otu = 1  # iterator for new otu IDs
         self._reconcile()
         self._reconcile_names()
-
         self.workdir = os.path.abspath(workdir)
         if not os.path.exists(self.workdir):
             os.makedirs(self.workdir)
@@ -2377,7 +2381,7 @@ class PhyscraperScrape(object):
             os.rename(filename, "{}/{}_tmp".format(self.workdir, filename.split("/")[-1]))
         if _VERBOSE:
             sys.stdout.write("aligning query sequences \n")
-        self._reconcile()  # I think reconcile is what was needed here...instead of alien hack
+        self.data._reconcile()  # I think reconcile is what was needed here...instead of alien hack
         # note: sometimes there are still sp in any of the aln/tre
         # hack for the alien taxa thing
         self.remove_alien_aln_tre()
@@ -2548,6 +2552,10 @@ class PhyscraperScrape(object):
 
         """
         with cd(self.workdir):
+            if os.path.exists("place_resolve.tre"):
+                starting_fn = "place_resolve.tre"
+            else:
+                starting_fn = "starting_red.tre"
             try:
                 num_threads = int(self.config.num_threads)
                 debug(num_threads)
@@ -2556,31 +2564,35 @@ class PhyscraperScrape(object):
 
                 print(mpicores)
                 if os.environ.get('SLURM_NTASKS_PER_NODE'):  # if it runs on a slurm cluster
-                    subprocess.call(["mpiexec", "-n", "{}".format(int(mpicores)), "raxmlHPC-MPI-AVX2", 
-                                     # "raxmlHPC-PTHREADS", "-T", "{}".format(num_threads),
-                                     "-m", "GTRCAT",
-                                     "-s", "previous_run/papara_alignment.extended",
-                                     "-p", "1", "-b", "1", "-#", "autoMRE",
-                                     "-n", "{}".format(self.date)])
+                    # subprocess.call(["mpiexec", "-n", "{}".format(int(mpicores)), "raxmlHPC-MPI-AVX2", 
+                    #                  # "raxmlHPC-PTHREADS", "-T", "{}".format(num_threads),
+                    #                  "-m", "GTRCAT",
+                    #                  "-s", "previous_run/papara_alignment.extended",
+                    #                  "-t", "{}".format(starting_fn),
+                    #                  "-p", "1", "-b", "1", "-#", "autoMRE",
+                    #                  "-n", "{}".format(self.date)])
                     # make bipartition tree
                     # is the -f b command
                     subprocess.call(["mpiexec", "-n", "{}".format(int(mpicores)), "raxmlHPC-MPI-AVX2", 
                                      # "raxmlHPC-PTHREADS", "-T", "{}".format(num_threads),
                                      "-m", "GTRCAT",
                                      "-s", "previous_run/papara_alignment.extended",
+                                     "-t", "{}".format(starting_fn),
                                      "-p", "1", "-f", "a", "-x", "1", "-#", "autoMRE",
                                      "-n", "all{}".format(self.date)])
                 else:
-                    subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(num_threads), 
-                                     "-m", "GTRCAT",
-                                     "-s", "previous_run/papara_alignment.extended",
-                                     "-p", "1", "-b", "1", "-#", "autoMRE",
-                                      "-n", "{}".format(self.date)])
+                    # subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(num_threads), 
+                    #                  "-m", "GTRCAT",
+                    #                  "-s", "previous_run/papara_alignment.extended",
+                    #                  "-t", "{}".format(starting_fn),
+                    #                  "-p", "1", "-b", "1", "-#", "autoMRE",
+                    #                   "-n", "{}".format(self.date)])
                     # make bipartition tree
                     # is the -f b command
                     subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(num_threads), 
                                     "-m", "GTRCAT",
                                      "-s", "previous_run/papara_alignment.extended",
+                                     "-t", "{}".format(starting_fn),
                                      "-p", "1", "-f", "a", "-x", "1", "-#", "autoMRE",
                                      "-n", "all{}".format(self.date)])
                 # strict consensus:

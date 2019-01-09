@@ -719,7 +719,7 @@ class Concat(object):
     def concatenate_alns(self):
         """Concatenate all alns into one aln.
         """
-        self.ld("concat alns")
+        self.li("concat alns")
         count = 0
         for gene in self.aln_all:
             if count == 0:
@@ -1046,6 +1046,10 @@ class Concat(object):
             else:
                 aln = "concat_red_nogap.fas"
                 partition = "partition"
+            if os.path.exists("place_resolve.tre"):
+                starting_fn = "place_resolve.tre"
+            else:
+                starting_fn = "starting_red.tre"
             # run bootstrap
             # make bipartition tree
             # is the -f b command
@@ -1057,13 +1061,13 @@ class Concat(object):
                     print(mpicores)
                     subprocess.call(["mpiexec", "-n", "{}".format(int(mpicores)), "raxmlHPC-MPI-AVX2", 
                                  "-m", "GTRCAT",
-                                 "-s", aln, "-q", partition,
+                                 "-s", aln, "-q", partition,  "-t", "{}".format(starting_fn),
                                  "-p", "1", "-f", "a", "-x", "1", "-#", "autoMRE",
                                  "-n", "autoMRE_fa"])
                 else:
                    subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(num_threads),
                                  "-m", "GTRCAT",
-                                 "-s", aln, "-q", partition,
+                                 "-s", aln, "-q", partition,  "-t", "{}".format(starting_fn),
                                  "-p", "1", "-f", "a", "-x", "1", "-#", "autoMRE",
                                  "-n", "autoMRE_fa"])
                 # strict consensus:

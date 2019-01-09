@@ -39,15 +39,5 @@ def test():
             if concat.sp_counter[sp][gene] == 0:
                 sp_keep.append(sp)
 
-    # print(sp_keep)
-    # print(sp_to_keep.keys())
-    # print(len(sp_keep))
-    #
-    print(len(sp_to_keep.keys()))
-
-    try:
-        assert set(sp_to_keep.keys()) == set(sp_keep)
-        print("tests passed")
-    except:
-        print("test fails")
-
+    assert set(sp_to_keep.keys()) == set(sp_keep)
+       

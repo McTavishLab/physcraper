@@ -62,9 +62,9 @@ def load_ids_obj(conf, workdir):
     :param workdir: working directory
     :return:
     """
-    if os.path.isfile("id_pickle.p"):
-        sys.stdout.write("Reloading id dicts from {}\n".format(conf.id_pickle))
-        ids = pickle.load(open("id_pickle.p", "rb"))
+    if os.path.isfile("{}/id_pickle.p".format(workdir)):
+        sys.stdout.write("Reloading id dicts from {}\n".format(workdir))
+        ids = pickle.load(open("{}/id_pickle.p".format(workdir), "rb"))
     else:
         sys.stdout.write("setting up ID dictionaries\n")
         sys.stdout.flush()
@@ -534,6 +534,26 @@ def save_copy_code(workdir_comb):
     shutil.copytree("./physcraper", "{}/physcraper_runcopy".format(workdir_comb))
 
 
+def write_out_files(obj, downtorank=None):
+    """Wrapper function for writing information output files.
+
+    Writes different output tables to file: Makes reading important information less code heavy.
+
+    1. table with taxon names and sampling.
+    2. a file with all relevant GenBank info to file (otu_dict).
+
+    It uses the self.sp_d to get sampling information, that's why the downtorank is required.
+
+    :param obj: either FilterBlast or PhyScraper Scrape object
+    :param downtorank: hierarchical filter
+    :return: writes output to file
+    """
+
+    writeinfofiles.write_otu_info(obj)
+    if isinstance(obj, FilterBlast):
+        writeinfofiles.taxon_sampling(obj, downtorank)
+
+
 # # # # # # # # # # # # # # # # # # # # # # #
 def make_settings_class(seqaln, mattype, trfn, schema_trf, workdir,
                         threshold=None, selectby=None, downtorank=None, spInfoDict=None, add_unpubl_seq=None,
@@ -579,7 +599,6 @@ def run_with_settings(settings):
         # as some are 0 length which causes problems.
         data_obj.prune_short()
         data_obj.write_files()
-
         data_obj.write_labelled(label="^ot:ottTaxonName", add_gb_id=True)
         data_obj.write_otus("otu_info", schema="table")
         data_obj.dump()
@@ -636,22 +655,3 @@ def run_with_settings(settings):
 
     return filteredScrape
 
-
-def write_out_files(obj, downtorank=None):
-    """Wrapper function for writing information output files.
-
-    Writes different output tables to file: Makes reading important information less code heavy.
-
-    1. table with taxon names and sampling.
-    2. a file with all relevant GenBank info to file (otu_dict).
-
-    It uses the self.sp_d to get sampling information, that's why the downtorank is required.
-
-    :param obj: either FilterBlast or PhyScraper Scrape object
-    :param downtorank: hierarchical filter
-    :return: writes output to file
-    """
-
-    writeinfofiles.write_otu_info(obj)
-    if isinstance(obj, FilterBlast):
-        writeinfofiles.taxon_sampling(obj, downtorank)

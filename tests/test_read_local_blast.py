@@ -48,7 +48,7 @@ def test_read_local_blast():
                 local_blast.write_filterblast_files(filteredScrape.workdir, blast_key, seq, db=True, fn=str(taxonID))
             break
 
-    print(taxonID) 
+    # print(taxonID) 
         
     blast_db = taxonID
     blast_seq = taxonID
