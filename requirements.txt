@@ -26,3 +26,4 @@ recommonmark
 #past
 future
 pytest-xdist
+pytest-cov
