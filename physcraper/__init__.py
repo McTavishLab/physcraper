@@ -37,6 +37,7 @@ from . import concat  # is the local concat class
 from . import ncbi_data_parser  # is the ncbi data parser class and associated functions
 from . import filter_by_local_blast
 from . import opentree_helpers
+from . import writeinfofiles
 
 if sys.version_info < (3,):
     from urllib2 import HTTPError
@@ -1124,6 +1125,7 @@ class AlignTreeTax(object):
         :param schema: either table or json format
         :return: writes out otu_dict to file
         """
+        # TODO: schema is unused!
         assert schema in ["table", "json"]
         with open("{}/{}".format(self.workdir, filename), "w") as outfile:
             json.dump(self.otu_dict, outfile)
@@ -1295,7 +1297,7 @@ class IdDicts(object):
         elif ott_id in self.ott_to_name:
             ott_name = self.ott_to_name[ott_id]
             if self.config.blast_loc == "remote":
-                self.get_rank_info_from_web(taxon_name=ott_name)
+                self.get_rank_info_from_web(ott_name)
                 ncbi_id = self.otu_rank[ott_name]["taxon id"]
             else:
                 ncbi_id = self.ncbi_parser.get_id_from_name(ott_name)
@@ -1957,7 +1959,7 @@ class PhyscraperScrape(object):
                         fn.write("{}: {}".format(alignment.title.split("|")[-1].split(" ")[-1], hsp.expect))
                         if local_id not in self.gb_not_added:
                             self.gb_not_added.append(local_id)
-                            self.write_not_added_info(local_id, "threshold not passed")
+                            writeinfofiles.write_not_added_info(self, local_id, "threshold not passed")
                         # print(some)
         with open(self.logfile, "a") as log:
             log.write("{} new sequences added from unpublished database\n".format(len(self.new_seqs)))
@@ -1999,7 +2001,7 @@ class PhyscraperScrape(object):
                         else:
                             if gb_id not in self.gb_not_added:
                                 self.gb_not_added.append(gb_id)
-                                self.write_not_added_info(gb_id, "threshold not passed")
+                                writeinfofiles.write_not_added_info(self, gb_id, "threshold not passed")
         except ValueError:
             sys.stderr.write("Problem reading {}, skipping\n".format(fn_path))
 
@@ -2291,7 +2293,7 @@ class PhyscraperScrape(object):
                             # debug(some)
                         elif gb_id not in self.gb_not_added:
                                 self.gb_not_added.append(gb_id)
-                                # self.write_not_added_info(gb_id, "not_part_of_mrca")
+                                # writeinfofiles.write_not_added_info(self, gb_id, "not_part_of_mrca")
                                 fn = open("{}/not_added_seq.csv".format(self.workdir), "a+")
                                 fn.write("not_part_of_mrca, {}, rankid: {}, ncbi_id:{}, tax_name:{}\n".format(gb_id, input_rank_id, ncbi_id, tax_name))
                                 fn.close()
@@ -2302,7 +2304,7 @@ class PhyscraperScrape(object):
                 else:
                     if gb_id not in self.gb_not_added:
                         self.gb_not_added.append(gb_id)
-                        # self.write_not_added_info(gb_id, "seqlen_threshold_not_passed")
+                        # writeinfofiles.write_not_added_info(self, gb_id, "seqlen_threshold_not_passed")
                         len_seq = len(seq.replace("-", "").replace("N", ""))
                         fn = open("{}/not_added_seq.csv".format(self.workdir), "a+")
                         fn.write(
@@ -2323,53 +2325,16 @@ class PhyscraperScrape(object):
         # debug(some)
         self.data.dump()
 
-    def write_not_added_info(self, item, reason=None):
-        """Writes out infos of not added seq based on information provided in reason.
-
-        Is not used, as the output file can easily get to 100GB.
-
-        item is retrieved seq that was not added
-        """
-        # debug("write not added infos")
-        tab_keys = [
-            "^ncbi:gi",
-            "^accession",
-            "sscinames",
-            "staxids",
-            # "title",
-            "length",
-            # "hsps",
-            # "pident",
-            "evalue",
-            "bitscore"
-            # "sseq"
-        ]
-        if not os.path.exists(path="{}/info_not_added_seq.csv".format(self.workdir)):
-            with open("{}/info_not_added_seq.csv".format(self.workdir), "w+") as output:
-                writer = csv.writer(output)
-                writer.writerow(tab_keys)
-        with open("{}/info_not_added_seq.csv".format(self.workdir), "a") as output:
-            writer = csv.writer(output)
-            rowinfo = [self.data.gb_dict[item]]
-            for key in tab_keys:
-                if key in self.data.gb_dict[item].keys():
-                    tofile = str(self.data.gb_dict[item][key]).replace("_", " ")
-                    rowinfo.append(tofile)
-                else:
-                    rowinfo.append("-")
-            rowinfo.append(reason)
-            writer.writerow(rowinfo)
-
-    def find_otudict_gi(self):
-        """Used to find seqs that were added twice. Debugging function.
-        """
-        debug("find_otudict_gi")
-        ncbigi_list = []
-        for key, val in self.data.otu_dict.items():
-            if "^ncbi:gi" in val:
-                gi_otu_dict = val["^ncbi:gi"]
-                ncbigi_list.append(gi_otu_dict)
-        return ncbigi_list
+    # def find_otudict_gi(self):
+    #     """Used to find seqs that were added twice. Debugging function.
+    #     """
+    #     debug("find_otudict_gi")
+    #     ncbigi_list = []
+    #     for key, val in self.data.otu_dict.items():
+    #         if "^ncbi:gi" in val:
+    #             gi_otu_dict = val["^ncbi:gi"]
+    #             ncbigi_list.append(gi_otu_dict)
+    #     return ncbigi_list
 
     def dump(self, filename=None):
         """writes out class to pickle file
@@ -2778,99 +2743,7 @@ class PhyscraperScrape(object):
             cmd1 = "makeblastdb -in {}_db -dbtype nucl".format("local_unpubl_seq")
             os.system(cmd1)
 
-    def get_additional_GB_info(self):
-        """Retrieves additional information given during the Genbank sequence submission
-        for all included sequences and writes them out to file"""
-        debug("get_additional_GB_info")
-        table_keys = [
-            "Genbank accession",
-            "Species name",
-            "authors",
-            "journal",
-            "publication title",
-            "voucher information",
-            "clone",
-            "country",
-            "isolate"
-        ]
 
-        with open("{}/Genbank_information_added_seq.csv".format(self.workdir), "w+") as output:
-            writer = csv.writer(output)
-            writer.writerow(table_keys)
-            for entry in self.data.otu_dict.keys():
-                # debug(entry)
-                # debug(self.data.otu_dict[entry]['^physcraper:status'].split(' ')[0])
-                if self.data.otu_dict[entry]['^physcraper:status'].split(' ')[0] not in self.seq_filter:
-                    debug(self.data.otu_dict[entry].keys())
-                    if '^ncbi:accession' in self.data.otu_dict[entry].keys():
-                        debug("add info")
-                        gb_id = self.data.otu_dict[entry]['^ncbi:accession']
-                        read_handle = self.ids.entrez_efetch(gb_id)
-                        ncbi_sp = None
-                        voucher = None
-                        clone = None
-                        country = None
-                        isolate = None
-                        # debug(read_handle[0])
-                        # debug(read_handle[0]["GBSeq_references"][0])
-                        gb_list = read_handle[0]["GBSeq_feature-table"][0]["GBFeature_quals"]
-                        # debug(gb_list)
-                        for item in gb_list:
-                            if item[u"GBQualifier_name"] == "organism":
-                                ncbi_sp = str(item[u"GBQualifier_value"])
-                                ncbi_sp = ncbi_sp.replace(" ", "_")
-                            if item[u"GBQualifier_name"] == "specimen_voucher":
-                                voucher = str(item[u"GBQualifier_value"])
-                            if item[u"GBQualifier_name"] == "clone":
-                                clone = str(item[u"GBQualifier_value"])
-                            if item[u"GBQualifier_name"] == "country":
-                                country = str(item[u"GBQualifier_value"])
-                            if item[u"GBQualifier_name"] == "isolate":
-                                isolate = str(item[u"GBQualifier_value"])
-                        authors = read_handle[0]["GBSeq_references"][0][u'GBReference_authors']
-                        journal = read_handle[0]["GBSeq_references"][0][u'GBReference_journal']
-                        publication = read_handle[0]["GBSeq_references"][0][u'GBReference_title']
-                        info = [gb_id, ncbi_sp, authors, journal, publication, voucher, clone, country, isolate]
-                        writer.writerow(info)
-
-    def write_otu_info(self):
-        """Writes output table to file
-
-        1. a file with all relevant GenBank info to file (otu_dict).
-
-        :return: writes output to file
-        """
-        debug("write out infos")
-        otu_dict_keys = [
-            "^ncbi:gi",
-            "^ncbi:accession",
-            "^ot:originalLabel",
-            "^physcraper:last_blasted",
-            "^physcraper:status",
-            "^physcraper:TaxonName",
-            "^ncbi:title",
-            "^ncbi:taxon",
-            "^ncbi:TaxonName",
-            "^ot:ottId",
-            "^ot:ottTaxonName"
-        ]
-        with open("{}/otu_seq_info.csv".format(self.workdir), "w+") as output:
-                writer = csv.writer(output)
-                wr = ["otuID"]
-                for key in otu_dict_keys:
-                    wr.append(key)
-                writer.writerow(wr)
-        with open("{}/otu_seq_info.csv".format(self.workdir), "a") as output:
-            writer = csv.writer(output)
-            for otu in self.data.otu_dict.keys():
-                rowinfo = [otu]
-                for item in otu_dict_keys:
-                    if item in self.data.otu_dict[otu].keys():
-                        tofile = str(self.data.otu_dict[otu][item]).replace("_", " ")
-                        rowinfo.append(tofile)
-                    else:
-                        rowinfo.append("-")
-                writer.writerow(rowinfo)
 
 
 class FilterBlast(PhyscraperScrape):
@@ -3403,42 +3276,6 @@ class FilterBlast(PhyscraperScrape):
         self.filtered_seq.clear()
         return
 
-    # #### TODO MK: Move next functions to different class?
-    def write_out_files(self, downtorank=None):
-        """Wrapper function for writing information output files.
-
-        Writes different output tables to file: Makes reading important information less code heavy.
-
-        1. table with taxon names and sampling.
-        2. a file with all relevant GenBank info to file (otu_dict).
-
-        It uses the self.sp_d to get sampling information, that's why the downtorank is required.
-
-        :param downtorank: hierarchical filter
-        :return: writes output to file
-        """
-        self.taxon_sampling(downtorank)
-        self.write_otu_info()
-
-    def taxon_sampling(self, downtorank=None):
-        """Write out file which contains the taxon smapling.
-
-        Writes output table to file: table with taxon names and sampling
-        It uses the self.sp_d to get sampling information, that's why the downtorank is required.
-
-        :param downtorank: hierarchical filter
-        :return: writes output to file
-        """
-        debug("write out taxon sampling")
-        sp_d = self.sp_dict(downtorank)
-        sp_info = {}
-        for k in sp_d:
-            sp_info[k] = len(sp_d[k])
-        with open("{}/taxon_sampling.csv".format(self.workdir), "w") as csv_file:
-            writer = csv.writer(csv_file)
-            for key, value in sp_info.items():
-                spn = self.ids.ncbi_parser.get_name_from_id(key)
-                writer.writerow([key, spn, value])
 
 
 class Settings(object):

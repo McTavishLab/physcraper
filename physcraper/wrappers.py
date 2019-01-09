@@ -13,11 +13,16 @@ from physcraper import (
     IdDicts,
     PhyscraperScrape,
     AlignTreeTax,
-    OtuJsonDict
-)
-from physcraper import FilterBlast, Settings, debug  # Concat
+    OtuJsonDict,
+    FilterBlast,
+    Settings,
+    debug
+
+)# Concat
 from dendropy import DnaCharacterMatrix
-from .concat import Concat
+
+import physcraper.writeinfofiles as writeinfofiles
+from physcraper.concat import Concat
 
 print("Current Wrapper Version number: 12192018.0")
 
@@ -33,20 +38,20 @@ print("Current Wrapper Version number: 12192018.0")
 #         ]
 #     )
 #     subprocess.call(["gunzip", "{}/gi_taxid_nucl.dmp.gz".format(dir)])
-
-
-# TODO: not used, process_ott.sh does not exist
-def sync_ott(configfi):
-    conf = ConfigObj(configfi)
-    subprocess.call(["process_ott.sh", "".format(conf.ott_ncbi)])
-
-
-# TODO: not used
-# generates IdDicts physcrapper class
-def get_ottid(configfi, cwd):
-    conf = ConfigObj(configfi)
-    ids = IdDicts(conf, cwd)
-    return ids
+#
+#
+# # TODO: not used, process_ott.sh does not exist
+# def sync_ott(configfi):
+#     conf = ConfigObj(configfi)
+#     subprocess.call(["process_ott.sh", "".format(conf.ott_ncbi)])
+#
+#
+# # TODO: not used
+# # generates IdDicts physcrapper class
+# def get_ottid(configfi, cwd):
+#     conf = ConfigObj(configfi)
+#     ids = IdDicts(conf, cwd)
+#     return ids
 
 
 def load_ids_obj(conf, workdir):
@@ -206,9 +211,8 @@ def PS_standard_run(data_obj, ids, shared_blast_folder):
         scraper.remove_identical_seqs()
         scraper.generate_streamed_alignment()
         scraper.dump()
-        scraper.write_otu_info()
-    # scraper.write_otu_info()
-    scraper.get_additional_GB_info()
+        writeinfofiles.write_out_files(scraper)
+    writeinfofiles.get_additional_GB_info(scraper.workdir, scraper.data, scraper.seq_filter, scraper.ids)
     return scraper
 
 
@@ -277,7 +281,7 @@ def PS_filter_run(add_unpubl_seq, blacklist, data_obj, downtorank, id_to_spn_add
             filteredScrape.generate_streamed_alignment()
             filteredScrape.dump()
             filteredScrape.data.write_otus("otu_info", schema="table")
-            filteredScrape.write_out_files(downtorank)
+            write_out_files(filteredScrape, downtorank)
             if backbone:
                 filteredScrape.repeat = 0
     while filteredScrape.repeat == 1:
@@ -301,13 +305,34 @@ def PS_filter_run(add_unpubl_seq, blacklist, data_obj, downtorank, id_to_spn_add
         sys.stdout.write("calculate the phylogeny\n")
         filteredScrape.generate_streamed_alignment()
         filteredScrape.dump()
-        filteredScrape.write_otu_info()
-        filteredScrape.write_out_files(downtorank)
+        write_out_files(filteredScrape, downtorank)
         if backbone:
             filteredScrape.repeat = 0
-    filteredScrape.write_out_files(downtorank)
-    filteredScrape.get_additional_GB_info()
+    writeinfofiles.get_additional_GB_info(filteredScrape)
     return filteredScrape
+
+
+
+
+def write_out_files(obj, downtorank=None):
+    """Wrapper function for writing information output files.
+
+    Writes different output tables to file: Makes reading important information less code heavy.
+
+    1. table with taxon names and sampling.
+    2. a file with all relevant GenBank info to file (otu_dict).
+
+    It uses the self.sp_d to get sampling information, that's why the downtorank is required.
+
+    :param obj: either FilterBlast or PhyScraper Scrape object
+    :param downtorank: hierarchical filter
+    :return: writes output to file
+    """
+
+    writeinfofiles.write_otu_info(obj)
+    if isinstance(obj, FilterBlast):
+        writeinfofiles.taxon_sampling(obj, downtorank)
+
 
 def standard_run(study_id,
                  tree_id,
@@ -513,7 +538,7 @@ def concat(genelistdict, workdir_comb, email, num_threads=None, percentage=0.37,
     conc.place_new_seqs(num_threads)
 
     conc.est_full_tree(num_threads)
-    if backbone == False:    
+    if backbone is False:
         conc.calculate_bootstrap(num_threads)
     conc.write_otu_info()
 
@@ -586,7 +611,7 @@ def run_with_settings(settings):
         filteredScrape = FilterBlast(data_obj, ids, settings)
         filteredScrape.add_setting_to_self(settings.downtorank, settings.threshold)
 
-        filteredScrape.write_out_files(settings.downtorank)
+        write_out_files(filteredScrape, settings.downtorank)
 
         if settings.add_unpubl_seq is not None:
             filteredScrape.unpublished = True
@@ -627,8 +652,8 @@ def run_with_settings(settings):
             filteredScrape.replace_new_seq()
         filteredScrape.generate_streamed_alignment()
         filteredScrape.dump()
-        filteredScrape.write_out_files(settings.downtorank)
-    filteredScrape.get_additional_GB_info()
+        write_out_files(filteredScrape, settings.downtorank)
+    writeinfofiles.get_additional_GB_info(filteredScrape)
     shutil.copytree("./physcraper", "{}/physcraper_runcopy".format(settings.workdir))
 
     return filteredScrape
