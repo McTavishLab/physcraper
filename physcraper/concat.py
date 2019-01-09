@@ -843,7 +843,8 @@ class Concat(object):
         for tax in self.concatenated_aln.taxon_namespace:
             tax.label = tax.label.replace(" ", "_")
         self.rm_gap_only(self.concatenated_aln, "concat_red.fas")
-        self.concatenated_aln.write(path="{}/{}".format(self.workdir, "concat_red_nogap.fasta"), schema="fasta")
+        self.concatenated_aln.DnaCharacterMatrix.get(path="{}/{}".format(self.workdir, "concat_red_nogap.fas"), schema="fasta")
+        # self.concatenated_aln.write(path="{}/{}".format(self.workdir, "concat_red_nogap.fas"), schema="fasta")
         # does not work here, seq not yet in tree
         tre_ids = set()
         for tax in self.tre_as_start.taxon_namespace:
