@@ -131,7 +131,11 @@ def taxon_sampling(filterblast_obj, downtorank=None):
     with open("{}/taxon_sampling.csv".format(filterblast_obj.workdir), "w") as csv_file:
         writer = csv.writer(csv_file)
         for key, value in sp_info.items():
-            spn = filterblast_obj.ids.ncbi_parser.get_name_from_id(key)
+            # print(filterblast_obj.ids)
+            if filterblast_obj.config.blast_loc == "remote":
+                spn = filterblast_obj.ids.ncbiid_to_spn[key]
+            else:
+                spn = filterblast_obj.ids.ncbi_parser.get_name_from_id(key)
             writer.writerow([key, spn, value])
 
 

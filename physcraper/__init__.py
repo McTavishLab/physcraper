@@ -996,7 +996,8 @@ class AlignTreeTax(object):
         if ncbi_id is None:
             # debug("ncbi_id is none")
             if ids_obj.otu_rank is not None: 
-                ncbi_id = ids_obj.otu_rank[tax_name]["taxon id"]
+                ncbi_id = self.get_rank_info_from_web(ott_name)
+                # ncbi_id = ids_obj.otu_rank[tax_name]["taxon id"]
 #            else:
 #                ncbi_id = ids_obj.ncbi_parser.get_id_from_name(tax_name)
             ids_obj.acc_ncbi_dict[gb_id] = ncbi_id
@@ -1378,18 +1379,18 @@ class IdDicts(object):
         when the web blast service is used.
         """
         tax_name = taxon_name.replace(" ", "_")
-        if tax_name not in self.otu_rank.keys():
-            ncbi_id = self.get_ncbiid_from_tax_name(tax_name)
-            if ncbi_id == 0:
-                self.otu_rank[tax_name] = {"taxon id": ncbi_id, "lineage": 'life', "rank": 'unassigned'}
-            else:
-                ncbi = NCBITaxa()
-                lineage = ncbi.get_lineage(ncbi_id)
-                lineage2ranks = ncbi.get_rank(lineage)
-                tax_name = str(tax_name).replace(" ", "_")
-                assert type(ncbi_id) is int
-                self.otu_rank[ncbi_id] = \
-                    {"taxon id": ncbi_id, "lineage": lineage, "rank": lineage2ranks, "taxon name": tax_name}
+        # if tax_name not in self.otu_rank.keys():
+        ncbi_id = self.get_ncbiid_from_tax_name(tax_name)
+        if ncbi_id == 0:
+            self.otu_rank[ncbi_id] = {"taxon id": ncbi_id, "lineage": 'life', "rank": 'unassigned'}
+        else:
+            ncbi = NCBITaxa()
+            lineage = ncbi.get_lineage(ncbi_id)
+            lineage2ranks = ncbi.get_rank(lineage)
+            tax_name = str(tax_name).replace(" ", "_")
+            assert type(ncbi_id) is int
+            self.otu_rank[ncbi_id] = \
+                {"taxon id": ncbi_id, "lineage": lineage, "rank": lineage2ranks, "taxon name": tax_name}
         return ncbi_id
 
     def find_tax_id(self, otu_dict_entry=None, acc=None):
@@ -2901,7 +2902,7 @@ class FilterBlast(PhyscraperScrape):
                     downtorank_id = None
                     if self.config.blast_loc == 'remote':
                         tax_id = self.ids.get_rank_info_from_web(taxon_name=tax_name)
-                        lineage2ranks = self.ids.otu_rank[str(tax_name).replace(" ", "_")]["rank"]
+                        lineage2ranks = self.ids.otu_rank[tax_id]["rank"]
                         ncbi = NCBITaxa()
                         if lineage2ranks == 'unassigned':
                             downtorank_id = tax_id
