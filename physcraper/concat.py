@@ -964,12 +964,25 @@ class Concat(object):
                                          "-t", "starting_red.tre",
                                          "-n", "PLACE"])
                     except:
-                        self.ld("except")
-                        subprocess.call(["raxmlHPC", "-m", "GTRCAT",
-                                         "-f", "v", "-q", "partition",
-                                         "-s", "concat_red_nogap.fas",
-                                         "-t", "starting_red.tre",
+                        try:
+                            subprocess.call(["raxmlHPC", 
+                                         "-m", "GTRCAT",
+                                         "-f", "v",
+                                         "-s", "papara_alignment.extended",
+                                         "-t", "random_resolve.tre",
                                          "-n", "PLACE"])
+                            placetre = Tree.get(path="RAxML_labelledTree.PLACE",
+                                            schema="newick",
+                                            preserve_underscores=True)
+                        except OSError as e:
+                            if e.errno == os.errno.ENOENT:
+                                sys.stderr.write("failed running raxmlHPC. Is it installed?")
+                                sys.exit(-6)
+                            # handle file not
+                            # handle file not found error.
+                            else:
+                                # Something else went wrong while trying to run `wget`
+                                raise
                 self.ld("read place tree")
                 placetre = Tree.get(path="{}/RAxML_labelledTree.PLACE".format(self.workdir),
                                     schema="newick",
@@ -1059,22 +1072,36 @@ class Concat(object):
             # make bipartition tree
             # is the -f b command
             # -z specifies file with multiple trees
-            try:
-                
-                if os.environ.get('SLURM_NTASKS_PER_NODE'):  # if it runs on a slurm cluster
-                    mpicores = int(os.environ.get('SLURM_NTASKS_PER_NODE', '8')) + int(os.environ.get('SLURM_JOB_NODES', '8'))
-                    print(mpicores)
-                    subprocess.call(["mpiexec", "-n", "{}".format(int(mpicores)), "raxmlHPC-MPI-AVX2", 
+
+
+            env_var = [os.environ.get('PMI_RANK'), os.environ.get('PMI_SIZE'), os.environ.get('OMPI_COMM_WORLD_SIZE')]
+            mpi = False
+            for var in env_var:
+                if var is not None:
+                    mpi = True
+
+
+
+            if mpi:
+                subprocess.call(["raxmlHPC-MPI-AVX2", 
                                  "-m", "GTRCAT",
                                  "-s", aln, "-q", partition,  "-t", "{}".format(starting_fn),
                                  "-p", "1", "-f", "a", "-x", "1", "-#", "autoMRE",
                                  "-n", "autoMRE_fa"])
-                else:
-                   subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(num_threads),
+            else:
+                try:
+                    subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(num_threads),
                                  "-m", "GTRCAT",
                                  "-s", aln, "-q", partition,  "-t", "{}".format(starting_fn),
                                  "-p", "1", "-f", "a", "-x", "1", "-#", "autoMRE",
                                  "-n", "autoMRE_fa"])
+                except: 
+                    subprocess.call(["raxmlHPC", 
+                                     "-m", "GTRCAT",
+                                     "-s", "previous_run/papara_alignment.extended",
+                                     "-p", "1", "-b", "1", "-#", "autoMRE",
+                                      "-n", "{}".format(self.date)])
+            try:                
                 # strict consensus:
                 subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(num_threads),
                                  "-m", "GTRCAT",

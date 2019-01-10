@@ -2479,7 +2479,10 @@ class PhyscraperScrape(object):
             sys.stdout.write("placing query sequences \n")
         with cd(self.workdir):
             try:
-                subprocess.call(["raxmlHPC", "-T", "{}".format(self.config.num_threads), "-m", "GTRCAT",
+                debug("try")
+                subprocess.call(["raxmlHPC-PTHREADS", 
+                                 "-T", "{}".format(self.config.num_threads), 
+                                 "-m", "GTRCAT",
                                  "-f", "v",
                                  "-s", "papara_alignment.extended",
                                  "-t", "random_resolve.tre",
@@ -2487,15 +2490,26 @@ class PhyscraperScrape(object):
                 placetre = Tree.get(path="RAxML_labelledTree.PLACE",
                                     schema="newick",
                                     preserve_underscores=True)
-            except OSError as e:
-                if e.errno == os.errno.ENOENT:
-                    sys.stderr.write("failed running raxmlHPC. Is it installed?")
-                    sys.exit(-6)
-                # handle file not
-                # handle file not found error.
-                else:
-                    # Something else went wrong while trying to run `wget`
-                    raise
+            except:
+                try:
+                    subprocess.call(["raxmlHPC", 
+                                 "-m", "GTRCAT",
+                                 "-f", "v",
+                                 "-s", "papara_alignment.extended",
+                                 "-t", "random_resolve.tre",
+                                 "-n", "PLACE"])
+                    placetre = Tree.get(path="RAxML_labelledTree.PLACE",
+                                    schema="newick",
+                                    preserve_underscores=True)
+                except OSError as e:
+                    if e.errno == os.errno.ENOENT:
+                        sys.stderr.write("failed running raxmlHPC. Is it installed?")
+                        sys.exit(-6)
+                    # handle file not
+                    # handle file not found error.
+                    else:
+                        # Something else went wrong while trying to run `wget`
+                        raise
             placetre.resolve_polytomies()
             for taxon in placetre.taxon_namespace:
                 if taxon.label.startswith("QUERY"):
@@ -2555,49 +2569,34 @@ class PhyscraperScrape(object):
 
         """
         with cd(self.workdir):
-            if os.path.exists("place_resolve.tre"):
-                starting_fn = "place_resolve.tre"
+            # check if job was started with mpi
+            env_var = [os.environ.get('PMI_RANK'), os.environ.get('PMI_SIZE'), os.environ.get('OMPI_COMM_WORLD_SIZE')]
+            mpi = False
+            for var in env_var:
+                if var is not None:
+                    mpi = True
+            print(os.getcwd())    
+            if mpi:
+                subprocess.call(["raxmlHPC-MPI-AVX2", 
+                                 # "raxmlHPC-PTHREADS", "-T", "{}".format(num_threads),
+                                 "-m", "GTRCAT",
+                                 "-s", "previous_run/papara_alignment.extended",
+                                 "-p", "1", "-f", "a", "-x", "1", "-#", "autoMRE",
+                                 "-n", "all{}".format(self.date)])
             else:
-                starting_fn = "starting_red.tre"
-            try:
-                num_threads = int(self.config.num_threads)
-                debug(num_threads)
-                # run bootstrap
-                mpicores = int(os.environ.get('SLURM_NTASKS_PER_NODE', '8')) + int(os.environ.get('SLURM_JOB_NODES', '8'))
-
-                print(mpicores)
-                if os.environ.get('SLURM_NTASKS_PER_NODE'):  # if it runs on a slurm cluster
-                    # subprocess.call(["mpiexec", "-n", "{}".format(int(mpicores)), "raxmlHPC-MPI-AVX2", 
-                    #                  # "raxmlHPC-PTHREADS", "-T", "{}".format(num_threads),
-                    #                  "-m", "GTRCAT",
-                    #                  "-s", "previous_run/papara_alignment.extended",
-                    #                  "-t", "{}".format(starting_fn),
-                    #                  "-p", "1", "-b", "1", "-#", "autoMRE",
-                    #                  "-n", "{}".format(self.date)])
-                    # make bipartition tree
-                    # is the -f b command
-                    subprocess.call(["mpiexec", "-n", "{}".format(int(mpicores)), "raxmlHPC-MPI-AVX2", 
-                                     # "raxmlHPC-PTHREADS", "-T", "{}".format(num_threads),
+                try:
+                    subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(num_threads), 
                                      "-m", "GTRCAT",
                                      "-s", "previous_run/papara_alignment.extended",
-                                     "-t", "{}".format(starting_fn),
-                                     "-p", "1", "-f", "a", "-x", "1", "-#", "autoMRE",
-                                     "-n", "all{}".format(self.date)])
-                else:
-                    # subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(num_threads), 
-                    #                  "-m", "GTRCAT",
-                    #                  "-s", "previous_run/papara_alignment.extended",
-                    #                  "-t", "{}".format(starting_fn),
-                    #                  "-p", "1", "-b", "1", "-#", "autoMRE",
-                    #                   "-n", "{}".format(self.date)])
-                    # make bipartition tree
-                    # is the -f b command
-                    subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(num_threads), 
-                                    "-m", "GTRCAT",
+                                     "-p", "1", "-b", "1", "-#", "autoMRE",
+                                      "-n", "{}".format(self.date)])
+                except: 
+                    subprocess.call(["raxmlHPC", 
+                                     "-m", "GTRCAT",
                                      "-s", "previous_run/papara_alignment.extended",
-                                     "-t", "{}".format(starting_fn),
-                                     "-p", "1", "-f", "a", "-x", "1", "-#", "autoMRE",
-                                     "-n", "all{}".format(self.date)])
+                                     "-p", "1", "-b", "1", "-#", "autoMRE",
+                                      "-n", "{}".format(self.date)])
+            try:
                 # strict consensus:
                 subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(num_threads), "-m", "GTRCAT",
                                  "-J", "STRICT",
