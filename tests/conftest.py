@@ -10,18 +10,21 @@ def pytest_addoption(parser):
     #     help="run concat full tests")
     parser.addoption("--runweb", action="store_true",
         help="run web tests")
+    parser.addoption("--nolocalblast", action="store_true",
+        help="do not run tests that rely on blast db download")
 
 
 def pytest_collection_modifyitems(config, items):
     runslow =  config.getoption("--runslow")
     runconcat = config.getoption("--runconcat")
     runweb = config.getoption("--runweb")
+    nolocalblast = config.getoption("--nolocalblast")
 
     skip_slow = pytest.mark.skip(reason="need --runslow option to run")
     skip_concat = pytest.mark.skip(reason="need --runconcat option to run")
     # skip_concat_full = pytest.mark.skip(reason="need --runconcatfull option to run")
     skip_web = pytest.mark.skip(reason="need --runweb option to run")
-
+    skip_localblast = pytest.mark.skip(reason="--nolocalblast skips this test")
     # skip_test = pytest.mark.skip(reason="skip all for now")
     for item in items:
         if "slow" in item.keywords and not runslow:
@@ -34,3 +37,5 @@ def pytest_collection_modifyitems(config, items):
             item.add_marker(skip_web)
         #elif "fast" not in item.keywords:
         #    item.add_marker(skip_test)
+        if "localblast" in item.keywords and nolocalblast:
+            item.add_marker(skip_localblast)

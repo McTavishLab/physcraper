@@ -3,7 +3,11 @@ import json
 import sys
 from physcraper import wrappers, OtuJsonDict, ConfigObj, IdDicts, generate_ATT_from_files, FilterBlast
 #
+from pytest import mark
 
+localblast = mark.localblast
+
+@localblast
 def test_filter_length():
     seqaln = "tests/data/tiny_test_example/test.fas"
     mattype = "fasta"

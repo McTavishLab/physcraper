@@ -10,9 +10,14 @@ workdir = "tests/output/test_remove_taxa_aln_tre"
 configfi = "tests/data/test.config"
 absworkdir = os.path.abspath(workdir)
 
+from pytest import mark
 
+localblast = mark.localblast
+
+@localblast
 def test_remove_taxa_aln_tre():
     conf = ConfigObj(configfi, interactive=False)
+
     data_obj = pickle.load(open("tests/data/precooked/tiny_dataobj.p", 'rb'))
     data_obj.workdir = absworkdir
     ids = IdDicts(conf, workdir=data_obj.workdir)

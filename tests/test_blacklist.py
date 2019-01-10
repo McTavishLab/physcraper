@@ -3,15 +3,15 @@ import os
 import pickle
 import shutil
 from physcraper import ConfigObj, IdDicts, FilterBlast, debug
-
 from pytest import mark
-# you can actually do whatever
-# ruftrum = mark.ruftrum will work and create a "ruftrum" test. 
+
 slow = mark.slow
+localblast = mark.localblast
+
 
 
 @slow
-#@mark.xfail
+@localblast
 def test_blacklist():
 
     workdir = "tests/output/test_blacklist"

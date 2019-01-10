@@ -19,8 +19,9 @@ downtorank = None
 absworkdir = os.path.abspath(workdir)
 
 from pytest import mark
+localblast = mark.localblast
 
-# @mark.xfail
+@localblast
 def test_select_seq_by_local_blast():
     conf = physcraper.ConfigObj(configfi, interactive=False)
     data_obj = pickle.load(open("tests/data/precooked/tiny_dataobj.p", 'rb'))

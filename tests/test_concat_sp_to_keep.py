@@ -2,7 +2,7 @@ from physcraper.concat import Concat
 from pytest import mark
 # you can actually do whatever
 # ruftrum = mark.ruftrum will work and create a "ruftrum" test. 
-concat = mark.concat
+localblast = mark.localblast
 
 
 
@@ -16,7 +16,7 @@ workdir_comb = "tests/output/impl_concat"
 genelist = {"its": {"workdir": workdir_its, "pickle": "its_{}".format(pickle_fn)}, 
             "ets": {"workdir": workdir_ets, "pickle": "ets_{}".format(pickle_fn)}}
 
-@concat
+@localblast
 def test():
     # get to test status
 
