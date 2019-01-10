@@ -1,5 +1,6 @@
 import os
 import shutil
+import pickle
 from physcraper import wrappers
 from physcraper.concat import Concat
 
@@ -19,7 +20,7 @@ def test_concat_run():
     pickle_fn = "final_ATT_checkpoint.p"
     email = "mk@xy.zt"
     percentage = 0.4
-    workdir_comb = "./tests/output/concat_nr"
+    workdir_comb = "./tests/output/concat_test"
     genelist = {"ITS": {"workdir": workdir_its, "pickle": pickle_fn}, 
 	            "ETS": {"workdir": workdir_ets, "pickle": pickle_fn}
 	            }
@@ -30,6 +31,7 @@ def test_concat_run():
     shutil.rmtree(os.path.join(workdir_comb, "physcraper_runcopy"))
 
 
+@mark.order1
 def test_concat_combine():   
 
 	workdir_its = "tests/data/precooked/concat_pre"
@@ -39,7 +41,7 @@ def test_concat_combine():
 	email = "mk@xy.zt"
 	percentage = 0.4
 	num_threads = 2
-	workdir_comb = "./tests/output/concat_nr"
+	workdir_comb = "./tests/output/concat_test"
 	genelistdict = {"its": {"workdir": workdir_its, "pickle": "its_{}".format(pickle_fn)}, 
 	        "ets": {"workdir": workdir_ets, "pickle": "ets_{}".format(pickle_fn)}}
 	conc = Concat(workdir_comb, email)
@@ -62,5 +64,32 @@ def test_concat_combine():
 	conc.concatenate_alns()
 	conc.get_short_seq_from_concat(percentage)
 	conc.remove_short_seq()
+
+	conc.dump()
+
 	assert len(conc.concatenated_aln) == 5
 
+@mark.order2
+def test_run_raxml_concat():
+	workdir_its = "tests/data/precooked/concat_pre"
+	workdir_ets = "tests/data/precooked/concat_pre"
+	email = "martha.kandziora@yahoo.com"
+	pickle_fn = "final_ATT_checkpoint.p"
+	email = "mk@xy.zt"
+	percentage = 0.4
+	num_threads = 2
+	workdir_comb = "./tests/output/concat_test"
+	genelistdict = {"its": {"workdir": workdir_its, "pickle": "its_{}".format(pickle_fn)}, 
+	        "ets": {"workdir": workdir_ets, "pickle": "ets_{}".format(pickle_fn)}}
+	conc = pickle.load(open("{}/concat_checkpoint.p".format(workdir_comb), "rb")) 
+	conc.backbone = True
+	conc.make_concat_table()
+	conc.write_partition()
+	conc.write_otu_info()
+	conc.place_new_seqs(num_threads)
+	if conc.backbone is False:
+		conc.calculate_bootstrap(num_threads)
+		conc.write_labelled('RAxML_bestTree.autoMRE_fa')
+	else:
+		conc.est_full_tree(num_threads)
+		conc.write_labelled('RAxML_bestTree.backbone_concat')
