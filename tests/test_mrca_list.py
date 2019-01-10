@@ -21,6 +21,7 @@ def test_mrca_list():
         os.makedirs("{}".format(workdir))
 
     conf = ConfigObj(configfi)
+    conf.blast_loc='remote' #saves time over loading names and nodes, and they aren't used here
     ids = IdDicts(conf, workdir=workdir, mrca=ingroup_mrca)
 
     # print(ids.mrca_ott, ids.mrca_ncbi)
