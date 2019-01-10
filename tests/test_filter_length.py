@@ -36,7 +36,7 @@ def test_filter_length():
     ids = IdDicts(conf, workdir=workdir)
 
     
-    otu_json = OtuJsonDict(id_to_spn, configfi)
+    otu_json = OtuJsonDict(id_to_spn, ids)
     if not os.path.exists(workdir):
        os.mkdir(workdir)
     json.dump(otu_json, open(otu_jsonfi, "w"))
