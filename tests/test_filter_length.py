@@ -1,6 +1,7 @@
 import os
 import json
 import sys
+import pickle
 from physcraper import wrappers, OtuJsonDict, ConfigObj, IdDicts, generate_ATT_from_files, FilterBlast
 #
 from pytest import mark
@@ -9,15 +10,11 @@ localblast = mark.localblast
 
 @localblast
 def test_filter_length():
-    seqaln = "tests/data/tiny_test_example/test.fas"
-    mattype = "fasta"
-    trfn = "tests/data/tiny_test_example/test.tre"
-    schema_trf = "newick"
-    id_to_spn = r"tests/data/tiny_test_example/test_nicespl.csv"
 
     workdir = "tests/output/test_selectbylength"
-    configfi = "tests/data/test.config"
-    otu_jsonfi = "{}/otu_dict.json".format(workdir)
+    absworkdir = os.path.abspath(workdir)
+    conf = ConfigObj("tests/data/test.config", interactive=False)
+    #conf.blast_loc='remote' #saves time over loading names and nodes, and they aren't used here
     threshold = 2
     selectby = "length"
     downtorank = "species"
@@ -27,60 +24,23 @@ def test_filter_length():
     id_to_spn_addseq_json=None
     ingroup_mrca=None
     shared_blast_folder=None
-
-
-    if not os.path.exists("{}".format(workdir)):
-        os.makedirs("{}".format(workdir))
-
-    conf = ConfigObj(configfi)
-    ids = IdDicts(conf, workdir=workdir)
-
-    
-    otu_json = OtuJsonDict(id_to_spn, ids)
-    if not os.path.exists(workdir):
-       os.mkdir(workdir)
-    json.dump(otu_json, open(otu_jsonfi, "w"))
-
-      
-#            sync_names()
-    sys.stdout.write("setting up Data Object\n")
-    sys.stdout.flush()
-    #read the config file into a configuration object
-    conf = ConfigObj(configfi)
-
-    #Generate an linked Alignment-Tree-Taxa object
-    data_obj = generate_ATT_from_files(seqaln=seqaln, 
-                                           mattype=mattype,
-                                           workdir=workdir,
-                                           config_obj=conf,
-                                           treefile=trfn,
-                                           schema_trf=schema_trf,
-                                           otu_json=otu_jsonfi,
-                                           ingroup_mrca=ingroup_mrca)
-
-    # Prune sequnces below a certain length threshold
-    # This is particularly important when using loci that have been de-concatenated,
-    # as some are 0 length which causes problems.
-    data_obj.prune_short()
-    data_obj.write_files()
-    data_obj.write_labelled(label="^ot:ottTaxonName", add_gb_id=True)
-    data_obj.write_otus("otu_info", schema="table")
-    data_obj.dump()
-    sys.stdout.write("setting up id dictionaries\n")
-    sys.stdout.flush()
-    ids = IdDicts(conf, workdir=workdir, mrca=ingroup_mrca)
+     
+    data_obj = pickle.load(open("tests/data/precooked/tiny_dataobj.p", 'rb'))
+    data_obj.workdir = absworkdir
+    ids = IdDicts(conf, workdir=data_obj.workdir)
+    ids.acc_ncbi_dict = pickle.load(open("tests/data/precooked/tiny_acc_map.p", "rb"))
 
     # Now combine the data, the ids, and the configuration into a single physcraper scrape object
     filteredScrape = FilterBlast(data_obj, ids)
     filteredScrape.add_setting_to_self(downtorank, threshold)
     filteredScrape.blacklist = blacklist
-   
+
     sys.stdout.write("BLASTing input sequences\n")
     if shared_blast_folder:
         filteredScrape.blast_subdir = shared_blast_folder
     else:
         shared_blast_folder = None
-    filteredScrape.run_blast_wrapper()
+    # filteredScrape.run_blast_wrapper()
     filteredScrape.read_blast_wrapper(blast_dir="tests/data/precooked/fixed/tte_blast_files")
     filteredScrape.remove_identical_seqs()
     filteredScrape.dump()
