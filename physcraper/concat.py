@@ -1352,9 +1352,6 @@ class Concat(object):
         import sys
 
         self.write_otu_info()
-        input_tr_fn = sys.argv[2]
-        input_workdir = sys.argv[1]
-
 
         otu_fn = "{}/otu_seq_info.csv".format(self.workdir)
         tr_fn = "{}/{}".format(self.workdir, tree_file)
