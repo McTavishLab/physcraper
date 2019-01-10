@@ -18,6 +18,6 @@ def test_config():
     else:
 		expected_keys = ['seq_len_perc', 'num_threads', 'phylesystem_loc', 'maxlen', 'hitlist_size', 'gb_id_filename', 'delay', 'unmapped', 'trim_perc', 'url_base', 'ott_ncbi', 'blast_loc', 'id_pickle', 'email', 'e_value_thresh']
 
-    assert conf.email == 'ejmctavish@gmail.com'
+    assert len(conf.email.split("@")) == 2
     assert conf.url_base == None
     assert conf.__dict__.keys() == expected_keys
