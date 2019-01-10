@@ -576,7 +576,7 @@ def OtuJsonDict(id_to_spn, id_dict):
     using web to call Open tree, then ncbi if not found.
 
     :param id_to_spn: user file, that contains tip name and corresponding sp name for input files.
-    :param id_dict: uses the id_dict generates earlier
+    :param id_dict: uses the id_dict generated earlier
     :return: dictionary with key: "otu_tiplabel" and value is another dict with the keys '^ncbi:taxon',
                                                     '^ot:ottTaxonName', '^ot:ottId', '^ot:originalLabel',
                                                     '^user:TaxonName', '^physcraper:status', '^physcraper:last_blasted'
@@ -1310,8 +1310,8 @@ class IdDicts(object):
         elif ott_id in self.ott_to_name:
             ott_name = self.ott_to_name[ott_id]
             if self.config.blast_loc == "remote":
-                self.get_rank_info_from_web(ott_name)
-                ncbi_id = self.otu_rank[ott_name]["taxon id"]
+                ncbi_id = self.get_rank_info_from_web(ott_name)
+                # ncbi_id = self.otu_rank[ott_name]["taxon id"]
             else:
                 ncbi_id = self.ncbi_parser.get_id_from_name(ott_name)
         else:  # with new ncbi taxa there might be no match in ott_to_ncbi
@@ -1390,7 +1390,7 @@ class IdDicts(object):
                 assert type(ncbi_id) is int
                 self.otu_rank[ncbi_id] = \
                     {"taxon id": ncbi_id, "lineage": lineage, "rank": lineage2ranks, "taxon name": tax_name}
-        return tax_name
+        return ncbi_id
 
     def find_tax_id(self, otu_dict_entry=None, acc=None):
         """ Find the taxon id in the  otu_dict entry or of a Genbank accession number if no name is given.
@@ -1533,8 +1533,8 @@ class IdDicts(object):
             tax_name = self.find_name(acc=gb_id)
             if self.config.blast_loc == "remote":
                 try:
-                    self.get_rank_info_from_web(taxon_name=tax_name)
-                    tax_id = self.otu_rank[tax_name]["taxon id"]
+                    tax_id = self.get_rank_info_from_web(taxon_name=tax_name)
+                    # tax_id = self.otu_rank[tax_name]["taxon id"]
                 except IndexError:  # get id via genbank query xref in description
                     read_handle = self.entrez_efetch(gb_id)
                     tax_name = get_ncbi_tax_name(read_handle)
@@ -2090,8 +2090,8 @@ class PhyscraperScrape(object):
             self.ids.ott_to_name[ottid] = spn_of_label
         else:
             if self.config.blast_loc == "remote":
-                self.ids.get_rank_info_from_web(taxon_name=spn_of_label)
-                id_of_label = self.ids.otu_rank[spn_of_label]["taxon id"]
+                id_of_label = self.ids.get_rank_info_from_web(taxon_name=spn_of_label)
+                # id_of_label = self.ids.otu_rank[spn_of_label]["taxon id"]
             else:
                 id_of_label = self.ids.ncbi_parser.get_id_from_name(spn_of_label)
             self.ids.spn_to_ncbiid[spn_of_label] = id_of_label
@@ -2877,8 +2877,10 @@ class FilterBlast(PhyscraperScrape):
                             debug(gb_id)
                         if gb_id in self.ids.acc_ncbi_dict:
                             tax_id = self.ids.acc_ncbi_dict[gb_id]
-                    tax_name = self.ids.get_rank_info_from_web(taxon_name=tax_name)
-                    tax_id = self.ids.otu_rank[tax_name]["taxon id"]
+                    tax_id = self.ids.get_rank_info_from_web(taxon_name=tax_name)
+                    print(tax_name)
+                    print(self.ids.otu_rank.keys())
+                    # tax_id = self.ids.otu_rank[tax_name]["taxon id"]
                 else:
                     try:
                         tax_id = self.ids.ncbi_parser.get_id_from_name(tax_name)
@@ -2898,7 +2900,7 @@ class FilterBlast(PhyscraperScrape):
                     downtorank_name = None
                     downtorank_id = None
                     if self.config.blast_loc == 'remote':
-                        tax_name = self.ids.get_rank_info_from_web(taxon_name=tax_name)
+                        tax_id = self.ids.get_rank_info_from_web(taxon_name=tax_name)
                         lineage2ranks = self.ids.otu_rank[str(tax_name).replace(" ", "_")]["rank"]
                         ncbi = NCBITaxa()
                         if lineage2ranks == 'unassigned':
