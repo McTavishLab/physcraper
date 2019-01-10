@@ -15,6 +15,11 @@ selectby = "blast"
 downtorank = None
 absworkdir = os.path.abspath(workdir)
 
+from pytest import mark
+
+localblast = mark.localblast
+
+@localblast
 def test_loop_for_write_blast_files():
     conf = ConfigObj(configfi, interactive=False)
     data_obj = pickle.load(open("tests/data/precooked/tiny_dataobj.p", 'rb'))
