@@ -13,6 +13,8 @@ sys.stdout.write("Running test remove_identical_seqs\n\n")
 workdir = "tests/data/tmp/owndata"
 absworkdir = os.path.abspath(workdir)
 conf = ConfigObj("tests/data/test.config", interactive=False)
+conf.blast_loc='remote' #saves time over loading names and nodes, and they aren't used here
+
 
 def test_remove_identical_seqs():
     data_obj = pickle.load(open("tests/data/precooked/tiny_dataobj.p", 'rb'))
@@ -22,7 +24,6 @@ def test_remove_identical_seqs():
 
     print("start")
     scraper = PhyscraperScrape(data_obj, ids)
-    scraper.config.blast_loc = 'remote'
     scraper.ids.otu_rank = {}
     scraper.config.gifilename = False
 
@@ -52,7 +53,6 @@ def test_remove_identical_seqs():
     data_obj = pickle.load(open("tests/data/precooked/tiny_dataobj.p", 'rb')) #reload bc data object is mutable
     data_obj.workdir = absworkdir
     scraper2 = PhyscraperScrape(data_obj, ids)
-    scraper2.config.blast_loc = 'remote'
     scraper2.ids.otu_rank = {}
 
     scraper2.config.gifilename = False
