@@ -282,7 +282,6 @@ class ConfigObj(object):
                     elif x == "no":
                         print(
                             "You did not agree to download data from ncbi. Program will default to blast web-queries.")
-                        print("This is slow and crashes regularly!")
                         self.blast_loc = "remote"
                     else:
                         print("You did not type yes or no!")
