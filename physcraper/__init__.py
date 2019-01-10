@@ -3187,7 +3187,7 @@ class FilterBlast(PhyscraperScrape):
                 if item_split == "original":
                     original += 1
                     new_taxon = False
-		#if item_split == "added," or item_split == "original":
+        # if item_split == "added," or item_split == "original":
         count_dict = {
             "seq_present": seq_added + original,
             "query_count": query_count,
