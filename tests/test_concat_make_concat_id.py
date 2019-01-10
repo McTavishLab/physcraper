@@ -15,10 +15,11 @@ genelist = {"its": {"workdir": workdir_its, "pickle": "its_{}".format(pickle_fn)
 from pytest import mark
 # you can actually do whatever
 # ruftrum = mark.ruftrum will work and create a "ruftrum" test. 
-concat = mark.concat
+localblast = mark.localblast
 
 
-@concat
+
+@localblast
 def test():
 
     concat = Concat(workdir_comb, email)

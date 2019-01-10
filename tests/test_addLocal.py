@@ -3,6 +3,11 @@ import os
 import json
 import sys
 import pickle
+from pytest import mark
+
+localblast = mark.localblast
+
+
 
 #################################
 
@@ -30,6 +35,7 @@ id_to_spn_addseq = "tests/data/tipnTOspn_localAdd.csv"
 
 
 
+@localblast
 def test_add_local():
     conf = ConfigObj(configfi, interactive=False)
     data_obj = pickle.load(open("tests/data/precooked/tiny_dataobj.p", 'rb'))
