@@ -68,8 +68,8 @@ def load_ids_obj(conf, workdir):
     else:
         sys.stdout.write("setting up ID dictionaries\n")
         sys.stdout.flush()
-        ids = IdDicts(conf, workdir=workdir)
-        ids.dump(workdir)
+        ids = IdDicts(conf, "{}/id_pickle.p".format(workdir))
+        ids.dump("{}/id_pickle.p".format(workdir))
     return ids
 
 
@@ -122,13 +122,15 @@ def make_otujsondict(id_to_spn, workdir, ids):
     :param ids: physcraper Id object
     :return: otu dict as json file
     """
+    workdir = os.path.abspath(workdir)
     otu_jsonfi = "{}/otu_dict.json".format(workdir)
 
     if os.path.exists(otu_jsonfi):
         otu_json = json.load(open(otu_jsonfi))
     else:
         otu_json = OtuJsonDict(id_to_spn, ids)
-        json.dump(otu_json, open(otu_jsonfi, "w"))
+        with open('{}/otu_dict.json'.format(workdir), 'wb') as outfile:
+            json.dump(otu_json, outfile)
 
 
 def load_own_data(conf, seqaln, mattype, trfn, schema_trf, workdir, ingroup_mrca):
@@ -337,6 +339,8 @@ def standard_run(study_id,
                                 give the path to the folder with the shared runs.
     """
     debug("Debugging mode is on")
+    if not os.path.exists(workdir):
+        os.mkdir(workdir)
     conf = ConfigObj(configfi)
     data_obj = load_otol_data(conf, ingroup_mrca, mattype, seqaln, study_id, tree_id, workdir)
     # Mapping identifiers between OpenTree and NCBI requires an identifier dict object
@@ -373,6 +377,8 @@ def own_data_run(seqaln,
     """
 
     debug("Debugging mode is on")
+    if not os.path.exists(workdir):
+        os.mkdir(workdir)
     conf = ConfigObj(configfi)
     ids = load_ids_obj(conf, workdir)
 
@@ -404,6 +410,8 @@ def filter_OTOL(study_id,
 
     This uses the FilterBlast subclass to be able to filter the blast output using data from OToL."""
     debug("Debugging mode is on")
+    if not os.path.exists(workdir):
+        os.mkdir(workdir)
     # read the config file into a configuration object
     conf = ConfigObj(configfi)
     # Generate an linked Alignment-Tree-Taxa object
@@ -436,6 +444,8 @@ def filter_data_run(seqaln,
     This uses the FilterBlast subclass to be able to filter the blast output.
     """
     debug("Debugging mode is on")
+    if not os.path.exists(workdir):
+        os.mkdir(workdir)
     conf = ConfigObj(configfi)
     ids = load_ids_obj(conf, workdir)
 
@@ -488,6 +498,7 @@ def concat(genelistdict, workdir_comb, email, num_threads=None, percentage=0.37,
     """
     if not os.path.exists(path="{}/concat_checkpoint.p".format(workdir_comb)):
         if not os.path.exists(path="{}/load_single_data.p".format(workdir_comb)):
+            save_copy_code(workdir_comb)
             conc = Concat(workdir_comb, email)
             conc.concatfile = user_concat_fn
             for item in genelistdict.keys():
@@ -497,7 +508,6 @@ def concat(genelistdict, workdir_comb, email, num_threads=None, percentage=0.37,
             sys.stdout.write("load single data dump file\n")
             conc = pickle.load(open("{}/load_single_data.p".format(workdir_comb), "rb"))
             # conc.dump()
-        
         conc.sp_seq_counter()
         conc.get_largest_tre()
         conc.make_sp_gene_dict()
@@ -510,18 +520,17 @@ def concat(genelistdict, workdir_comb, email, num_threads=None, percentage=0.37,
         sys.stdout.write("load concat_checkpoint dump file\n")
         conc = pickle.load(open("{}/concat_checkpoint.p".format(workdir_comb), "rb")) 
     conc.backbone = backbone
-    
     conc.make_concat_table()
     conc.write_partition()
+    conc.write_otu_info()
     conc.place_new_seqs(num_threads)
-
-    conc.est_full_tree(num_threads)
+    
     if backbone is False:
         conc.calculate_bootstrap(num_threads)
-    conc.write_otu_info()
-
-    save_copy_code(workdir_comb)
-
+        conc.write_labelled('RAxML_bestTree.autoMRE_fa')
+    else:
+        conc.est_full_tree(num_threads)
+        conc.write_labelled('RAxML_bestTree.backbone_concat')
     return conc
 
 

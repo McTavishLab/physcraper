@@ -26,7 +26,7 @@ def pytest_collection_modifyitems(config, items):
     for item in items:
         if "slow" in item.keywords and not runslow:
             item.add_marker(skip_slow)
-        if "concat" in item.keywords and not runconcat:
+        if "concat" in item.keywords and runconcat:
             item.add_marker(skip_concat)
         # if "concatfull" in item.keywords and not runconcatfull:
         #     item.add_marker(skip_concat_full)

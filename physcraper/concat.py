@@ -270,10 +270,13 @@ class Concat(object):
         data = self.single_runs[genename].otu_dict[otu]
         seq = str(self.single_runs[genename].aln[otu])
         tax_id = None
+        spn = None
         # only add the information of sequences that were added
         if data['^physcraper:status'].split(' ')[0] not in self.seq_filter:
             if '^ncbi:taxon' in data:
                 tax_id = "taxid_{}".format(data['^ncbi:taxon'])
+                if '^physcraper:TaxonName' in data:
+                    spn = data['^physcraper:TaxonName']
             if tax_id is None or tax_id == "taxid_None":
                 tn = data['^user:TaxonName'].replace("_", "").replace(" ", "")
                 # physcraper.debug(tn)
@@ -301,6 +304,8 @@ class Concat(object):
                     "original_PS_id": otu,
                     "concat:status": "single run",
                 }
+                if spn:
+                    concat_dict["spn"] = spn
                 self.sp_acc_comb[tax_id][genename][concat_id] = concat_dict
             else:
                 self.ld("make_concat_id_dict")
@@ -1313,3 +1318,35 @@ class Concat(object):
                                 rowinfo_details.append("-")
                         # physcraper.debug(rowinfo_details)
                         writer.writerow(rowinfo_details)
+
+    def write_labelled(self, tree_file):
+
+        import pandas as pd
+        import sys
+
+        self.write_otu_info()
+        input_tr_fn = sys.argv[2]
+        input_workdir = sys.argv[1]
+
+
+        otu_fn = "{}/otu_seq_info.csv".format(self.workdir)
+        tr_fn = "{}/{}".format(self.workdir, tree_file)
+        # ######
+        otu_info =  pd.read_csv(otu_fn, sep=',', header=None, index_col=False,
+                             names=["gene", "spn", "unique_id", "sp_id", 
+                             "original_PS_id", "concat:status"
+                             ])
+        
+        with open(tr_fn, "r") as label_new:
+            new_tree = label_new.read()
+            print(new_tree)
+            with open("{}_relabel".format(tr_fn), "wt") as fout:
+                for index, row in otu_info.iterrows():
+                    print(row['unique_id'])
+                    ident = row['spn']
+                    if ident == "-":
+                        ident = "{}_{}".format(row["unique_id"] )
+
+                    new_tree = new_tree.replace("{}:".format(row['sp_id']), "{}".format(ident))
+
+                fout.write(new_tree)

@@ -1544,11 +1544,11 @@ class IdDicts(object):
             self.spn_to_ncbiid[tax_name] = tax_id
         return tax_id
 
-    def dump(self, workdir, filename=None):
+    def dump(self, filename=None):
         if filename:
             ofi = open(filename, "wb")
         else:
-            ofi = open("{}/id_pickle.p".format(workdir, filename), "wb")
+            ofi = open("id_pickle.p", "wb")
         pickle.dump(self, ofi)
 
 
