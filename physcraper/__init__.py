@@ -2595,7 +2595,7 @@ class PhyscraperScrape(object):
         # this checks if actual several cores and nodes were allocated
         ntasks = os.environ.get('SLURM_NTASKS_PER_NODE')
         nnodes = os.environ.get("SLURM_JOB_NUM_NODES")
-        env_var = int(nnodes) * int(ntasks)
+        # env_var = int(nnodes) * int(ntasks)
         #print(os.getcwd())    
         mpi = False
         if nnodes is not None and ntasks is not None:
@@ -2983,7 +2983,7 @@ class FilterBlast(PhyscraperScrape):
                             aln_tip_id = self.get_sp_id_of_otulabel(alntipname.label)
                             #if tax_name == otu_dict_label:
                             if tax_id == aln_tip_id:
-                                debug(tax_id, aln_tip_id)
+                                debug([tax_id, aln_tip_id])
                                 seq = seq.symbols_as_string().replace("-", "")
                                 seq = seq.replace("?", "")
                                 seq_d[alntipname.label] = seq
