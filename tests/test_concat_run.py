@@ -72,7 +72,7 @@ def test_concat_combine():
 
 @mark.order2
 def test_run_raxml_concat():
-	time.sleep(10)
+	time.sleep(20)  # needs time so that file of order1 is written before
 	workdir_its = "tests/data/precooked/concat_pre"
 	workdir_ets = "tests/data/precooked/concat_pre"
 	email = "martha.kandziora@yahoo.com"
