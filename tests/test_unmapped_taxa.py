@@ -69,8 +69,8 @@ def test_0():
     conf.unmapped = 'remove'
 
 
-    # data_obj = pickle.load(open("tests/data/precooked/otol_tiny_dataobj.p", 'rb'))
-    # data_obj.workdir = absworkdir
+    data_obj = pickle.load(open("tests/data/precooked/otol_tiny_dataobj.p", 'rb'))
+    data_obj.workdir = absworkdir
 
     ids = physcraper.IdDicts(conf, workdir=data_obj.workdir)
 
