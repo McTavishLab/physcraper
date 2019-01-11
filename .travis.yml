@@ -41,7 +41,7 @@ before_install:
 
   #### needed for mpi4py which is in requirements
   #- sudo apt install libopenmpi-dev
-
+  - brew install mpich
 
 install:
   # install requirements of physcraper
