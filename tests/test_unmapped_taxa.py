@@ -47,6 +47,8 @@ def test_0():
                                     tree_id = tree_id,
                                     phylesystem_loc = conf.phylesystem_loc)
         # physcraper.debug(len(data_obj.aln.taxon_namespace))
+        data_obj.workdir = absworkdir
+
         pickle.dump(data_obj, open("tests/data/precooked/otol_tiny_dataobj.p", "wb" ))
         ids =  physcraper.IdDicts(conf, workdir=workdir)
         # physcraper.debug(os.getcwd())
@@ -67,8 +69,8 @@ def test_0():
     conf.unmapped = 'remove'
 
 
-    data_obj = pickle.load(open("tests/data/precooked/otol_tiny_dataobj.p", 'rb'))
-    data_obj.workdir = absworkdir
+    # data_obj = pickle.load(open("tests/data/precooked/otol_tiny_dataobj.p", 'rb'))
+    # data_obj.workdir = absworkdir
 
     ids = physcraper.IdDicts(conf, workdir=data_obj.workdir)
 

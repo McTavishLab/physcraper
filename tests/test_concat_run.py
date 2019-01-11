@@ -128,10 +128,11 @@ def test_run_raxml_concat():
 	conc.make_concat_table()
 	conc.write_partition()
 	conc.write_otu_info()
-	conc.place_new_seqs(num_threads)
 	if conc.backbone is False:
 		conc.calculate_bootstrap(num_threads)
 		conc.write_labelled('RAxML_bestTree.autoMRE_fa')
 	else:
 		conc.est_full_tree(num_threads)
 		conc.write_labelled('RAxML_bestTree.backbone_concat')
+	conc.backbone = False
+	conc.place_new_seqs(num_threads)
