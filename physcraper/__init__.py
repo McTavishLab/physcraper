@@ -2531,38 +2531,41 @@ class PhyscraperScrape(object):
         The PTHREAD version is the faster one, hopefully people install it. if not it falls back to the normal raxml.
         the backbone options allows to fix the sceleton of the starting tree and just newly estimates the other parts.
         """
-        with cd(self.workdir):
-            for filename in glob.glob('{}/RAxML*'.format(self.workdir)):
-                os.rename(filename, "{}/{}_tmp".format(self.workdir, filename.split("/")[-1]))
-            try:
-                num_threads = int(self.config.num_threads)
-                if self.backbone is not True:
-                    subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(num_threads), "-m", "GTRCAT",
-                                     "-s", "{}/papara_alignment.extended".format(path),
-                                     "-t", "place_resolve.tre",
-                                     "-p", "1",
-                                     "-n", "{}".format(self.date)])
-                else:
-                    subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(num_threads), "-m", "GTRCAT",
-                                     "-s", "{}/papara_alignment.extended".format(path),
-                                     "-r", "backbone.tre",
-                                     "-p", "1",
-                                     "-n", "{}".format(self.date)])
-            except:
-                sys.stderr.write("You do not have the raxmlHPC-PTHREADS installed, will fall down to slow version!")
+        debug("est full tree")
+        cwd = os.getcwd()
+        os.chdir(self.workdir)
+        for filename in glob.glob('{}/RAxML*'.format(self.workdir)):
+            os.rename(filename, "{}/{}_tmp".format(self.workdir, filename.split("/")[-1]))
+        try:
+            num_threads = int(self.config.num_threads)
+            if self.backbone is not True:
+                subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(num_threads), "-m", "GTRCAT",
+                                 "-s", "{}/papara_alignment.extended".format(path),
+                                 "-t", "place_resolve.tre",
+                                 "-p", "1",
+                                 "-n", "{}".format(self.date)])
+            else:
+                subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(num_threads), "-m", "GTRCAT",
+                                 "-s", "{}/papara_alignment.extended".format(path),
+                                 "-r", "backbone.tre",
+                                 "-p", "1",
+                                 "-n", "{}".format(self.date)])
+        except:
+            sys.stderr.write("You do not have the raxmlHPC-PTHREADS installed, will fall down to slow version!")
 
-                if self.backbone is not True:
-                    subprocess.call(["raxmlHPC", "-m", "GTRCAT",
-                                     "-s", "{}/papara_alignment.extended".format(path),
-                                     "-t", "place_resolve.tre",
-                                     "-p", "1",
-                                     "-n", "{}".format(self.date)])
-                else:
-                    subprocess.call(["raxmlHPC", "-m", "GTRCAT",
-                                     "-s", "{}/papara_alignment.extended".format(path),
-                                     "-r", "backbone.tre",
-                                     "-p", "1",
-                                     "-n", "{}".format(self.date)])
+            if self.backbone is not True:
+                subprocess.call(["raxmlHPC", "-m", "GTRCAT",
+                                 "-s", "{}/papara_alignment.extended".format(path),
+                                 "-t", "place_resolve.tre",
+                                 "-p", "1",
+                                 "-n", "{}".format(self.date)])
+            else:
+                subprocess.call(["raxmlHPC", "-m", "GTRCAT",
+                                 "-s", "{}/papara_alignment.extended".format(path),
+                                 "-r", "backbone.tre",
+                                 "-p", "1",
+                                 "-n", "{}".format(self.date)])
+        os.chdir(cwd)
         self._full_tree_est = 1
 
     def calculate_bootstrap(self):
