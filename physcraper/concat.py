@@ -10,6 +10,7 @@ import csv
 import pickle
 import random
 import dendropy
+import contextlib
 
 from mpi4py import MPI
 from copy import deepcopy
