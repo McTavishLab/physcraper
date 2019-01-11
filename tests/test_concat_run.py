@@ -8,8 +8,8 @@ from physcraper.concat import Concat
 from pytest import mark
 # you can actually do whatever
 # ruftrum = mark.ruftrum will work and create a "ruftrum" test. 
-# concatfull = mark.concatfull
-
+travisonly = mark.travisonly
+notravis = mark.notravis
 
 
 # @concatfull
@@ -72,7 +72,7 @@ def test_concat_combine():
 
 @mark.order2
 def test_run_raxml_concat():
-	time.sleep(20)  # needs time so that file of order1 is written before
+	time.sleep(10)  # needs time so that file of order1 is written before
 	workdir_its = "tests/data/precooked/concat_pre"
 	workdir_ets = "tests/data/precooked/concat_pre"
 	email = "martha.kandziora@yahoo.com"
@@ -85,6 +85,45 @@ def test_run_raxml_concat():
 	        "ets": {"workdir": workdir_ets, "pickle": "ets_{}".format(pickle_fn)}}
 	conc = pickle.load(open("{}/concat_checkpoint.p".format(workdir_comb), "rb")) 
 	conc.backbone = True
+	conc.make_concat_table()
+	conc.write_partition()
+	conc.write_otu_info()
+	conc.place_new_seqs(num_threads)
+	if conc.backbone is False:
+		conc.calculate_bootstrap(num_threads)
+		conc.write_labelled('RAxML_bestTree.autoMRE_fa')
+	else:
+		conc.est_full_tree(num_threads)
+		conc.write_labelled('RAxML_bestTree.backbone_concat')
+
+
+@travisonly
+@notravis
+def test_run_raxml_concat():
+	time.sleep(10)  # needs time so that file of order1 is written before
+	workdir_its = "tests/data/precooked/concat_pre"
+	workdir_ets = "tests/data/precooked/concat_pre"
+	email = "martha.kandziora@yahoo.com"
+	pickle_fn = "final_ATT_checkpoint.p"
+	email = "mk@xy.zt"
+	percentage = 0.4
+	num_threads = 2
+	workdir_comb = "./tests/output/concat_test"
+	genelistdict = {"its": {"workdir": workdir_its, "pickle": "its_{}".format(pickle_fn)}, 
+	        "ets": {"workdir": workdir_ets, "pickle": "ets_{}".format(pickle_fn)}}
+	conc = Concat(workdir_comb, email)
+	for item in genelistdict.keys():
+	    conc.load_single_genes(genelistdict[item]["workdir"], genelistdict[item]["pickle"], item)
+	conc.combine()
+	assert os.path.exists("{}/load_single_data.p".format(workdir_comb))
+	conc.sp_seq_counter()
+	conc.get_largest_tre()
+	assert conc.tre_start_gene == "ets"
+	conc.make_sp_gene_dict()
+	conc.make_alns_dict()
+	conc.concatenate_alns()
+	conc.get_short_seq_from_concat(percentage)
+	conc.remove_short_seq()conc.backbone = True
 	conc.make_concat_table()
 	conc.write_partition()
 	conc.write_otu_info()

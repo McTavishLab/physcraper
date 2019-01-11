@@ -12,6 +12,10 @@ def pytest_addoption(parser):
         help="run web tests")
     parser.addoption("--nolocalblast", action="store_true",
         help="do not run tests that rely on blast db download")
+    parser.addoption("--travisonly", action="store_true",
+        help="run travisonly tests")
+    parser.addoption("--notravis", action="store_true",
+        help="don't run notravis tests")
 
 
 def pytest_collection_modifyitems(config, items):
@@ -19,6 +23,8 @@ def pytest_collection_modifyitems(config, items):
     runconcat = config.getoption("--runconcat")
     runweb = config.getoption("--runweb")
     nolocalblast = config.getoption("--nolocalblast")
+    travisonly = config.getoption("--travisonly")
+    notravis = config.getoption("--notravis")
 
     skip_slow = pytest.mark.skip(reason="need --runslow option to run")
     skip_concat = pytest.mark.skip(reason="need --runconcat option to run")
@@ -38,4 +44,6 @@ def pytest_collection_modifyitems(config, items):
         #elif "fast" not in item.keywords:
         #    item.add_marker(skip_test)
         if "localblast" in item.keywords and nolocalblast:
+            item.add_marker(skip_localblast)
+        if "travis" in item.keywords and not travisonly:
             item.add_marker(skip_localblast)
