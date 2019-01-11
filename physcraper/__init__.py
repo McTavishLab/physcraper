@@ -403,18 +403,6 @@ def generate_ATT_from_phylesystem(aln,
     for tax in aln.taxon_namespace:
         tax.label = tax.label.replace(" ", "_")  # Forcing all spaces to underscore
     nexson = get_nexson(study_id, phylesystem_loc)
-    ott_ids = get_subtree_otus(nexson,
-                               tree_id=tree_id,
-                               subtree_id="ingroup",
-                               return_format="ottid")
-    if ingroup_mrca:
-        if type(ingroup_mrca) == list:
-            ott_ids = set(ingroup_mrca)
-            ott_mrca = get_mrca_ott(ott_ids)
-        else:
-            ott_mrca = int(ingroup_mrca)
-    else:
-        ott_mrca = get_mrca_ott(ott_ids)
     newick = extract_tree(nexson,
                           tree_id,
                           PhyloSchema('newick',
@@ -449,6 +437,20 @@ def generate_ATT_from_phylesystem(aln,
                                  "This may indicate a mismatch between tree and alignment\n".format(tax.label))
     # need to prune tree to seqs and seqs to tree...
     otu_newick = tre.as_string(schema="newick")
+    ott_ids = get_subtree_otus(nexson,
+                               tree_id=tree_id,
+                               subtree_id="ingroup",
+                               return_format="ottid")
+    if ingroup_mrca:
+        if type(ingroup_mrca) == list:
+            ott_ids = set(ingroup_mrca)
+            ott_mrca = get_mrca_ott(ott_ids)
+        else:
+            ott_mrca = int(ingroup_mrca)
+    elif ott_ids: #if no ingroup is specified, ott_ids will be none
+        ott_mrca = get_mrca_ott(ott_ids)
+    else: # just get the mrca for teh whole tree
+        ott_mrca = get_mrca_ott([otu_dict[otu_id].get(u"^ot:ottId") for otu_id in otu_dict])
     workdir = os.path.abspath(workdir)
     return AlignTreeTax(otu_newick, otu_dict, aln, ingroup_mrca=ott_mrca, workdir=workdir, config_obj=config_obj)
     # newick should be bare, but alignment should be DNACharacterMatrix
