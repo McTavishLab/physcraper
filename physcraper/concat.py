@@ -1101,8 +1101,8 @@ class Concat(object):
 
         ntasks = os.environ.get('SLURM_NTASKS_PER_NODE')
         nnodes = os.environ.get("SLURM_JOB_NUM_NODES")
-        env_var = int(nnodes) * int(ntasks)
-        #print(os.getcwd())    
+        # env_var = int(nnodes) * int(ntasks)
+        # print(os.getcwd())    
         mpi = False
         if nnodes is not None and ntasks is not None:
             env_var = int(nnodes) * int(ntasks)
