@@ -73,6 +73,21 @@ def log_debug(text, wd):
     log_dict2[wd].debug(text)
 
 
+@contextlib.contextmanager
+def cd(path):
+    # print 'initially inside {0}'.format(os.getcwd())
+    CWD = os.getcwd()
+    os.chdir(path)
+    # print 'inside {0}'.format(os.getcwd())
+    try:
+        yield
+    except:
+        print('Exception caught: ', sys.exc_info()[0])
+    finally:
+        # print 'finally inside {0}'.format(os.getcwd())
+        os.chdir(CWD)
+
+
 """Code used to concatenate different single PhyScraper runs into a concatenated one.
 """
 
@@ -951,7 +966,7 @@ class Concat(object):
             if len(self.concatenated_aln.taxon_namespace)-len(self.short_concat_seq) > len(self.tre_as_start.leaf_nodes()):
                 if os.path.exists("RAxML_labelledTree.PLACE"):
                     os.rename("RAxML_labelledTree.PLACE", "RAxML_labelledTreePLACE.tmp")
-                with physcraper.cd(self.workdir):
+                with cd(self.workdir):
                     # cwd = os.getcwd()
                     # os.chdir(self.workdir)
                     self.ld("make place-tree")
@@ -1004,53 +1019,56 @@ class Concat(object):
         """Full raxml run from the placement tree as starting tree.
         """
         self.li("run full tree")
-        with physcraper.cd(self.workdir):
-            self.ld(os.path.exists("place_resolve.tre"))
-            if os.path.exists("place_resolve.tre"):
-                starting_fn = "place_resolve.tre"
+        # with physcraper.cd(self.workdir):
+        cwd = os.getcwd()
+        os.chdir(self.workdir)
+        self.ld(os.path.exists("place_resolve.tre"))
+        if os.path.exists("place_resolve.tre"):
+            starting_fn = "place_resolve.tre"
+        else:
+            starting_fn = "starting_red.tre"
+        if os.path.exists("concat_red_nogap.fas.reduced") and os.path.exists("partition.reduced"):
+            aln = "concat_red_nogap.fas.reduced"
+            partition = "partition.reduced"
+        else:
+            aln = "concat_red_nogap.fas"
+            partition = "partition"
+        self.ld([aln, starting_fn])
+        try:
+            self.ld("try")
+            num_threads = int(num_threads)
+            if self.backbone is not True:
+                print("no backbone")
+                subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(num_threads), "-m", "GTRCAT",
+                                 "-s", aln, "--print-identical-sequences",
+                                 "-t", "{}".format(starting_fn),
+                                 "-p", "1", "-q", partition,
+                                 "-n", "concat"])
+            else:
+                self.ld("backbone")
+                # -r constraint tree
+                starting_fn = "starting_red.tre"
+                subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(num_threads), "-m", "GTRCAT",
+                                 "-s", aln, "--print-identical-sequences",
+                                 "-r", "{}".format(starting_fn),
+                                 "-p", "1", "-q", partition,
+                                 "-n", "backbone_concat"])
+        except:
+            self.ld("except")
+            if self.backbone is not True:
+                subprocess.call(["raxmlHPC", "-m", "GTRCAT",
+                                 "-s", aln, "--print-identical-sequences",
+                                 "-t", "{}".format(starting_fn),
+                                 "-p", "1", "-q", partition,
+                                 "-n", "concat"])
             else:
                 starting_fn = "starting_red.tre"
-            if os.path.exists("concat_red_nogap.fas.reduced") and os.path.exists("partition.reduced"):
-                aln = "concat_red_nogap.fas.reduced"
-                partition = "partition.reduced"
-            else:
-                aln = "concat_red_nogap.fas"
-                partition = "partition"
-            self.ld([aln, starting_fn])
-            try:
-                "try"
-                num_threads = int(num_threads)
-                if self.backbone is not True:
-                    print("no backbone")
-                    subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(num_threads), "-m", "GTRCAT",
-                                     "-s", aln, "--print-identical-sequences",
-                                     "-t", "{}".format(starting_fn),
-                                     "-p", "1", "-q", partition,
-                                     "-n", "concat"])
-                else:
-                    "backbone"
-                    # -r constraint tree
-                    starting_fn = "starting_red.tre"
-                    subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(num_threads), "-m", "GTRCAT",
-                                     "-s", aln, "--print-identical-sequences",
-                                     "-r", "{}".format(starting_fn),
-                                     "-p", "1", "-q", partition,
-                                     "-n", "backbone_concat"])
-            except:
-                print("except")
-                if self.backbone is not True:
-                    subprocess.call(["raxmlHPC", "-m", "GTRCAT",
-                                     "-s", aln, "--print-identical-sequences",
-                                     "-t", "{}".format(starting_fn),
-                                     "-p", "1", "-q", partition,
-                                     "-n", "concat"])
-                else:
-                    starting_fn = "starting_red.tre"
-                    subprocess.call(["raxmlHPC", "-m", "GTRCAT",
-                                     "-s", aln, "--print-identical-sequences",
-                                     "-r", "{}".format(starting_fn),
-                                     "-p", "1", "-q", partition,
-                                     "-n", "backbone_concat"])
+                subprocess.call(["raxmlHPC", "-m", "GTRCAT",
+                                 "-s", aln, "--print-identical-sequences",
+                                 "-r", "{}".format(starting_fn),
+                                 "-p", "1", "-q", partition,
+                                 "-n", "backbone_concat"])
+        os.chdir(cwd)
 
     def calculate_bootstrap(self, num_threads=None):
         """Calculate bootstrap and consensus trees.
@@ -1062,78 +1080,81 @@ class Concat(object):
         -#: bootstrap stopping criteria
         """
         self.li("calc bootstrap")
-        with physcraper.cd(self.workdir):
-            if os.path.exists("concat_red_nogap.fas.reduced"):
-                aln = "concat_red_nogap.fas.reduced"
-                partition = "partition.reduced"
-            else:
-                aln = "concat_red_nogap.fas"
-                partition = "partition"
-            if os.path.exists("place_resolve.tre"):
-                starting_fn = "place_resolve.tre"
-            else:
-                starting_fn = "starting_red.tre"
-            # run bootstrap
-            # make bipartition tree
-            # is the -f b command
-            # -z specifies file with multiple trees
+        # with physcraper.cd(self.workdir):
+        cwd = os.getcwd()
+        os.chdir(self.workdir)
+        if os.path.exists("concat_red_nogap.fas.reduced"):
+            aln = "concat_red_nogap.fas.reduced"
+            partition = "partition.reduced"
+        else:
+            aln = "concat_red_nogap.fas"
+            partition = "partition"
+        if os.path.exists("place_resolve.tre"):
+            starting_fn = "place_resolve.tre"
+        else:
+            starting_fn = "starting_red.tre"
+        # run bootstrap
+        # make bipartition tree
+        # is the -f b command
+        # -z specifies file with multiple trees
 
-            ntasks = os.environ.get('SLURM_NTASKS_PER_NODE')
-            nnodes = os.environ.get("SLURM_JOB_NUM_NODES")
+        ntasks = os.environ.get('SLURM_NTASKS_PER_NODE')
+        nnodes = os.environ.get("SLURM_JOB_NUM_NODES")
+        env_var = int(nnodes) * int(ntasks)
+        #print(os.getcwd())    
+        mpi = False
+        if nnodes is not None and ntasks is not None:
             env_var = int(nnodes) * int(ntasks)
-            #print(os.getcwd())    
-            mpi = False
-            if nnodes is not None and ntasks is not None:
-                env_var = int(nnodes) * int(ntasks)
-                mpi = True
-            if mpi:
-                print("run with mpi")
-                subprocess.call(["mpiexec", "-n", "{}".format(env_var), "raxmlHPC-MPI-AVX2", 
-                                 "-m", "GTRCAT",
-                                 "-s", aln, "-q", partition,  "-t", "{}".format(starting_fn),
-                                 "-p", "1", "-f", "a", "-x", "1", "-#", "autoMRE",
-                                 "-n", "autoMRE_fa"])
-            else:
-                try:
-                    subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(num_threads),
-                                 "-m", "GTRCAT",
-                                 "-s", aln, "-q", partition,  "-t", "{}".format(starting_fn),
-                                 "-p", "1", "-f", "a", "-x", "1", "-#", "autoMRE",
-                                 "-n", "autoMRE_fa"])
-                except: 
-                    subprocess.call(["raxmlHPC", 
-                                     "-m", "GTRCAT",
-                                     "-s", "previous_run/papara_alignment.extended",
-                                     "-p", "1", "-b", "1", "-#", "autoMRE",
-                                      "-n", "{}".format(self.date)])
-            try:                
-                # strict consensus:
+            mpi = True
+        if mpi:
+            print("run with mpi")
+            subprocess.call(["mpiexec", "-n", "{}".format(env_var), "raxmlHPC-MPI-AVX2", 
+                             "-m", "GTRCAT",
+                             "-s", aln, "-q", partition,  "-t", "{}".format(starting_fn),
+                             "-p", "1", "-f", "a", "-x", "1", "-#", "autoMRE",
+                             "-n", "autoMRE_fa"])
+        else:
+            try:
                 subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(num_threads),
+                             "-m", "GTRCAT",
+                             "-s", aln, "-q", partition,  "-t", "{}".format(starting_fn),
+                             "-p", "1", "-f", "a", "-x", "1", "-#", "autoMRE",
+                             "-n", "autoMRE_fa"])
+            except: 
+                subprocess.call(["raxmlHPC", 
                                  "-m", "GTRCAT",
-                                 "-J", "STRICT",
-                                 "-z", "RAxML_bootstrap.autoMRE_fa",
-                                 "-n", "StrictCon"])
-                # majority rule:
-                subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(num_threads),
-                                 "-m", "GTRCAT",
-                                 "-J", "MR",
-                                 "-z", "RAxML_bootstrap.autoMRE_fa",
-                                 "-n", "MR"])
-            except:
-                subprocess.call(["raxmlHPC", "-m", "GTRCAT",
-                                 "-s", aln, "-q", partition,
-                                 "-p", "1", "-f", "a", "-x", "1", "-#", "autoMRE",
-                                 "-n", "autoMRE_fa"])
-                # strict consensus:
-                subprocess.call(["raxmlHPC", "-m", "GTRCAT",
-                                 "-J", "STRICT",
-                                 "-z", "RAxML_bootstrap.autoMRE_fa",
-                                 "-n", "StrictCon"])
-                # majority rule:
-                subprocess.call(["raxmlHPC", "-m", "GTRCAT",
-                                 "-J", "MR",
-                                 "-z", "RAxML_bootstrap.autoMRE_fa",
-                                 "-n", "MR"])
+                                 "-s", "previous_run/papara_alignment.extended",
+                                 "-p", "1", "-b", "1", "-#", "autoMRE",
+                                  "-n", "{}".format(self.date)])
+        try:                
+            # strict consensus:
+            subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(num_threads),
+                             "-m", "GTRCAT",
+                             "-J", "STRICT",
+                             "-z", "RAxML_bootstrap.autoMRE_fa",
+                             "-n", "StrictCon"])
+            # majority rule:
+            subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(num_threads),
+                             "-m", "GTRCAT",
+                             "-J", "MR",
+                             "-z", "RAxML_bootstrap.autoMRE_fa",
+                             "-n", "MR"])
+        except:
+            subprocess.call(["raxmlHPC", "-m", "GTRCAT",
+                             "-s", aln, "-q", partition,
+                             "-p", "1", "-f", "a", "-x", "1", "-#", "autoMRE",
+                             "-n", "autoMRE_fa"])
+            # strict consensus:
+            subprocess.call(["raxmlHPC", "-m", "GTRCAT",
+                             "-J", "STRICT",
+                             "-z", "RAxML_bootstrap.autoMRE_fa",
+                             "-n", "StrictCon"])
+            # majority rule:
+            subprocess.call(["raxmlHPC", "-m", "GTRCAT",
+                             "-J", "MR",
+                             "-z", "RAxML_bootstrap.autoMRE_fa",
+                             "-n", "MR"])
+        os.chdir(cwd)
 
     def user_defined_concat(self):
         """If a user gave an input file to concatenate data. Fills in the data for self.comb_seq, self.comb_acc
