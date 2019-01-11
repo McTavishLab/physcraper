@@ -71,6 +71,7 @@ def test_concat_combine():
 	assert len(conc.concatenated_aln) == 5
 
 @mark.order2
+@notravis
 def test_run_raxml_concat():
 	time.sleep(10)  # needs time so that file of order1 is written before
 	workdir_its = "tests/data/precooked/concat_pre"
@@ -98,7 +99,6 @@ def test_run_raxml_concat():
 
 
 @travisonly
-@notravis
 def test_run_raxml_concat():
 	time.sleep(10)  # needs time so that file of order1 is written before
 	workdir_its = "tests/data/precooked/concat_pre"

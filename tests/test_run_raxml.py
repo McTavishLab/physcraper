@@ -1,7 +1,7 @@
 import pickle
 import sys
 import os
-from physcraper import ConfigObj, PhyscraperScrape, IdDicts
+from physcraper import ConfigObj, PhyscraperScrape, IdDicts, cd
 
 import requests
 import signal
@@ -144,8 +144,8 @@ def test_internal_mpi():
 	os.system("mv {}/papara_alignment.extended  {}/previous_run/papara_alignment.extended".format(scraper.workdir, scraper.workdir))
 
 
-
-	os.chdir(scraper.workdir)
+	cwd = os.getcwd()
+	# os.chdir(scraper.workdir)
 
 
 	ntasks = os.environ.get('SLURM_NTASKS_PER_NODE')
@@ -156,9 +156,11 @@ def test_internal_mpi():
 	print(env_var)
 
 	assert os.path.exists("{}/previous_run/papara_alignment.extended".format(scraper.workdir))
-	print("run with mpi")
-	subprocess.call(["mpiexec", "-n", "{}".format(env_var), "raxmlHPC-MPI-AVX2", 
-	                 "-m", "GTRCAT",
-	                 "-s", "{}/previous_run/papara_alignment.extended".format(scraper.workdir),
-	                 "-p", "1", "-f", "a", "-x", "1", "-#", "autoMRE",
-	                 "-n", "all{}".format(scraper.date)])
+	with cd(scraper.workdir):
+		print("run with mpi")
+		subprocess.call(["mpiexec", "-n", "{}".format(env_var), "raxmlHPC-MPI-AVX2", 
+		                 "-m", "GTRCAT",
+		                 "-s", "{}/previous_run/papara_alignment.extended".format(scraper.workdir),
+		                 "-p", "1", "-f", "a", "-x", "1", "-#", "autoMRE",
+		                 "-n", "all{}".format(scraper.date)])
+	# os.chdir(cwd)
