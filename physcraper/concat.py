@@ -1111,14 +1111,14 @@ class Concat(object):
             print("run with mpi")
             subprocess.call(["mpiexec", "-n", "{}".format(env_var), "raxmlHPC-MPI-AVX2", 
                              "-m", "GTRCAT",
-                             "-s", aln, "-q", partition,  "-t", "{}".format(starting_fn),
+                             "-s", aln, "-q", partition,  #  "-t", "{}".format(starting_fn),
                              "-p", "1", "-f", "a", "-x", "1", "-#", "autoMRE",
                              "-n", "autoMRE_fa"])
         else:
             try:
                 subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(num_threads),
                              "-m", "GTRCAT",
-                             "-s", aln, "-q", partition,  "-t", "{}".format(starting_fn),
+                             "-s", aln, "-q", partition,  # "-t", "{}".format(starting_fn),
                              "-p", "1", "-f", "a", "-x", "1", "-#", "autoMRE",
                              "-n", "autoMRE_fa"])
             except: 
