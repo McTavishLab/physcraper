@@ -123,7 +123,8 @@ def test_run_raxml_concat():
 	conc.make_alns_dict()
 	conc.concatenate_alns()
 	conc.get_short_seq_from_concat(percentage)
-	conc.remove_short_seq()conc.backbone = True
+	conc.remove_short_seq()
+	conc.backbone = True
 	conc.make_concat_table()
 	conc.write_partition()
 	conc.write_otu_info()
