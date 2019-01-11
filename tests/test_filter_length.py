@@ -14,7 +14,6 @@ def test_filter_length():
     workdir = "tests/output/test_selectbylength"
     absworkdir = os.path.abspath(workdir)
     conf = ConfigObj("tests/data/test.config", interactive=False)
-    #conf.blast_loc='remote' #saves time over loading names and nodes, and they aren't used here
     threshold = 2
     selectby = "length"
     downtorank = "species"

@@ -54,7 +54,6 @@ def test_run_raxml():
 	ids = IdDicts(conf, workdir=data_obj.workdir)
 	ids.acc_ncbi_dict = pickle.load(open("tests/data/precooked/tiny_acc_map.p", "rb"))
 
-	print("start")
 	scraper = PhyscraperScrape(data_obj, ids)
 	blast_dir = "tests/data/precooked/fixed/tte_blast_files"
 
@@ -94,9 +93,6 @@ def test_run_raxml():
 	# assert os.path.exists("{}/RAxML_bootstrap.all{}".format(scraper.workdir, scraper.date))
 
 
-
-
-# @concatfull
 @mark.xfail
 def test_mpi():    
     env_var = [os.environ.get('PMI_RANK'), os.environ.get('PMI_SIZE'), os.environ.get('OMPI_COMM_WORLD_SIZE')]
@@ -106,3 +102,63 @@ def test_mpi():
             mpi = True
     assert mpi == True
 
+@mark.xfail
+def test_internal_mpi():
+	import pickle
+	import sys
+	import os
+	import subprocess
+	from physcraper import ConfigObj, PhyscraperScrape, IdDicts
+	from mpi4py import MPI
+
+	# set up until test
+	workdir = "tests/output/test_mpi_raxml"
+	absworkdir = os.path.abspath(workdir)
+	conf = ConfigObj("tests/data/test.config", interactive=False)
+
+
+	#load data 
+	data_obj = pickle.load(open("tests/data/precooked/tiny_dataobj.p", 'rb'))
+	data_obj.workdir = absworkdir
+	ids = IdDicts(conf, workdir=data_obj.workdir)
+	ids.acc_ncbi_dict = pickle.load(open("tests/data/precooked/tiny_acc_map.p", "rb"))
+
+	scraper = PhyscraperScrape(data_obj, ids)
+	blast_dir = "tests/data/precooked/fixed/tte_blast_files"
+
+	# run needed functions
+	scraper.read_blast_wrapper(blast_dir=blast_dir)
+	scraper.remove_identical_seqs()
+
+	scraper.data.write_papara_files()
+	scraper.align_query_seqs()
+	scraper.place_query_seqs()
+	scraper.est_full_tree()
+
+
+	# scraper.generate_streamed_alignment()
+	assert os.path.exists("{}/RAxML_bestTree.{}".format(scraper.workdir, scraper.date))
+	# scraper.generate_streamed_alignment()
+	if not os.path.exists("{}/previous_run".format(scraper.workdir)):
+		os.mkdir("{}/previous_run".format(scraper.workdir))
+	os.system("mv {}/papara_alignment.extended  {}/previous_run/papara_alignment.extended".format(scraper.workdir, scraper.workdir))
+
+
+
+	os.chdir(scraper.workdir)
+
+
+	ntasks = os.environ.get('SLURM_NTASKS_PER_NODE')
+	nnodes = os.environ.get("SLURM_JOB_NUM_NODES")
+	print(nnodes, ntasks)
+	env_var = int(nnodes) * int(ntasks)
+	#env_var = os.environ.get('SLURM_JOB_CPUS_PER_NODE', 7)
+	print(env_var)
+
+	assert os.path.exists("{}/previous_run/papara_alignment.extended".format(scraper.workdir))
+	print("run with mpi")
+	subprocess.call(["mpiexec", "-n", "{}".format(env_var), "raxmlHPC-MPI-AVX2", 
+	                 "-m", "GTRCAT",
+	                 "-s", "{}/previous_run/papara_alignment.extended".format(scraper.workdir),
+	                 "-p", "1", "-f", "a", "-x", "1", "-#", "autoMRE",
+	                 "-n", "all{}".format(scraper.date)])

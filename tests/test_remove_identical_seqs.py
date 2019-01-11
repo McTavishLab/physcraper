@@ -22,7 +22,7 @@ def test_remove_identical_seqs():
     ids = IdDicts(conf, workdir=data_obj.workdir)
     ids.acc_ncbi_dict = pickle.load(open("tests/data/precooked/tiny_acc_map.p", "rb"))
 
-    print("start")
+    # print("start")
     scraper = PhyscraperScrape(data_obj, ids)
     scraper.ids.otu_rank = {}
     scraper.config.gifilename = False
