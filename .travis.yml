@@ -39,6 +39,9 @@ before_install:
   - pip install sphinx
   - make -C docs
 
+  #### needed for mpi4py which is in requirements
+  - sudo apt install libopenmpi-dev
+
 
 install:
   # install requirements of physcraper
