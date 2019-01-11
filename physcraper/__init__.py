@@ -782,7 +782,13 @@ class AlignTreeTax(object):
             # potentially slow at large number of taxa and large numbers to be pruned
             found = 0
             for otu in self.otu_dict:
-                if self.otu_dict[otu][u'^ot:originalLabel'] == tax.label:
+                print(otu, tax.label)
+
+                if "^ot:originalLabel" in self.otu_dict[otu]:
+                    if self.otu_dict[otu][u'^ot:originalLabel'] == tax.label:
+                        self.otu_dict[otu]['^physcraper:status'] = "deleted in reconciliation"
+                        found = 1
+                elif otu == tax.label:
                     self.otu_dict[otu]['^physcraper:status'] = "deleted in reconciliation"
                     found = 1
             if found == 0:
