@@ -1018,14 +1018,17 @@ class Concat(object):
                 partition = "partition"
             self.ld([aln, starting_fn])
             try:
+                "try"
                 num_threads = int(num_threads)
                 if self.backbone is not True:
+                    print("no backbone")
                     subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(num_threads), "-m", "GTRCAT",
                                      "-s", aln, "--print-identical-sequences",
                                      "-t", "{}".format(starting_fn),
                                      "-p", "1", "-q", partition,
                                      "-n", "concat"])
                 else:
+                    "backbone"
                     # -r constraint tree
                     starting_fn = "starting_red.tre"
                     subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(num_threads), "-m", "GTRCAT",
@@ -1034,6 +1037,7 @@ class Concat(object):
                                      "-p", "1", "-q", partition,
                                      "-n", "backbone_concat"])
             except:
+                print("except")
                 if self.backbone is not True:
                     subprocess.call(["raxmlHPC", "-m", "GTRCAT",
                                      "-s", aln, "--print-identical-sequences",
