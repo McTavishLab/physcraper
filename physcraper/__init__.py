@@ -2580,89 +2580,94 @@ class PhyscraperScrape(object):
         -z: specifies file with multiple trees
 
         """
-        with cd(self.workdir):
-            # # check if job was started with mpi
-            # # this checks if the whole file was started as mpiexec
-            # env_var = [os.environ.get('PMI_RANK'), os.environ.get('PMI_SIZE'), os.environ.get('OMPI_COMM_WORLD_SIZE')]
-            # mpi = False
-            # for var in env_var:
-            #     if var is not None:
-            #         mpi = True
-            # check if job was started with mpi
-            # this checks if actual several cores and nodes were allocated
-            ntasks = os.environ.get('SLURM_NTASKS_PER_NODE')
-            nnodes = os.environ.get("SLURM_JOB_NUM_NODES")
+        debug("calculate bootstrap")
+        cwd = os.getcwd()
+        os.chdir(self.workdir)
+        # with cd(self.workdir):
+        # # check if job was started with mpi
+        # # this checks if the whole file was started as mpiexec
+        # env_var = [os.environ.get('PMI_RANK'), os.environ.get('PMI_SIZE'), os.environ.get('OMPI_COMM_WORLD_SIZE')]
+        # mpi = False
+        # for var in env_var:
+        #     if var is not None:
+        #         mpi = True
+        # check if job was started with mpi
+        # this checks if actual several cores and nodes were allocated
+        ntasks = os.environ.get('SLURM_NTASKS_PER_NODE')
+        nnodes = os.environ.get("SLURM_JOB_NUM_NODES")
+        env_var = int(nnodes) * int(ntasks)
+        #print(os.getcwd())    
+        mpi = False
+        if nnodes is not None and ntasks is not None:
             env_var = int(nnodes) * int(ntasks)
-            #print(os.getcwd())    
-            mpi = False
-            if nnodes is not None and ntasks is not None:
-                env_var = int(nnodes) * int(ntasks)
-                mpi = True
-            if mpi:
-                print("run with mpi")
-                subprocess.call(["mpiexec", "-n", "{}".format(env_var), "raxmlHPC-MPI-AVX2", 
-                                 # "raxmlHPC-PTHREADS", "-T", "{}".format(num_threads),
+            mpi = True
+        if mpi:
+            print("run with mpi")
+            subprocess.call(["mpiexec", "-n", "{}".format(env_var), "raxmlHPC-MPI-AVX2", 
+                             # "raxmlHPC-PTHREADS", "-T", "{}".format(num_threads),
+                             "-m", "GTRCAT",
+                             "-s", "previous_run/papara_alignment.extended",
+                             "-p", "1", "-f", "a", "-x", "1", "-#", "autoMRE",
+                             "-n", "all{}".format(self.date)])
+        else:
+            try:
+                subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(self.config.num_threads), 
                                  "-m", "GTRCAT",
                                  "-s", "previous_run/papara_alignment.extended",
-                                 "-p", "1", "-f", "a", "-x", "1", "-#", "autoMRE",
-                                 "-n", "all{}".format(self.date)])
-            else:
-                try:
-                    subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(self.config.num_threads), 
-                                     "-m", "GTRCAT",
-                                     "-s", "previous_run/papara_alignment.extended",
-                                     "-p", "1", "-b", "1", "-#", "autoMRE",
-                                      "-n", "{}".format(self.date)])
-                except: 
-                    subprocess.call(["raxmlHPC", 
-                                     "-m", "GTRCAT",
-                                     "-s", "previous_run/papara_alignment.extended",
-                                     "-p", "1", "-b", "1", "-#", "autoMRE",
-                                      "-n", "{}".format(self.date)])
-            try:
-                # strict consensus:
-                subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(self.config.num_threads), "-m", "GTRCAT",
-                                 "-J", "STRICT",
-                                 "-z", "RAxML_bootstrap.all{}".format(self.date),
-                                 "-n", "StrictCon{}".format(self.date)])
-                # majority rule:
-                subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(self.config.num_threads), "-m", "GTRCAT",
-                                 "-J", "MR",
-                                 "-z", "RAxML_bootstrap.all{}".format(self.date),
-                                 "-n", "MR_{}".format(self.date)])
-                # extended majority rule:
-                subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(self.config.num_threads), "-m", "GTRCAT",
-                                 "-J", "MRE",
-                                 "-z", "RAxML_bootstrap.all{}".format(self.date),
-                                 "-n", "EMR{}".format(self.date)])
-            except:
-                sys.stderr.write("You do not have the raxmlHPC-PTHREADS installed, will fall down to slow version!")
-                # run bootstrap
-                subprocess.call(["raxmlHPC", "-m", "GTRCAT",
+                                 "-p", "1", "-b", "1", "-#", "autoMRE",
+                                  "-n", "{}".format(self.date)])
+            except: 
+                subprocess.call(["raxmlHPC", 
+                                 "-m", "GTRCAT",
                                  "-s", "previous_run/papara_alignment.extended",
                                  "-p", "1", "-b", "1", "-#", "autoMRE",
-                                 "-n", "{}".format(self.date)])
-                # make bipartition tree
-                # is the -f b command
-                subprocess.call(["raxmlHPC", "-m", "GTRCAT",
-                                 "-s", "previous_run/papara_alignment.extended",
-                                 "-p", "1", "-f", "a", "-x", "1", "-#", "autoMRE",
-                                 "-n", "all{}".format(self.date)])
-                # strict consensus:
-                subprocess.call(["raxmlHPC", "-m", "GTRCAT",
-                                 "-J", "STRICT",
-                                 "-z", "RAxML_bootstrap.all{}".format(self.date),
-                                 "-n", "StrictCon{}".format(self.date)])
-                # majority rule:
-                subprocess.call(["raxmlHPC", "-m", "GTRCAT",
-                                 "-J", "MR",
-                                 "-z", "RAxML_bootstrap.all{}".format(self.date),
-                                 "-n", "MR_{}".format(self.date)])
-                # extended majority rule:
-                subprocess.call(["raxmlHPC", "-m", "GTRCAT",
-                                 "-J", "MRE",
-                                 "-z", "RAxML_bootstrap.all{}".format(self.date),
-                                 "-n", "EMR{}".format(self.date)])
+                                  "-n", "{}".format(self.date)])
+        try:
+            # strict consensus:
+            subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(self.config.num_threads), "-m", "GTRCAT",
+                             "-J", "STRICT",
+                             "-z", "RAxML_bootstrap.all{}".format(self.date),
+                             "-n", "StrictCon{}".format(self.date)])
+            # majority rule:
+            subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(self.config.num_threads), "-m", "GTRCAT",
+                             "-J", "MR",
+                             "-z", "RAxML_bootstrap.all{}".format(self.date),
+                             "-n", "MR_{}".format(self.date)])
+            # extended majority rule:
+            subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(self.config.num_threads), "-m", "GTRCAT",
+                             "-J", "MRE",
+                             "-z", "RAxML_bootstrap.all{}".format(self.date),
+                             "-n", "EMR{}".format(self.date)])
+        except:
+            sys.stderr.write("You do not have the raxmlHPC-PTHREADS installed, will fall down to slow version!")
+            
+            # run bootstrap
+            subprocess.call(["raxmlHPC", "-m", "GTRCAT",
+                             "-s", "previous_run/papara_alignment.extended",
+                             "-p", "1", "-b", "1", "-#", "autoMRE",
+                             "-n", "{}".format(self.date)])
+            # make bipartition tree
+            # is the -f b command
+            subprocess.call(["raxmlHPC", "-m", "GTRCAT",
+                             "-s", "previous_run/papara_alignment.extended",
+                             "-p", "1", "-f", "a", "-x", "1", "-#", "autoMRE",
+                             "-n", "all{}".format(self.date)])
+            # strict consensus:
+            subprocess.call(["raxmlHPC", "-m", "GTRCAT",
+                             "-J", "STRICT",
+                             "-z", "RAxML_bootstrap.all{}".format(self.date),
+                             "-n", "StrictCon{}".format(self.date)])
+            # majority rule:
+            subprocess.call(["raxmlHPC", "-m", "GTRCAT",
+                             "-J", "MR",
+                             "-z", "RAxML_bootstrap.all{}".format(self.date),
+                             "-n", "MR_{}".format(self.date)])
+            # extended majority rule:
+            subprocess.call(["raxmlHPC", "-m", "GTRCAT",
+                             "-J", "MRE",
+                             "-z", "RAxML_bootstrap.all{}".format(self.date),
+                             "-n", "EMR{}".format(self.date)])
+        os.chdir(cwd)
 
     def remove_blacklistitem(self):
         """This removes items from aln, and tree, if the corresponding Genbank identifer were added to the blacklist.
@@ -2901,8 +2906,8 @@ class FilterBlast(PhyscraperScrape):
                         if gb_id in self.ids.acc_ncbi_dict:
                             tax_id = self.ids.acc_ncbi_dict[gb_id]
                     tax_id = self.ids.get_rank_info_from_web(taxon_name=tax_name)
-                    print(tax_name)
-                    print(self.ids.otu_rank.keys())
+                    # print(tax_name)
+                    # print(self.ids.otu_rank.keys())
                     # tax_id = self.ids.otu_rank[tax_name]["taxon id"]
                 else:
                     try:
@@ -2978,7 +2983,7 @@ class FilterBlast(PhyscraperScrape):
                             aln_tip_id = self.get_sp_id_of_otulabel(alntipname.label)
                             #if tax_name == otu_dict_label:
                             if tax_id == aln_tip_id:
-                                print(tax_id, aln_tip_id)
+                                debug(tax_id, aln_tip_id)
                                 seq = seq.symbols_as_string().replace("-", "")
                                 seq = seq.replace("?", "")
                                 seq_d[alntipname.label] = seq
