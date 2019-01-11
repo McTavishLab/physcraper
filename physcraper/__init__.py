@@ -14,6 +14,7 @@ import configparser
 import pickle
 import random
 import contextlib
+from mpi4py import MPI
 from past.builtins import xrange
 from builtins import input
 from copy import deepcopy
@@ -44,7 +45,7 @@ else:
     from urllib.error import HTTPError
 
 _DEBUG = 0
-_DEBUG_MK = 1
+_DEBUG_MK = 0
 _deep_debug = 0
 
 _VERBOSE = 0
@@ -2569,15 +2570,26 @@ class PhyscraperScrape(object):
 
         """
         with cd(self.workdir):
+            # # check if job was started with mpi
+            # # this checks if the whole file was started as mpiexec
+            # env_var = [os.environ.get('PMI_RANK'), os.environ.get('PMI_SIZE'), os.environ.get('OMPI_COMM_WORLD_SIZE')]
+            # mpi = False
+            # for var in env_var:
+            #     if var is not None:
+            #         mpi = True
             # check if job was started with mpi
-            env_var = [os.environ.get('PMI_RANK'), os.environ.get('PMI_SIZE'), os.environ.get('OMPI_COMM_WORLD_SIZE')]
+            # this checks if actual several cores and nodes were allocated
+            ntasks = os.environ.get('SLURM_NTASKS_PER_NODE')
+            nnodes = os.environ.get("SLURM_JOB_NUM_NODES")
+            env_var = int(nnodes) * int(ntasks)
+            #print(os.getcwd())    
             mpi = False
-            for var in env_var:
-                if var is not None:
-                    mpi = True
-            print(os.getcwd())    
+            if nnodes is not None and ntasks is not None:
+                env_var = int(nnodes) * int(ntasks)
+                mpi = True
             if mpi:
-                subprocess.call(["raxmlHPC-MPI-AVX2", 
+                print("run with mpi")
+                subprocess.call(["mpiexec", "-n", "{}".format(env_var), "raxmlHPC-MPI-AVX2", 
                                  # "raxmlHPC-PTHREADS", "-T", "{}".format(num_threads),
                                  "-m", "GTRCAT",
                                  "-s", "previous_run/papara_alignment.extended",
@@ -2585,7 +2597,7 @@ class PhyscraperScrape(object):
                                  "-n", "all{}".format(self.date)])
             else:
                 try:
-                    subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(num_threads), 
+                    subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(self.config.num_threads), 
                                      "-m", "GTRCAT",
                                      "-s", "previous_run/papara_alignment.extended",
                                      "-p", "1", "-b", "1", "-#", "autoMRE",
@@ -2598,17 +2610,17 @@ class PhyscraperScrape(object):
                                       "-n", "{}".format(self.date)])
             try:
                 # strict consensus:
-                subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(num_threads), "-m", "GTRCAT",
+                subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(self.config.num_threads), "-m", "GTRCAT",
                                  "-J", "STRICT",
                                  "-z", "RAxML_bootstrap.all{}".format(self.date),
                                  "-n", "StrictCon{}".format(self.date)])
                 # majority rule:
-                subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(num_threads), "-m", "GTRCAT",
+                subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(self.config.num_threads), "-m", "GTRCAT",
                                  "-J", "MR",
                                  "-z", "RAxML_bootstrap.all{}".format(self.date),
                                  "-n", "MR_{}".format(self.date)])
                 # extended majority rule:
-                subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(num_threads), "-m", "GTRCAT",
+                subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(self.config.num_threads), "-m", "GTRCAT",
                                  "-J", "MRE",
                                  "-z", "RAxML_bootstrap.all{}".format(self.date),
                                  "-n", "EMR{}".format(self.date)])

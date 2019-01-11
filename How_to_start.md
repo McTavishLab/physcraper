@@ -65,6 +65,8 @@ Depending on the size of your tree to be updated, there are things to consider.
 
       General information about the BLAST database can be found here: ftp://ftp.ncbi.nlm.nih.gov/blast/documents/blastdb.html.
 
+      We are currently working on implementing a version that uses the online blast searches, but this is not yet working reliable.
+
       In Linux to install the BLAST database do the following (for Windows and MAC please use google to figure it out, there should be plenty of information.):
 
       * `open a terminal`

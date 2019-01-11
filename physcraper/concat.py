@@ -11,6 +11,7 @@ import pickle
 import random
 import dendropy
 
+from mpi4py import MPI
 from copy import deepcopy
 from dendropy import Tree, DnaCharacterMatrix
 from Bio import AlignIO, SeqIO, Entrez
@@ -1073,17 +1074,17 @@ class Concat(object):
             # is the -f b command
             # -z specifies file with multiple trees
 
-
-            env_var = [os.environ.get('PMI_RANK'), os.environ.get('PMI_SIZE'), os.environ.get('OMPI_COMM_WORLD_SIZE')]
+            ntasks = os.environ.get('SLURM_NTASKS_PER_NODE')
+            nnodes = os.environ.get("SLURM_JOB_NUM_NODES")
+            env_var = int(nnodes) * int(ntasks)
+            #print(os.getcwd())    
             mpi = False
-            for var in env_var:
-                if var is not None:
-                    mpi = True
-
-
-
+            if nnodes is not None and ntasks is not None:
+                env_var = int(nnodes) * int(ntasks)
+                mpi = True
             if mpi:
-                subprocess.call(["raxmlHPC-MPI-AVX2", 
+                print("run with mpi")
+                subprocess.call(["mpiexec", "-n", "{}".format(env_var), "raxmlHPC-MPI-AVX2", 
                                  "-m", "GTRCAT",
                                  "-s", aln, "-q", partition,  "-t", "{}".format(starting_fn),
                                  "-p", "1", "-f", "a", "-x", "1", "-#", "autoMRE",

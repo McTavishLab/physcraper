@@ -27,3 +27,4 @@ recommonmark
 future
 pytest-xdist
 pytest-cov
+mpi4py
