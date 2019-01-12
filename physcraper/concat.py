@@ -778,8 +778,8 @@ class Concat(object):
         fn_begin = fn.split(".")[0]
         self.del_col_dict = {}
         # fn_end = fn.split(".")[1]
-            
-        if self.del_columns:
+        if hasattr(self, 'del_columns'): 
+        # if self.del_columns:
             self.del_col_dict[fn_begin] = self.del_columns
             self.del_columns = []
         else: 
