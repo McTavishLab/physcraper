@@ -764,8 +764,8 @@ class Concat(object):
         self.concatenated_aln = aln1
         aln1.write(path="{}/concat.fas".format(self.workdir),
                    schema="fasta")
-        self.rm_gap_only(self.concatenated_aln, "concat.fas")
-        self.concatenated_aln = dendropy.DnaCharacterMatrix.get(file=open("{}/concat_nogap.fas".format(self.workdir)), schema="fasta")
+        # self.rm_gap_only(self.concatenated_aln, "concat.fas")
+        # self.concatenated_aln = dendropy.DnaCharacterMatrix.get(file=open("{}/concat_nogap.fas".format(self.workdir)), schema="fasta")
         # self.concatenated_aln.write(path="{}/concat.fas".format(self.workdir),
                                     # schema="fasta")
 
@@ -775,9 +775,15 @@ class Concat(object):
 
         Partial copy from https://stackoverflow.com/questions/28220301/python-remove-special-column-from-multiple-sequence-alignment
         """
-        self.del_columns = []
         fn_begin = fn.split(".")[0]
-        fn_end = fn.split(".")[1]
+        self.del_col_dict = {}
+        # fn_end = fn.split(".")[1]
+        if self.del_columns == None:
+            self.del_columns = []
+        else:
+            self.del_col_dict[fn_begin] = self.del_columns
+            self.del_columns = []
+
         input_aln.write(path="{}/{}".format(self.workdir, fn),schema="fasta")
         aln = AlignIO.read("{}/{}".format(self.workdir, fn), mformat)
         self.ld(aln)
@@ -802,6 +808,9 @@ class Concat(object):
             else:  # nothing to delete, proceed
                 i += 1
         self.ld(aln)
+        with open("{}/rm_gap.txt".format(self.workdir), "a+") as del_file:
+            for item in self.del_columns:
+                del_file.write("{}".format(item))
         SeqIO.write(aln, "{}/{}_nogap.fas".format(self.workdir, fn_begin), mformat)
         input_aln = dendropy.DnaCharacterMatrix.get(file=open("{}/{}_nogap.fas".format(self.workdir, fn_begin)), schema=mformat)
         return input_aln
@@ -919,44 +928,55 @@ class Concat(object):
         len_gene = 0
         for gene in self.single_runs:
             for tax, seq in self.single_runs[gene].aln.items():
-                len_gene = len(seq.symbols_as_string())
+                org_len_gene = len(seq.symbols_as_string())
                 break
+            physcraper.debug(org_len_gene)
             if count == 0:
                 # subtract removed columns (rm_gap_only) from len_gene
                 # count number of cols which are smaller than len_gene
                 rm_col_a = []
+                physcraper.debug(self.del_columns)
                 for num in self.del_columns:
                     # physcraper.debug(num)
-                    if num <= len_gene:
+                    if num <= org_len_gene:
                         rm_col_a.append(num)
-                # physcraper.debug(rm_col_a)
-                len_gene0 = len_gene
-                len_gene = len_gene - len(rm_col_a)
+                physcraper.debug(rm_col_a)
+                physcraper.debug(len(rm_col_a))
+
+                len_gene0 = org_len_gene
+                len_gene = org_len_gene - len(rm_col_a)
                 # self.part_len = len_gene
                 part_len0 = len_gene
                 # physcraper.debug(self.part_len)
                 with open("{}/partition".format(self.workdir), "w") as partition:
-                    partition.write("DNA, {} = 1-{}\n".format(gene, part_len0))
+                    partition.write("DNA, {} = 1-{}\n".format(gene, len_gene))
+                with open("{}/partition_replace".format(self.workdir), "w") as partrep:
+                    partrep.write("{}, {}\n".format(len_gene0, len(rm_col_a)))
                 count = 1
             else:
                 # physcraper.debug("else")
                 start = part_len0 + 1
-                # physcraper.debug(len_gene)
-                # physcraper.debug(self.part_len)
-                # physcraper.debug(rm_col_a)
+                part_len1 = part_len0
+                physcraper.debug(org_len_gene)
+                physcraper.debug(part_len0)
+                physcraper.debug(rm_col_a)
                 # subtract removed columns from len_gene
                 # count number of cols which are smaller than len_gene, must be done with original col length (rm_col_a))
                 rm_col = []
                 for num in self.del_columns:
-                    if num > len_gene0 and num <= len_gene0 + len_gene :
+                    if num > len_gene0 and num <= (len_gene0 + org_len_gene):
                         # physcraper.debug(num)
                         rm_col.append(num)
-                # physcraper.debug(rm_col)
-                len_gene = len_gene - len(rm_col)
+                physcraper.debug(rm_col)
+                physcraper.debug(len(rm_col))
+
+                len_gene = org_len_gene - len(rm_col)
                 end = part_len0 + len_gene
-                part_len0 = part_len0 + len_gene
+                part_len1 = part_len1 + len_gene
                 with open("{}/partition".format(self.workdir), "a") as partition:
                     partition.write("DNA, {} = {}-{}\n".format(gene, start, end))
+                with open("{}/partition_replace".format(self.workdir), "a") as partrep:
+                    partrep.write("{}, {}, {}, {}\n".format(start, end, org_len_gene, len(rm_col)))
 
     def place_new_seqs(self, num_threads=None):
         """Places the new seqs (that are only found in loci which is not the starting tree)
