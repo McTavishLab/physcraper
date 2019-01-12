@@ -778,10 +778,11 @@ class Concat(object):
         fn_begin = fn.split(".")[0]
         self.del_col_dict = {}
         # fn_end = fn.split(".")[1]
-        if self.del_columns == None:
-            self.del_columns = []
-        else:
+            
+        if self.del_columns:
             self.del_col_dict[fn_begin] = self.del_columns
+            self.del_columns = []
+        else: 
             self.del_columns = []
 
         input_aln.write(path="{}/{}".format(self.workdir, fn),schema="fasta")

@@ -498,7 +498,7 @@ def concat(genelistdict, workdir_comb, email, num_threads=None, percentage=0.37,
     """
     if not os.path.exists(path="{}/concat_checkpoint.p".format(workdir_comb)):
         if not os.path.exists(path="{}/load_single_data.p".format(workdir_comb)):
-            save_copy_code(workdir_comb)
+            #save_copy_code(workdir_comb)
             conc = Concat(workdir_comb, email)
             conc.concatfile = user_concat_fn
             for item in genelistdict.keys():
