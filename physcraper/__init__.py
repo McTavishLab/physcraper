@@ -1005,7 +1005,7 @@ class AlignTreeTax(object):
         if ncbi_id is None:
             # debug("ncbi_id is none")
             if ids_obj.otu_rank is not None: 
-                ncbi_id = self.get_rank_info_from_web(ott_name)
+                ncbi_id = self.get_rank_info_from_web(tax_name)
                 # ncbi_id = ids_obj.otu_rank[tax_name]["taxon id"]
 #            else:
 #                ncbi_id = ids_obj.ncbi_parser.get_id_from_name(tax_name)

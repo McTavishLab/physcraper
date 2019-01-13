@@ -2,7 +2,6 @@
 # coding=utf-8
 from __future__ import unicode_literals
 
-
 import os
 import sys
 import subprocess
@@ -20,10 +19,11 @@ from Bio import AlignIO, SeqIO, Entrez
 import physcraper
 # from __init__ import cd
 
-# if sys.version_info < (3, ):
-#     from urllib2 import HTTPError
-# else:
-#     from urllib.error import HTTPError
+if sys.version_info < (3, ):
+    from urllib2 import HTTPError
+else:
+    from urllib.error import HTTPError
+
 import logging
 # global logger
 # http://docs.python.org/library/logging.html
@@ -38,7 +38,7 @@ def setup_logger(name, log_file, level=logging.INFO, writemode="w"):
     formatter = logging.basicConfig(filemode="w+", format='%(levelname)s [%(asctime)s]: %(message)s')
 
     log_fn = "{}".format(log_file)
-    handler = logging.FileHandler(log_fn)        
+    handler = logging.FileHandler(log_fn)
     handler.setFormatter(formatter)
 
     logger = logging.getLogger(name)
@@ -122,7 +122,7 @@ def remove_aln_tre_leaf(scrape):
 #     """
 #     Adds gb id to del_acc dictionary, which is used to remove gb_ids from tmp_dict so that they will
 #     not be added to the concat dict twice.
-# 
+#
 #     :param del_acc: dict with gb id that were added to concat_dict
 #     :param gene: single-gene name, from where gb_id is from
 #     :param spn: taxon name of gb_id
@@ -231,12 +231,12 @@ class Concat(object):
         self.seq_filter = ['deleted', 'subsequence,', 'not', "removed", "deleted,",
                            "local"]  # TODO: Copy from physcraper class settings, try to import and read in here
 
-    # debug file logger       
+    # debug file logger
     def li(self, text):
-        log_info(text, self.workdir)  
+        log_info(text, self.workdir)
 
     def ld(self, text):
-        log_debug(text, self.workdir)  
+        log_debug(text, self.workdir)
 
     def load_single_genes(self, workdir, pickle_fn, genename):
         """Load PhyScraper class objects and make a single dict per run.
@@ -346,12 +346,11 @@ class Concat(object):
         else:
             del self.single_runs[genename].otu_dict[otu]
 
-    
     def get_taxon_info(self, key, data):
         """If there are no taxon information (for what ever reason) try again to obtain sp names.
-    
+
         If the key is not part of data, it will get the name through a web query using the GI number.
-    
+
         :param key: key of otu_dict/data that shall contain the taxon name, e.g.^ot:ottTaxonName
         :param data: otu_dict entry from single gene physcraper run
         :return: taxon name
@@ -764,8 +763,15 @@ class Concat(object):
         self.concatenated_aln = aln1
         aln1.write(path="{}/concat.fas".format(self.workdir),
                    schema="fasta")
+        # for tax, seq in self.concatenated_aln.items():
+        #     print(len(seq))
+        #     break
         # self.rm_gap_only(self.concatenated_aln, "concat.fas")
         # self.concatenated_aln = dendropy.DnaCharacterMatrix.get(file=open("{}/concat_nogap.fas".format(self.workdir)), schema="fasta")
+        ### check that aln is reloaded as shorter aln!!
+        # for tax, seq in self.concatenated_aln.items():
+        #     print(len(seq))
+        #     break
         # self.concatenated_aln.write(path="{}/concat.fas".format(self.workdir),
                                     # schema="fasta")
 
@@ -778,14 +784,13 @@ class Concat(object):
         fn_begin = fn.split(".")[0]
         self.del_col_dict = {}
         # fn_end = fn.split(".")[1]
-        if hasattr(self, 'del_columns'): 
-        # if self.del_columns:
+        if hasattr(self, 'del_columns'):
             self.del_col_dict[fn_begin] = self.del_columns
             self.del_columns = []
-        else: 
+        else:
             self.del_columns = []
 
-        input_aln.write(path="{}/{}".format(self.workdir, fn),schema="fasta")
+        input_aln.write(path="{}/{}".format(self.workdir, fn), schema="fasta")
         aln = AlignIO.read("{}/{}".format(self.workdir, fn), mformat)
         self.ld(aln)
         n_row = float(len(aln))
@@ -793,29 +798,29 @@ class Concat(object):
         i = 0
         while i < n_col:
             ct = 0
-            while i+ct < n_col and aln[:, i+ct].count('-') / n_row == 1:
+            while i + ct < n_col and aln[:, i + ct].count('-') / n_row == 1:
                 ct += 1
                 # self.ld("del")
                 # self.ld(i+ct)
-                self.del_columns.append(i+ct)
-            if ct > 0:     #  delete columns [i:i+ct]
+
+                self.del_columns.append(i + ct)
+            if ct > 0:  # delete columns [i:i+ct]
                 if i == 0:
                     aln = aln[:, ct:]
-                elif i+ct == n_col:
+                elif i + ct == n_col:
                     aln = aln[:, :i]
                 else:
-                    aln = aln[:, :i] + aln[:, i+ct:]
-                n_col -= ct    #  seq. ct positions shorter
+                    aln = aln[:, :i] + aln[:, i + ct:]
+                n_col -= ct  # seq. ct positions shorter
             else:  # nothing to delete, proceed
                 i += 1
         self.ld(aln)
         with open("{}/rm_gap.txt".format(self.workdir), "a+") as del_file:
             for item in self.del_columns:
-                del_file.write("{}".format(item))
+                del_file.write("{}\n".format(item))
         SeqIO.write(aln, "{}/{}_nogap.fas".format(self.workdir, fn_begin), mformat)
         input_aln = dendropy.DnaCharacterMatrix.get(file=open("{}/{}_nogap.fas".format(self.workdir, fn_begin)), schema=mformat)
         return input_aln
-
 
     def get_short_seq_from_concat(self, percentage=0.37):
         """Finds short sequences, all below a certain threshold will be removed,
@@ -849,7 +854,7 @@ class Concat(object):
             writer = csv.writer(output)
             writer.writerow(["min len: {}".format(min_len)])
             for otu in self.short_concat_seq:
-                writer.writerow([otu])              
+                writer.writerow([otu])
 
 
     def remove_short_seq(self):
@@ -921,12 +926,13 @@ class Concat(object):
 
     def write_partition(self):
         """Write the partitioning file for RAxML.
-        
+
         Takes the info from rm_gap_only to reduce the partition by the columns that have been removed.
         """
         self.ld("write_partition")
         count = 0
         len_gene = 0
+        shortend_len1 = 0
         for gene in self.single_runs:
             for tax, seq in self.single_runs[gene].aln.items():
                 org_len_gene = len(seq.symbols_as_string())
@@ -945,35 +951,38 @@ class Concat(object):
                 physcraper.debug(len(rm_col_a))
 
                 len_gene0 = org_len_gene
-                len_gene = org_len_gene - len(rm_col_a)
+                shortend_len0 = org_len_gene - len(rm_col_a)
                 # self.part_len = len_gene
-                part_len0 = len_gene
+                part_len0 = shortend_len0
                 # physcraper.debug(self.part_len)
                 with open("{}/partition".format(self.workdir), "w") as partition:
-                    partition.write("DNA, {} = 1-{}\n".format(gene, len_gene))
+                    partition.write("DNA, {} = 1-{}\n".format(gene, shortend_len0))
                 with open("{}/partition_replace".format(self.workdir), "w") as partrep:
                     partrep.write("{}, {}\n".format(len_gene0, len(rm_col_a)))
                 count = 1
+                part_len1 = len_gene0
+                end = shortend_len0
             else:
                 # physcraper.debug("else")
-                start = part_len0 + 1
-                part_len1 = part_len0
+
+
+                start = end + 1
                 physcraper.debug(org_len_gene)
-                physcraper.debug(part_len0)
+                physcraper.debug(shortend_len0)
                 physcraper.debug(rm_col_a)
                 # subtract removed columns from len_gene
                 # count number of cols which are smaller than len_gene, must be done with original col length (rm_col_a))
                 rm_col = []
                 for num in self.del_columns:
-                    if num > len_gene0 and num <= (len_gene0 + org_len_gene):
+                    if num > part_len1 and num <= (part_len1 + org_len_gene):
                         # physcraper.debug(num)
                         rm_col.append(num)
                 physcraper.debug(rm_col)
                 physcraper.debug(len(rm_col))
 
-                len_gene = org_len_gene - len(rm_col)
-                end = part_len0 + len_gene
-                part_len1 = part_len1 + len_gene
+                shortend_len1 = shortend_len1 + org_len_gene - len(rm_col)
+                end = shortend_len0 + shortend_len1
+                part_len1 = part_len1 + org_len_gene
                 with open("{}/partition".format(self.workdir), "a") as partition:
                     partition.write("DNA, {} = {}-{}\n".format(gene, start, end))
                 with open("{}/partition_replace".format(self.workdir), "a") as partrep:
@@ -985,7 +994,8 @@ class Concat(object):
         """
         if self.backbone is None:
             self.li("place_new_seqs")
-            if len(self.concatenated_aln.taxon_namespace)-len(self.short_concat_seq) > len(self.tre_as_start.leaf_nodes()):
+            if len(self.concatenated_aln.taxon_namespace) - len(self.short_concat_seq) > len(
+                    self.tre_as_start.leaf_nodes()):
                 if os.path.exists("RAxML_labelledTree.PLACE"):
                     os.rename("RAxML_labelledTree.PLACE", "RAxML_labelledTreePLACE.tmp")
                 with cd(self.workdir):
@@ -1003,15 +1013,15 @@ class Concat(object):
                                          "-n", "PLACE"])
                     except:
                         try:
-                            subprocess.call(["raxmlHPC", 
-                                         "-m", "GTRCAT",
-                                         "-f", "v",
-                                         "-s", "papara_alignment.extended",
-                                         "-t", "random_resolve.tre",
-                                         "-n", "PLACE"])
+                            subprocess.call(["raxmlHPC",
+                                             "-m", "GTRCAT",
+                                             "-f", "v",
+                                             "-s", "papara_alignment.extended",
+                                             "-t", "random_resolve.tre",
+                                             "-n", "PLACE"])
                             placetre = Tree.get(path="RAxML_labelledTree.PLACE",
-                                            schema="newick",
-                                            preserve_underscores=True)
+                                                schema="newick",
+                                                preserve_underscores=True)
                         except OSError as e:
                             if e.errno == os.errno.ENOENT:
                                 sys.stderr.write("failed running raxmlHPC. Is it installed?")
@@ -1035,7 +1045,6 @@ class Concat(object):
                 if taxon.label.startswith("QUERY"):
                     taxon.label = taxon.label.replace("QUERY___", "")
             placetre.write(path="{}/place_resolve.tre".format(self.workdir), schema="newick", unquoted_underscores=True)
-
 
     def est_full_tree(self, num_threads=None):
         """Full raxml run from the placement tree as starting tree.
@@ -1123,32 +1132,32 @@ class Concat(object):
         ntasks = os.environ.get('SLURM_NTASKS_PER_NODE')
         nnodes = os.environ.get("SLURM_JOB_NUM_NODES")
         # env_var = int(nnodes) * int(ntasks)
-        # print(os.getcwd())    
+        # print(os.getcwd())
         mpi = False
         if nnodes is not None and ntasks is not None:
             env_var = int(nnodes) * int(ntasks)
             mpi = True
         if mpi:
             print("run with mpi")
-            subprocess.call(["mpiexec", "-n", "{}".format(env_var), "raxmlHPC-MPI-AVX2", 
+            subprocess.call(["mpiexec", "-n", "{}".format(env_var), "raxmlHPC-MPI-AVX2",
                              "-m", "GTRCAT",
-                             "-s", aln, "-q", partition,  #  "-t", "{}".format(starting_fn),
+                             "-s", aln, "-q", partition,  # "-t", "{}".format(starting_fn),
                              "-p", "1", "-f", "a", "-x", "1", "-#", "autoMRE",
                              "-n", "autoMRE_fa"])
         else:
             try:
                 subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(num_threads),
-                             "-m", "GTRCAT",
-                             "-s", aln, "-q", partition,  # "-t", "{}".format(starting_fn),
-                             "-p", "1", "-f", "a", "-x", "1", "-#", "autoMRE",
-                             "-n", "autoMRE_fa"])
-            except: 
-                subprocess.call(["raxmlHPC", 
+                                 "-m", "GTRCAT",
+                                 "-s", aln, "-q", partition,  # "-t", "{}".format(starting_fn),
+                                 "-p", "1", "-f", "a", "-x", "1", "-#", "autoMRE",
+                                 "-n", "autoMRE_fa"])
+            except:
+                subprocess.call(["raxmlHPC",
                                  "-m", "GTRCAT",
                                  "-s", "previous_run/papara_alignment.extended",
                                  "-p", "1", "-b", "1", "-#", "autoMRE",
-                                  "-n", "{}".format(self.date)])
-        try:                
+                                 "-n", "{}".format(self.date)])
+        try:
             # strict consensus:
             subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(num_threads),
                              "-m", "GTRCAT",
@@ -1187,7 +1196,7 @@ class Concat(object):
         with open("{}/{}".format(self.workdir, self.concatfile), mode="r") as infile:
             reader = csv.reader(infile)
             if has_header:
-                # next(reader) 
+                # next(reader)
                 genel = reader.next()
             sp_concat = dict((rows[0], rows[1]) for rows in reader)
             physcraper.debug(sp_concat)
@@ -1286,7 +1295,7 @@ class Concat(object):
                             if found:
                                 gene_l.append(gene)
                                 if tax_id is not None:
-                                    tax_id = str(tax_id) 
+                                    tax_id = str(tax_id)
                                     global_taxid = tax_id
                                     for key2, val2 in self.sp_acc_comb[tax_id][gene].items():
                                         cond = False
@@ -1350,7 +1359,7 @@ class Concat(object):
             # physcraper.debug(len_gene)
         for i in range(0, (len(len_gene) - 1)):
             # physcraper.debug(len_gene[i])
-            assert len_gene[i] == len_gene[i + 1], ([seq_id for seq_id in len_gene[i] if seq_id not in len_gene[i+1]])
+            assert len_gene[i] == len_gene[i + 1], ([seq_id for seq_id in len_gene[i] if seq_id not in len_gene[i + 1]])
 
     def dump(self, filename="concat_checkpoint.p"):
         """ Save a concat run as pickle.
@@ -1404,11 +1413,11 @@ class Concat(object):
         otu_fn = "{}/otu_seq_info.csv".format(self.workdir)
         tr_fn = "{}/{}".format(self.workdir, tree_file)
         # ######
-        otu_info =  pd.read_csv(otu_fn, sep=',', header=None, index_col=False,
-                             names=["gene", "spn", "unique_id", "sp_id", 
-                             "original_PS_id", "concat:status"
-                             ])
-        
+        otu_info = pd.read_csv(otu_fn, sep=',', header=None, index_col=False,
+                               names=["gene", "spn", "unique_id", "sp_id",
+                                      "original_PS_id", "concat:status"
+                                      ])
+
         with open(tr_fn, "r") as label_new:
             new_tree = label_new.read()
             print(new_tree)
@@ -1417,7 +1426,7 @@ class Concat(object):
                     print(row['unique_id'])
                     ident = row['spn']
                     if ident == "-":
-                        ident = "{}_{}".format(row["unique_id"] )
+                        ident = "{}_{}".format(row["unique_id"])
 
                     new_tree = new_tree.replace("{}:".format(row['sp_id']), "{}".format(ident))
 
