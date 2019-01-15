@@ -14,6 +14,7 @@ import configparser
 import pickle
 import random
 import contextlib
+import time
 from mpi4py import MPI
 from past.builtins import xrange
 from builtins import input
@@ -1497,7 +1498,7 @@ class IdDicts(object):
 
     def entrez_efetch(self, gb_id):
         """ Wrapper function around efetch from ncbi to get taxonomic information if everything else is failing.
-
+            Also used when the local blast files have redundant information to acess the taxon info of those sequences.
         It adds information to various id_dicts.
 
         :param gb_id: Genbank identifier
@@ -1506,15 +1507,44 @@ class IdDicts(object):
         tries = 10
         Entrez.email = self.config.email
         handle = None
+
+        # method needs delay because of ncbi settings
         for i in range(tries):
             try:
-                handle = Entrez.efetch(db="nucleotide", id=gb_id, retmode="xml")
+                # print("try")
+                delay = 1.0
+                previous = time.time()
+                while True:
+                    current = time.time()
+                    wait = previous + delay - current
+                    if wait > 0:
+                        # print("if", wait)
+                        time.sleep(wait)
+                        previous = current + wait
+                    else:
+                        # print("else", wait)
+                        previous = current
+                    if delay + .5 * delay <= 120:
+                        # print("if2", delay)
+                        delay += .5 * delay
+                    else:
+                        # print("else2",  delay)
+                        delay = 120
+                    # print("read handle")
+                    handle = Entrez.efetch(db="nucleotide", id=gb_id, retmode="xml")
+                    assert handle is not None, ("your handle file to access data from efetch does not exist. "
+                                    "Likely an issue with the internet connection of ncbi. Try rerun...")
+                    read_handle = Entrez.read(handle)
+                    handle.close()
+
+                    return read_handle
             except (IndexError, HTTPError) as e:
                 if i < tries - 1:  # i is zero indexed
                     continue
                 else:
                     raise
             break
+        # print("assert")
         assert handle is not None, ("your handle file to access data from efetch does not exist. "
                                     "Likely an issue with the internet connection of ncbi. Try rerun...")
         read_handle = Entrez.read(handle)
@@ -1706,7 +1736,7 @@ class PhyscraperScrape(object):
         with cd(self.config.blastdb):
             # this format (6) allows to get the taxonomic information at the same time
             # outfmt = " -outfmt '6 sseqid staxids sscinames pident evalue bitscore sseq stitle'"
-            outfmt = " -outfmt '6 sseqid staxids sscinames pident evalue bitscore sseq stitle sallseqid'"
+            outfmt = " -outfmt '6 sseqid staxids sscinames pident evalue bitscore sseq salltitles sallseqid'"
             # outfmt = " -outfmt 5"  # format for xml file type
             # TODO query via stdin
             blastcmd = "blastn -query " + "{}/tmp.fas".format(abs_blastdir) + \
@@ -1883,7 +1913,7 @@ class PhyscraperScrape(object):
         with open(fn_path, mode="r") as infile:
             for lin in infile:
                 # sseqid, staxids, sscinames, pident, evalue, bitscore, sseq, stitle = lin.strip().split('\t')
-                sseqid, staxids, sscinames, pident, evalue, bitscore, sseq, stitle, sallseqid = lin.strip().split('\t')
+                sseqid, staxids, sscinames, pident, evalue, bitscore, sseq, salltitles, sallseqid = lin.strip().split('\t')
                 gi_id = int(sseqid.split("|")[1])
                 gb_acc = sseqid.split("|")[3]
                 sseq = sseq.replace("-", "")
@@ -1891,18 +1921,38 @@ class PhyscraperScrape(object):
                 pident = float(pident)
                 evalue = float(evalue)
                 bitscore = float(bitscore)
+                stitle = salltitles
                 # NOTE: sometimes there are seq which are identical & are combined in the local blast db, get all of them! (get redundant seq info)
-                if len(staxids.split(";")) > 1:
+                if len(sallseqid.split(";")) > 1:
                     # staxids = int(staxids.split(";")[0])
                     # sscinames = sscinames.split(";")[0]
                     staxids_l = staxids.split(";")
                     sscinames_l = sscinames.split(";")
                     sallseqid_l = sallseqid.split(";")
-                    for i in range(0, len(staxids_l)):
-                        self.ids.spn_to_ncbiid[sscinames_l[i]] = int(staxids_l[i])
-                        sscinames = sscinames_l[i]
-                        staxids = int(staxids_l[i]) 
+                    salltitles_l = salltitles.split(";")
+                    # debug(staxids_l)
+                    # debug(sscinames_l)
+                    # debug(sallseqid_l)
+                    for i in range(0, len(sallseqid_l)):
+                        # print(range(0, len(sallseqid_l)))
+                        # self.ids.spn_to_ncbiid[sscinames_l[i]] = int(staxids_l[i])
+                        # sscinames = sscinames_l[i]
+                        # staxids = int(staxids_l[i]) 
                         gb_acc = sallseqid_l[i].split("|")[3]
+                        stitle = salltitles_l[i]
+
+                        # if multiple seqs are merged, we lack the information which taxon is which gb_acc...
+                        read_handle = self.ids.entrez_efetch(gb_acc)
+                        sscinames = get_ncbi_tax_name(read_handle)
+                        staxids = get_ncbi_tax_id(read_handle)
+                        assert str(staxids) in staxids_l, (staxids, staxids_l)
+                        assert sscinames in sscinames_l
+                        # ncbi_id = self.ncbi_parser.
+                        self.ids.acc_ncbi_dict[gb_acc] = staxids
+                        self.ids.ncbiid_to_spn[staxids] = sscinames 
+                        self.ids.spn_to_ncbiid[sscinames] = staxids
+
+                        # print(gb_acc)
                         if gb_acc not in self.ids.acc_ncbi_dict:  # fill up dict with more information.
                             self.ids.acc_ncbi_dict[gb_acc] = staxids_l[i]
                         if gb_acc not in query_dict and gb_acc not in self.newseqs_acc:
