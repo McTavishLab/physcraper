@@ -849,7 +849,6 @@ class Concat(object):
             if len_seq < min_len:
                 prune_shortest.append(tax)
         self.short_concat_seq = prune_shortest
-
         with open("{}/short_seq_deleted.csv".format(self.workdir), "w") as output:
             writer = csv.writer(output)
             writer.writerow(["min len: {}".format(min_len)])
