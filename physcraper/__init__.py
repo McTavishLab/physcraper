@@ -351,7 +351,6 @@ class ConfigObj(object):
                         print("You did not type yes or no!")
 
 
-# ATT is a dumb acronym for Alignment Tree Taxa object
 def get_dataset_from_treebase(study_id, phylesystem_loc="api"):
     """Function is used to get the aln from treebase, for a tree that OpenTree has the mapped tree.
     """
@@ -373,6 +372,7 @@ def get_dataset_from_treebase(study_id, phylesystem_loc="api"):
         return dna
 
 
+# ATT is a dumb acronym for Alignment Tree Taxa object
 def generate_ATT_from_phylesystem(aln,
                                   workdir,
                                   config_obj,
@@ -384,12 +384,7 @@ def generate_ATT_from_phylesystem(aln,
 
     Study and tree ID's can be obtained by using python ./scripts/find_trees.py LINEAGE_NAME
 
-    Input must be a study ID and tree ID from OpenTree
-
-    Alignment need to be a Dendropy DNA character matrix!
-
     Spaces vs underscores kept being an issue, so all spaces are coerced to underscores when data are read in.
-
 
     :param aln: dendropy :class:`DnaCharacterMatrix <dendropy.datamodel.charmatrixmodel.DnaCharacterMatrix>` alignment object
     :param workdir: path to working directory
@@ -467,9 +462,6 @@ def generate_ATT_from_files(seqaln,
                             ingroup_mrca=None):
     """Build an ATT object without phylesystem, use your own files instead.
 
-    If no ingroup mrca ott_id is provided, will use all taxa in tree to calc mrca.
-    otu_json should encode the taxon names for each tip in json file format.
-
     Spaces vs underscores kept being an issue, so all spaces are coerced to underscores when data are read in.
 
     Note: has test -> test_owndata.py
@@ -479,9 +471,10 @@ def generate_ATT_from_files(seqaln,
     :param workdir: path to working directory
     :param config_obj: config class including the settings
     :param treefile: path to phylogeny
-    :param otu_json: path to json file containing the translation of tip names to taxon names
+    :param otu_json: path to json file containing the translation of tip names to taxon names, generated with OtuJsonDict()
     :param schema_trf: string defining the format of the input phylogeny
-    :param ingroup_mrca: optional - OToL ID of the mrca of the clade of interest
+    :param ingroup_mrca: optional - OToL ID of the mrca of the clade of interest. If no ingroup mrca ott_id is provided, will use all taxa in tree to calc mrca.
+
     :return: object of class ATT
     """
 
@@ -630,7 +623,6 @@ def OtuJsonDict(id_to_spn, id_dict):
                 sp_info_dict[otu_id]["^physcraper:TaxonName"] = ottname
             elif sp_info_dict[otu_id]['^user:TaxonName']: 
                 sp_info_dict[otu_id]["^physcraper:TaxonName"] = sp_info_dict[otu_id]['^user:TaxonName']
-            # elif self.otu_dict[otu_id][]
             assert sp_info_dict[otu_id]["^physcraper:TaxonName"]  # is not None
     return sp_info_dict
 
@@ -783,8 +775,7 @@ class AlignTreeTax(object):
             # potentially slow at large number of taxa and large numbers to be pruned
             found = 0
             for otu in self.otu_dict:
-                print(otu, tax.label)
-
+                # debug([otu, tax.label])
                 if "^ot:originalLabel" in self.otu_dict[otu]:
                     if self.otu_dict[otu][u'^ot:originalLabel'] == tax.label:
                         self.otu_dict[otu]['^physcraper:status'] = "deleted in reconciliation"
@@ -1058,7 +1049,8 @@ class AlignTreeTax(object):
 
         NOTE: names for tree and aln files should not be changed, as they are hardcoded in align_query_seqs().
 
-        Is only used within func align_query_seqs."""
+        Is only used within func align_query_seqs.
+        """
         debug('write papara files')
         self.tre.resolve_polytomies()
         self.tre.deroot()
@@ -1498,7 +1490,7 @@ class IdDicts(object):
 
     def entrez_efetch(self, gb_id):
         """ Wrapper function around efetch from ncbi to get taxonomic information if everything else is failing.
-            Also used when the local blast files have redundant information to acess the taxon info of those sequences.
+            Also used when the local blast files have redundant information to access the taxon info of those sequences.
         It adds information to various id_dicts.
 
         :param gb_id: Genbank identifier
@@ -1735,7 +1727,6 @@ class PhyscraperScrape(object):
         assert os.path.isdir(self.config.blastdb)
         with cd(self.config.blastdb):
             # this format (6) allows to get the taxonomic information at the same time
-            # outfmt = " -outfmt '6 sseqid staxids sscinames pident evalue bitscore sseq stitle'"
             outfmt = " -outfmt '6 sseqid staxids sscinames pident evalue bitscore sseq salltitles sallseqid'"
             # outfmt = " -outfmt 5"  # format for xml file type
             # TODO query via stdin
@@ -1922,32 +1913,30 @@ class PhyscraperScrape(object):
                 evalue = float(evalue)
                 bitscore = float(bitscore)
                 stitle = salltitles
-                # NOTE: sometimes there are seq which are identical & are combined in the local blast db, get all of them! (get redundant seq info)
+                # NOTE: sometimes there are seq which are identical & are combined in the local blast db...
+                # Get all of them! (get redundant seq info)
                 if len(sallseqid.split(";")) > 1:
-                    # staxids = int(staxids.split(";")[0])
-                    # sscinames = sscinames.split(";")[0]
                     staxids_l = staxids.split(";")
                     sscinames_l = sscinames.split(";")
                     sallseqid_l = sallseqid.split(";")
-                    salltitles_l = salltitles.split(";")
-                    # debug(staxids_l)
-                    # debug(sscinames_l)
-                    # debug(sallseqid_l)
+                    debug(salltitles)
+                    salltitles_l = salltitles.split("<>")
+                    debug(staxids_l)
+                    debug(sscinames_l)
+                    debug(sallseqid_l)
+                    debug(salltitles_l)
                     for i in range(0, len(sallseqid_l)):
-                        # print(range(0, len(sallseqid_l)))
-                        # self.ids.spn_to_ncbiid[sscinames_l[i]] = int(staxids_l[i])
-                        # sscinames = sscinames_l[i]
-                        # staxids = int(staxids_l[i]) 
+                        gi_id = sallseqid_l[i].split("|")[1]
+
                         gb_acc = sallseqid_l[i].split("|")[3]
                         stitle = salltitles_l[i]
 
                         # if multiple seqs are merged, we lack the information which taxon is which gb_acc...
                         read_handle = self.ids.entrez_efetch(gb_acc)
-                        sscinames = get_ncbi_tax_name(read_handle)
+                        sscinames = get_ncbi_tax_name(read_handle).replace(" ", "_").replace("/", "_")
                         staxids = get_ncbi_tax_id(read_handle)
                         assert str(staxids) in staxids_l, (staxids, staxids_l)
-                        assert sscinames in sscinames_l
-                        # ncbi_id = self.ncbi_parser.
+                        assert sscinames in sscinames_l, (scinames, sscinames_l)
                         self.ids.acc_ncbi_dict[gb_acc] = staxids
                         self.ids.ncbiid_to_spn[staxids] = sscinames 
                         self.ids.spn_to_ncbiid[sscinames] = staxids
