@@ -30,7 +30,7 @@ from peyotl.nexson_syntax import (
     extract_tree,
     get_subtree_otus,
     extract_otu_nexson,
-    PhyloSchema,
+    PhyloSchema
 )
 
 # extension functions
@@ -852,9 +852,7 @@ class AlignTreeTax(object):
         # debug(self.aln.taxon_namespace)
         # debug(self.tre.taxon_namespace)
         # assert self.aln.taxon_namespace == self.tre.taxon_namespace
-
-        # new function has assert statement included
-        # assert treed_taxa.issubset(aln_ids)
+        # next function has assert statement included
         self.check_tre_in_aln()
         self._reconciled = 1
 
@@ -1936,7 +1934,7 @@ class PhyscraperScrape(object):
                         sscinames = get_ncbi_tax_name(read_handle).replace(" ", "_").replace("/", "_")
                         staxids = get_ncbi_tax_id(read_handle)
                         assert str(staxids) in staxids_l, (staxids, staxids_l)
-                        assert sscinames in sscinames_l, (scinames, sscinames_l)
+                        assert sscinames in sscinames_l, (sscinames, sscinames_l)
                         self.ids.acc_ncbi_dict[gb_acc] = staxids
                         self.ids.ncbiid_to_spn[staxids] = sscinames 
                         self.ids.spn_to_ncbiid[sscinames] = staxids
@@ -2112,8 +2110,6 @@ class PhyscraperScrape(object):
             log.write("{} new sequences added from GenBank after evalue filtering\n".format(len(self.new_seqs)))
 
         self._blast_read = 1
-
-    # TODO this should go back in the class and should prune the tree. MK: about which method are we talking and back to which class?
 
     def get_sp_id_of_otulabel(self, label):
         """Get the species name and the corresponding ncbi id of the otu.
@@ -2335,7 +2331,7 @@ class PhyscraperScrape(object):
                         # input_rank_id = self.ids.ncbi_parser.get_downtorank_id(ncbi_id, rank_mrca_ncbi)
                         try:  # sometimes ncbi has wrong id linked: since update of db 01/01/2019 or since retrieval of redundant seq information
                             input_rank_id = self.ids.ncbi_parser.match_id_to_mrca(ncbi_id, mrca_ncbi)
-                        except:  # get right tax_id and do search again
+                        except:  # this is for the wrong ncbi link, get right tax_id and do search again
                             debug("wrong tax_id given by ncbi?")
                             ncbi_id = self.ids.ncbi_parser.get_id_from_name(tax_name)
                             self.data.gb_dict[gb_id]['staxids'] = ncbi_id
