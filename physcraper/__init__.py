@@ -15,7 +15,7 @@ import pickle
 import random
 import contextlib
 import time
-from mpi4py import MPI
+#from mpi4py import MPI
 from past.builtins import xrange
 from builtins import input
 from copy import deepcopy
@@ -46,7 +46,7 @@ else:
     from urllib.error import HTTPError
 
 _DEBUG = 0
-_DEBUG_MK = 0
+_DEBUG_MK = 1
 _deep_debug = 0
 
 _VERBOSE = 0
@@ -1514,12 +1514,12 @@ class IdDicts(object):
                     else:
                         # print("else", wait)
                         previous = current
-                    if delay + .5 * delay <= 120:
+                    if delay + .5 * delay <= 5:
                         # print("if2", delay)
                         delay += .5 * delay
                     else:
                         # print("else2",  delay)
-                        delay = 120
+                        delay = 5
                     # print("read handle")
                     handle = Entrez.efetch(db="nucleotide", id=gb_id, retmode="xml")
                     assert handle is not None, ("your handle file to access data from efetch does not exist. "
@@ -1913,39 +1913,170 @@ class PhyscraperScrape(object):
                 stitle = salltitles
                 # NOTE: sometimes there are seq which are identical & are combined in the local blast db...
                 # Get all of them! (get redundant seq info)
+                found_taxids = set()
+                found_spn = set()
                 if len(sallseqid.split(";")) > 1:
-                    staxids_l = staxids.split(";")
-                    sscinames_l = sscinames.split(";")
-                    sallseqid_l = sallseqid.split(";")
-                    debug(salltitles)
-                    salltitles_l = salltitles.split("<>")
-                    debug(staxids_l)
-                    debug(sscinames_l)
-                    debug(sallseqid_l)
-                    debug(salltitles_l)
-                    for i in range(0, len(sallseqid_l)):
-                        gi_id = sallseqid_l[i].split("|")[1]
+                    if evalue < float(self.config.e_value_thresh):  # get additional info only for seq that pass the eval
+                        staxids_l = staxids.split(";")
+                        sscinames_l = sscinames.split(";")
+                        sallseqid_l = sallseqid.split(";")
+                        # debug(salltitles)
+                        salltitles_l = salltitles.split("<>")
+                        # debug(staxids_l)
+                        # debug(sscinames_l)
+                        # debug(sallseqid_l)
+                        # debug(salltitles_l)
+                        # print(len(found_taxids), len(staxids_l))
+                        count = 0
+                        spn_range = 0
+                        stop_while = False
+                        while len(found_taxids) < len(staxids_l):  # as long as i have not found all taxids for the seq
+                            count += 1
+                            if stop_while:
+                                # debug("stop while")
+                                break
+                            if count == 5:
+                                print(some)
+                            elif count == 1:
+                                for i in range(0, len(sallseqid_l)):
+                                    if len(found_taxids) == len(staxids_l):
+                                        break
+                                    # debug(i)
+                                    gi_id = sallseqid_l[i].split("|")[1]
 
-                        gb_acc = sallseqid_l[i].split("|")[3]
-                        stitle = salltitles_l[i]
+                                    
 
-                        # if multiple seqs are merged, we lack the information which taxon is which gb_acc...
-                        read_handle = self.ids.entrez_efetch(gb_acc)
-                        sscinames = get_ncbi_tax_name(read_handle).replace(" ", "_").replace("/", "_")
-                        staxids = get_ncbi_tax_id(read_handle)
-                        assert str(staxids) in staxids_l, (staxids, staxids_l)
-                        assert sscinames in sscinames_l, (sscinames, sscinames_l)
-                        self.ids.acc_ncbi_dict[gb_acc] = staxids
-                        self.ids.ncbiid_to_spn[staxids] = sscinames 
-                        self.ids.spn_to_ncbiid[sscinames] = staxids
+                                    gb_acc = sallseqid_l[i].split("|")[3]
+                                    if gb_acc in query_dict or gb_acc in self.data.gb_dict:  # if gb acc was already read in before stop the for loop
+                                        # debug("set to true")
+                                        stop_while = True
+                                        break
 
-                        # print(gb_acc)
-                        if gb_acc not in self.ids.acc_ncbi_dict:  # fill up dict with more information.
-                            self.ids.acc_ncbi_dict[gb_acc] = staxids_l[i]
-                        if gb_acc not in query_dict and gb_acc not in self.newseqs_acc:
-                            query_dict[gb_acc] = {'^ncbi:gi': gi_id, 'accession': gb_acc, 'staxids': staxids,
-                                                  'sscinames': sscinames, 'pident': pident, 'evalue': evalue,
-                                                  'bitscore': bitscore, 'sseq': sseq, 'title': stitle}
+                                    stitle = salltitles_l[i]
+
+
+                                    # max()
+                                    spn_title_before = salltitles_l[i-1].split(" ")[0:spn_range]
+                                    spn_title = salltitles_l[i].split(" ")[0:spn_range]
+                                    # print(spn_title, spn_title_before)
+                                    # debug(gb_acc)
+
+                                        
+                                    # debug(found_taxids)
+                                    # sometimes if multiple seqs are merged, we lack the information which taxon is which gb_acc...
+                                    # test it here:
+                                    if len(sallseqid_l) == len(staxids_l):  # if we have same number information go ahead as usual
+                                        # debug("if")
+                                        # debug(staxids_l)
+                                        # debug(sscinames_l)
+                                        staxids = staxids_l[i]
+                                        sscinames = sscinames_l[i]
+                                    elif len(staxids_l) == 1:  # only one taxon id present, all are from same taxon
+                                        # debug("elif")
+                                        # debug(staxids_l)
+                                        # debug(salltitles_l)
+                                        # debug(staxids_l)
+                                        # debug(sscinames_l)
+                                        # debug(sallseqid_l)
+                                        staxids = staxids_l[0]
+                                        sscinames = sscinames_l[0]
+                                    elif i != 0 and spn_title != spn_title_before:
+
+                                        # debug(salltitles_l)
+                                        # debug(staxids_l)
+                                        # debug(sscinames_l)
+                                        # debug(sallseqid_l)
+                                        read_handle = self.ids.entrez_efetch(gb_acc)
+                                        sscinames = get_ncbi_tax_name(read_handle).replace(" ", "_").replace("/", "_")
+                                        staxids = get_ncbi_tax_id(read_handle)
+                                        spn_range = len(sscinames.split("_"))
+                                    elif i == 0:
+                                        # debug("i==1")
+                                        read_handle = self.ids.entrez_efetch(gb_acc)
+                                        sscinames = get_ncbi_tax_name(read_handle).replace(" ", "_").replace("/", "_")
+                                        staxids = get_ncbi_tax_id(read_handle)
+                                        spn_range = len(sscinames.split("_"))
+                                    else:
+                                        # print("next")
+                                        continue
+
+                                    assert str(staxids) in staxids_l, (staxids, staxids_l)
+                                    #assert sscinames in sscinames_l, (sscinames, sscinames_l)
+                                    self.ids.acc_ncbi_dict[gb_acc] = staxids
+                                    self.ids.ncbiid_to_spn[staxids] = sscinames 
+                                    self.ids.spn_to_ncbiid[sscinames] = staxids
+
+                                    found_taxids.add(staxids)
+                                    found_spn.add(sscinames)
+
+
+                                    if gb_acc not in query_dict and gb_acc not in self.newseqs_acc:
+                                        query_dict[gb_acc] = {'^ncbi:gi': gi_id, 'accession': gb_acc, 'staxids': staxids,
+                                                          'sscinames': sscinames, 'pident': pident, 'evalue': evalue,
+                                                          'bitscore': bitscore, 'sseq': sseq, 'title': stitle}
+                            elif count >= 1 and stop_while is False:
+                                debug("count>1")
+                                for i in range(0, len(sallseqid_l)):
+                                    if len(found_taxids) == len(staxids_l):
+                                        break
+                                    debug(i)
+                                    gi_id = sallseqid_l[i].split("|")[1]
+
+                                    gb_acc = sallseqid_l[i].split("|")[3]
+                                    stitle = salltitles_l[i]
+                                    if gb_acc in query_dict or gb_acc in self.data.gb_dict:
+                                        stop_while = True
+
+                                        break
+
+                                
+                                    # debug(gb_acc)
+
+                                        
+                                    # debug(found_taxids)
+                                    # sometimes if multiple seqs are merged, we lack the information which taxon is which gb_acc...
+                                    # test it here:
+                                    if len(sallseqid_l) == len(staxids_l):  # if we have same number information go ahead as usual
+                                        # debug("if")
+                                        # debug(staxids_l)
+                                        # debug(sscinames_l)
+                                        staxids = staxids_l[i]
+                                        sscinames = sscinames_l[i]
+                                    elif len(staxids_l) == 1:  # only one taxon id present, all are from same taxon
+                                        # debug("elif")
+                                        # debug(staxids_l)
+                                        # debug(salltitles_l)
+                                        # debug(staxids_l)
+                                        # debug(sscinames_l)
+                                        # debug(sallseqid_l)
+                                        staxids = staxids_l[0]
+                                        sscinames = sscinames_l[0]
+                                    else:
+                                        read_handle = self.ids.entrez_efetch(gb_acc)
+                                        sscinames = get_ncbi_tax_name(read_handle).replace(" ", "_").replace("/", "_")
+                                        staxids = get_ncbi_tax_id(read_handle)
+                                        spn_range = len(sscinames.split("_"))
+                                    
+
+                                    assert str(staxids) in staxids_l, (staxids, staxids_l)
+                                    #assert sscinames in sscinames_l, (sscinames, sscinames_l)
+                                    self.ids.acc_ncbi_dict[gb_acc] = staxids
+                                    self.ids.ncbiid_to_spn[staxids] = sscinames 
+                                    self.ids.spn_to_ncbiid[sscinames] = staxids
+
+                                    found_taxids.add(staxids)
+                                    found_spn.add(sscinames)
+
+
+                                    if gb_acc not in query_dict and gb_acc not in self.newseqs_acc:
+                                        query_dict[gb_acc] = {'^ncbi:gi': gi_id, 'accession': gb_acc, 'staxids': staxids,
+                                                          'sscinames': sscinames, 'pident': pident, 'evalue': evalue,
+                                                          'bitscore': bitscore, 'sseq': sseq, 'title': stitle}
+                            
+
+
+
+
                             # debug(query_dict[gb_acc])
                 else:
                     staxids = int(staxids)
@@ -2346,10 +2477,12 @@ class PhyscraperScrape(object):
                             # debug(some)
                         elif gb_id not in self.gb_not_added:
                                 self.gb_not_added.append(gb_id)
+                                reason = "not_part_of_mrca: {} vs. {}".format(mrca_ncbi, input_rank_id)
+                                writeinfofiles.write_not_added(ncbi_id, tax_name, gb_id, reason, self.workdir)
                                 # writeinfofiles.write_not_added_info(self, gb_id, "not_part_of_mrca")
-                                fn = open("{}/not_added_seq.csv".format(self.workdir), "a+")
-                                fn.write("not_part_of_mrca, {}, rankid: {}, ncbi_id:{}, tax_name:{}\n".format(gb_id, input_rank_id, ncbi_id, tax_name))
-                                fn.close()
+                                # fn = open("{}/not_added_seq.csv".format(self.workdir), "a+")
+                                # fn.write("not_part_of_mrca, {}, rankid: {}, ncbi_id:{}, tax_name:{}\n".format(gb_id, input_rank_id, ncbi_id, tax_name))
+                                # fn.close()
                     else:
                         self.newseqs_acc.append(gb_id)
                         otu_id = self.data.add_otu(gb_id, self.ids)
@@ -2359,10 +2492,19 @@ class PhyscraperScrape(object):
                         self.gb_not_added.append(gb_id)
                         # writeinfofiles.write_not_added_info(self, gb_id, "seqlen_threshold_not_passed")
                         len_seq = len(seq.replace("-", "").replace("N", ""))
-                        fn = open("{}/not_added_seq.csv".format(self.workdir), "a+")
-                        fn.write(
-                            "seqlen_threshold_not_passed, {}, {}, min len: {}\n".format(gb_id, len_seq, seq_len_cutoff))
-                        fn.close()
+                        reason = "seqlen_threshold_not_passed: min len: {}, len: {}".format(len_seq, seq_len_cutoff)
+                        if "sscinames" in self.data.gb_dict[gb_id]:
+                            tax_name = self.data.gb_dict[gb_id]['sscinames']
+                            ncbi_id = self.data.gb_dict[gb_id]['staxids']
+                        else:
+                            tax_name = None
+                            ncbi_id = None
+                        writeinfofiles.write_not_added(ncbi_id, tax_name, gb_id, reason, self.workdir)
+
+                        # fn = open("{}/not_added_seq.csv".format(self.workdir), "a+")
+                        # fn.write(
+                        #     "seqlen_threshold_not_passed, {}, {}, min len: {}\n".format(gb_id, len_seq, seq_len_cutoff))
+                        # fn.close()
         old_seqs_ids = set()
         for tax in old_seqs:
             old_seqs_ids.add(tax)
