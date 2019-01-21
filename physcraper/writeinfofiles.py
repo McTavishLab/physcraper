@@ -178,3 +178,35 @@ def write_not_added_info(physcraper_obj, item, reason=None):
                 rowinfo.append("-")
         rowinfo.append(reason)
         writer.writerow(rowinfo)
+
+def write_not_added(ncbi_id, tax_name, gb_id, reason, workdir):
+    """Writes out infos of not added seq based on information provided in reason.
+
+    :param ncbi_id:
+    :param tax_name:
+    :param gb_id:
+    :param reason:
+    :param workdir:
+    :return:
+    """
+    debug("write not added")
+    tab_keys = [
+        "ncbi_id",
+        "rank_id",
+        "tax_name",
+        "gb_id"
+        "reason"
+    ]
+    if not os.path.exists(path="{}/not_added_seq.csv".format(workdir)):
+        with open("{}/not_added_seq.csv".format(workdir), "w+") as output:
+            writer = csv.writer(output)
+            writer.writerow(tab_keys)
+    with open("{}/not_added_seq.csv".format(workdir), "a") as output:
+        writer = csv.writer(output)
+        rowinfo = [ncbi_id, tax_name, gb_id, reason]
+        writer.writerow(rowinfo)
+    #
+    # fn = open("{}/not_added_seq.csv".format(self.workdir), "a+")
+    # fn.write(
+    #     "not_part_of_mrca, {}, rankid: {}, ncbi_id:{}, tax_name:{}\n".format(gb_id, input_rank_id, ncbi_id, tax_name))
+    # fn.close()
