@@ -229,11 +229,12 @@ class Parser:
         # debug(some)
         elif rank_mrca_id == rank_tax_id:
             return tax_id
-        elif rank_tax_id == "superkingdom":
+        elif rank_tax_id == "superkingdom" or tax_id == 2759:
             tax_id = 0
             return tax_id
         else:
             parent_id = int(nodes[nodes["tax_id"] == tax_id]["parent_tax_id"].values[0])
+            print(parent_id)
             return self.match_id_to_mrca(parent_id, mrca_id)
 
     def get_name_from_id(self, tax_id):
