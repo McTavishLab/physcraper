@@ -2588,6 +2588,8 @@ class PhyscraperScrape(object):
                                    "-n", papara_runname])  # FIXME directory ugliness
             if _VERBOSE:
                 sys.stdout.write("Papara done")
+        except subprocess.CalledProcessError as grepexc:                                                                                                   
+            print "error code", grepexc.returncode, grepexc.output
         except OSError as e:
             if e.errno == os.errno.ENOENT:
                 sys.stderr.write("failed running papara. Is it installed?\n")
