@@ -1690,7 +1690,7 @@ class PhyscraperScrape(object):
         self._query_seqs_placed = 0
         self._full_tree_est = 0
 
-    def reset_new_seqs_acc():
+    def reset_new_seqs_acc(self):
         """ Needs to be reseted if you want to rerun the filtering to get lower rank taxa added"""
         self.newseqs_acc = []
 
