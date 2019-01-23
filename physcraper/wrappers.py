@@ -321,26 +321,42 @@ def PS_filter_run(add_unpubl_seq, blacklist, data_obj, downtorank, id_to_spn_add
     return filteredScrape
 
 
-def add_different_rank(new_confifi, add_unpubl_seq, blacklist, data_obj, downtorank, id_to_spn_addseq_json, ids, selectby,
-                  shared_blast_folder, threshold, backbone=None):
+# def add_different_rank(new_confifi, add_unpubl_seq, blacklist, data_obj, downtorank, id_to_spn_addseq_json, ids, selectby,
+#                   shared_blast_folder, threshold, backbone=None):
+def add_different_rank(seqaln,
+                    mattype,
+                    trfn,
+                    schema_trf,
+                    workdir,
+                    threshold,
+                    id_to_spn,
+                    new_confifi,
+                    selectby="blast",
+                    downtorank=None,
+                    blacklist=None,
+                    add_unpubl_seq=None,
+                    id_to_spn_addseq_json=None,
+                    ingroup_mrca=None,
+                    shared_blast_folder=None):
+    """looks for pickeled file to continue run, or builds and runs 
+    new analysis for as long as new seqs are found. 
+    This uses the FilterBlast subclass to be able to filter the blast output.
     """
-    This is the filtering mode for a Physcraper run:
-    update aln and tre as long as new seqs are found, but filters the found sequences according to user settings.
+    debug("Debugging mode is on")
+    if not os.path.exists(workdir):
+        os.makedirs(workdir)
+    conf = ConfigObj(new_confifi)
+    ids = load_ids_obj(conf, workdir)
 
-    :param new_confifi:
-    :param backbone: use existing tree as backbone during tree recalculation
-    :param add_unpubl_seq: path to database if you want to add sequences from a local database
-    :param blacklist: list with accession numbers of sequences not to be included
-    :param data_obj: PS ATT object
-    :param downtorank: delimits the rank for filtering, e.g. species/genus/ subfamily
-    :param id_to_spn_addseq_json: JSON file where tip names correspond to species names for the local database
-    :param ids: PS IdDict object
-    :param selectby: mode of filtering, either blast or length
-    :param shared_blast_folder: path to folder for shared blast runs
-    :param threshold: integer delimiting the number of sequences per OTU
-    :return: PS run
-    """
+    make_otujsondict(id_to_spn, workdir, ids)
+    # make json file for unpublished database
+    if add_unpubl_seq is not None:
+        make_otujsondict(id_to_spn_addseq_json, workdir, ids, local=True)
 
+    # Generate an linked Alignment-Tree-Taxa object
+    data_obj = load_own_data(conf, seqaln, mattype, trfn, schema_trf, workdir, ingroup_mrca)
+
+    # here the filter standard function continues...
     assert os.path.isfile("{}/scrape_checkpoint.p".format(data_obj.workdir))
 
     sys.stdout.write("Reloading from pickled scrapefile: scrape\n")
@@ -524,6 +540,11 @@ def filter_OTOL(study_id,
     # Generate an linked Alignment-Tree-Taxa object
     data_obj = load_otol_data(conf, ingroup_mrca, mattype, seqaln, study_id, tree_id, workdir)
     ids = load_ids_obj(conf, workdir)
+
+    # make json file for unpublished database
+    if add_unpubl_seq is not None:
+        make_otujsondict(id_to_spn_addseq_json, workdir, ids, local=True)
+
     # Now combine the data, the ids, and the configuration into a single physcraper scrape object
     filteredScrape = PS_filter_run(add_unpubl_seq, blacklist, data_obj, downtorank, id_to_spn_addseq_json, ids,
                                    selectby, shared_blast_folder, threshold)
@@ -551,12 +572,18 @@ def filter_data_run(seqaln,
     This uses the FilterBlast subclass to be able to filter the blast output.
     """
     debug("Debugging mode is on")
+    print(workdir)
+    print(os.path.exists(workdir))
     if not os.path.exists(workdir):
-        os.mkdir(workdir)
+        print("make wd")
+        os.makedirs(workdir)
     conf = ConfigObj(configfi)
     ids = load_ids_obj(conf, workdir)
 
     make_otujsondict(id_to_spn, workdir, ids)
+    # make json file for unpublished database
+    if add_unpubl_seq is not None:
+        make_otujsondict(id_to_spn_addseq_json, workdir, ids, local=True)
 
     # Generate an linked Alignment-Tree-Taxa object
     data_obj = load_own_data(conf, seqaln, mattype, trfn, schema_trf, workdir, ingroup_mrca)
