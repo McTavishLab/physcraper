@@ -186,6 +186,9 @@ class Parser:
         """ Recursive function to find out if tax_id is part of mrca_id.
         """
         # debug("match_id_to_mrca")
+        if tax_id in [81077, 28384]:  # other sequences/artifical sequences
+            tax_id = 0
+            return tax_id
        
         if nodes is None:
             self.initialize()
