@@ -2271,6 +2271,7 @@ class PhyscraperScrape(object):
             else:
                 id_of_label = self.ids.ncbi_parser.get_id_from_name(spn_of_label)
             self.ids.spn_to_ncbiid[spn_of_label] = id_of_label
+        print(id_of_label, label)
         id_of_label = int(id_of_label)
         return id_of_label
 
