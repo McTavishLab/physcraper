@@ -17,8 +17,9 @@ shared_blast_folder = None # location to share blast runs across runs, see docum
 
 downtorank = None  # define filter rank, e.g. "species", "genus", if not defined, goes down to var/subsp
 blacklist = None  # list with accession numbers, e.g. [XXX.1, YYY.1]
-add_unpubl_seq = None
-id_to_spn_addseq_json = None
+add_unpubl_seq = None  # path to folder with unpublished sequences in fasta format
+id_to_spn_addseq_json = None # path to file where sequence names correspond to taxon names
+
 
 
 ## function to filter the blast results, if you want to keep all sequences found by blast, use standard_run()
