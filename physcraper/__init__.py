@@ -149,6 +149,7 @@ class ConfigObj(object):
           * keep: keep the unmapped taxa and asign them to life
           * remove: remove the unmapped taxa from aln and tre
       * **self.delay**: defines when to reblast sequences in days
+      * **self.add_lower_taxa**: T/F, enables to re-access formerly filtered seq by allowing them be passed into remove_identical. Used if we first filter for higher rank and then want to filter for a lower rank.
       * **optional self.objects**:
 
           * if blastloc == local:
@@ -234,7 +235,14 @@ class ConfigObj(object):
         assert 1 < self.maxlen, (
                 "value `%s` is not larger than 1" % self.maxlen
         )
-
+        self.add_lower_taxa = config["physcraper"]["add_lower_taxa"]
+        if self.add_lower_taxa == "True" or self.add_lower_taxa == "true":
+            self.add_lower_taxa = True
+        else:
+            self.add_lower_taxa = False
+        assert self.add_lower_taxa in [True, False], (
+                "self.add_lower_taxa `%s` is not True or False" % self.add_lower_taxa
+        )            
         # read in settings for internal Physcraper processes
         self.phylesystem_loc = config["phylesystem"]["location"]
         assert self.phylesystem_loc in ["local", "api"], \
@@ -1681,6 +1689,10 @@ class PhyscraperScrape(object):
         self._query_seqs_written = 0
         self._query_seqs_placed = 0
         self._full_tree_est = 0
+
+    def reset_new_seqs_acc():
+        """ Needs to be reseted if you want to rerun the filtering to get lower rank taxa added"""
+        self.newseqs_acc = []
 
     def OToL_unmapped_tips(self):
         """Assign names or remove tips from aln and tre that were not mapped during initiation of ATT class.
@@ -3519,33 +3531,6 @@ class FilterBlast(PhyscraperScrape):
         self.sp_d.clear()
         self.filtered_seq.clear()
         return
-
-
-class Settings(object):
-    """A class to store all settings for PhyScraper.
-    """
-
-    def __init__(self, seqaln, mattype, trfn, schema_trf, workdir, threshold=None,
-                 selectby=None, downtorank=None, spInfoDict=None, add_unpubl_seq=None,
-                 id_to_spn_addseq_json=None, configfi=None, blacklist=None, shared_blast_folder=None,
-                 delay=None, trim=None):
-        """Initialize the settings."""
-        self.seqaln = seqaln
-        self.mattype = mattype
-        self.trfn = trfn
-        self.schema_trf = schema_trf
-        self.workdir = workdir
-        self.threshold = threshold
-        self.selectby = selectby
-        self.downtorank = downtorank
-        self.spInfoDict = spInfoDict
-        self.add_unpubl_seq = add_unpubl_seq
-        self.id_to_spn_addseq_json = id_to_spn_addseq_json
-        self.configfi = configfi
-        self.blacklist = blacklist
-        self.shared_blast_folder = shared_blast_folder
-        self.delay = delay
-        self.trim = trim
 
 
 ####################
