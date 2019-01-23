@@ -2476,7 +2476,7 @@ class PhyscraperScrape(object):
                         try:  # sometimes ncbi has wrong id linked: since update of db 01/01/2019 or since retrieval of redundant seq information
                             input_rank_id = self.ids.ncbi_parser.match_id_to_mrca(ncbi_id, mrca_ncbi)
                         except:  # this is for the wrong ncbi link, get right tax_id and do search again
-                            debug("wrong tax_id given by ncbi? tax_id: {}, tax_name:{}"format(ncbi_id, tax_name)).
+                            debug("wrong tax_id given by ncbi? tax_id: {}, tax_name:{}".format(ncbi_id, tax_name))
                             ncbi_id = self.ids.ncbi_parser.get_id_from_name(tax_name)
                             debug(ncbi_id)
                             self.data.gb_dict[gb_id]['staxids'] = ncbi_id
