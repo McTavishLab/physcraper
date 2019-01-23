@@ -337,7 +337,8 @@ def add_different_rank(seqaln,
                     add_unpubl_seq=None,
                     id_to_spn_addseq_json=None,
                     ingroup_mrca=None,
-                    shared_blast_folder=None):
+                    shared_blast_folder=None,
+                    backbone=False):
     """looks for pickeled file to continue run, or builds and runs 
     new analysis for as long as new seqs are found. 
     This uses the FilterBlast subclass to be able to filter the blast output.
