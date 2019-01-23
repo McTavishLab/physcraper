@@ -364,7 +364,7 @@ def add_different_rank(seqaln,
     filteredScrape.repeat = 1
     conf = ConfigObj(new_confifi)
     filteredScrape.config = conf
-    assert filteredScrape.add_lower_taxa == True, ("you only need to run this function if you want to change the rank of seqs to be added.")
+    assert filteredScrape.config.add_lower_taxa == True, ("you only need to run this function if you want to change the rank of seqs to be added.")
 
     if backbone is True:
         filteredScrape.backbone = backbone
@@ -373,7 +373,7 @@ def add_different_rank(seqaln,
         filteredScrape.backbone = False
     filteredScrape.add_setting_to_self(downtorank, threshold)
     filteredScrape.blacklist = blacklist
-    if filteredScrape.add_lower_taxa == True:  # used if config file is changed to add lower ranks
+    if filteredScrape.config.add_lower_taxa == True:  # used if config file is changed to add lower ranks
         filteredScrape.reset_new_seqs_acc()
     if add_unpubl_seq is not None:
         filteredScrape.unpublished = True
