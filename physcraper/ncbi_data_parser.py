@@ -126,13 +126,14 @@ class Parser:
     def __init__(self, names_file, nodes_file):
         self.names_file = names_file
         self.nodes_file = nodes_file
-        self.initialize()
+        # self.initialize()
 
     def initialize(self):
         """ The data itself are not stored in __init__, as then the information will be pickled (which results in
         gigantic pickle file sizes).
         Instead every time the function is loaded after loading a pickle file, it will be 'initialized'.
         """
+        print("Initialize NODES and NAMES!!")
         global nodes
         nodes = load_nodes(self.nodes_file)
         global names
@@ -185,8 +186,7 @@ class Parser:
         """ Recursive function to find out if tax_id is part of mrca_id.
         """
         # debug("match_id_to_mrca")
-        # debug([tax_id, mrca_id])
-        # debug(nodes[nodes["tax_id"] == tax_id]["rank"].values[0])
+       
         if nodes is None:
             self.initialize()
         if type(tax_id) != int:
@@ -203,10 +203,33 @@ class Parser:
                 )
             )
             mrca_id = int(mrca_id)
+        debug([tax_id, mrca_id])
+        # debug(nodes[nodes["tax_id"] == tax_id]["rank"].values[0])
+        rank_mrca_id = nodes[nodes["tax_id"] == mrca_id]["rank"].values[0]
+        rank_tax_id = nodes[nodes["tax_id"] == tax_id]["rank"].values[0]
+        debug([rank_mrca_id, rank_tax_id])
         if tax_id == mrca_id:
             # debug("found right rank")
             return tax_id
-        elif nodes[nodes["tax_id"] == tax_id]["rank"].values[0] == "superkingdom":
+        # elif does not work, as synonyms have same tax id     
+        # elif rank_tax_id == rank_mrca_id and mrca_id != tax_id:
+        #     # try to figure out if synonym would fit mrca_id
+        #     if original_tax_id:
+        #         debug('original_tax_id:')
+        #         debug(original_tax_id)
+        #         debug(names[names["tax_id"] == original_tax_id])
+        #         debug((synonyms[synonyms["tax_id"] == original_tax_id]))
+        #         try:
+        #             tax_id = synonyms[synonyms["tax_id"] == original_tax_id]["tax_id"].values[0]
+        #             return self.match_id_to_mrca(tax_id, mrca_id)
+        #         except IndexError:
+        #             tax_id = 0
+        #             return tax_id
+
+        # debug(some)
+        elif rank_mrca_id == rank_tax_id:
+            return tax_id
+        elif rank_tax_id == "superkingdom":
             tax_id = 0
             return tax_id
         else:

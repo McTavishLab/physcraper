@@ -996,9 +996,9 @@ class AlignTreeTax(object):
             # debug("ncbi_id is none")
             if ids_obj.otu_rank is not None: 
                 ncbi_id = self.get_rank_info_from_web(tax_name)
-                # ncbi_id = ids_obj.otu_rank[tax_name]["taxon id"]
-#            else:
-#                ncbi_id = ids_obj.ncbi_parser.get_id_from_name(tax_name)
+            #     ncbi_id = ids_obj.otu_rank[tax_name]["taxon id"]
+            # else:
+            #     ncbi_id = ids_obj.ncbi_parser.get_id_from_name(tax_name)
             ids_obj.acc_ncbi_dict[gb_id] = ncbi_id
             ids_obj.ncbiid_to_spn[ncbi_id] = tax_name
             ids_obj.spn_to_ncbiid[tax_name] = ncbi_id
@@ -1453,8 +1453,8 @@ class IdDicts(object):
                 gb_id = acc
             elif "^ncbi:accession" in otu_dict_entry:
                 gb_id = otu_dict_entry["^ncbi:accession"]
-            # else:
-            #    sys.stderr.write("There is no name supplied and no accession number. This should not happen! Check name!")
+            else:
+               sys.stderr.write("There is no name supplied and no accession number. This should not happen! Check name!")
             if len(gb_id.split(".")) == 1:
                 debug(gb_id)
             if gb_id in self.acc_ncbi_dict:
