@@ -2106,7 +2106,7 @@ class PhyscraperScrape(object):
         for key in query_dict.keys():
             if float(query_dict[key]["evalue"]) < float(self.config.e_value_thresh):
                 gb_acc = query_dict[key]["accession"]
-                if gb_acc not in self.data.gb_dict:  # skip ones we already have
+                if gb_acc not in self.data.gb_dict or self.config.add_lower_taxa is True:  # skip ones we already have
                     self.new_seqs[gb_acc] = query_dict[key]["sseq"]
                     self.data.gb_dict[gb_acc] = query_dict[key]
             else:

@@ -367,6 +367,21 @@ def add_different_rank(seqaln,
     filteredScrape.config = conf
     assert filteredScrape.config.add_lower_taxa == True, ("you only need to run this function if you want to change the rank of seqs to be added.")
 
+    # copy previous files to different folder
+
+
+    count = 1
+    while os.path.exists("{}/update_{}".format(workdir, count)):
+        count += 1
+    os.mkdir("{}/update_{}".format(workdir, count))
+    old_runs = "{}/update_{}".format(workdir, count)
+
+    src_files = os.listdir(workdir)
+    for file_name in src_files:
+        full_file_name = os.path.join(workdir, file_name)
+        if (os.path.isfile(full_file_name)):
+            shutil.copy(full_file_name, old_runs)
+
     if backbone is True:
         filteredScrape.backbone = backbone
         filteredScrape.data.write_files(treepath="backbone.tre", alnpath="backbone.fas")
@@ -672,9 +687,10 @@ def concat(genelistdict, workdir_comb, email, num_threads=None, percentage=0.37,
 def save_copy_code(workdir_comb):
     i = 1
     if os.path.exists("{}/physcraper_runcopy".format(workdir_comb)):
-        prev_dir = "{}/physcraper_runcopy{}".format(workdir_comb, i)
-        i += 1
-        shutil.move("{}/physcraper_runcopy".format(workdir_comb), prev_dir)
+        while os.path.exists("{}/physcraper_runcopy{}".format(workdir_comb, i)):
+            prev_dir = "{}/physcraper_runcopy{}".format(workdir_comb, i)
+            i += 1
+            shutil.move("{}/physcraper_runcopy".format(workdir_comb), prev_dir)
     shutil.copytree("./physcraper", "{}/physcraper_runcopy".format(workdir_comb))
 
 
