@@ -232,7 +232,7 @@ class Parser:
         # debug(some)
         elif rank_mrca_id == rank_tax_id:
             return tax_id
-        elif rank_tax_id == "superkingdom" or tax_id == 2759:
+        elif rank_tax_id == "superkingdom" or tax_id == 2759 or tax_id == 1:
             tax_id = 0
             return tax_id
         else:
