@@ -739,7 +739,7 @@ class AlignTreeTax(object):
         self.workdir = os.path.abspath(workdir)
         if not os.path.exists(self.workdir):
             os.makedirs(self.workdir)
-        assert int(ingroup_mrca), ("your ingroup_mrca '%s is not an integer." S ingroup_mrca)
+        assert int(ingroup_mrca), ("your ingroup_mrca '%s' is not an integer." % ingroup_mrca)
         self.ott_mrca = ingroup_mrca  # ott_ingroup mrca can be pulled directly from phylesystem
         self.orig_seqlen = []  # will get filled in later...
         self.gb_dict = {}  # has all info about new blast seq 
