@@ -2268,6 +2268,8 @@ class PhyscraperScrape(object):
                 id_of_label = self.ids.ncbi_parser.get_id_from_name(spn_of_label)
             self.ids.spn_to_ncbiid[spn_of_label] = id_of_label
         print(id_of_label, label)
+        if type(id_of_label) is not int:
+            assert id_of_label.isdigit(), (id_of_label, self.data.otu_dict[label])
         id_of_label = int(id_of_label)
         return id_of_label
 
@@ -3415,7 +3417,7 @@ class FilterBlast(PhyscraperScrape):
         if original < self.threshold:
             assert seq_added <= self.threshold, ("count_dict `%s` has more seq added than threshold." % count_dict)
         else:
-            assert seq_added == 0
+            assert seq_added + original <= self.threshold
         return count_dict
 
     def how_many_sp_to_keep(self, selectby):
