@@ -3417,7 +3417,8 @@ class FilterBlast(PhyscraperScrape):
         if original < self.threshold:
             assert seq_added <= self.threshold, ("count_dict `%s` has more seq added than threshold." % count_dict)
         else:
-            assert seq_added + original <= self.threshold
+            assert seq_added + original <= self.threshold, ("seq_added `{}` and original {} have more than threshold {}.".format(seq_added, original, count_dict))
+
         return count_dict
 
     def how_many_sp_to_keep(self, selectby):
