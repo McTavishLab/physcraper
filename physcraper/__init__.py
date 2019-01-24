@@ -923,7 +923,7 @@ class AlignTreeTax(object):
         aln_ids = set()
         for taxon in self.aln:
             aln_ids.add(taxon.label)
-        assert aln_ids.issubset(self.otu_dict.keys()), (aln_ids, otu_dict.keys())
+        assert aln_ids.issubset(self.otu_dict.keys()), (aln_ids, self.otu_dict.keys())
         treed_taxa = set()
         for leaf in self.tre.leaf_nodes():
             treed_taxa.add(leaf.taxon)
@@ -3407,10 +3407,10 @@ class FilterBlast(PhyscraperScrape):
         }
         # if self.config.add_lower_taxa is not True:
         if new_taxon is False:
-            assert original != 0 or seq_added != 0, ("count_dict `%s` has more seq added than threshold." % count_dict)
+            assert original != 0 or seq_added != 0, ("count_dict `%s` has more seq added than threshold: 0." % count_dict)
         if new_taxon is True:
-            assert original == 0, ("count_dict `%s` has more seq added than threshold." % count_dict)
-            assert seq_added == 0, ("count_dict `%s` has more seq added than threshold." % count_dict)
+            assert original == 0, ("count_dict `%s` has more original seq than threshold: 0." % count_dict)
+            assert seq_added == 0, ("count_dict `%s` has more seq added than threshold: 0." % count_dict)
         if original < self.threshold:
             assert seq_added <= self.threshold, ("count_dict `%s` has more seq added than threshold." % count_dict)
         else:
