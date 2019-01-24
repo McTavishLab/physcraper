@@ -2267,10 +2267,10 @@ class PhyscraperScrape(object):
             else:
                 id_of_label = self.ids.ncbi_parser.get_id_from_name(spn_of_label)
             self.ids.spn_to_ncbiid[spn_of_label] = id_of_label
-        print(id_of_label, label)
+        debug([id_of_label, label])
         if type(id_of_label) is not int:
             assert id_of_label.isdigit(), (id_of_label, self.data.otu_dict[label])
-        id_of_label = int(id_of_label)
+            id_of_label = int(id_of_label)
         return id_of_label
 
     def seq_dict_build(self, seq, label, seq_dict):
@@ -3367,9 +3367,9 @@ class FilterBlast(PhyscraperScrape):
                     name_gbid = key
         if self.downtorank is not None:
             nametoreturn = key
-        if nametoreturn is None:
-            nametoreturn = name_gbid
-        assert nametoreturn is not None
+        # if nametoreturn is None:
+        #     nametoreturn = name_gbid
+        # assert nametoreturn is not None
         return nametoreturn
 
     def count_num_seq(self, tax_id):
@@ -3437,7 +3437,7 @@ class FilterBlast(PhyscraperScrape):
             seq_present = count_dict["seq_present"]
             query_count = count_dict["query_count"]
             new_taxon = count_dict["new_taxon"]
-            print(tax_id)
+            # debug(tax_id)
             if seq_present <= self.threshold:  # add seq to aln
                 if seq_present + query_count <= self.threshold:  # to add all stuff to self.filtered_seq[gi_n]
                     print("add all")
