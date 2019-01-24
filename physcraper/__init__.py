@@ -3416,12 +3416,13 @@ class FilterBlast(PhyscraperScrape):
             "query_count": query_count,
             "new_taxon": new_taxon,
         }
-        if new_taxon is False:
-            assert original != 0 or seq_added != 0, ("count_dict `%s` has more seq added than threshold." % count_dict)
-        if new_taxon is True:
-            assert original == 0, ("count_dict `%s` has more seq added than threshold." % count_dict)
-            assert seq_added == 0, ("count_dict `%s` has more seq added than threshold." % count_dict)
-        assert seq_added <= self.threshold, ("count_dict `%s` has more seq added than threshold." % count_dict)
+        if self.config.add_lower_taxa is not True:
+            if new_taxon is False:
+                assert original != 0 or seq_added != 0, ("count_dict `%s` has more seq added than threshold." % count_dict)
+            if new_taxon is True:
+                assert original == 0, ("count_dict `%s` has more seq added than threshold." % count_dict)
+                assert seq_added == 0, ("count_dict `%s` has more seq added than threshold." % count_dict)
+            assert seq_added <= self.threshold, ("count_dict `%s` has more seq added than threshold." % count_dict)
         return count_dict
 
     def how_many_sp_to_keep(self, selectby):
