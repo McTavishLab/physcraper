@@ -3414,13 +3414,13 @@ class FilterBlast(PhyscraperScrape):
         if new_taxon is True:
             assert original == 0, ("count_dict `%s` has more original seq than allowed for new taxon." % count_dict)
             assert seq_added == 0, ("count_dict `%s` has more seq added than allowed for new taxon." % count_dict)
+        debug([seq_added, original, self.threshold])
         if original < self.threshold:
             assert seq_added <= self.threshold, ("count_dict `%s` has more seq added than threshold." % count_dict)
         elif original > self.threshold:
             sys.stdout.write("already more originals than threshold...\n")
 
         else:
-            debug([seq_added, original, self.threshold])
             assert seq_added + original <= self.threshold, "seq_added {} and original {} have more than threshold {}.".format(seq_added, original, self.threshold)
 
         return count_dict
