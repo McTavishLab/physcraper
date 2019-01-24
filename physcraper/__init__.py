@@ -403,7 +403,7 @@ def generate_ATT_from_phylesystem(aln,
     :param ingroup_mrca: optional.  OToL identifier of the mrca of the clade that shall be updated (can be subset of the phylogeny)
     :return: object of class ATT
     """
-    assert isinstance(aln, datamodel.charmatrixmodel.DnaCharacterMatrix)
+    assert isinstance(aln, datamodel.charmatrixmodel.DnaCharacterMatrix), "your alignment `%s` ist not of type DnaCharacterMatrix" % aln
     for tax in aln.taxon_namespace:
         tax.label = tax.label.replace(" ", "_")  # Forcing all spaces to underscore
     nexson = get_nexson(study_id, phylesystem_loc)
@@ -505,7 +505,7 @@ def generate_ATT_from_files(seqaln,
                    schema=schema_trf,
                    preserve_underscores=True,
                    taxon_namespace=aln.taxon_namespace)
-    assert tre.taxon_namespace is aln.taxon_namespace
+    assert tre.taxon_namespace is aln.taxon_namespace, ("tre and aln have not the same namespace.")
     otu_newick = tre.as_string(schema=schema_trf)
     otu_dict = json.load(open(otu_json, "r"))
     debug("get mrca: ")
@@ -594,7 +594,7 @@ def OtuJsonDict(id_to_spn, id_dict):
             ottid, ottname, ncbiid = None, None, None
             tipname, species = lin.strip().split(",")
             clean_lab = standardize_label(tipname)
-            assert clean_lab not in sp_info_dict
+            assert clean_lab not in sp_info_dict, ("standardized label ('%s') of `%s` already exists" % clean_lab tipname)
             otu_id = "otu{}".format(clean_lab)
             spn = species.replace("_", " ")
             info = get_ott_taxon_info(spn)
@@ -718,6 +718,7 @@ class AlignTreeTax(object):
     def __init__(self, newick, otu_dict, alignment, ingroup_mrca, workdir, config_obj, schema=None, taxon_namespace=None):
         debug("build ATT class")
         self.aln = alignment
+        assert isinstance(self.aln, datamodel.charmatrixmodel.DnaCharacterMatrix), ("your aln '%s' is not a DnaCharacterMatrix" % alignment)
         if schema is None:
             self.tre = Tree.get(data=newick,
                                 schema="newick",
@@ -728,9 +729,8 @@ class AlignTreeTax(object):
                                 schema=schema,
                                 preserve_underscores=True,
                                 taxon_namespace=self.aln.taxon_namespace)
-        assert (self.tre.taxon_namespace is self.aln.taxon_namespace)
-        assert isinstance(self.aln, datamodel.charmatrixmodel.DnaCharacterMatrix)
-        assert isinstance(otu_dict, dict)
+        assert (self.tre.taxon_namespace is self.aln.taxon_namespace), ("tre and aln taxon_namespace are not identical")
+        assert isinstance(otu_dict, dict), ("otu_dict '%s' is not of type dict" % otu_dict)
         self.otu_dict = otu_dict
         self.config = config_obj
         self.ps_otu = 1  # iterator for new otu IDs
@@ -739,7 +739,7 @@ class AlignTreeTax(object):
         self.workdir = os.path.abspath(workdir)
         if not os.path.exists(self.workdir):
             os.makedirs(self.workdir)
-        assert int(ingroup_mrca)
+        assert int(ingroup_mrca), ("your ingroup_mrca '%s is not an integer." S ingroup_mrca)
         self.ott_mrca = ingroup_mrca  # ott_ingroup mrca can be pulled directly from phylesystem
         self.orig_seqlen = []  # will get filled in later...
         self.gb_dict = {}  # has all info about new blast seq 
@@ -2420,7 +2420,7 @@ class PhyscraperScrape(object):
                             mrca_ncbi = list(self.mrca_ncbi)[0]
                         else:
                             debug(self.mrca_ncbi)
-                            debug("think about something to do!")
+                            debug("should not happen. think about something to do!")
                             mrca_ncbi = None
                         # debug(mrca_ncbi)
                         rank_mrca_ncbi = self.ids.ncbi_parser.get_rank(mrca_ncbi)
@@ -2505,7 +2505,7 @@ class PhyscraperScrape(object):
         old_seqs_ids = set()
         for tax in old_seqs:
             old_seqs_ids.add(tax)
-        assert old_seqs_ids.issubset(tmp_dict.keys())
+        assert old_seqs_ids.issubset(tmp_dict.keys()), (old_seqs_ids, tmp_dict)
         for tax in old_seqs:
             del tmp_dict[tax]
         self.new_seqs_otu_id = tmp_dict  # renamed new seq to their otu_ids from GI's, but all info is in self.otu_dict

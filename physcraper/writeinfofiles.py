@@ -65,6 +65,7 @@ def get_additional_GB_info(physcraper_obj):
                             country = str(item[u"GBQualifier_value"])
                         if item[u"GBQualifier_name"] == "isolate":
                             isolate = str(item[u"GBQualifier_value"])
+                    debug(read_handle[0])
                     authors = read_handle[0]["GBSeq_references"][0][u'GBReference_authors']
                     journal = read_handle[0]["GBSeq_references"][0][u'GBReference_journal']
                     publication = read_handle[0]["GBSeq_references"][0][u'GBReference_title']
