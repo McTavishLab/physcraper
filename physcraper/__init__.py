@@ -923,7 +923,8 @@ class AlignTreeTax(object):
         aln_ids = set()
         for taxon in self.aln:
             aln_ids.add(taxon.label)
-        assert aln_ids.issubset(self.otu_dict.keys()), (aln_ids, self.otu_dict.keys())
+        assert aln_ids.issubset(self.otu_dict.keys()), ([x for x in aln_ids if x not in self.otu_dict.keys()], self.otu_dict.keys())
+
         treed_taxa = set()
         for leaf in self.tre.leaf_nodes():
             treed_taxa.add(leaf.taxon)
