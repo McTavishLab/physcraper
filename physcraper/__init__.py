@@ -3411,7 +3411,7 @@ class FilterBlast(PhyscraperScrape):
         if new_taxon is True:
             assert original == 0, ("count_dict `%s` has more seq added than threshold." % count_dict)
             assert seq_added == 0, ("count_dict `%s` has more seq added than threshold." % count_dict)
-        if original <= self.threshold:
+        if original < self.threshold:
             assert seq_added <= self.threshold, ("count_dict `%s` has more seq added than threshold." % count_dict)
         else:
             assert seq_added == 0
