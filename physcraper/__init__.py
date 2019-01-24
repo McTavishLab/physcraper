@@ -2395,7 +2395,7 @@ class PhyscraperScrape(object):
         old_seqs = tmp_dict.keys()
         # Adding seqs that are different, but needs to be maintained as diff than aln that the tree has been run on
         avg_seqlen = sum(self.data.orig_seqlen) / len(self.data.orig_seqlen)  # HMMMMMMMM
-        assert self.config.seq_len_perc <= 1
+        assert self.config.seq_len_perc <= 1, ("your config seq_len_param is not smaller than 1: {}".format(self.config.seq_len_perc))
         seq_len_cutoff = avg_seqlen * self.config.seq_len_perc
         all_added_gi = set()
         for key in self.data.otu_dict.keys():
@@ -3417,7 +3417,7 @@ class FilterBlast(PhyscraperScrape):
         if original < self.threshold:
             assert seq_added <= self.threshold, ("count_dict `%s` has more seq added than threshold." % count_dict)
         else:
-            assert seq_added + original <= self.threshold, (print("seq_added `{}` and original {} have more than threshold {}.".format(seq_added, original, count_dict)))
+            assert seq_added + original <= self.threshold, "seq_added {} and original {} have more than threshold {}.".format(seq_added, original, count_dict)
 
         return count_dict
 
