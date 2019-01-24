@@ -19,9 +19,9 @@ print "1. {}".format(conf.email)
 aln = DnaCharacterMatrix.get(path=seqaln, schema=mattype)
 data_obj = physcraper.generate_ATT_from_phylesystem(aln=aln,
                                                     workdir=workdir,
+                                                    config_obj=conf,
                                                     study_id=study_id,
-                                                    tree_id=tree_id,
-                                                    phylesystem_loc=conf.phylesystem_loc)
+                                                    tree_id=tree_id)
 
 ids = physcraper.IdDicts(conf, workdir=workdir)
 

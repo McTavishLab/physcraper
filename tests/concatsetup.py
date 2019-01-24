@@ -4,7 +4,7 @@ import json
 from physcraper import wrappers, OtuJsonDict, ConfigObj, IdDicts
 #
 
-
+# Setup runs for the concat test functions
 
 # tiny its
 seqaln = "tests/data/tiny_comb_its/tiny_comb_its.fasta"
@@ -12,25 +12,11 @@ mattype = "fasta"
 trfn = "tests/data/tiny_comb_its/tiny_comb_its.tre"
 schema_trf = "newick"
 id_to_spn = r"tests/data/tiny_comb_its/nicespl.csv"
-workdir = "tests/data/tiny_comb_its"
-configfi = "tests/data/test.config"
-otu_jsonfi = "{}/otu_dict.json".format(workdir)
+workdir = "tests/data/PS_tiny_comb_its"
+configfi = "tests/data/localblast.config"
 threshold = 2
 selectby = "blast"
 
-if not os.path.exists("{}".format(workdir)):
-    os.makedirs("{}".format(workdir))
-
-conf = ConfigObj(configfi)
-ids = IdDicts(conf, workdir=workdir)
-
-
-if os.path.exists(otu_jsonfi):
-    print("load json")
-    otu_json = json.load(open(otu_jsonfi))
-else:
-    otu_json = OtuJsonDict(id_to_spn, ids)
-    json.dump(otu_json, open(otu_jsonfi, "w"))
 
 
 wrappers.filter_data_run(seqaln,
@@ -39,10 +25,9 @@ wrappers.filter_data_run(seqaln,
                          schema_trf,
                          workdir,
                          threshold,
-                         otu_jsonfi,
+                         id_to_spn,
                          configfi,
                          selectby=selectby)
-
 
 # tiny ets
 seqaln = "tests/data/tiny_comb_ets/tiny_comb_ets.fasta"
@@ -51,24 +36,12 @@ trfn = "tests/data/tiny_comb_ets/tiny_comb_ets.tre"
 schema_trf = "newick"
 id_to_spn = r"tests/data/tiny_comb_ets/nicespl.csv"
 
-workdir = "tests/data/tiny_comb_ets"
-configfi = "tests/data/test.config"
-otu_jsonfi = "{}/otu_dict.json".format(workdir)
+workdir = "tests/data/PS_tiny_comb_ets"
+configfi = "tests/data/localblast.config"
 treshold = 2
 selectby = "blast"
 
-if not os.path.exists("{}".format(workdir)):
-        os.makedirs("{}".format(workdir))
 
-conf = ConfigObj(configfi)
-ids = IdDicts(conf, workdir=workdir)
-
-if os.path.exists(otu_jsonfi):
-    print("load json")
-    otu_json = json.load(open(otu_jsonfi))
-else:
-    otu_json = OtuJsonDict(id_to_spn, ids)
-    json.dump(otu_json, open(otu_jsonfi, "w"))
 
 wrappers.filter_data_run(seqaln,
                          mattype,
@@ -76,6 +49,6 @@ wrappers.filter_data_run(seqaln,
                          schema_trf,
                          workdir,
                          threshold,
-                         otu_jsonfi,
+                         id_to_spn,
                          configfi,
                          selectby=selectby)

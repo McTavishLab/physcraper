@@ -42,10 +42,13 @@ def test_0():
         aln = DnaCharacterMatrix.get(path=seqaln, schema=mattype)
         data_obj = physcraper.generate_ATT_from_phylesystem(aln=aln,
                                     workdir=workdir,
+                                    config_obj=conf,
                                     study_id = study_id,
                                     tree_id = tree_id,
                                     phylesystem_loc = conf.phylesystem_loc)
         # physcraper.debug(len(data_obj.aln.taxon_namespace))
+        data_obj.workdir = absworkdir
+
         pickle.dump(data_obj, open("tests/data/precooked/otol_tiny_dataobj.p", "wb" ))
         ids =  physcraper.IdDicts(conf, workdir=workdir)
         # physcraper.debug(os.getcwd())

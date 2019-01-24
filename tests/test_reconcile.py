@@ -4,7 +4,7 @@ from dendropy import Tree, \
       DnaCharacterMatrix, \
       DataSet, \
       datamodel
-from physcraper import wrappers, generate_ATT_from_files, AlignTreeTax, OtuJsonDict
+from physcraper import wrappers, ConfigObj, generate_ATT_from_files, AlignTreeTax, OtuJsonDict
 
 
 def test_reconcile():
@@ -20,9 +20,13 @@ def test_reconcile():
     id_to_spn = r"tests/data/tiny_test_example/test_nicespl.csv"
     otu_jsonfi = "tests/data/tmp/owndata/otu_dict.json".format(workdir)
 
+
+    conf = ConfigObj(configfi, interactive=False)
+
     data_obj = generate_ATT_from_files(seqaln=seqalnmiss, 
                                      mattype=mattype, 
-                                     workdir=workdir,
+                                    workdir=workdir,
+                                     config_obj=conf,
                                      treefile=treefile,
                                      schema_trf = schema_trf,
                                      otu_json=otu_jsonfi,
@@ -30,13 +34,14 @@ def test_reconcile():
 
     for otu in data_obj.otu_dict:
         if data_obj.otu_dict[otu][u'^ot:originalLabel'] == '2029_doronicum':
-            assert data_obj.otu_dict[otu]['^physcraper:status'] == "deleted in name reconciliation"
+            assert data_obj.otu_dict[otu]['^physcraper:status'] == "deleted in reconciliation"
 
     #----------------------------------------------------
 
     data_obj = generate_ATT_from_files(seqaln=seqaln, 
                                      mattype=mattype, 
-                                     workdir=workdir,
+                                    workdir=workdir,
+                                     config_obj=conf,
                                      treefile=treefilemiss,
                                      schema_trf = schema_trf,
                                      otu_json=otu_jsonfi,
@@ -46,7 +51,7 @@ def test_reconcile():
 
     for otu in data_obj.otu_dict:
         if data_obj.otu_dict[otu][u'^ot:originalLabel'] == 'S_scopolii':
-            assert data_obj.otu_dict[otu]['^physcraper:status'] == "deleted in name reconciliation"
+            assert data_obj.otu_dict[otu]['^physcraper:status'] == "deleted in reconciliation"
 
 
 
@@ -137,6 +142,7 @@ def test_reconcile():
     data_obj = generate_ATT_from_files(seqaln=seqalnmiss, 
                                      mattype=mattype, 
                                      workdir=workdir,
+                                     config_obj=conf,
                                      treefile=treefilemiss,
                                      schema_trf = schema_trf,
                                      otu_json=otu_jsonfi,
@@ -147,9 +153,9 @@ def test_reconcile():
 
     for otu in data_obj.otu_dict:
         if data_obj.otu_dict[otu][u'^ot:originalLabel'] == '2029_doronicum':
-            assert data_obj.otu_dict[otu]['^physcraper:status'] == "deleted in name reconciliation"
+            assert data_obj.otu_dict[otu]['^physcraper:status'] == "deleted in reconciliation"
 
     for otu in data_obj.otu_dict:
         if data_obj.otu_dict[otu][u'^ot:originalLabel'] == 'S_scopolii':
-            assert data_obj.otu_dict[otu]['^physcraper:status'] == "deleted in name reconciliation"
+            assert data_obj.otu_dict[otu]['^physcraper:status'] == "deleted in reconciliation"
 

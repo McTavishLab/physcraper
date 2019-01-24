@@ -5,8 +5,7 @@ argcomplete==1.6.0
 argparse==1.2.1
 biopython==1.68
 configparser==3.5.0
-coverage==4.2
-enum34==1.1.6
+coverage>=4.4
 locket==0.2.0
 -e git+https://github.com/OpenTreeOfLife/peyotl@api_v3#egg=peyotl
 python-dateutil==2.6.0
@@ -15,7 +14,7 @@ redis==2.10.5
 requests==2.12.1
 sh==1.11
 six==1.10.0
-urllib3==1.19.1
+urllib3>=1.23
 wsgiref==0.1.2
 zope.interface==4.4.1
 numpy==1.14.5
@@ -26,3 +25,6 @@ m2r; python_version > '2.7.13'
 recommonmark
 #past
 future
+pytest-xdist
+pytest-cov
+mpi4py

@@ -21,6 +21,8 @@ def test_prune_short():
             os.makedirs("{}".format(workdir))
 
     conf = physcraper.ConfigObj(configfi, interactive=False)
+    conf.blast_loc='remote' #saves time over loading names and nodes, and they aren't used here
+
     ids = physcraper.IdDicts(conf, workdir=workdir)
 
     if os.path.exists(otu_jsonfi):
@@ -33,14 +35,15 @@ def test_prune_short():
     data_obj = physcraper.generate_ATT_from_files(seqaln=seqaln, 
                                      mattype=mattype, 
                                      workdir=workdir,
+                                     config_obj=conf,
                                      treefile=treefile,
                                      schema_trf = schema_trf,
                                      otu_json=otu_jsonfi,
                                      ingroup_mrca=None)
 
 
-
+    data_obj.config.seq_len_perc = 0.9
     len_before = len(data_obj.tre.taxon_namespace)
-    data_obj.prune_short(0.9)
+    data_obj.prune_short()
     len_after = len(data_obj.tre.taxon_namespace)
     assert len_before > len_after

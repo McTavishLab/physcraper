@@ -4,7 +4,7 @@ import sys
 import os
 from physcraper import ConfigObj, IdDicts
 from physcraper import FilterBlast
-import physcraper.local_blast as local_blast
+import physcraper.filter_by_local_blast as local_blast
 
 
 sys.stdout.write("\ntests write_blast\n")

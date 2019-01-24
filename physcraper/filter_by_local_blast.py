@@ -95,6 +95,9 @@ def read_filter_blast(workdir, seq_d, fn):
 
     Note: has test, runs: test_read_local_blast.py
 
+    :param seq_d: sequence dictionary from FilterBlast
+    :param fn: filename
+    :return seq_blast_score, dictionary with the blast values
     """
     general_wd = os.getcwd()
     os.chdir(os.path.join(workdir, "blast"))
@@ -143,8 +146,17 @@ def read_filter_blast(workdir, seq_d, fn):
     return seq_blast_score
 
 
-def write_filterblast_files(workdir, file_name, seq, db=False, fn=None):
+def write_filterblast_files(workdir, seq_name, seq, db=False, fn=None):
     """Writes local blast files which will be read by run_filter_blast.
+
+    :param workdir: working directory
+    :param seq_name: sequence identifier
+    :param seq: sequence to write
+    :param db: if True, will be written to database file instead
+    :param fn: optional file name
+    :return: files with sequences written to it in fasta format
+    """
+    """
     """
     debug("writing files")
     if not os.path.exists("{}/blast".format(workdir)):
@@ -155,6 +167,6 @@ def write_filterblast_files(workdir, file_name, seq, db=False, fn=None):
     else:
         fnw = "{}/blast/{}_tobeblasted".format(workdir, fn)
         fi_o = open(fnw, "w")
-    fi_o.write(">{}\n".format(file_name))
+    fi_o.write(">{}\n".format(seq_name))
     fi_o.write("{}\n".format(str(seq).replace("-", "")))
     fi_o.close()

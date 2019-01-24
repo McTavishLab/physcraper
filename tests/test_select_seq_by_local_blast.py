@@ -3,7 +3,7 @@ import os
 #from physcraper import ConfigObj, IdDicts, FilterBlast
 import pickle#
 import physcraper
-import physcraper.local_blast as local_blast
+import physcraper.filter_by_local_blast as local_blast
 
 
 sys.stdout.write("\ntests select_seq_by_local_blast\n")
@@ -18,7 +18,10 @@ downtorank = None
 
 absworkdir = os.path.abspath(workdir)
 
+from pytest import mark
+localblast = mark.localblast
 
+@localblast
 def test_select_seq_by_local_blast():
     conf = physcraper.ConfigObj(configfi, interactive=False)
     data_obj = pickle.load(open("tests/data/precooked/tiny_dataobj.p", 'rb'))
@@ -54,8 +57,50 @@ def test_select_seq_by_local_blast():
                     count += threshold-count_dict["seq_present"]
                 if count_dict["seq_present"] > threshold:
                     count += 0
-    filteredScrape.how_many_sp_to_keep(threshold, selectby)
+    #########
+    # count refelcts what should be added, but through threshold the actual number might be lower
+    # copy here from "select_seq_by_local_blast"
+    for tax_id in filteredScrape.sp_d:
+        count_dict = filteredScrape.count_num_seq(tax_id)
+        seq_present = count_dict["seq_present"]
+        query_count = count_dict["query_count"]
+        new_taxon = count_dict["new_taxon"]
+        
 
+        seq_d = filteredScrape.sp_seq_d[tax_id]
+        fn = tax_id
+        count2 = seq_present
+
+        if seq_present == 0 and new_taxon is True and query_count > 1:  # if new taxon and more than 1 seq to blast
+            # print("new taxon")
+            # print(tax_id,query_count)
+            # print(filteredScrape.sp_seq_d[tax_id].keys())
+            blast_seq_id = filteredScrape.sp_seq_d[tax_id].keys()[0]
+            seq = filteredScrape.sp_seq_d[tax_id][blast_seq_id]
+            local_blast.write_filterblast_files(filteredScrape.workdir, blast_seq_id, seq,
+                                                fn=tax_id)  # blast guy
+            blast_db = filteredScrape.sp_seq_d[tax_id].keys()[1:]
+            for blast_key in blast_db:
+                seq = filteredScrape.sp_seq_d[tax_id][blast_key]
+                local_blast.write_filterblast_files(filteredScrape.workdir, blast_key, seq, db=True,
+                                                    fn=tax_id)
+            # make local blast of sequences
+            local_blast.run_filter_blast(filteredScrape.workdir, tax_id, tax_id)
+            seq_blast_score = local_blast.read_filter_blast(filteredScrape.workdir, seq_d, fn)
+               
+            if len(seq_blast_score.keys()) < (
+                threshold - count2):  # less seq available than need to be added, just use all
+                # print("add all")
+                # print(len(seq_blast_score.keys()))
+                thres_minus = (threshold - count2) - len(seq_blast_score.keys())
+                # random_seq_ofsp = seq_blast_score
+                # print("thresminus:", thres_minus)
+                # print("query_count:", query_count)
+                # print(threshold - count2)
+                count = count - thres_minus
+
+    filteredScrape.how_many_sp_to_keep(selectby)
+    # print(count, len(filteredScrape.filtered_seq))
     assert count == len(filteredScrape.filtered_seq) and count>0
   
 # #added before

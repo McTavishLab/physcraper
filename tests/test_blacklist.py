@@ -2,16 +2,16 @@ import sys
 import os
 import pickle
 import shutil
-import pytest
 from physcraper import ConfigObj, IdDicts, FilterBlast, debug
-
 from pytest import mark
-# you can actually do whatever
-# ruftrum = mark.ruftrum will work and create a "ruftrum" test. 
+
 slow = mark.slow
+localblast = mark.localblast
+
 
 
 @slow
+@localblast
 def test_blacklist():
 
     workdir = "tests/output/test_blacklist"
@@ -24,7 +24,6 @@ def test_blacklist():
     absworkdir = os.path.abspath(noblack)
     if not os.path.exists(os.path.join(absworkdir, "current_blast_run/")):
         os.makedirs(os.path.join(absworkdir, "current_blast_run/"))
-
 
     conf = ConfigObj(configfi, interactive=False)
     data_obj = pickle.load(open("tests/data/precooked/tiny_dataobj.p", 'rb'))

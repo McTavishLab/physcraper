@@ -5,7 +5,7 @@ from math import sqrt
 from Bio.Blast import NCBIXML
 #from physcraper import ConfigObj, IdDicts, FilterBlast
 import physcraper
-import physcraper.local_blast as local_blast
+import physcraper.filter_by_local_blast as local_blast
 
 
 sys.stdout.write("\ntests calculate_mean_sd\n")
@@ -14,8 +14,14 @@ workdir = "tests/output/mean_sd_test"
 configfi = "tests/data/test.config"
 absworkdir = os.path.abspath(workdir)
 
+from pytest import mark
+
+localblast = mark.localblast
+
+@localblast
 def test_calculate_mean_sd():
     conf = physcraper.ConfigObj(configfi, interactive=False)
+
     data_obj = pickle.load(open("tests/data/precooked/tiny_dataobj.p", 'rb'))
     data_obj.workdir = absworkdir
     ids = physcraper.IdDicts(conf, workdir=data_obj.workdir)
