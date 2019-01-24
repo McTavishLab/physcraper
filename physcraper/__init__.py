@@ -1490,7 +1490,7 @@ class IdDicts(object):
                     otu_dict_entry["^physcraper:TaxonName"] = tax_name
                     otu_dict_entry["^ncbi:taxon"] = ncbi_id
             assert ncbi_id is not None
-        assert tax_name is not None
+        assert tax_name is not None, (otu_dict_entry, acc)
         tax_name = tax_name.replace(" ", "_")
         return tax_name
 
@@ -1542,7 +1542,6 @@ class IdDicts(object):
                 else:
                     raise
             break
-        # print("assert")
         assert handle is not None, ("your handle file to access data from efetch does not exist. "
                                     "Likely an issue with the internet connection of ncbi. Try rerun...")
         read_handle = Entrez.read(handle)
@@ -1649,7 +1648,6 @@ class PhyscraperScrape(object):
                 * self._full_tree_est: 0/1, if est_full_tree() was called, it is set to 1 for the round.
             * **self.OToL_unmapped_tips()**: function that either removes or maps unmapped taxa from OToL studies
     """
-
     def __init__(self, data_obj, ids_obj):
         assert isinstance(data_obj, AlignTreeTax)
         assert isinstance(ids_obj, IdDicts)
@@ -1681,6 +1679,7 @@ class PhyscraperScrape(object):
         self.OToL_unmapped_tips()  # added to do stuff with un-mapped tips from OToL
         self.ids.ingroup_mrca = data_obj.ott_mrca  # added for mrca ingroup list
         self.gb_not_added = []  # list of blast seqs not added
+
 
     # TODO is this the right place for this? MK: According to PEP8, no...
     def reset_markers(self):
@@ -1955,25 +1954,17 @@ class PhyscraperScrape(object):
                                         break
                                     # debug(i)
                                     gi_id = sallseqid_l[i].split("|")[1]
-
-                                    
-
                                     gb_acc = sallseqid_l[i].split("|")[3]
                                     if gb_acc in query_dict or gb_acc in self.data.gb_dict:  # if gb acc was already read in before stop the for loop
                                         # debug("set to true")
                                         stop_while = True
                                         break
-
                                     stitle = salltitles_l[i]
-
-
                                     # max()
                                     spn_title_before = salltitles_l[i-1].split(" ")[0:spn_range]
                                     spn_title = salltitles_l[i].split(" ")[0:spn_range]
                                     # print(spn_title, spn_title_before)
                                     # debug(gb_acc)
-
-                                        
                                     # debug(found_taxids)
                                     # sometimes if multiple seqs are merged, we lack the information which taxon is which gb_acc...
                                     # test it here:
@@ -1993,20 +1984,23 @@ class PhyscraperScrape(object):
                                         staxids = staxids_l[0]
                                         sscinames = sscinames_l[0]
                                     elif i != 0 and spn_title != spn_title_before:
-
+                                        staxids = self.ids.map_acc_ncbi(gb_acc)
+                                        sscinames = self.ncbiid_to_spn[tax_id]
                                         # debug(salltitles_l)
                                         # debug(staxids_l)
                                         # debug(sscinames_l)
                                         # debug(sallseqid_l)
-                                        read_handle = self.ids.entrez_efetch(gb_acc)
-                                        sscinames = get_ncbi_tax_name(read_handle).replace(" ", "_").replace("/", "_")
-                                        staxids = get_ncbi_tax_id(read_handle)
+                                        # read_handle = self.ids.entrez_efetch(gb_acc)
+                                        # sscinames = get_ncbi_tax_name(read_handle).replace(" ", "_").replace("/", "_")
+                                        # staxids = get_ncbi_tax_id(read_handle)
                                         spn_range = len(sscinames.split("_"))
                                     elif i == 0:
+                                        staxids = self.ids.map_acc_ncbi(gb_acc)
+                                        sscinames = self.ncbiid_to_spn[tax_id]
                                         # debug("i==1")
-                                        read_handle = self.ids.entrez_efetch(gb_acc)
-                                        sscinames = get_ncbi_tax_name(read_handle).replace(" ", "_").replace("/", "_")
-                                        staxids = get_ncbi_tax_id(read_handle)
+                                        # read_handle = self.ids.entrez_efetch(gb_acc)
+                                        # sscinames = get_ncbi_tax_name(read_handle).replace(" ", "_").replace("/", "_")
+                                        # staxids = get_ncbi_tax_id(read_handle)
                                         spn_range = len(sscinames.split("_"))
                                     else:
                                         # print("next")
@@ -2014,9 +2008,9 @@ class PhyscraperScrape(object):
 
                                     assert str(staxids) in staxids_l, (staxids, staxids_l)
                                     #assert sscinames in sscinames_l, (sscinames, sscinames_l)
-                                    self.ids.acc_ncbi_dict[gb_acc] = staxids
-                                    self.ids.ncbiid_to_spn[staxids] = sscinames 
-                                    self.ids.spn_to_ncbiid[sscinames] = staxids
+                                    # self.ids.acc_ncbi_dict[gb_acc] = staxids
+                                    # self.ids.ncbiid_to_spn[staxids] = sscinames 
+                                    # self.ids.spn_to_ncbiid[sscinames] = staxids
 
                                     found_taxids.add(staxids)
                                     found_spn.add(sscinames)
@@ -2040,11 +2034,7 @@ class PhyscraperScrape(object):
                                         stop_while = True
 
                                         break
-
-                                
-                                    # debug(gb_acc)
-
-                                        
+                                    # debug(gb_acc) 
                                     # debug(found_taxids)
                                     # sometimes if multiple seqs are merged, we lack the information which taxon is which gb_acc...
                                     # test it here:
@@ -2064,30 +2054,24 @@ class PhyscraperScrape(object):
                                         staxids = staxids_l[0]
                                         sscinames = sscinames_l[0]
                                     else:
-                                        read_handle = self.ids.entrez_efetch(gb_acc)
-                                        sscinames = get_ncbi_tax_name(read_handle).replace(" ", "_").replace("/", "_")
-                                        staxids = get_ncbi_tax_id(read_handle)
+                                        staxids = self.ids.map_acc_ncbi(gb_acc)
+                                        sscinames = self.ncbiid_to_spn[tax_id]
+                                        # read_handle = self.ids.entrez_efetch(gb_acc)
+                                        # sscinames = get_ncbi_tax_name(read_handle).replace(" ", "_").replace("/", "_")
+                                        # staxids = get_ncbi_tax_id(read_handle)
                                         spn_range = len(sscinames.split("_"))
-                                    
-
                                     assert str(staxids) in staxids_l, (staxids, staxids_l)
                                     #assert sscinames in sscinames_l, (sscinames, sscinames_l)
-                                    self.ids.acc_ncbi_dict[gb_acc] = staxids
-                                    self.ids.ncbiid_to_spn[staxids] = sscinames 
-                                    self.ids.spn_to_ncbiid[sscinames] = staxids
-
+                                    # self.ids.acc_ncbi_dict[gb_acc] = staxids
+                                    # self.ids.ncbiid_to_spn[staxids] = sscinames 
+                                    # self.ids.spn_to_ncbiid[sscinames] = staxids
                                     found_taxids.add(staxids)
                                     found_spn.add(sscinames)
-
 
                                     if gb_acc not in query_dict and gb_acc not in self.newseqs_acc:
                                         query_dict[gb_acc] = {'^ncbi:gi': gi_id, 'accession': gb_acc, 'staxids': staxids,
                                                           'sscinames': sscinames, 'pident': pident, 'evalue': evalue,
                                                           'bitscore': bitscore, 'sseq': sseq, 'title': stitle}
-                            
-
-
-
 
                             # debug(query_dict[gb_acc])
                 else:
@@ -3422,7 +3406,10 @@ class FilterBlast(PhyscraperScrape):
             if new_taxon is True:
                 assert original == 0, ("count_dict `%s` has more seq added than threshold." % count_dict)
                 assert seq_added == 0, ("count_dict `%s` has more seq added than threshold." % count_dict)
-            assert seq_added <= self.threshold, ("count_dict `%s` has more seq added than threshold." % count_dict)
+            if original <= self.threshold:
+                assert seq_added <= self.threshold, ("count_dict `%s` has more seq added than threshold." % count_dict)
+            else:
+                assert seq_added == 0
         return count_dict
 
     def how_many_sp_to_keep(self, selectby):
