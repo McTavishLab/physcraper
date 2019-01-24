@@ -923,7 +923,7 @@ class AlignTreeTax(object):
         aln_ids = set()
         for taxon in self.aln:
             aln_ids.add(taxon.label)
-        assert aln_ids.issubset(self.otu_dict.keys())
+        assert aln_ids.issubset(self.otu_dict.keys()), (aln_ids, otu_dict.keys())
         treed_taxa = set()
         for leaf in self.tre.leaf_nodes():
             treed_taxa.add(leaf.taxon)
@@ -934,7 +934,7 @@ class AlignTreeTax(object):
                 self.tre.prune_taxa_with_labels([leaf.taxon])
                 self.tre.prune_taxa_with_labels([leaf])
                 treed_taxa.remove(leaf.taxon)
-        assert treed_taxa.issubset(aln_ids)
+        assert treed_taxa.issubset(aln_ids), (treed_taxa, aln_ids)
 
     def remove_taxa_aln_tre(self, taxon_label):
         """Removes taxa from aln and tre and updates otu_dict,
