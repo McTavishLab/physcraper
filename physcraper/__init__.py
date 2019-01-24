@@ -1734,7 +1734,7 @@ class PhyscraperScrape(object):
         toblast.write(">{}\n".format(taxon_label))
         toblast.write("{}\n".format(query))
         toblast.close()
-        assert os.path.isdir(self.config.blastdb)
+        assert os.path.isdir(self.config.blastdb),("blast dir does not exist: '$s'." % self.config.blastdb)
         with cd(self.config.blastdb):
             # this format (6) allows to get the taxonomic information at the same time
             outfmt = " -outfmt '6 sseqid staxids sscinames pident evalue bitscore sseq salltitles sallseqid'"
@@ -2021,11 +2021,11 @@ class PhyscraperScrape(object):
                                                           'sscinames': sscinames, 'pident': pident, 'evalue': evalue,
                                                           'bitscore': bitscore, 'sseq': sseq, 'title': stitle}
                             elif count >= 1 and stop_while is False:
-                                debug("count>1")
+                                # debug("count>1")
                                 for i in range(0, len(sallseqid_l)):
                                     if len(found_taxids) == len(staxids_l):
                                         break
-                                    debug(i)
+                                    # debug(i)
                                     gi_id = sallseqid_l[i].split("|")[1]
 
                                     gb_acc = sallseqid_l[i].split("|")[3]
@@ -3453,7 +3453,7 @@ class FilterBlast(PhyscraperScrape):
                         elif selectby == "blast":
                             if seq_present == 0 and new_taxon is True and query_count >= 1:  # if new taxon
                                 # debug("new taxon")
-                                # debug(self.sp_seq_d[tax_id].keys())
+                                debug(self.sp_seq_d[tax_id].keys())
                                 blast_seq_id = self.sp_seq_d[tax_id].keys()[0]
                                 seq = self.sp_seq_d[tax_id][blast_seq_id]
                                 filter_by_local_blast.write_filterblast_files(self.workdir, blast_seq_id, seq,
