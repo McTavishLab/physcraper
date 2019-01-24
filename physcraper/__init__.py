@@ -3387,6 +3387,7 @@ class FilterBlast(PhyscraperScrape):
         original = 0
         new_taxon = True
         query_count = 0
+        debug(tax_id)
         for item in self.sp_d[tax_id]:
             if '^physcraper:status' in item and item['^physcraper:status'].split(' ')[0] not in self.seq_filter:
                 debug(item['^physcraper:status'])
