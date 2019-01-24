@@ -1985,7 +1985,7 @@ class PhyscraperScrape(object):
                                         sscinames = sscinames_l[0]
                                     elif i != 0 and spn_title != spn_title_before:
                                         staxids = self.ids.map_acc_ncbi(gb_acc)
-                                        sscinames = self.ncbiid_to_spn[tax_id]
+                                        sscinames = self.ids.ncbiid_to_spn[tax_id]
                                         # debug(salltitles_l)
                                         # debug(staxids_l)
                                         # debug(sscinames_l)
@@ -1996,7 +1996,7 @@ class PhyscraperScrape(object):
                                         spn_range = len(sscinames.split("_"))
                                     elif i == 0:
                                         staxids = self.ids.map_acc_ncbi(gb_acc)
-                                        sscinames = self.ncbiid_to_spn[tax_id]
+                                        sscinames = self.ids.ncbiid_to_spn[tax_id]
                                         # debug("i==1")
                                         # read_handle = self.ids.entrez_efetch(gb_acc)
                                         # sscinames = get_ncbi_tax_name(read_handle).replace(" ", "_").replace("/", "_")
@@ -2014,7 +2014,6 @@ class PhyscraperScrape(object):
 
                                     found_taxids.add(staxids)
                                     found_spn.add(sscinames)
-
 
                                     if gb_acc not in query_dict and gb_acc not in self.newseqs_acc:
                                         query_dict[gb_acc] = {'^ncbi:gi': gi_id, 'accession': gb_acc, 'staxids': staxids,
@@ -2055,7 +2054,7 @@ class PhyscraperScrape(object):
                                         sscinames = sscinames_l[0]
                                     else:
                                         staxids = self.ids.map_acc_ncbi(gb_acc)
-                                        sscinames = self.ncbiid_to_spn[tax_id]
+                                        sscinames = self.ids.ncbiid_to_spn[tax_id]
                                         # read_handle = self.ids.entrez_efetch(gb_acc)
                                         # sscinames = get_ncbi_tax_name(read_handle).replace(" ", "_").replace("/", "_")
                                         # staxids = get_ncbi_tax_id(read_handle)
