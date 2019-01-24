@@ -1984,23 +1984,23 @@ class PhyscraperScrape(object):
                                         staxids = staxids_l[0]
                                         sscinames = sscinames_l[0]
                                     elif i != 0 and spn_title != spn_title_before:
-                                        staxids = self.ids.map_acc_ncbi(gb_acc)
-                                        sscinames = self.ids.ncbiid_to_spn[staxids]
+                                        # staxids = self.ids.map_acc_ncbi(gb_acc)
+                                        # sscinames = self.ids.ncbiid_to_spn[staxids]
                                         # debug(salltitles_l)
                                         # debug(staxids_l)
                                         # debug(sscinames_l)
                                         # debug(sallseqid_l)
-                                        # read_handle = self.ids.entrez_efetch(gb_acc)
-                                        # sscinames = get_ncbi_tax_name(read_handle).replace(" ", "_").replace("/", "_")
-                                        # staxids = get_ncbi_tax_id(read_handle)
+                                        read_handle = self.ids.entrez_efetch(gb_acc)
+                                        sscinames = get_ncbi_tax_name(read_handle).replace(" ", "_").replace("/", "_")
+                                        staxids = get_ncbi_tax_id(read_handle)
                                         spn_range = len(sscinames.split("_"))
                                     elif i == 0:
-                                        staxids = self.ids.map_acc_ncbi(gb_acc)
-                                        sscinames = self.ids.ncbiid_to_spn[staxids]
+                                        # staxids = self.ids.map_acc_ncbi(gb_acc)
+                                        # sscinames = self.ids.ncbiid_to_spn[staxids]
                                         # debug("i==1")
-                                        # read_handle = self.ids.entrez_efetch(gb_acc)
-                                        # sscinames = get_ncbi_tax_name(read_handle).replace(" ", "_").replace("/", "_")
-                                        # staxids = get_ncbi_tax_id(read_handle)
+                                        read_handle = self.ids.entrez_efetch(gb_acc)
+                                        sscinames = get_ncbi_tax_name(read_handle).replace(" ", "_").replace("/", "_")
+                                        staxids = get_ncbi_tax_id(read_handle)
                                         spn_range = len(sscinames.split("_"))
                                     else:
                                         # print("next")
@@ -2053,11 +2053,11 @@ class PhyscraperScrape(object):
                                         staxids = staxids_l[0]
                                         sscinames = sscinames_l[0]
                                     else:
-                                        staxids = self.ids.map_acc_ncbi(gb_acc)
-                                        sscinames = self.ids.ncbiid_to_spn[staxids]
-                                        # read_handle = self.ids.entrez_efetch(gb_acc)
-                                        # sscinames = get_ncbi_tax_name(read_handle).replace(" ", "_").replace("/", "_")
-                                        # staxids = get_ncbi_tax_id(read_handle)
+                                        # staxids = self.ids.map_acc_ncbi(gb_acc)
+                                        # sscinames = self.ids.ncbiid_to_spn[staxids]
+                                        read_handle = self.ids.entrez_efetch(gb_acc)
+                                        sscinames = get_ncbi_tax_name(read_handle).replace(" ", "_").replace("/", "_")
+                                        staxids = get_ncbi_tax_id(read_handle)
                                         spn_range = len(sscinames.split("_"))
                                     assert str(staxids) in staxids_l, (staxids, staxids_l)
                                     #assert sscinames in sscinames_l, (sscinames, sscinames_l)

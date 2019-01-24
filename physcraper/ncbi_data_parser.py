@@ -271,6 +271,9 @@ class Parser:
                     tax_name.split(" ")[2],
                 )
                 tax_id = names[names["name_txt"] == tax_name]["tax_id"].values[0]
+                sys.stdout.write(
+                    "tax_name {} unknown, modified to {} worked.\n".format(org_tax, tax_name)
+                )
             else:
                 sys.stdout.write(
                     "Are you sure, its an accepted name and not a synonym: {}? "
