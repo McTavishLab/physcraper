@@ -2394,114 +2394,120 @@ class PhyscraperScrape(object):
         avg_seqlen = sum(self.data.orig_seqlen) / len(self.data.orig_seqlen)  # HMMMMMMMM
         assert self.config.seq_len_perc <= 1
         seq_len_cutoff = avg_seqlen * self.config.seq_len_perc
+        all_added_gi = set()
+        for key in self.data.otu_dict.keys():
+            if self.data.otu_dict[key]['^physcraper:status'].split(' ')[0] not in self.seq_filter:
+                if "^ncbi:gi" in self.data.otu_dict[key]:
+                    all_added_gi.add(self.data.otu_dict[key]["^ncbi:gi"])
         for gb_id, seq in self.new_seqs.items():
-            # debug(gb_id)
-            if len(gb_id.split(".")) == 1:
-                debug(gb_id)
-            if self.blacklist is not None and gb_id in self.blacklist:
-                debug("gb_id in blacklist, not added")
-                pass
-            elif gb_id in self.newseqs_acc:  # added to increase speed. often seq was found in another blast file
-                debug("passed, was already added")
-                pass
-            else:
-                # debug(len(seq.replace("-", "").replace("N", "")))
-                # debug(seq_len_cutoff)
-                if len(seq.replace("-", "").replace("N", "")) > seq_len_cutoff:
-                    # debug(self.config.blast_loc)
-                    if self.config.blast_loc != "remote":
-                        # debug("ADD")
-                        tax_name = None
-                        # ######################################################
-                        # ### new implementation of rank for delimitation
-                        if type(self.mrca_ncbi) is int:
-                            mrca_ncbi = self.mrca_ncbi
-                        elif len(self.mrca_ncbi) == 1:
-                            mrca_ncbi = list(self.mrca_ncbi)[0]
-                        else:
-                            debug(self.mrca_ncbi)
-                            debug("should not happen. think about something to do!")
-                            mrca_ncbi = None
-                        # debug(mrca_ncbi)
-                        rank_mrca_ncbi = self.ids.ncbi_parser.get_rank(mrca_ncbi)
-                        # get rank to delimit seq to ingroup_mrca
-                        # get name first
-                        ncbi_id = None
-                        tax_name = None
-                        if gb_id[:6] == "unpubl":
-                            debug("unpubl data")
-                            # debug(self.data.gb_dict[gb_id])
-                            tax_name = self.data.gb_dict[gb_id][u"^ot:ottTaxonName"]
-                            ncbi_id = self.data.gb_dict[gb_id][u"^ncbi:taxon"]
-                            if tax_name is None:
-                                tax_name = self.data.gb_dict[gb_id][u'^user:TaxonName']
-                            if ncbi_id is None:
-                                # debug(tax_name.split(" ")[0])
-                                tax_lin_name = tax_name.split(" ")[0]
-                                tax_lin_name = tax_lin_name.split("_")[0]
-                                # debug(tax_lin_name)
-                                ncbi_id = self.ids.ncbi_parser.get_id_from_name(tax_lin_name)
-                        elif len(gb_id.split(".")) >= 2:
-                            if gb_id in self.data.gb_dict.keys() and 'staxids' in self.data.gb_dict[gb_id].keys():
-                                tax_name = self.data.gb_dict[gb_id]['sscinames']
-                                ncbi_id = self.data.gb_dict[gb_id]['staxids']
+            if gb_id not in all_added_gi:
+                # debug(gb_id)
+                if len(gb_id.split(".")) == 1:
+                    debug(gb_id)
+                if self.blacklist is not None and gb_id in self.blacklist:
+                    debug("gb_id in blacklist, not added")
+                    pass
+                elif gb_id in self.newseqs_acc:  # added to increase speed. often seq was found in another blast file
+                    debug("passed, was already added")
+                    pass
+                else:
+                    # debug(len(seq.replace("-", "").replace("N", "")))
+                    # debug(seq_len_cutoff)
+                    if len(seq.replace("-", "").replace("N", "")) > seq_len_cutoff:
+                        # debug(self.config.blast_loc)
+                        if self.config.blast_loc != "remote":
+                            # debug("ADD")
+                            tax_name = None
+                            # ######################################################
+                            # ### new implementation of rank for delimitation
+                            if type(self.mrca_ncbi) is int:
+                                mrca_ncbi = self.mrca_ncbi
+                            elif len(self.mrca_ncbi) == 1:
+                                mrca_ncbi = list(self.mrca_ncbi)[0]
                             else:
-                                tax_name = self.ids.find_name(acc=gb_id)
+                                debug(self.mrca_ncbi)
+                                debug("should not happen. think about something to do!")
+                                mrca_ncbi = None
+                            # debug(mrca_ncbi)
+                            rank_mrca_ncbi = self.ids.ncbi_parser.get_rank(mrca_ncbi)
+                            # get rank to delimit seq to ingroup_mrca
+                            # get name first
+                            ncbi_id = None
+                            tax_name = None
+                            if gb_id[:6] == "unpubl":
+                                debug("unpubl data")
+                                # debug(self.data.gb_dict[gb_id])
+                                tax_name = self.data.gb_dict[gb_id][u"^ot:ottTaxonName"]
+                                ncbi_id = self.data.gb_dict[gb_id][u"^ncbi:taxon"]
                                 if tax_name is None:
-                                    sys.stderr.write("no species name returned for {}".format(gb_id))
-                                ncbi_id = self.ids.map_acc_ncbi(gb_id)
-                        assert tax_name is not None
-                        assert ncbi_id is not None
-                        tax_name = str(tax_name).replace(" ", "_")
-                        # debug([ncbi_id, mrca_ncbi])
+                                    tax_name = self.data.gb_dict[gb_id][u'^user:TaxonName']
+                                if ncbi_id is None:
+                                    # debug(tax_name.split(" ")[0])
+                                    tax_lin_name = tax_name.split(" ")[0]
+                                    tax_lin_name = tax_lin_name.split("_")[0]
+                                    # debug(tax_lin_name)
+                                    ncbi_id = self.ids.ncbi_parser.get_id_from_name(tax_lin_name)
+                            elif len(gb_id.split(".")) >= 2:
+                                if gb_id in self.data.gb_dict.keys() and 'staxids' in self.data.gb_dict[gb_id].keys():
+                                    tax_name = self.data.gb_dict[gb_id]['sscinames']
+                                    ncbi_id = self.data.gb_dict[gb_id]['staxids']
+                                else:
+                                    tax_name = self.ids.find_name(acc=gb_id)
+                                    if tax_name is None:
+                                        sys.stderr.write("no species name returned for {}".format(gb_id))
+                                    ncbi_id = self.ids.map_acc_ncbi(gb_id)
+                            assert tax_name is not None, ("no species name returned for {}".format(gb_id))
+                            assert ncbi_id is not None, ("no tax_id for species {} with acc {}".format(tax_name, gb_id))
+                            tax_name = str(tax_name).replace(" ", "_")
+                            # debug([ncbi_id, mrca_ncbi])
 
-                        # input_rank_id = self.ids.ncbi_parser.get_downtorank_id(ncbi_id, rank_mrca_ncbi)
-                        try:  # sometimes ncbi has wrong id linked: since update of db 01/01/2019 or since retrieval of redundant seq information
-                            input_rank_id = self.ids.ncbi_parser.match_id_to_mrca(ncbi_id, mrca_ncbi)
-                        except:  # this is for the wrong ncbi link, get right tax_id and do search again
-                            debug("wrong tax_id given by ncbi? tax_id: {}, tax_name:{}".format(ncbi_id, tax_name))
-                            ncbi_id = self.ids.ncbi_parser.get_id_from_name(tax_name)
-                            debug(ncbi_id)
-                            self.data.gb_dict[gb_id]['staxids'] = ncbi_id
-                            input_rank_id = self.ids.ncbi_parser.match_id_to_mrca(ncbi_id, mrca_ncbi)
+                            # input_rank_id = self.ids.ncbi_parser.get_downtorank_id(ncbi_id, rank_mrca_ncbi)
+                            try:  # sometimes ncbi has wrong id linked: since update of db 01/01/2019 or since retrieval of redundant seq information
+                                input_rank_id = self.ids.ncbi_parser.match_id_to_mrca(ncbi_id, mrca_ncbi)
+                            except:  # this is for the wrong ncbi link, get right tax_id and do search again
+                                debug("wrong tax_id given by ncbi? tax_id: {}, tax_name:{}".format(ncbi_id, tax_name))
+                                ncbi_id = self.ids.ncbi_parser.get_id_from_name(tax_name)
+                                debug(ncbi_id)
+                                self.data.gb_dict[gb_id]['staxids'] = ncbi_id
+                                input_rank_id = self.ids.ncbi_parser.match_id_to_mrca(ncbi_id, mrca_ncbi)
 
-                        # #######################################################
-                        if int(input_rank_id) == int(mrca_ncbi):  # belongs to ingroup mrca -> add to data, if not, leave it out
-                            # debug("input belongs to same mrca")
+                            # #######################################################
+                            if int(input_rank_id) == int(mrca_ncbi):  # belongs to ingroup mrca -> add to data, if not, leave it out
+                                # debug("input belongs to same mrca")
+                                self.newseqs_acc.append(gb_id)
+                                otu_id = self.data.add_otu(gb_id, self.ids)
+                                self.seq_dict_build(seq, otu_id, tmp_dict)
+                                # debug(some)
+                            elif gb_id not in self.gb_not_added:
+                                    self.gb_not_added.append(gb_id)
+                                    reason = "not_part_of_mrca: {} vs. {}".format(mrca_ncbi, input_rank_id)
+                                    writeinfofiles.write_not_added(ncbi_id, tax_name, gb_id, reason, self.workdir)
+                                    # writeinfofiles.write_not_added_info(self, gb_id, "not_part_of_mrca")
+                                    # fn = open("{}/not_added_seq.csv".format(self.workdir), "a+")
+                                    # fn.write("not_part_of_mrca, {}, rankid: {}, ncbi_id:{}, tax_name:{}\n".format(gb_id, input_rank_id, ncbi_id, tax_name))
+                                    # fn.close()
+                        else:
                             self.newseqs_acc.append(gb_id)
                             otu_id = self.data.add_otu(gb_id, self.ids)
                             self.seq_dict_build(seq, otu_id, tmp_dict)
-                            # debug(some)
-                        elif gb_id not in self.gb_not_added:
-                                self.gb_not_added.append(gb_id)
-                                reason = "not_part_of_mrca: {} vs. {}".format(mrca_ncbi, input_rank_id)
-                                writeinfofiles.write_not_added(ncbi_id, tax_name, gb_id, reason, self.workdir)
-                                # writeinfofiles.write_not_added_info(self, gb_id, "not_part_of_mrca")
-                                # fn = open("{}/not_added_seq.csv".format(self.workdir), "a+")
-                                # fn.write("not_part_of_mrca, {}, rankid: {}, ncbi_id:{}, tax_name:{}\n".format(gb_id, input_rank_id, ncbi_id, tax_name))
-                                # fn.close()
                     else:
-                        self.newseqs_acc.append(gb_id)
-                        otu_id = self.data.add_otu(gb_id, self.ids)
-                        self.seq_dict_build(seq, otu_id, tmp_dict)
-                else:
-                    if gb_id not in self.gb_not_added:
-                        self.gb_not_added.append(gb_id)
-                        # writeinfofiles.write_not_added_info(self, gb_id, "seqlen_threshold_not_passed")
-                        len_seq = len(seq.replace("-", "").replace("N", ""))
-                        reason = "seqlen_threshold_not_passed: min len: {}, len: {}".format(len_seq, seq_len_cutoff)
-                        if "sscinames" in self.data.gb_dict[gb_id]:
-                            tax_name = self.data.gb_dict[gb_id]['sscinames']
-                            ncbi_id = self.data.gb_dict[gb_id]['staxids']
-                        else:
-                            tax_name = None
-                            ncbi_id = None
-                        writeinfofiles.write_not_added(ncbi_id, tax_name, gb_id, reason, self.workdir)
+                        if gb_id not in self.gb_not_added:
+                            self.gb_not_added.append(gb_id)
+                            # writeinfofiles.write_not_added_info(self, gb_id, "seqlen_threshold_not_passed")
+                            len_seq = len(seq.replace("-", "").replace("N", ""))
+                            reason = "seqlen_threshold_not_passed: min len: {}, len: {}".format(len_seq, seq_len_cutoff)
+                            if "sscinames" in self.data.gb_dict[gb_id]:
+                                tax_name = self.data.gb_dict[gb_id]['sscinames']
+                                ncbi_id = self.data.gb_dict[gb_id]['staxids']
+                            else:
+                                tax_name = None
+                                ncbi_id = None
+                            writeinfofiles.write_not_added(ncbi_id, tax_name, gb_id, reason, self.workdir)
 
-                        # fn = open("{}/not_added_seq.csv".format(self.workdir), "a+")
-                        # fn.write(
-                        #     "seqlen_threshold_not_passed, {}, {}, min len: {}\n".format(gb_id, len_seq, seq_len_cutoff))
-                        # fn.close()
+                            # fn = open("{}/not_added_seq.csv".format(self.workdir), "a+")
+                            # fn.write(
+                            #     "seqlen_threshold_not_passed, {}, {}, min len: {}\n".format(gb_id, len_seq, seq_len_cutoff))
+                            # fn.close()
         old_seqs_ids = set()
         for tax in old_seqs:
             old_seqs_ids.add(tax)
@@ -3399,16 +3405,16 @@ class FilterBlast(PhyscraperScrape):
             "query_count": query_count,
             "new_taxon": new_taxon,
         }
-        if self.config.add_lower_taxa is not True:
-            if new_taxon is False:
-                assert original != 0 or seq_added != 0, ("count_dict `%s` has more seq added than threshold." % count_dict)
-            if new_taxon is True:
-                assert original == 0, ("count_dict `%s` has more seq added than threshold." % count_dict)
-                assert seq_added == 0, ("count_dict `%s` has more seq added than threshold." % count_dict)
-            if original <= self.threshold:
-                assert seq_added <= self.threshold, ("count_dict `%s` has more seq added than threshold." % count_dict)
-            else:
-                assert seq_added == 0
+        # if self.config.add_lower_taxa is not True:
+        if new_taxon is False:
+            assert original != 0 or seq_added != 0, ("count_dict `%s` has more seq added than threshold." % count_dict)
+        if new_taxon is True:
+            assert original == 0, ("count_dict `%s` has more seq added than threshold." % count_dict)
+            assert seq_added == 0, ("count_dict `%s` has more seq added than threshold." % count_dict)
+        if original <= self.threshold:
+            assert seq_added <= self.threshold, ("count_dict `%s` has more seq added than threshold." % count_dict)
+        else:
+            assert seq_added == 0
         return count_dict
 
     def how_many_sp_to_keep(self, selectby):
