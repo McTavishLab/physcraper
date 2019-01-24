@@ -594,7 +594,7 @@ def OtuJsonDict(id_to_spn, id_dict):
             ottid, ottname, ncbiid = None, None, None
             tipname, species = lin.strip().split(",")
             clean_lab = standardize_label(tipname)
-            assert clean_lab not in sp_info_dict, ("standardized label ('%s') of `%s` already exists" % clean_lab tipname)
+            assert clean_lab not in sp_info_dict, ("standardized label ('{}') of `{}` already exists".format(clean_lab tipname))
             otu_id = "otu{}".format(clean_lab)
             spn = species.replace("_", " ")
             info = get_ott_taxon_info(spn)
