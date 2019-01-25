@@ -2407,8 +2407,8 @@ class PhyscraperScrape(object):
         self.del_superseq  = set()  # will contain deleted superseqs for the assert below 
         for gb_id, seq in self.new_seqs.items():
             debug([gb_id, gb_id in all_added_gi])
-            all_added_gi.add(gb_id)
             if gb_id not in all_added_gi:
+                all_added_gi.add(gb_id)
                 # debug(gb_id)
                 if len(gb_id.split(".")) == 1:
                     debug(gb_id)
