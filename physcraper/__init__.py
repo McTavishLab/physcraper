@@ -2514,8 +2514,14 @@ class PhyscraperScrape(object):
         old_seqs_ids = set()
         for tax in old_seqs:
             old_seqs_ids.add(tax)
-        assert old_seqs_ids.issubset(tmp_dict.keys()), ([x for x in old_seqs_ids if x not in tmp_dict.keys()])
-
+        tmp_dict_plus_super = set()
+        for item in tmp_dict.keys():
+            tmp_dict_plus_super.add(item)
+        for item in self.del_superseq:
+            tmp_dict_plus_super.add(item)
+        # print(tmp_dict_plus_super)
+        # assert old_seqs_ids.issubset(tmp_dict.keys()), ([x for x in old_seqs_ids if x not in tmp_dict.keys()])
+        assert old_seqs_ids.issubset(tmp_dict_plus_super), ([x for x in old_seqs_ids if x not in tmp_dict_plus_super])
         for tax in old_seqs:
             del tmp_dict[tax]
         self.new_seqs_otu_id = tmp_dict  # renamed new seq to their otu_ids from GI's, but all info is in self.otu_dict
