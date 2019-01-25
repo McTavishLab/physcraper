@@ -2357,6 +2357,7 @@ class PhyscraperScrape(object):
                         self.data.otu_dict[label]['^physcraper:status'] = "new seq added in place of {}".format(tax_lab)
                         self.data.otu_dict[tax_lab]['^physcraper:status'] = "deleted, {} is supersequence".format(label)
                         debug("{} added, instead of  {}".format(id_of_label, existing_id))
+                        self.del_superseq.add(tax_lab)
                         continue_search = True
                         continue
 
@@ -2402,6 +2403,7 @@ class PhyscraperScrape(object):
             if self.data.otu_dict[key]['^physcraper:status'].split(' ')[0] not in self.seq_filter:
                 if "^ncbi:accession" in self.data.otu_dict[key]:
                     all_added_gi.add(self.data.otu_dict[key]["^ncbi:accession"])
+        self.del_superseq  = set()  # will contain deleted superseqs for the assert below 
         for gb_id, seq in self.new_seqs.items():
             if gb_id not in all_added_gi:
                 # debug(gb_id)
