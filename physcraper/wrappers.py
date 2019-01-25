@@ -686,6 +686,7 @@ def concat(genelistdict, workdir_comb, email, num_threads=None, percentage=0.37,
 
 def save_copy_code(workdir_comb):
     i = 1
+    new_dir = "{}/physcraper_runcopy{}".format(workdir_comb, i)
     if os.path.exists("{}/physcraper_runcopy{}".format(workdir_comb, i)):
         while os.path.exists("{}/physcraper_runcopy{}".format(workdir_comb, i)):
             i += 1
