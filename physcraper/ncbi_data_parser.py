@@ -237,7 +237,7 @@ class Parser:
             return tax_id
         else:
             parent_id = int(nodes[nodes["tax_id"] == tax_id]["parent_tax_id"].values[0])
-            print(parent_id)
+            debug(parent_id)
             return self.match_id_to_mrca(parent_id, mrca_id)
 
     def get_name_from_id(self, tax_id):

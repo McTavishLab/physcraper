@@ -199,8 +199,8 @@ class ConfigObj(object):
             if self.blast_loc == "local":
                 sys.stdout.write("local blast db {}\n".format(self.blastdb))
         self.num_threads = config["blast"].get("num_threads")
-        print("slurm threads")
-        print(os.environ.get('SLURM_JOB_CPUS_PER_NODE'))
+        debug("slurm threads")
+        debug(os.environ.get('SLURM_JOB_CPUS_PER_NODE'))
         if os.environ.get('SLURM_JOB_CPUS_PER_NODE'):
             self.num_threads = int(os.environ.get('SLURM_JOB_CPUS_PER_NODE'))
 
@@ -2270,7 +2270,7 @@ class PhyscraperScrape(object):
             else:
                 id_of_label = self.ids.ncbi_parser.get_id_from_name(spn_of_label)
             self.ids.spn_to_ncbiid[spn_of_label] = id_of_label
-        debug([id_of_label, label])
+        # debug([id_of_label, label])
         if type(id_of_label) is not int:
             assert id_of_label.isdigit(), (id_of_label, self.data.otu_dict[label])
             id_of_label = int(id_of_label)
@@ -2802,7 +2802,7 @@ class PhyscraperScrape(object):
             env_var = int(nnodes) * int(ntasks)
             mpi = True
         if mpi:
-            print("run with mpi")
+            debug("run with mpi")
             subprocess.call(["mpiexec", "-n", "{}".format(env_var), "raxmlHPC-MPI-AVX2", 
                              # "raxmlHPC-PTHREADS", "-T", "{}".format(num_threads),
                              "-m", "GTRCAT",
@@ -3461,7 +3461,7 @@ class FilterBlast(PhyscraperScrape):
             # debug(tax_id)
             if seq_present <= self.threshold:  # add seq to aln
                 if seq_present + query_count <= self.threshold:  # to add all stuff to self.filtered_seq[gi_n]
-                    print("add all")
+                    debug("add all")
                     self.add_all(tax_id)
                 else:  # filter number of sequences
                     if tax_id in self.sp_seq_d.keys():
