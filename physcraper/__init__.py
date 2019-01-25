@@ -2403,8 +2403,10 @@ class PhyscraperScrape(object):
             if self.data.otu_dict[key]['^physcraper:status'].split(' ')[0] not in self.seq_filter:
                 if "^ncbi:accession" in self.data.otu_dict[key]:
                     all_added_gi.add(self.data.otu_dict[key]["^ncbi:accession"])
+        debug(all_added_gi)
         self.del_superseq  = set()  # will contain deleted superseqs for the assert below 
         for gb_id, seq in self.new_seqs.items():
+            debug(gb_id, gb_id in all_added_gi)
             if gb_id not in all_added_gi:
                 # debug(gb_id)
                 if len(gb_id.split(".")) == 1:
