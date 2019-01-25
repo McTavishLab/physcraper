@@ -3527,14 +3527,17 @@ class FilterBlast(PhyscraperScrape):
                             self.data.otu_dict[key]['^physcraper:status'] = 'not added, ' \
                                                                             'there are enough seq per sp in tre'
         for gb_id in keylist:
+            added = False
             if len(gb_id.split(".")) == 1:
                 debug(gb_id)
             for key in self.data.otu_dict.keys():
                 if "^ncbi:accession" in self.data.otu_dict[key]:
-                    if self.data.otu_dict[key]["^ncbi:accession"] == gb_id:
+                    if self.data.otu_dict[key]["^ncbi:accession"] == gb_id and added is False:
+                        added = True
                         reduced_new_seqs_dic[key] = self.filtered_seq[gb_id]
                         self.data.otu_dict[key]['^physcraper:last_blasted'] = "1900/01/01"
                         self.data.otu_dict[key]['^physcraper:status'] = 'added as representative of taxon'
+
         reduced_new_seqs = {k: self.filtered_seq[k] for k in keylist}
         # debug(reduced_new_seqs_dic)
         with open(self.logfile, "a") as log:
