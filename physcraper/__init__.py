@@ -2091,8 +2091,11 @@ class PhyscraperScrape(object):
             if float(query_dict[key]["evalue"]) < float(self.config.e_value_thresh):
                 gb_acc = query_dict[key]["accession"]
                 if gb_acc not in self.data.gb_dict or self.config.add_lower_taxa is True:  # skip ones we already have
+                    # debug("add gb_dict")
                     self.new_seqs[gb_acc] = query_dict[key]["sseq"]
                     self.data.gb_dict[gb_acc] = query_dict[key]
+                # else:
+                    # debug("was added before")
             else:
                 fn = open("{}/blast_threshold_not_passed.csv".format(self.workdir), "a+")
                 fn.write("blast_threshold_not_passed:\n")
@@ -3312,30 +3315,30 @@ class FilterBlast(PhyscraperScrape):
                         self.filtered_seq[gb_id] = seq
         return self.filtered_seq
 
-    # TODO MK: does not seem to be used anymore!
-    def get_name_for_blastfiles(self, key):
-        """Gets the name which is needed to write/read the blast files in 'loop_for_write_blast files'.
-
-        The name needs to be retrieved before the actual loop starts. I use the taxonomic names here,
-        as this is the measure of which information goes into which local filter blast database.
-        The function is only used within 'loop_for_write_blast_files' to generate the filenames.
-
-        :param key:  key of self.sp_d (taxon name)
-        :return: name used for blast file
-        """
-        nametoreturn = None
-        # loop needs to happen before the other one, as we need nametoreturn in second:
-        for otu_id in self.sp_d[key]:
-            tax_name = self.ids.find_name(otu_dict_entry=otu_id)
-            if '^physcraper:status' in otu_id and otu_id['^physcraper:status'].split(' ')[0] not in self.seq_filter:
-                for tax_name_aln, seq in self.data.aln.items():
-                    otu_dict_name = self.ids.find_name(otu_dict_entry=self.data.otu_dict[tax_name_aln.label])
-                    if tax_name == otu_dict_name:
-                        nametoreturn = tax_name_aln.label
-            assert tax_name is not None  # assert instead of if
-            if nametoreturn is None and tax_name is not None:
-                nametoreturn = tax_name.replace(" ", "_")
-        return nametoreturn
+    # # TODO MK: does not seem to be used anymore!
+    # def get_name_for_blastfiles(self, key):
+    #     """Gets the name which is needed to write/read the blast files in 'loop_for_write_blast files'.
+    #
+    #     The name needs to be retrieved before the actual loop starts. I use the taxonomic names here,
+    #     as this is the measure of which information goes into which local filter blast database.
+    #     The function is only used within 'loop_for_write_blast_files' to generate the filenames.
+    #
+    #     :param key:  key of self.sp_d (taxon name)
+    #     :return: name used for blast file
+    #     """
+    #     nametoreturn = None
+    #     # loop needs to happen before the other one, as we need nametoreturn in second:
+    #     for otu_id in self.sp_d[key]:
+    #         tax_name = self.ids.find_name(otu_dict_entry=otu_id)
+    #         if '^physcraper:status' in otu_id and otu_id['^physcraper:status'].split(' ')[0] not in self.seq_filter:
+    #             for tax_name_aln, seq in self.data.aln.items():
+    #                 otu_dict_name = self.ids.find_name(otu_dict_entry=self.data.otu_dict[tax_name_aln.label])
+    #                 if tax_name == otu_dict_name:
+    #                     nametoreturn = tax_name_aln.label
+    #         assert tax_name is not None  # assert instead of if
+    #         if nametoreturn is None and tax_name is not None:
+    #             nametoreturn = tax_name.replace(" ", "_")
+    #     return nametoreturn
 
     def loop_for_write_blast_files(self, key):
         """This loop is needed to be able to write the local blast files for the filtering step correctly.

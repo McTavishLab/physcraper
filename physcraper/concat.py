@@ -294,6 +294,8 @@ class Concat(object):
                 tax_id = "taxid_{}".format(data['^ncbi:taxon'])
                 if '^physcraper:TaxonName' in data:
                     spn = data['^physcraper:TaxonName']
+                elif '^ot:ottTaxonName' in data:
+                    spn = data['^ot:ottTaxonName']
             if tax_id is None or tax_id == "taxid_None":
                 tn = data['^user:TaxonName'].replace("_", "").replace(" ", "")
                 # physcraper.debug(tn)
@@ -1377,10 +1379,13 @@ class Concat(object):
         """   
         self.ld("write_otu_info")
         otu_dict_keys = [
-            "unique_id", "sp_id", "original_PS_id", "concat:status"]
+            "unique_id", "sp_id","original_PS_id", "concat:status", "spn"]
         with open("{}/otu_seq_info.csv".format(self.workdir), "w") as output:
             writer = csv.writer(output)
-            writer.writerow(otu_dict_keys)
+            header = ["locus", "concat_id"]
+            for item in otu_dict_keys:
+                header.append(item)
+            writer.writerow(header)
             # physcraper.debug(self.sp_acc_comb.keys())
             for otu in self.sp_acc_comb.keys():
                 # physcraper.debug(self.sp_acc_comb[otu].keys())
@@ -1413,8 +1418,8 @@ class Concat(object):
         tr_fn = "{}/{}".format(self.workdir, tree_file)
         # ######
         otu_info = pd.read_csv(otu_fn, sep=',', header=None, index_col=False,
-                               names=["gene", "spn", "unique_id", "sp_id",
-                                      "original_PS_id", "concat:status"
+                               names=["gene", "concat_id", "unique_id", "sp_id",
+                                      "original_PS_id", "concat:status", "spn"
                                       ])
 
         with open(tr_fn, "r") as label_new:
@@ -1422,11 +1427,11 @@ class Concat(object):
             print(new_tree)
             with open("{}_relabel".format(tr_fn), "wt") as fout:
                 for index, row in otu_info.iterrows():
-                    print(row['unique_id'])
-                    ident = row['spn']
-                    if ident == "-":
-                        ident = "{}_{}".format(row["unique_id"])
-
-                    new_tree = new_tree.replace("{}:".format(row['sp_id']), "{}".format(ident))
+                    print(row)
+                    # print(row['sp_id'])
+                    current_id = "{}:".format(row['sp_id'].replace(" ","_"))
+                    new_id = "{}_{}:".format(row['spn'].replace(" ","_"), row['unique_id'].replace(" ","_"))
+                    print(new_id)
+                    new_tree = new_tree.replace(current_id, new_id)
 
                 fout.write(new_tree)

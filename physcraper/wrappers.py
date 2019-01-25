@@ -688,10 +688,9 @@ def save_copy_code(workdir_comb):
     i = 1
     if os.path.exists("{}/physcraper_runcopy{}".format(workdir_comb, i)):
         while os.path.exists("{}/physcraper_runcopy{}".format(workdir_comb, i)):
-            prev_dir = "{}/physcraper_runcopy{}".format(workdir_comb, i)
             i += 1
-            shutil.move("{}/physcraper_runcopy".format(workdir_comb), prev_dir)
-    shutil.copytree("./physcraper", "{}/physcraper_runcopy{}".format(workdir_comb, i))
+        new_dir = "{}/physcraper_runcopy{}".format(workdir_comb, i)
+    shutil.copytree("./physcraper", new_dir)
 
 
 def write_out_files(obj, downtorank=None):

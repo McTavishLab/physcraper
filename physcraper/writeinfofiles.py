@@ -194,9 +194,8 @@ def write_not_added(ncbi_id, tax_name, gb_id, reason, workdir):
     debug("write not added")
     tab_keys = [
         "ncbi_id",
-        "rank_id",
         "tax_name",
-        "gb_id"
+        "gb_id",
         "reason"
     ]
     if not os.path.exists(path="{}/not_added_seq.csv".format(workdir)):
