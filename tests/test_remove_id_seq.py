@@ -51,6 +51,7 @@ def test_remove_id_seq():
             filteredScrape.data.otu_dict[otu_id]['^physcraper:status'] = "query"
             filteredScrape.data.otu_dict[otu_id]['^ot:ottTaxonName'] = "Senecio vulgaris"
             filteredScrape.data.otu_dict[otu_id]['^physcraper:last_blasted'] = "1800/01/01"
+            filteredScrape.del_superseq = set()
             filteredScrape.seq_dict_build(item, otu_id, tmp_dict)
     for tax in old_seqs:
         try:
