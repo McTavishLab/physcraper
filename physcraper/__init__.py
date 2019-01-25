@@ -1734,7 +1734,7 @@ class PhyscraperScrape(object):
         toblast.write(">{}\n".format(taxon_label))
         toblast.write("{}\n".format(query))
         toblast.close()
-        assert os.path.isdir(self.config.blastdb),("blast dir does not exist: '$s'." % self.config.blastdb)
+        assert os.path.isdir(self.config.blastdb),("blast dir does not exist: '%s'." % self.config.blastdb)
         with cd(self.config.blastdb):
             # this format (6) allows to get the taxonomic information at the same time
             outfmt = " -outfmt '6 sseqid staxids sscinames pident evalue bitscore sseq salltitles sallseqid'"
