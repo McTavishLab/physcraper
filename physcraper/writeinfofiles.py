@@ -1,7 +1,7 @@
 import csv
 import os
 
-_DEBUG_MK = 0
+_DEBUG_MK = 1
 
 
 def debug(msg):

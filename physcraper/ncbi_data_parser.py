@@ -8,7 +8,7 @@ import sys
 import pandas as pd
 
 
-_DEBUG_MK = 0
+_DEBUG_MK = 1
 
 
 def debug(msg):
@@ -257,6 +257,7 @@ class Parser:
         """
         if names is None:
             self.initialize()
+        org_tax = tax_name
         tax_name = tax_name.replace("_", " ")
         if len(tax_name.split(" ")) >= 2:
             if tax_name.split(" ")[1] == "sp.":
@@ -264,6 +265,7 @@ class Parser:
         try:
             tax_id = names[names["name_txt"] == tax_name]["tax_id"].values[0]
         except IndexError:
+            debug(names[names["name_txt"] == tax_name])
             if len(tax_name.split(" ")) == 3:
                 tax_name = "{} {}-{}".format(
                     tax_name.split(" ")[0],
