@@ -2400,8 +2400,8 @@ class PhyscraperScrape(object):
         all_added_gi = set()
         for key in self.data.otu_dict.keys():
             if self.data.otu_dict[key]['^physcraper:status'].split(' ')[0] not in self.seq_filter:
-                if "^ncbi:gi" in self.data.otu_dict[key]:
-                    all_added_gi.add(self.data.otu_dict[key]["^ncbi:gi"])
+                if "^ncbi:accession" in self.data.otu_dict[key]:
+                    all_added_gi.add(self.data.otu_dict[key]["^ncbi:accession"])
         for gb_id, seq in self.new_seqs.items():
             if gb_id not in all_added_gi:
                 # debug(gb_id)
@@ -3417,14 +3417,14 @@ class FilterBlast(PhyscraperScrape):
             assert original == 0, ("count_dict `%s` has more original seq than allowed for new taxon." % count_dict)
             assert seq_added == 0, ("count_dict `%s` has more seq added than allowed for new taxon." % count_dict)
         debug([seq_added, original, self.threshold])
-        if self.config.add_lower_taxa is not True:
-            if original < self.threshold:
-                assert seq_added <= self.threshold, ("count_dict `%s` has more seq added than threshold." % count_dict)
-            elif original > self.threshold:
-                sys.stdout.write("already more originals than threshold...\n")
+        # if self.config.add_lower_taxa is not True:
+        if original < self.threshold:
+            assert seq_added <= self.threshold, ("count_dict `%s` has more seq added than threshold." % count_dict)
+        elif original > self.threshold:
+            sys.stdout.write("already more originals than threshold...\n")
 
-            else:
-                assert seq_added + original <= self.threshold, "seq_added {} and original {} have more than threshold {}.".format(seq_added, original, self.threshold)
+        else:
+            assert seq_added + original <= self.threshold, "seq_added {} and original {} have more than threshold {}.".format(seq_added, original, self.threshold)
 
         return count_dict
 
