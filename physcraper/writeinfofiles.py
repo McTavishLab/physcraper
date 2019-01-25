@@ -66,11 +66,12 @@ def get_additional_GB_info(physcraper_obj):
                         if item[u"GBQualifier_name"] == "isolate":
                             isolate = str(item[u"GBQualifier_value"])
                     debug(read_handle[0])
-                    authors = read_handle[0]["GBSeq_references"][0][u'GBReference_authors']
-                    journal = read_handle[0]["GBSeq_references"][0][u'GBReference_journal']
-                    publication = read_handle[0]["GBSeq_references"][0][u'GBReference_title']
-                    info = [gb_id, ncbi_sp, authors, journal, publication, voucher, clone, country, isolate]
-                    writer.writerow(info)
+                    if "GBSeq_references" in read_handle[0].keys():
+                        authors = read_handle[0]["GBSeq_references"][0][u'GBReference_authors']
+                        journal = read_handle[0]["GBSeq_references"][0][u'GBReference_journal']
+                        publication = read_handle[0]["GBSeq_references"][0][u'GBReference_title']
+                        info = [gb_id, ncbi_sp, authors, journal, publication, voucher, clone, country, isolate]
+                        writer.writerow(info)
 
 
 def write_otu_info(physcraper_obj):
