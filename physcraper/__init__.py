@@ -3460,6 +3460,7 @@ class FilterBlast(PhyscraperScrape):
             seq_present = count_dict["seq_present"]
             query_count = count_dict["query_count"]
             new_taxon = count_dict["new_taxon"]
+            debug(count_dict)
             # debug(tax_id)
             if seq_present <= self.threshold:  # add seq to aln
                 if seq_present + query_count <= self.threshold:  # to add all stuff to self.filtered_seq[gi_n]
@@ -3484,6 +3485,7 @@ class FilterBlast(PhyscraperScrape):
                                                                                   fn=tax_id)
                                 # make local blast of sequences
                                 filter_by_local_blast.run_filter_blast(self.workdir, tax_id, tax_id)
+                                debug(self.sp_seq_d[tax_id])
                                 if len(self.sp_seq_d[tax_id]) + seq_present >= self.threshold:
                                     self.select_seq_by_local_blast(self.sp_seq_d[tax_id], tax_id, seq_present)
                                 elif len(self.sp_seq_d[tax_id]) + seq_present < self.threshold:
