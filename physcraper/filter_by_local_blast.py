@@ -8,7 +8,7 @@ import numpy
 import shutil
 from Bio.Blast import NCBIXML
 
-_DEBUG_MK = 0
+_DEBUG_MK = 1
 
 """Functions are used within the FilterBlast class to select sequences based on a local blast filtering step."""
 
@@ -106,6 +106,7 @@ def read_filter_blast(workdir, seq_d, fn):
     xml_file = open(output_blast)
     os.chdir(general_wd)
     blast_out = NCBIXML.parse(xml_file)
+    debug(blast_out)
     hsp_scores = {}
     tries = 5
     for i in range(tries):
