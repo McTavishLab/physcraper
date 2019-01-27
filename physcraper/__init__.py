@@ -2519,6 +2519,7 @@ class PhyscraperScrape(object):
                             # fn.write(
                             #     "seqlen_threshold_not_passed, {}, {}, min len: {}\n".format(gb_id, len_seq, seq_len_cutoff))
                             # fn.close()
+        # this assert got more complicated, as sometimes superseqs are already deleted in seq_dict_build(). Then subset assert it not True
         old_seqs_ids = set()
         for tax in old_seqs:
             old_seqs_ids.add(tax)
@@ -2531,7 +2532,8 @@ class PhyscraperScrape(object):
         # assert old_seqs_ids.issubset(tmp_dict.keys()), ([x for x in old_seqs_ids if x not in tmp_dict.keys()])
         assert old_seqs_ids.issubset(tmp_dict_plus_super), ([x for x in old_seqs_ids if x not in tmp_dict_plus_super])
         for tax in old_seqs:
-            del tmp_dict[tax]
+            if tax in tmp_dict:
+                del tmp_dict[tax]
         self.new_seqs_otu_id = tmp_dict  # renamed new seq to their otu_ids from GI's, but all info is in self.otu_dict
         debug("len new seqs dict after remove identical")
         debug(len(self.new_seqs_otu_id))

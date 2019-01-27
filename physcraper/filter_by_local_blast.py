@@ -74,6 +74,7 @@ def calculate_mean_sd(hsp_scores):
                                             'alignment.length': alignment.length, 'hsp.expect': hsp.expect}
     """
     debug('calculate_mean_sd')
+    debug(hsp_scores)
     total_seq = 0
     bit_sum = 0
     bit_l = []
