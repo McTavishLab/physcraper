@@ -2309,7 +2309,7 @@ class PhyscraperScrape(object):
                     if id_of_label in self.ids.ncbiid_to_spn.keys():
                         tax_name = self.ids.ncbiid_to_spn[id_of_label]
                     else:
-                        tax_name = self.ncbi_parser.get_name_from_id(tax_id)
+                        tax_name = self.ids.ncbi_parser.get_name_from_id(tax_id)
                     reason = "sequence too long: {} vs. {}".format(len(new_seq), sum(self.data.orig_seqlen) / len(self.data.orig_seqlen) * self.config.maxlen)
                     writeinfofiles.write_not_added(id_of_label, tax_name, gb_id, reason, self.workdir)
             elif len(inc_seq) >= len(new_seq):  # if seq is identical and shorter
