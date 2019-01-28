@@ -3263,7 +3263,7 @@ class FilterBlast(PhyscraperScrape):
                 elif len(self.sp_seq_d[tax_id]) + seq_present < self.threshold:
                     self.add_all(tax_id)
             elif len(self.sp_seq_d[tax_id].keys()) > 2 and no_similar_seqs == 1:  # also with different seq no result, select random seq!
-                 self.sp_seq_d[tax_id]
+                self.sp_seq_d[tax_id]
                 if len(self.sp_seq_d[tax_id].keys()) == (self.threshold - count):  # exact amount of seq present which need to be added
                     for item in self.sp_seq_d[tax_id].keys():
                         random_seq_ofsp[item] = self.sp_seq_d[tax_id][item]
