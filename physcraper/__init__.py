@@ -2301,7 +2301,17 @@ class PhyscraperScrape(object):
             i += 1
             inc_seq = seq_dict[tax_lab].replace("-", "")
             if len(new_seq) >= sum(self.data.orig_seqlen) / len(self.data.orig_seqlen) * self.config.maxlen:
-                debug("seq not added because it's to long...")
+                debug("seq not added because it's too long...")
+                self.data.otu_dict[label]['^physcraper:status'] = "not added; sequence is too long"
+                gb_id = self.data.otu_dict[label]["^ncbi:accession"]
+                if gb_id not in self.gb_not_added:
+                    self.gb_not_added.append(gb_id)
+                    if id_of_label in self.ids.ncbiid_to_spn.keys():
+                        tax_name = self.ids.ncbiid_to_spn[id_of_label]
+                    else:
+                        tax_name = self.ncbi_parser.get_name_from_id(tax_id)
+                    reason = "sequence too long: {} vs. {}".format(len(new_seq), sum(self.data.orig_seqlen) / len(self.data.orig_seqlen) * self.config.maxlen)
+                    writeinfofiles.write_not_added(id_of_label, tax_name, gb_id, reason, self.workdir)
             elif len(inc_seq) >= len(new_seq):  # if seq is identical and shorter
                 if inc_seq.find(new_seq) != -1:
                     if type(existing_id) == int and existing_id != id_of_label:  # different otus, add
@@ -2402,17 +2412,19 @@ class PhyscraperScrape(object):
         avg_seqlen = sum(self.data.orig_seqlen) / len(self.data.orig_seqlen)  # HMMMMMMMM
         assert self.config.seq_len_perc <= 1, ("your config seq_len_param is not smaller than 1: {}".format(self.config.seq_len_perc))
         seq_len_cutoff = avg_seqlen * self.config.seq_len_perc
+        self.del_superseq  = set()  # will contain deleted superseqs for the assert below 
+
         all_added_gi = set()
         for key in self.data.otu_dict.keys():
             if self.data.otu_dict[key]['^physcraper:status'].split(' ')[0] not in self.seq_filter:
                 if "^ncbi:accession" in self.data.otu_dict[key]:
                     all_added_gi.add(self.data.otu_dict[key]["^ncbi:accession"])
-        debug(all_added_gi)
-        self.del_superseq  = set()  # will contain deleted superseqs for the assert below 
+        # debug(all_added_gi)
         for gb_id, seq in self.new_seqs.items():
-            debug([gb_id, gb_id in all_added_gi])
+            # debug([gb_id, gb_id in all_added_gi])
             if gb_id not in all_added_gi:
                 all_added_gi.add(gb_id)
+
                 # debug(gb_id)
                 if len(gb_id.split(".")) == 1:
                     debug(gb_id)
@@ -2972,7 +2984,10 @@ class PhyscraperScrape(object):
         self.data.prune_short()
         self.data.trim()
         self.data.write_files(treepath="physcraper_final_trim.tre", alnpath="physcraper_final_trim.fas")
-        self.est_full_tree(path="previous_run")
+        if os.path.exists("[]/previous_run".format(workdir)):
+            self.est_full_tree(path="previous_run")
+        else:
+            self.est_full_tree()
         self.repeat = 0
         self.calculate_bootstrap()
 
@@ -3259,7 +3274,7 @@ class FilterBlast(PhyscraperScrape):
                 # make local blast of sequences
                 filter_by_local_blast.run_filter_blast(self.workdir, fn, fn)
                 no_similar_seqs = 1
-                count_dict = self.count_num_seq(tax_id)
+                count_dict = self.count_num_seq(fn)
                 seq_present = count_dict["seq_present"]
                 if len(seq_d) + seq_present >= self.threshold:
                     self.select_seq_by_local_blast(seq_d, fn, count)
