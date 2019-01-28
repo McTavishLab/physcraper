@@ -3222,9 +3222,9 @@ class FilterBlast(PhyscraperScrape):
         debug([seq_d, fn, count])
         no_similar_seqs = 0
         seq_blast_score = filter_by_local_blast.read_filter_blast(self.workdir, seq_d, fn)
+        random_seq_ofsp = {}
 
         if seq_blast_score != {}:
-            random_seq_ofsp = {}
             if (self.threshold - count) <= 0:
                 debug("already too many samples of sp in aln, skip adding more.")
             elif len(seq_blast_score.keys()) == (self.threshold - count):  # exact amount of seq present which need to be added
