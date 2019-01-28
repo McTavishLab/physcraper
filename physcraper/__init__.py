@@ -3280,7 +3280,7 @@ class FilterBlast(PhyscraperScrape):
             else:
                 seq_id = seq_d.keys()[1]
                 seq = seq_d[seq_id]
-                self.filtered_seq[seq_id] = seq
+                random_seq_ofsp[seq_id] = seq
         # debug(random_seq_ofsp)
         if len(random_seq_ofsp) > 0:  # add everything to filtered seq
             for key, val in random_seq_ofsp.items():
