@@ -8,7 +8,7 @@ import sys
 import pandas as pd
 
 
-_DEBUG_MK = 1
+_DEBUG_MK = 0
 
 
 def debug(msg):

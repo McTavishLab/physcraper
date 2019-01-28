@@ -18,7 +18,7 @@ see also [here](./How_to_start.md)
 ##### Dependencies (need to be in path): 
 
 - PaPaRa http://sco.h-its.org/exelixis/web/software/papara/index.html 
-- Raxml http://sco.h-its.org/exelixis/web/software/raxml/index.html 
+- RAxML http://sco.h-its.org/exelixis/web/software/raxml/index.html 
 - BLAST+ https://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Web&PAGE_TYPE=BlastDocs&DOC_TYPE=Download
 
 ##### Python packages: 
