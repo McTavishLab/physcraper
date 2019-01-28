@@ -3259,6 +3259,8 @@ class FilterBlast(PhyscraperScrape):
                 # make local blast of sequences
                 filter_by_local_blast.run_filter_blast(self.workdir, fn, fn)
                 no_similar_seqs = 1
+                count_dict = self.count_num_seq(tax_id)
+                seq_present = count_dict["seq_present"]
                 if len(seq_d) + seq_present >= self.threshold:
                     self.select_seq_by_local_blast(seq_d, fn, count)
                 elif len(seq_d) + seq_present < self.threshold:

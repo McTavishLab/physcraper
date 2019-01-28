@@ -39,9 +39,9 @@ def get_additional_GB_info(physcraper_obj):
             # debug(entry)
             # debug(self.data.otu_dict[entry]['^physcraper:status'].split(' ')[0])
             if physcraper_obj.data.otu_dict[entry]['^physcraper:status'].split(' ')[0] not in physcraper_obj.seq_filter:
-                debug(physcraper_obj.data.otu_dict[entry].keys())
+                # debug(physcraper_obj.data.otu_dict[entry].keys())
                 if '^ncbi:accession' in physcraper_obj.data.otu_dict[entry].keys():
-                    debug("add info")
+                    # debug("add info")
                     gb_id = physcraper_obj.data.otu_dict[entry]['^ncbi:accession']
                     read_handle = physcraper_obj.ids.entrez_efetch(gb_id)
                     ncbi_sp = None
@@ -65,7 +65,7 @@ def get_additional_GB_info(physcraper_obj):
                             country = str(item[u"GBQualifier_value"])
                         if item[u"GBQualifier_name"] == "isolate":
                             isolate = str(item[u"GBQualifier_value"])
-                    debug(read_handle[0])
+                    # debug(read_handle[0])
                     if "GBSeq_references" in read_handle[0].keys():
                         authors = read_handle[0]["GBSeq_references"][0][u'GBReference_authors']
                         journal = read_handle[0]["GBSeq_references"][0][u'GBReference_journal']
