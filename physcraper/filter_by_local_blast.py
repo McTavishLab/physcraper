@@ -147,7 +147,8 @@ def read_filter_blast(workdir, seq_d, fn):
                     (hsp_scores[gi_id]['hsp.bits'] <= mean_sd['mean'] + mean_sd['sd']):
                 if gi_id in seq_d:
                     seq_blast_score[gi_id] = seq_d[gi_id]
-    return seq_blast_score
+
+        return seq_blast_score
 
 
 def write_filterblast_files(workdir, seq_name, seq, db=False, fn=None):

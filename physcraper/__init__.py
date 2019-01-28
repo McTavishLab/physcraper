@@ -1018,8 +1018,6 @@ class AlignTreeTax(object):
 
         if ott_id in ids_obj.ott_to_name:
             ott_name = ids_obj.ott_to_name[ott_id]
-        # if otu_id in self.otu_dict.keys():
-        #     ott_name = ids_obj.ott_to_name.get(ott_id)
         else:
             ott_name = None
         self.otu_dict[otu_id] = {}
@@ -1321,7 +1319,6 @@ class IdDicts(object):
             ott_name = self.ott_to_name[ott_id]
             if self.config.blast_loc == "remote":
                 ncbi_id = self.get_rank_info_from_web(ott_name)
-                # ncbi_id = self.otu_rank[ott_name]["taxon id"]
             else:
                 ncbi_id = self.ncbi_parser.get_id_from_name(ott_name)
         else:  # with new ncbi taxa there might be no match in ott_to_ncbi
@@ -2528,6 +2525,7 @@ class PhyscraperScrape(object):
                                 ncbi_id = None
                             writeinfofiles.write_not_added(ncbi_id, tax_name, gb_id, reason, self.workdir)
 
+                            self.gb_not_added.append(gb_id)
                             # fn = open("{}/not_added_seq.csv".format(self.workdir), "a+")
                             # fn.write(
                             #     "seqlen_threshold_not_passed, {}, {}, min len: {}\n".format(gb_id, len_seq, seq_len_cutoff))
@@ -3470,13 +3468,12 @@ class FilterBlast(PhyscraperScrape):
         if new_taxon is True:
             assert original == 0, ("count_dict `%s` has more original seq than allowed for new taxon." % count_dict)
             assert seq_added == 0, ("count_dict `%s` has more seq added than allowed for new taxon." % count_dict)
-        debug([seq_added, original, self.threshold])
+        # debug([seq_added, original, self.threshold])
         if self.config.add_lower_taxa is not True:
             if original < self.threshold:
                 assert seq_added <= self.threshold, ("count_dict `%s` has more seq added than threshold." % count_dict)
             elif original > self.threshold:
-                sys.stdout.write("already more originals than threshold...\n")
-
+                sys.stdout.write("already more originals than requested by threshold...\n")
             else:
                 assert seq_added + original <= self.threshold, "seq_added {} and original {} have more than threshold {}.".format(seq_added, original, self.threshold)
 

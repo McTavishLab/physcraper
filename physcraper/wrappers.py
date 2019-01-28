@@ -282,10 +282,11 @@ def PS_filter_run(add_unpubl_seq, blacklist, data_obj, downtorank, id_to_spn_add
             filteredScrape.remove_identical_seqs()
             sys.stdout.write("Filter the sequences\n")
             if threshold is not None:
-                filteredScrape.sp_dict(downtorank)
-                filteredScrape.make_sp_seq_dict()
-                filteredScrape.how_many_sp_to_keep(selectby=selectby)
-                filteredScrape.replace_new_seq()
+                if len(filteredScrape.new_seqs_otu_id) > 0:
+                    filteredScrape.sp_dict(downtorank)
+                    filteredScrape.make_sp_seq_dict()
+                    filteredScrape.how_many_sp_to_keep(selectby=selectby)
+                    filteredScrape.replace_new_seq()
             sys.stdout.write("Calculate the phylogeny\n")
             filteredScrape.generate_streamed_alignment()
             filteredScrape.dump()
@@ -306,10 +307,11 @@ def PS_filter_run(add_unpubl_seq, blacklist, data_obj, downtorank, id_to_spn_add
         filteredScrape.remove_identical_seqs()
         sys.stdout.write("Filter the sequences\n")
         if threshold is not None:
-            filteredScrape.sp_dict(downtorank)
-            filteredScrape.make_sp_seq_dict()
-            filteredScrape.how_many_sp_to_keep(selectby=selectby)
-            filteredScrape.replace_new_seq()
+            if len(filteredScrape.new_seqs_otu_id) > 0:
+                filteredScrape.sp_dict(downtorank)
+                filteredScrape.make_sp_seq_dict()
+                filteredScrape.how_many_sp_to_keep(selectby=selectby)
+                filteredScrape.replace_new_seq()
         filteredScrape.data.prune_short()
         sys.stdout.write("calculate the phylogeny\n")
         filteredScrape.generate_streamed_alignment()
@@ -344,32 +346,12 @@ def add_different_rank(seqaln,
     This uses the FilterBlast subclass to be able to filter the blast output.
     """
     debug("Debugging mode is on")
-    if not os.path.exists(workdir):
-        os.makedirs(workdir)
-    conf = ConfigObj(new_confifi)
-    ids = load_ids_obj(conf, workdir)
-
-    make_otujsondict(id_to_spn, workdir, ids)
-    # make json file for unpublished database
-    if add_unpubl_seq is not None:
-        make_otujsondict(id_to_spn_addseq_json, workdir, ids, local=True)
-
-    # Generate an linked Alignment-Tree-Taxa object
-    data_obj = load_own_data(conf, seqaln, mattype, trfn, schema_trf, workdir, ingroup_mrca)
-
-    # here the filter standard function continues...
-    assert os.path.isfile("{}/scrape_checkpoint.p".format(data_obj.workdir))
+    assert os.path.isfile("{}/scrape_checkpoint.p".format(workdir))
 
     sys.stdout.write("Reloading from pickled scrapefile: scrape\n")
-    filteredScrape = pickle.load(open("{}/scrape_checkpoint.p".format(data_obj.workdir), 'rb'))
-    filteredScrape.repeat = 1
-    conf = ConfigObj(new_confifi)
-    filteredScrape.config = conf
-    assert filteredScrape.config.add_lower_taxa == True, ("you only need to run this function if you want to change the rank of seqs to be added.")
+    filteredScrape = pickle.load(open("{}/scrape_checkpoint.p".format(workdir), 'rb'))
 
     # copy previous files to different folder
-
-
     count = 1
     while os.path.exists("{}/update_{}".format(workdir, count)):
         count += 1
@@ -382,11 +364,31 @@ def add_different_rank(seqaln,
         if (os.path.isfile(full_file_name)):
             shutil.copy(full_file_name, old_runs)
 
+    filteredScrape.repeat = 1
+    conf = ConfigObj(new_confifi)
+    # add new config
+    assert filteredScrape.config != conf
+    filteredScrape.config = conf
+    assert filteredScrape.config == conf
+    assert filteredScrape.config.add_lower_taxa == True, ("you only need to run this function if you want to change the rank of seqs to be added.")
+    
+    # set new ingroup_mrca
+    filteredScrape.data.ott_mrca = ingroup_mrca
+    filteredScrape.mrca_ncbi = filteredScrape.ids.ott_to_ncbi[filteredScrape.data.ott_mrca]
+    assert filteredScrape.data.ott_mrca == ingroup_mrca
+
+
+    with open(filteredScrape.logfile, "a") as log:
+            log.write("You run 'add_different_rank' with the following settings: rank: {} and ingroup_mrca: {}. \n".format(downtorank, ingroup_mrca))
+
+
+    # here the filter standard function continues...
     if backbone is True:
         filteredScrape.backbone = backbone
         filteredScrape.data.write_files(treepath="backbone.tre", alnpath="backbone.fas")
     else:
         filteredScrape.backbone = False
+    # set new downtorank and numbers:
     filteredScrape.add_setting_to_self(downtorank, threshold)
     filteredScrape.blacklist = blacklist
     if filteredScrape.config.add_lower_taxa == True:  # used if config file is changed to add lower ranks
@@ -415,10 +417,11 @@ def add_different_rank(seqaln,
         filteredScrape.remove_identical_seqs()
         sys.stdout.write("Filter the sequences\n")
         if threshold is not None:
-            filteredScrape.sp_dict(downtorank)
-            filteredScrape.make_sp_seq_dict()
-            filteredScrape.how_many_sp_to_keep(selectby=selectby)
-            filteredScrape.replace_new_seq()
+            if len(filteredScrape.new_seqs_otu_id) > 0:
+                filteredScrape.sp_dict(downtorank)
+                filteredScrape.make_sp_seq_dict()
+                filteredScrape.how_many_sp_to_keep(selectby=selectby)
+                filteredScrape.replace_new_seq()
         sys.stdout.write("Calculate the phylogeny\n")
         filteredScrape.generate_streamed_alignment()
         filteredScrape.dump()
@@ -439,10 +442,11 @@ def add_different_rank(seqaln,
         filteredScrape.remove_identical_seqs()
         sys.stdout.write("Filter the sequences\n")
         if threshold is not None:
-            filteredScrape.sp_dict(downtorank)
-            filteredScrape.make_sp_seq_dict()
-            filteredScrape.how_many_sp_to_keep(selectby=selectby)
-            filteredScrape.replace_new_seq()
+            if len(filteredScrape.new_seqs_otu_id) > 0:
+                filteredScrape.sp_dict(downtorank)
+                filteredScrape.make_sp_seq_dict()
+                filteredScrape.how_many_sp_to_keep(selectby=selectby)
+                filteredScrape.replace_new_seq()
         filteredScrape.data.prune_short()
         sys.stdout.write("calculate the phylogeny\n")
         filteredScrape.generate_streamed_alignment()
