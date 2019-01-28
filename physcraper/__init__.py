@@ -3219,24 +3219,70 @@ class FilterBlast(PhyscraperScrape):
         :return: self.filtered_seq
         """
         debug("select_seq_by_local_blast")
-        # debug([seq_d, fn])
+        debug([seq_d, fn, count])
+        no_similar_seqs = 0
         seq_blast_score = filter_by_local_blast.read_filter_blast(self.workdir, seq_d, fn)
-        random_seq_ofsp = {}
-        if (self.threshold - count) <= 0:
-            debug("already too many samples of sp in aln, skip adding more.")
-        elif len(seq_blast_score.keys()) == (self.threshold - count):  # exact amount of seq present which need to be added
-            random_seq_ofsp = seq_blast_score
-        elif len(seq_blast_score.keys()) > (
-                self.threshold - count):  # more seq available than need to be added, choose by random
-            debug("choose random")
-            random_seq_ofsp = random.sample(seq_blast_score.items(), (self.threshold - count))
-            random_seq_ofsp = dict(random_seq_ofsp)
-        elif len(seq_blast_score.keys()) < (
-                self.threshold - count):  # less seq available than need to be added, just use all
-            debug("add all")
-            # print(len(seq_blast_score.keys()))
-            # print(self.threshold - count)
-            random_seq_ofsp = seq_blast_score
+
+        if seq_blast_score != {}:
+            random_seq_ofsp = {}
+            if (self.threshold - count) <= 0:
+                debug("already too many samples of sp in aln, skip adding more.")
+            elif len(seq_blast_score.keys()) == (self.threshold - count):  # exact amount of seq present which need to be added
+                random_seq_ofsp = seq_blast_score
+            elif len(seq_blast_score.keys()) > (
+                    self.threshold - count):  # more seq available than need to be added, choose by random
+                debug("choose random")
+                random_seq_ofsp = random.sample(seq_blast_score.items(), (self.threshold - count))
+                random_seq_ofsp = dict(random_seq_ofsp)
+            elif len(seq_blast_score.keys()) < (
+                    self.threshold - count):  # less seq available than need to be added, just use all
+                debug("add all")
+                # print(len(seq_blast_score.keys()))
+                # print(self.threshold - count)
+                random_seq_ofsp = seq_blast_score
+        # no similar seq found. think about what to do. was the other seq already present? 
+        else: 
+            debug("blast did not find similar seqs")
+            if len(self.sp_seq_d[tax_id].keys()) > 2 and no_similar_seqs == 0:  # try with different seq to blast
+                debug("blast with different seq...")
+                # all the next line is from how_many_seq_to_keep()
+                blast_seq_id = self.sp_seq_d[tax_id].keys()[1]  # seq 1 instead of 0 now
+                seq = self.sp_seq_d[tax_id][blast_seq_id]
+                filter_by_local_blast.write_filterblast_files(self.workdir, blast_seq_id, seq,
+                                                              fn=tax_id)  # blast guy
+                blast_db = self.sp_seq_d[tax_id].keys()[1:]
+                for blast_key in blast_db:
+                    seq = self.sp_seq_d[tax_id][blast_key]
+                    filter_by_local_blast.write_filterblast_files(self.workdir, blast_key, seq, db=True,
+                                                                  fn=tax_id)
+                # make local blast of sequences
+                filter_by_local_blast.run_filter_blast(self.workdir, tax_id, tax_id)
+                no_similar_seqs = 1
+                if len(self.sp_seq_d[tax_id]) + seq_present >= self.threshold:
+                    self.select_seq_by_local_blast(self.sp_seq_d[tax_id], tax_id, seq_present)
+                elif len(self.sp_seq_d[tax_id]) + seq_present < self.threshold:
+                    self.add_all(tax_id)
+            elif len(self.sp_seq_d[tax_id].keys()) > 2 and no_similar_seqs == 1:  # also with different seq no result, select random seq!
+                 self.sp_seq_d[tax_id]
+                if len(self.sp_seq_d[tax_id].keys()) == (self.threshold - count):  # exact amount of seq present which need to be added
+                    for item in self.sp_seq_d[tax_id].keys():
+                        random_seq_ofsp[item] = self.sp_seq_d[tax_id][item]
+                elif len(self.sp_seq_d[tax_id].keys()) > (
+                        self.threshold - count):  # more seq available than need to be added, choose by random
+                    debug("choose random - else")
+                    random_seq = random.sample(self.sp_seq_d[tax_id].items(), (self.threshold - count))
+                    for item in random_seq.keys():
+                        random_seq_ofsp[item] = random_seq[item]
+                elif len(seq_blast_score.keys()) < (
+                        self.threshold - count):  # less seq available than need to be added, just use all
+                    debug("add all - else")
+                    for item in self.sp_seq_d[tax_id].keys():
+                        random_seq_ofsp[item] = self.sp_seq_d[tax_id][item]
+            else:
+                seq_id = self.sp_seq_d[tax_id].keys()[1]
+                seq = self.sp_seq_d[tax_id][seq_id]
+                self.filtered_seq[seq_id] = seq
+        # debug(random_seq_ofsp)
         if len(random_seq_ofsp) > 0:  # add everything to filtered seq
             for key, val in random_seq_ofsp.items():
                 self.filtered_seq[key] = val

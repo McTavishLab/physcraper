@@ -137,14 +137,16 @@ def read_filter_blast(workdir, seq_d, fn):
                 raise
         break
     # make values to select for blast search, calculate standard deviation,mean
-    mean_sd = calculate_mean_sd(hsp_scores)
-    # select which sequences to use
     seq_blast_score = {}
-    for gi_id in hsp_scores:  # use only seq that are similar to mean plus minus sd
-        if (hsp_scores[gi_id]['hsp.bits'] >= mean_sd['mean'] - mean_sd['sd']) & \
-                (hsp_scores[gi_id]['hsp.bits'] <= mean_sd['mean'] + mean_sd['sd']):
-            if gi_id in seq_d:
-                seq_blast_score[gi_id] = seq_d[gi_id]
+
+    if hsp_scores != {}:
+        mean_sd = calculate_mean_sd(hsp_scores)
+        # select which sequences to use
+        for gi_id in hsp_scores:  # use only seq that are similar to mean plus minus sd
+            if (hsp_scores[gi_id]['hsp.bits'] >= mean_sd['mean'] - mean_sd['sd']) & \
+                    (hsp_scores[gi_id]['hsp.bits'] <= mean_sd['mean'] + mean_sd['sd']):
+                if gi_id in seq_d:
+                    seq_blast_score[gi_id] = seq_d[gi_id]
     return seq_blast_score
 
 
