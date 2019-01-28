@@ -2984,7 +2984,7 @@ class PhyscraperScrape(object):
         self.data.prune_short()
         self.data.trim()
         self.data.write_files(treepath="physcraper_final_trim.tre", alnpath="physcraper_final_trim.fas")
-        if os.path.exists("[]/previous_run".format(workdir)):
+        if os.path.exists("[]/previous_run".format(self.workdir)):
             self.est_full_tree(path="previous_run")
         else:
             self.est_full_tree()
