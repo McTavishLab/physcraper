@@ -34,7 +34,7 @@ These will all be installed if you install physcraper using
 
 ##### Databases
 
-The tool uses several databases, which can automatically be downloaded/updated from ncbi. If the tool wants to access the site, you will be asked for input (yes or no), as the tool will then access ncbi, which is a US government website!
+The tool uses several databases, which can automatically be downloaded/updated from ncbi. If the tool wants to access the site, you will be asked for input (`yes` or `no`), as the tool will then access ncbi, which is a US government website!
 
 
 ### Tutorial
@@ -54,7 +54,7 @@ For a description of which settings need to be changed and how to set-up a run, 
 
 ### Documentation
 
-The Documentation about the different classes can be found [here](./docs/).
+The Documentation about the different classes can be found [here](https://physcraper.readthedocs.io/en/latest/).
 
 ### Tests
 

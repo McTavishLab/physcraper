@@ -1913,6 +1913,7 @@ class PhyscraperScrape(object):
         query_dict = {}
         with open(fn_path, mode="r") as infile:
             for lin in infile:
+                # debug("new lin")
                 # sseqid, staxids, sscinames, pident, evalue, bitscore, sseq, stitle = lin.strip().split('\t')
                 sseqid, staxids, sscinames, pident, evalue, bitscore, sseq, salltitles, sallseqid = lin.strip().split('\t')
                 gi_id = int(sseqid.split("|")[1])
@@ -3250,7 +3251,7 @@ class FilterBlast(PhyscraperScrape):
                 seq = seq_d[blast_seq_id]
                 filter_by_local_blast.write_filterblast_files(self.workdir, blast_seq_id, seq,
                                                               fn=fn)  # blast guy
-                seq_d.keys()[2:]
+                blast_db = seq_d.keys()[2:]
                 for blast_key in blast_db:
                     seq = seq_d[blast_key]
                     filter_by_local_blast.write_filterblast_files(self.workdir, blast_key, seq, db=True,
@@ -3362,35 +3363,10 @@ class FilterBlast(PhyscraperScrape):
                         self.filtered_seq[gb_id] = seq
         return self.filtered_seq
 
-    # # TODO MK: does not seem to be used anymore!
-    # def get_name_for_blastfiles(self, key):
-    #     """Gets the name which is needed to write/read the blast files in 'loop_for_write_blast files'.
-    #
-    #     The name needs to be retrieved before the actual loop starts. I use the taxonomic names here,
-    #     as this is the measure of which information goes into which local filter blast database.
-    #     The function is only used within 'loop_for_write_blast_files' to generate the filenames.
-    #
-    #     :param key:  key of self.sp_d (taxon name)
-    #     :return: name used for blast file
-    #     """
-    #     nametoreturn = None
-    #     # loop needs to happen before the other one, as we need nametoreturn in second:
-    #     for otu_id in self.sp_d[key]:
-    #         tax_name = self.ids.find_name(otu_dict_entry=otu_id)
-    #         if '^physcraper:status' in otu_id and otu_id['^physcraper:status'].split(' ')[0] not in self.seq_filter:
-    #             for tax_name_aln, seq in self.data.aln.items():
-    #                 otu_dict_name = self.ids.find_name(otu_dict_entry=self.data.otu_dict[tax_name_aln.label])
-    #                 if tax_name == otu_dict_name:
-    #                     nametoreturn = tax_name_aln.label
-    #         assert tax_name is not None  # assert instead of if
-    #         if nametoreturn is None and tax_name is not None:
-    #             nametoreturn = tax_name.replace(" ", "_")
-    #     return nametoreturn
-
     def loop_for_write_blast_files(self, key):
         """This loop is needed to be able to write the local blast files for the filtering step correctly.
 
-        Function returns a filename for the filter blast, which were generated with 'get_name_for_blastfiles()'.
+        Function returns a filename for the filter blast.
 
         Note: has test,test_loop_for_blast.py
 
