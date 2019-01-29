@@ -1,3 +1,5 @@
+#!/bin/bash
+export PEYOTL_CONFIG_FILE="dev/peyotl.config"
 if [ -f output/owndata/ ]; then echo 'Found some!'; fi
 
 py.test  --cov=physcraper --runslow --travisonly --notravis -v tests/
