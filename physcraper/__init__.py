@@ -2565,17 +2565,22 @@ class PhyscraperScrape(object):
     #             ncbigi_list.append(gi_otu_dict)
     #     return ncbigi_list
 
-    def dump(self, filename=None):
-        """writes out class to pickle file
+    def dump(self, filename=None, recursion=100000):
+        """writes out class to pickle file.
+        We need to increase the recursion depth here, as it currently fails with the standard run.
 
         :param filename: optional filename
         :return: writes out file
         """
+        current = sys.getrecursionlimit()
+        sys.setrecursionlimit(recursion)
+
         if filename:
             ofi = open(filename, "wb")
         else:
             ofi = open("{}/scrape_checkpoint.p".format(self.workdir), "wb")
-        pickle.dump(self, ofi)
+        pickle.dump(self, ofi, pickle.HIGHEST_PROTOCOL)  
+        sys.setrecursionlimit(current)
 
     def write_query_seqs(self):
         """writes out the query sequence file"""
