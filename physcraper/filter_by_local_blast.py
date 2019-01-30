@@ -148,7 +148,7 @@ def read_filter_blast(workdir, seq_d, fn):
                 if gi_id in seq_d:
                     seq_blast_score[gi_id] = seq_d[gi_id]
 
-        return seq_blast_score
+    return seq_blast_score
 
 
 def write_filterblast_files(workdir, seq_name, seq, db=False, fn=None):

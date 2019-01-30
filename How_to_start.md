@@ -302,3 +302,6 @@ Here is a short introduction to what they are:
  #### **7. Common error messages:**
 
   * **HTTP Error 429**: Too Many Requests: you probably have too many runs running and they all try to access ncbi. Within each run there is a pause to not make ncbi angry, but if there are several runs running, the timespan between runs can get to low and then ncbi restricts you from accessing the information. Re-start and it should work.
+  * **KeyError: u'taxon'**: you probably forgot to activate your virtual environment.
+
+    

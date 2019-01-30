@@ -451,9 +451,9 @@ def generate_ATT_from_phylesystem(aln,
             ott_mrca = get_mrca_ott(ott_ids)
         else:
             ott_mrca = int(ingroup_mrca)
-    elif ott_ids: #if no ingroup is specified, ott_ids will be none
+    elif ott_ids:  # if no ingroup is specified, ott_ids will be none
         ott_mrca = get_mrca_ott(ott_ids)
-    else: # just get the mrca for teh whole tree
+    else:  # just get the mrca for teh whole tree
         ott_mrca = get_mrca_ott([otu_dict[otu_id].get(u"^ot:ottId") for otu_id in otu_dict])
     workdir = os.path.abspath(workdir)
     return AlignTreeTax(otu_newick, otu_dict, aln, ingroup_mrca=ott_mrca, workdir=workdir, config_obj=config_obj)
@@ -610,10 +610,10 @@ def OtuJsonDict(id_to_spn, id_dict):
                                      "Proceeding without taxon info\n".format(spn))
                     nosp.append(spn)
             ncbi_spn = None
-            if ncbiid in id_dict.ncbiid_to_spn:
-                ncbi_spn = id_dict.ncbiid_to_spn(ncbiid)
-            # else:
-            #     ncbi_spn = id_dict.ott_to_ncbi[ottid]
+            if ncbiid is not None:
+                ncbi_spn = spn
+            else:
+                ncbi_spn = id_dict.ott_to_ncbi[ottid]
             sp_info_dict[otu_id] = {
                 "^ncbi:taxon": ncbiid,
 
@@ -1677,7 +1677,7 @@ class PhyscraperScrape(object):
         self.OToL_unmapped_tips()  # added to do stuff with un-mapped tips from OToL
         self.ids.ingroup_mrca = data_obj.ott_mrca  # added for mrca ingroup list
         self.gb_not_added = []  # list of blast seqs not added
-
+        self.del_superseq = {}  # items that were deleted bc they are superseqs, needed for assert statement
 
     # TODO is this the right place for this? MK: According to PEP8, no...
     def reset_markers(self):
@@ -2088,17 +2088,18 @@ class PhyscraperScrape(object):
         for key in query_dict.keys():
             if float(query_dict[key]["evalue"]) < float(self.config.e_value_thresh):
                 gb_acc = query_dict[key]["accession"]
-                if gb_acc not in self.data.gb_dict or self.config.add_lower_taxa is True:  # skip ones we already have
+                if gb_acc not in self.data.gb_dict or self.config.add_lower_taxa is True:  # skip ones we already wanted to add earlier, exception if add_lower_taxa
                     # debug("add gb_dict")
                     self.new_seqs[gb_acc] = query_dict[key]["sseq"]
                     self.data.gb_dict[gb_acc] = query_dict[key]
                 # else:
                     # debug("was added before")
             else:
+
                 fn = open("{}/blast_threshold_not_passed.csv".format(self.workdir), "a+")
                 fn.write("blast_threshold_not_passed:\n")
-                fn.write("{}, {}, {}".format(query_dict[key]["sscinames"], query_dict[key]["accession"],
-                                             query_dict[key]["evalue"], "\n"))
+                fn.write("{}, {}, {}\n".format(query_dict[key]["sscinames"], query_dict[key]["accession"],
+                                             query_dict[key]["evalue"]))
                 fn.close()
 
     def read_unpublished_blast_query(self):
@@ -3233,7 +3234,7 @@ class FilterBlast(PhyscraperScrape):
         :return: self.filtered_seq
         """
         debug("select_seq_by_local_blast")
-        debug([seq_d, fn, count])
+        # debug([seq_d, fn, count])
         no_similar_seqs = 0
         seq_blast_score = filter_by_local_blast.read_filter_blast(self.workdir, seq_d, fn)
         random_seq_ofsp = {}
