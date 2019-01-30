@@ -2311,7 +2311,7 @@ class PhyscraperScrape(object):
                     tax_name = self.ids.ncbiid_to_spn[id_of_label]
                 else:
                     tax_name = self.ids.ncbi_parser.get_name_from_id(id_of_label)
-                reason = "sequence too long: {} vs. {}".format(len(new_seq), sum(self.data.orig_seqlen) / len(self.data.orig_seqlen) * self.config.maxlen)
+                reason = "sequence too long: new seq len ({}) vs.  cutoff ({})".format(len(new_seq), sum(self.data.orig_seqlen) / len(self.data.orig_seqlen) * self.config.maxlen)
                 writeinfofiles.write_not_added(id_of_label, tax_name, gb_id, reason, self.workdir)
                 # writeinfofiles.write_not_added_info(self, local_id, "threshold not passed")
                 del self.data.gb_dict[gb_id]  # needs to be deleted from gb_dict, maybe we find a better fitting blast query seq and then it might get added
@@ -2413,11 +2413,14 @@ class PhyscraperScrape(object):
         tmp_dict = dict((taxon.label, self.data.aln[taxon].symbols_as_string()) for taxon in self.data.aln)
         old_seqs = tmp_dict.keys()
         # Adding seqs that are different, but needs to be maintained as diff than aln that the tree has been run on
+        # need to re-calculate orig_seq_len before using it
+        self.data.orig_seqlen = [len(self.data.aln[tax].symbols_as_string().replace("-", "").replace("N", "")) for tax in
+                            self.data.aln]
         avg_seqlen = sum(self.data.orig_seqlen) / len(self.data.orig_seqlen)  # HMMMMMMMM
         assert self.config.seq_len_perc <= 1, ("your config seq_len_param is not smaller than 1: {}".format(self.config.seq_len_perc))
         seq_len_cutoff = avg_seqlen * self.config.seq_len_perc
         self.del_superseq  = set()  # will contain deleted superseqs for the assert below 
-
+        # all_added_gi is to limit the adding to new seqs, if we change the rank of filtering later
         all_added_gi = set()
         for key in self.data.otu_dict.keys():
             if self.data.otu_dict[key]['^physcraper:status'].split(' ')[0] not in self.seq_filter:
@@ -2524,7 +2527,7 @@ class PhyscraperScrape(object):
                         #     self.gb_not_added.append(gb_id)
                         # writeinfofiles.write_not_added_info(self, gb_id, "seqlen_threshold_not_passed")
                         len_seq = len(seq.replace("-", "").replace("N", ""))
-                        reason = "seqlen_threshold_not_passed: min len: {}, len: {}".format(len_seq, seq_len_cutoff)
+                        reason = "seqlen_threshold_not_passed: len seq: {}, min len: {}".format(len_seq, seq_len_cutoff)
                         if "sscinames" in self.data.gb_dict[gb_id]:
                             tax_name = self.data.gb_dict[gb_id]['sscinames']
                             ncbi_id = self.data.gb_dict[gb_id]['staxids']
