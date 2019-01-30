@@ -2141,9 +2141,10 @@ class PhyscraperScrape(object):
                             # debug(some)
                     else:
                         fn.write("{}: {}".format(alignment.title.split("|")[-1].split(" ")[-1], hsp.expect))
-                        if local_id not in self.gb_not_added:
-                            self.gb_not_added.append(local_id)
-                            writeinfofiles.write_not_added_info(self, local_id, "threshold not passed")
+                        # if local_id not in self.gb_not_added:
+                        #     self.gb_not_added.append(local_id)
+                        writeinfofiles.write_not_added_info(self, local_id, "threshold not passed")
+                        del self.data.gb_dict[unpbl_local_id]  # needs to be deleted from gb_dict, maybe we find a better fitting blast query seq and then it might get added
                         # print(some)
         with open(self.logfile, "a") as log:
             log.write("{} new sequences added from unpublished database\n".format(len(self.new_seqs)))
@@ -2183,9 +2184,11 @@ class PhyscraperScrape(object):
                                               'length': length, 'hsps': hsps}
                                 self.data.gb_dict[gb_id] = query_dict
                         else:
-                            if gb_id not in self.gb_not_added:
-                                self.gb_not_added.append(gb_id)
-                                writeinfofiles.write_not_added_info(self, gb_id, "threshold not passed")
+                            # if gb_id not in self.gb_not_added:
+                            #     self.gb_not_added.append(gb_id)
+                            #     writeinfofiles.write_not_added_info(self, gb_id, "threshold not passed")
+                            writeinfofiles.write_not_added_info(self, local_id, "threshold not passed")
+                            del self.data.gb_dict[gb_id]  # needs to be deleted from gb_dict, maybe we find a better fitting blast query seq and then it might get added
         except ValueError:
             sys.stderr.write("Problem reading {}, skipping\n".format(fn_path))
 
@@ -2302,14 +2305,17 @@ class PhyscraperScrape(object):
                 debug("seq not added because it's too long...")
                 self.data.otu_dict[label]['^physcraper:status'] = "not added; sequence is too long"
                 gb_id = self.data.otu_dict[label]["^ncbi:accession"]
-                if gb_id not in self.gb_not_added:
-                    self.gb_not_added.append(gb_id)
-                    if id_of_label in self.ids.ncbiid_to_spn.keys():
-                        tax_name = self.ids.ncbiid_to_spn[id_of_label]
-                    else:
-                        tax_name = self.ids.ncbi_parser.get_name_from_id(id_of_label)
-                    reason = "sequence too long: {} vs. {}".format(len(new_seq), sum(self.data.orig_seqlen) / len(self.data.orig_seqlen) * self.config.maxlen)
-                    writeinfofiles.write_not_added(id_of_label, tax_name, gb_id, reason, self.workdir)
+                # if gb_id not in self.gb_not_added:
+                #     self.gb_not_added.append(gb_id)
+                if id_of_label in self.ids.ncbiid_to_spn.keys():
+                    tax_name = self.ids.ncbiid_to_spn[id_of_label]
+                else:
+                    tax_name = self.ids.ncbi_parser.get_name_from_id(id_of_label)
+                reason = "sequence too long: {} vs. {}".format(len(new_seq), sum(self.data.orig_seqlen) / len(self.data.orig_seqlen) * self.config.maxlen)
+                writeinfofiles.write_not_added(id_of_label, tax_name, gb_id, reason, self.workdir)
+                # writeinfofiles.write_not_added_info(self, local_id, "threshold not passed")
+                del self.data.gb_dict[gb_id]  # needs to be deleted from gb_dict, maybe we find a better fitting blast query seq and then it might get added
+                                    
             elif len(inc_seq) >= len(new_seq):  # if seq is identical and shorter
                 if inc_seq.find(new_seq) != -1:
                     if type(existing_id) == int and existing_id != id_of_label:  # different otus, add
@@ -2513,24 +2519,27 @@ class PhyscraperScrape(object):
                             otu_id = self.data.add_otu(gb_id, self.ids)
                             self.seq_dict_build(seq, otu_id, tmp_dict)
                     else:
-                        if gb_id not in self.gb_not_added:
-                            self.gb_not_added.append(gb_id)
-                            # writeinfofiles.write_not_added_info(self, gb_id, "seqlen_threshold_not_passed")
-                            len_seq = len(seq.replace("-", "").replace("N", ""))
-                            reason = "seqlen_threshold_not_passed: min len: {}, len: {}".format(len_seq, seq_len_cutoff)
-                            if "sscinames" in self.data.gb_dict[gb_id]:
-                                tax_name = self.data.gb_dict[gb_id]['sscinames']
-                                ncbi_id = self.data.gb_dict[gb_id]['staxids']
-                            else:
-                                tax_name = None
-                                ncbi_id = None
-                            writeinfofiles.write_not_added(ncbi_id, tax_name, gb_id, reason, self.workdir)
+                        # do not add them to not added, as seq len depends on sequence which was blasted and there might be a better matching seq (one which will return a longer sequence...)
+                        # if gb_id not in self.gb_not_added:
+                        #     self.gb_not_added.append(gb_id)
+                        # writeinfofiles.write_not_added_info(self, gb_id, "seqlen_threshold_not_passed")
+                        len_seq = len(seq.replace("-", "").replace("N", ""))
+                        reason = "seqlen_threshold_not_passed: min len: {}, len: {}".format(len_seq, seq_len_cutoff)
+                        if "sscinames" in self.data.gb_dict[gb_id]:
+                            tax_name = self.data.gb_dict[gb_id]['sscinames']
+                            ncbi_id = self.data.gb_dict[gb_id]['staxids']
+                        else:
+                            tax_name = None
+                            ncbi_id = None
+                        writeinfofiles.write_not_added(ncbi_id, tax_name, gb_id, reason, self.workdir)
+                        self.gb_not_added.append(gb_id)
+                        del self.data.gb_dict[gb_id]  # needs to be deleted from gb_dict. If we later blast a seq which fits better with this one, it will not be tried to add, as we tried before with a bad matching one
 
-                            self.gb_not_added.append(gb_id)
-                            # fn = open("{}/not_added_seq.csv".format(self.workdir), "a+")
-                            # fn.write(
-                            #     "seqlen_threshold_not_passed, {}, {}, min len: {}\n".format(gb_id, len_seq, seq_len_cutoff))
-                            # fn.close()
+                                
+                        # fn = open("{}/not_added_seq.csv".format(self.workdir), "a+")
+                        # fn.write(
+                        #     "seqlen_threshold_not_passed, {}, {}, min len: {}\n".format(gb_id, len_seq, seq_len_cutoff))
+                        # fn.close()
         # this assert got more complicated, as sometimes superseqs are already deleted in seq_dict_build(). Then subset assert it not True
         old_seqs_ids = set()
         for tax in old_seqs:
@@ -2834,13 +2843,13 @@ class PhyscraperScrape(object):
                                  "-m", "GTRCAT",
                                  "-s", "previous_run/papara_alignment.extended",
                                  "-p", "1", "-b", "1", "-#", "autoMRE",
-                                  "-n", "{}".format(self.date)])
+                                  "-n", "all{}".format(self.date)])
             except: 
                 subprocess.call(["raxmlHPC", 
                                  "-m", "GTRCAT",
                                  "-s", "previous_run/papara_alignment.extended",
                                  "-p", "1", "-b", "1", "-#", "autoMRE",
-                                  "-n", "{}".format(self.date)])
+                                  "-n", "all{}".format(self.date)])
         try:
             # strict consensus:
             subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(self.config.num_threads), "-m", "GTRCAT",
@@ -2958,6 +2967,9 @@ class PhyscraperScrape(object):
                 self.new_seqs = {}  # Wipe for next run
                 self.new_seqs_otu_id = {}
                 self.repeat = 1
+            else:
+                self.calculate_final_tree()
+                self.data.dump("{}/final_ATT_checkpoint.p".format(self.workdir))
         #     else:
         #         if _VERBOSE:
         #             sys.stdout.write("No new sequences after filtering.\n")
