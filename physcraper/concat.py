@@ -509,7 +509,7 @@ class Concat(object):
         self.ld(range(0, (len(len_gene) - 1)))
         for item in range(0, (len(len_gene) - 1)):
             assert len_gene[item] == len_gene[item + 1]
-        self.dump("bf_rename_drop_tips.p")
+        # self.dump("bf_rename_drop_tips.p")
         self.rename_drop_tips()
 
     def rename_drop_tips(self):
@@ -850,6 +850,13 @@ class Concat(object):
         for tax, len_seq in seq_len.items():
             if len_seq < min_len:
                 prune_shortest.append(tax)
+                for tax_id in self.sp_acc_comb.keys():
+                    # print(tax_id)
+                    if tax_id == tax.label:
+                        # print("change entry")
+                        for gene in self.sp_acc_comb[tax_id].keys():
+                            for entry in self.sp_acc_comb[tax_id][gene].keys():
+                                self.sp_acc_comb[tax_id][gene][entry]['concat:status'] = "del, concatenated seq is too short"
         self.short_concat_seq = prune_shortest
         with open("{}/short_seq_deleted.csv".format(self.workdir), "w") as output:
             writer = csv.writer(output)
@@ -938,18 +945,18 @@ class Concat(object):
             for tax, seq in self.single_runs[gene].aln.items():
                 org_len_gene = len(seq.symbols_as_string())
                 break
-            physcraper.debug(org_len_gene)
+            # physcraper.debug(org_len_gene)
             if count == 0:
                 # subtract removed columns (rm_gap_only) from len_gene
                 # count number of cols which are smaller than len_gene
                 rm_col_a = []
-                physcraper.debug(self.del_columns)
+                # physcraper.debug(self.del_columns)
                 for num in self.del_columns:
                     # physcraper.debug(num)
                     if num <= org_len_gene:
                         rm_col_a.append(num)
-                physcraper.debug(rm_col_a)
-                physcraper.debug(len(rm_col_a))
+                # physcraper.debug(rm_col_a)
+                # physcraper.debug(len(rm_col_a))
 
                 len_gene0 = org_len_gene
                 shortend_len0 = org_len_gene - len(rm_col_a)
@@ -968,9 +975,9 @@ class Concat(object):
 
 
                 start = end + 1
-                physcraper.debug(org_len_gene)
-                physcraper.debug(shortend_len0)
-                physcraper.debug(rm_col_a)
+                # physcraper.debug(org_len_gene)
+                # physcraper.debug(shortend_len0)
+                # physcraper.debug(rm_col_a)
                 # subtract removed columns from len_gene
                 # count number of cols which are smaller than len_gene, must be done with original col length (rm_col_a))
                 rm_col = []
@@ -978,8 +985,8 @@ class Concat(object):
                     if num > part_len1 and num <= (part_len1 + org_len_gene):
                         # physcraper.debug(num)
                         rm_col.append(num)
-                physcraper.debug(rm_col)
-                physcraper.debug(len(rm_col))
+                # physcraper.debug(rm_col)
+                # physcraper.debug(len(rm_col))
 
                 shortend_len1 = shortend_len1 + org_len_gene - len(rm_col)
                 end = shortend_len0 + shortend_len1
@@ -1200,7 +1207,7 @@ class Concat(object):
                 # next(reader)
                 genel = reader.next()
             sp_concat = dict((rows[0], rows[1]) for rows in reader)
-            physcraper.debug(sp_concat)
+            # physcraper.debug(sp_concat)
         for otu in sp_concat.keys():
             global_taxid = None
             concat_l = sp_concat[otu]
@@ -1424,14 +1431,14 @@ class Concat(object):
 
         with open(tr_fn, "r") as label_new:
             new_tree = label_new.read()
-            print(new_tree)
+            # print(new_tree)
             with open("{}_relabel".format(tr_fn), "wt") as fout:
                 for index, row in otu_info.iterrows():
-                    print(row)
+                    # print(row)
                     # print(row['sp_id'])
                     current_id = "{}:".format(row['sp_id'].replace(" ","_"))
                     new_id = "{}_{}:".format(row['spn'].replace(" ","_"), row['unique_id'].replace(" ","_"))
-                    print(new_id)
+                    # print(new_id)
                     new_tree = new_tree.replace(current_id, new_id)
 
                 fout.write(new_tree)
