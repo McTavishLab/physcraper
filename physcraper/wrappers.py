@@ -346,115 +346,124 @@ def add_different_rank(seqaln,
     This uses the FilterBlast subclass to be able to filter the blast output.
     """
     debug("Debugging mode is on")
-    assert os.path.isfile("{}/scrape_checkpoint.p".format(workdir))
 
-    sys.stdout.write("Reloading from pickled scrapefile: scrape\n")
-    filteredScrape = pickle.load(open("{}/scrape_checkpoint.p".format(workdir), 'rb'))
+    dump_fn = "add_different_rank{}_{}.run".format(ingroup_mrca, downtorank)
 
-    # copy previous files to different folder
-    count = 1
-    while os.path.exists("{}/update_{}".format(workdir, count)):
-        count += 1
-    os.mkdir("{}/update_{}".format(workdir, count))
-    old_runs = "{}/update_{}".format(workdir, count)
-
-    src_files = os.listdir(workdir)
-    for file_name in src_files:
-        full_file_name = os.path.join(workdir, file_name)
-        if (os.path.isfile(full_file_name)):
-            shutil.copy(full_file_name, old_runs)
-
-    filteredScrape.repeat = 1
-    conf = ConfigObj(new_confifi)
-    # add new config
-    assert filteredScrape.config != conf
-    filteredScrape.config = conf
-    assert filteredScrape.config == conf
-    assert filteredScrape.config.add_lower_taxa == True, ("you only need to run this function if you want to change the rank of seqs to be added.")
-    
-    # set new ingroup_mrca
-    filteredScrape.data.ott_mrca = ingroup_mrca
-    filteredScrape.mrca_ncbi = filteredScrape.ids.ott_to_ncbi[filteredScrape.data.ott_mrca]
-    assert filteredScrape.data.ott_mrca == ingroup_mrca
-
-
-    with open(filteredScrape.logfile, "a") as log:
-            log.write("You run 'add_different_rank' with the following settings: rank: {} and ingroup_mrca: {}. \n".format(downtorank, ingroup_mrca))
-
-
-    # here the filter standard function continues...
-    if backbone is True:
-        filteredScrape.backbone = backbone
-        filteredScrape.data.write_files(treepath="backbone.tre", alnpath="backbone.fas")
+    if  os.path.isfile("{}/{}".format(workdir, dump_fn)):  # if files does not exists, this loop was not yet run, if exitsts, go to next
+        filteredScrape = pickle.load(open("{}/scrape_checkpoint.p".format(workdir), 'rb'))
     else:
-        filteredScrape.backbone = False
-    # set new downtorank and numbers:
-    filteredScrape.add_setting_to_self(downtorank, threshold)
-    filteredScrape.blacklist = blacklist
-    if filteredScrape.config.add_lower_taxa == True:  # used if config file is changed to add lower ranks
-        filteredScrape.reset_new_seqs_acc()
-    if add_unpubl_seq is not None:
-        filteredScrape.unpublished = True
-    if filteredScrape.unpublished is True:  # use unpublished data
-        sys.stdout.write("Blasting against local unpublished data")
-        filteredScrape.data.unpubl_otu_json = json.load(open("{}/otu_dict_localseq.json".format(data_obj.workdir)))
-        filteredScrape.write_unpubl_blastdb(add_unpubl_seq)
-        filteredScrape.run_blast_wrapper()
-        filteredScrape.read_blast_wrapper()
-        filteredScrape.remove_identical_seqs()
-        filteredScrape.generate_streamed_alignment()
-        filteredScrape.unpublished = False
-        if backbone:
-            filteredScrape.repeat = 1
-    else:
-        sys.stdout.write("BLASTing input sequences\n")
-        if shared_blast_folder:
-            filteredScrape.blast_subdir = shared_blast_folder
+
+        assert os.path.isfile("{}/scrape_checkpoint.p".format(workdir))
+
+        sys.stdout.write("Reloading from pickled scrapefile: scrape\n")
+        filteredScrape = pickle.load(open("{}/scrape_checkpoint.p".format(workdir), 'rb'))
+
+        # copy previous files to different folder
+        count = 1
+        while os.path.exists("{}/update_{}".format(workdir, count)):
+            count += 1
+        os.mkdir("{}/update_{}".format(workdir, count))
+        old_runs = "{}/update_{}".format(workdir, count)
+
+        src_files = os.listdir(workdir)
+        for file_name in src_files:
+            full_file_name = os.path.join(workdir, file_name)
+            if (os.path.isfile(full_file_name)):
+                shutil.copy(full_file_name, old_runs)
+
+        filteredScrape.repeat = 1
+        conf = ConfigObj(new_confifi)
+        # add new config
+        assert filteredScrape.config != conf
+        filteredScrape.config = conf
+        assert filteredScrape.config == conf
+        assert filteredScrape.config.add_lower_taxa == True, ("you only need to run this function if you want to change the rank of seqs to be added.")
+        
+        # set new ingroup_mrca
+        filteredScrape.data.ott_mrca = ingroup_mrca
+        filteredScrape.mrca_ncbi = filteredScrape.ids.ott_to_ncbi[filteredScrape.data.ott_mrca]
+        assert filteredScrape.data.ott_mrca == ingroup_mrca
+
+
+        with open(filteredScrape.logfile, "a") as log:
+                log.write("You run 'add_different_rank' with the following settings: rank: {} and ingroup_mrca: {}. \n".format(downtorank, ingroup_mrca))
+
+
+        # here the filter standard function continues...
+        if backbone is True:
+            filteredScrape.backbone = backbone
+            filteredScrape.data.write_files(treepath="backbone.tre", alnpath="backbone.fas")
         else:
-            shared_blast_folder = None
-        filteredScrape.run_blast_wrapper()
-        filteredScrape.read_blast_wrapper(blast_dir=shared_blast_folder)
-        filteredScrape.remove_identical_seqs()
-        sys.stdout.write("Filter the sequences\n")
-        if threshold is not None:
-            if len(filteredScrape.new_seqs_otu_id) > 0:
-                filteredScrape.sp_dict(downtorank)
-                filteredScrape.make_sp_seq_dict()
-                filteredScrape.how_many_sp_to_keep(selectby=selectby)
-                filteredScrape.replace_new_seq()
-        sys.stdout.write("Calculate the phylogeny\n")
-        filteredScrape.generate_streamed_alignment()
-        filteredScrape.dump()
-        filteredScrape.data.write_otus("otu_info", schema="table")
-        write_out_files(filteredScrape, downtorank)
-        if backbone:
-            filteredScrape.repeat = 0
-    while filteredScrape.repeat == 1:
-        filteredScrape.data.write_labelled(label="^ot:ottTaxonName", add_gb_id=True)
-        filteredScrape.data.write_otus("otu_info", schema="table")
-        sys.stdout.write("BLASTing input sequences\n")
-        if shared_blast_folder:
-            filteredScrape.blast_subdir = shared_blast_folder
+            filteredScrape.backbone = False
+        # set new downtorank and numbers:
+        filteredScrape.add_setting_to_self(downtorank, threshold)
+        filteredScrape.blacklist = blacklist
+        if filteredScrape.config.add_lower_taxa == True:  # used if config file is changed to add lower ranks
+            filteredScrape.reset_new_seqs_acc()
+        if add_unpubl_seq is not None:
+            filteredScrape.unpublished = True
+        if filteredScrape.unpublished is True:  # use unpublished data
+            sys.stdout.write("Blasting against local unpublished data")
+            filteredScrape.data.unpubl_otu_json = json.load(open("{}/otu_dict_localseq.json".format(data_obj.workdir)))
+            filteredScrape.write_unpubl_blastdb(add_unpubl_seq)
+            filteredScrape.run_blast_wrapper()
+            filteredScrape.read_blast_wrapper()
+            filteredScrape.remove_identical_seqs()
+            filteredScrape.generate_streamed_alignment()
+            filteredScrape.unpublished = False
+            if backbone:
+                filteredScrape.repeat = 1
         else:
-            shared_blast_folder = None
-        filteredScrape.run_blast_wrapper()
-        filteredScrape.read_blast_wrapper(blast_dir=shared_blast_folder)
-        filteredScrape.remove_identical_seqs()
-        sys.stdout.write("Filter the sequences\n")
-        if threshold is not None:
-            if len(filteredScrape.new_seqs_otu_id) > 0:
-                filteredScrape.sp_dict(downtorank)
-                filteredScrape.make_sp_seq_dict()
-                filteredScrape.how_many_sp_to_keep(selectby=selectby)
-                filteredScrape.replace_new_seq()
-        filteredScrape.data.prune_short()
-        sys.stdout.write("calculate the phylogeny\n")
-        filteredScrape.generate_streamed_alignment()
+            sys.stdout.write("BLASTing input sequences\n")
+            if shared_blast_folder:
+                filteredScrape.blast_subdir = shared_blast_folder
+            else:
+                shared_blast_folder = None
+            filteredScrape.run_blast_wrapper()
+            filteredScrape.read_blast_wrapper(blast_dir=shared_blast_folder)
+            filteredScrape.remove_identical_seqs()
+            sys.stdout.write("Filter the sequences\n")
+            if threshold is not None:
+                if len(filteredScrape.new_seqs_otu_id) > 0:
+                    filteredScrape.sp_dict(downtorank)
+                    filteredScrape.make_sp_seq_dict()
+                    filteredScrape.how_many_sp_to_keep(selectby=selectby)
+                    filteredScrape.replace_new_seq()
+            sys.stdout.write("Calculate the phylogeny\n")
+            filteredScrape.generate_streamed_alignment()
+            filteredScrape.dump()
+            filteredScrape.data.write_otus("otu_info", schema="table")
+            write_out_files(filteredScrape, downtorank)
+            if backbone:
+                filteredScrape.repeat = 0
+            filteredScrape.config.add_lower_taxa = False  # set back to normal - only used to reassess formerly discarded seq in first round
+        while filteredScrape.repeat == 1:
+            filteredScrape.data.write_labelled(label="^ot:ottTaxonName", add_gb_id=True)
+            filteredScrape.data.write_otus("otu_info", schema="table")
+            sys.stdout.write("BLASTing input sequences\n")
+            if shared_blast_folder:
+                filteredScrape.blast_subdir = shared_blast_folder
+            else:
+                shared_blast_folder = None
+            filteredScrape.run_blast_wrapper()
+            filteredScrape.read_blast_wrapper(blast_dir=shared_blast_folder)
+            filteredScrape.remove_identical_seqs()
+            sys.stdout.write("Filter the sequences\n")
+            if threshold is not None:
+                if len(filteredScrape.new_seqs_otu_id) > 0:
+                    filteredScrape.sp_dict(downtorank)
+                    filteredScrape.make_sp_seq_dict()
+                    filteredScrape.how_many_sp_to_keep(selectby=selectby)
+                    filteredScrape.replace_new_seq()
+            filteredScrape.data.prune_short()
+            sys.stdout.write("calculate the phylogeny\n")
+            filteredScrape.generate_streamed_alignment()
+            filteredScrape.dump()
+            write_out_files(filteredScrape, downtorank)
+            if backbone:
+                filteredScrape.repeat = 0
+        writeinfofiles.get_additional_GB_info(filteredScrape)
         filteredScrape.dump()
-        write_out_files(filteredScrape, downtorank)
-        if backbone:
-            filteredScrape.repeat = 0
-    writeinfofiles.get_additional_GB_info(filteredScrape)
     return filteredScrape
 
 
