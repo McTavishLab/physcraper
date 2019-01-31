@@ -36,7 +36,7 @@ from peyotl.nexson_syntax import (
 # extension functions
 from . import concat  # is the local concat class
 from . import ncbi_data_parser  # is the ncbi data parser class and associated functions
-from . import filter_by_local_blast
+from . import filter_by_local_blast  # functions for the FilterBlast filtering
 from . import opentree_helpers
 from . import writeinfofiles
 
@@ -2839,21 +2839,27 @@ class PhyscraperScrape(object):
                              "-m", "GTRCAT",
                              "-s", "previous_run/papara_alignment.extended",
                              "-p", "1", "-f", "a", "-x", "1", "-#", "autoMRE",
-                             "-n", "all{}".format(self.date)])
+                             "-n", "{}".format(self.date)])
         else:
             try:
                 subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(self.config.num_threads), 
                                  "-m", "GTRCAT",
                                  "-s", "previous_run/papara_alignment.extended",
                                  "-p", "1", "-b", "1", "-#", "autoMRE",
-                                  "-n", "all{}".format(self.date)])
+                                  "-n", "{}".format(self.date)])
             except: 
                 subprocess.call(["raxmlHPC", 
                                  "-m", "GTRCAT",
                                  "-s", "previous_run/papara_alignment.extended",
                                  "-p", "1", "-b", "1", "-#", "autoMRE",
-                                  "-n", "all{}".format(self.date)])
+                                  "-n", "{}".format(self.date)])
+
         try:
+            subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(self.config.num_threads), "-m", "GTRCAT",
+                             "-s", "previous_run/papara_alignment.extended",
+                             "-p", "1", "-f", "a", "-x", "1", "-#", "autoMRE",
+                             "-n", "all{}".format(self.date)])
+
             # strict consensus:
             subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(self.config.num_threads), "-m", "GTRCAT",
                              "-J", "STRICT",
@@ -2872,11 +2878,7 @@ class PhyscraperScrape(object):
         except:
             sys.stderr.write("You do not have the raxmlHPC-PTHREADS installed, will fall down to slow version!")
             
-            # run bootstrap
-            subprocess.call(["raxmlHPC", "-m", "GTRCAT",
-                             "-s", "previous_run/papara_alignment.extended",
-                             "-p", "1", "-b", "1", "-#", "autoMRE",
-                             "-n", "{}".format(self.date)])
+
             # make bipartition tree
             # is the -f b command
             subprocess.call(["raxmlHPC", "-m", "GTRCAT",

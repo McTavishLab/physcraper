@@ -45,6 +45,6 @@ def test_compare_json():
 
 	otu_json = OtuJsonDict(id_to_spn, ids)
 
-
+	print(otu_json)
 	assert otu_json == expected_json
 	

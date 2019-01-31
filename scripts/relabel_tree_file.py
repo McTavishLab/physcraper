@@ -17,16 +17,20 @@ import sys
 def read_otu_info(fn):
 	df = pd.read_csv(fn, sep=',', header=None, index_col=False,
 	                     names=[
-	                         'otu_id',
-	                         'tax_name',
-	                         'gi',
-	                         'accession',
-	                         'last_blsated',
-	                         'status',
-	                         'ott_d',
-	                         'ncbi_id',
-	                         'GenBank info',
-	                        
+
+	                         "otuID",
+							"^ncbi:gi",
+							"^ncbi:accession",
+							"^ot:originalLabel",
+							"^physcraper:last_blasted",
+							"^physcraper:status",
+							"^physcraper:TaxonName",
+							"^ncbi:title",
+							"^ncbi:taxon",
+							"^ncbi:TaxonName",
+							"^ot:ottId",
+							"^ot:ottTaxonName"
+                        
 	                     ])
 	return df
 
@@ -49,11 +53,11 @@ with open(tr_fn, "r") as label_new:
 	print(new_tree)
 	with open("{}_relabel".format(tr_fn), "wt") as fout:
 		for index, row in otu_info.iterrows():
-			print(row['otu_id'])
-			ident = row['gi']
+			print(row['otuID'])
+			ident = row['^ncbi:accession']
 			if ident == "-":
-				ident = row["otu_id"]
+				ident = row["otuID"]
 
-			new_tree = new_tree.replace("{}:".format(row['otu_id']), "{}_{}:".format(row['tax_name'].replace(" ", "_"), ident))
+			new_tree = new_tree.replace("{}:".format(row['otuID']), "{}_{}:".format(row['^physcraper:TaxonName'].replace(" ", "_"), ident))
 
 		fout.write(new_tree)
