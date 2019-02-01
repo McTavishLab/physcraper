@@ -52,6 +52,27 @@ print("Current Wrapper Version number: 12192018.0")
 #     ids = IdDicts(conf, cwd)
 #     return ids
 
+def license_print():
+    sys.stdout.write(
+    """
+    
+    Physcraper: automatic updating of phylogenies
+    Copyright (C) 2019  E.J. McTavish and M. Kandziora
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+    """)
 
 def load_ids_obj(conf, workdir):
     """
@@ -345,6 +366,7 @@ def add_different_rank(seqaln,
     new analysis for as long as new seqs are found. 
     This uses the FilterBlast subclass to be able to filter the blast output.
     """
+    license_print()
     debug("Debugging mode is on")
 
     dump_fn = "add_different_rank{}_{}.run".format(ingroup_mrca, downtorank)
@@ -387,7 +409,6 @@ def add_different_rank(seqaln,
 
         with open(filteredScrape.logfile, "a") as log:
                 log.write("You run 'add_different_rank' with the following settings: rank: {} and ingroup_mrca: {}. \n".format(downtorank, ingroup_mrca))
-
 
         # here the filter standard function continues...
         if backbone is True:
@@ -494,6 +515,7 @@ def standard_run(study_id,
          shared_blast_folder = not necessary, if you want to share blast searches across runs (see documentation),
                                 give the path to the folder with the shared runs.
     """
+    license_print()
     debug("Debugging mode is on")
     if not os.path.exists(workdir):
         os.mkdir(workdir)
@@ -531,7 +553,7 @@ def own_data_run(seqaln,
          shared_blast_folder = not necessary, if you want to share blast searches across runs (see documentation),
                                 give the path to the folder with the shared runs.
     """
-
+    license_print()
     debug("Debugging mode is on")
     if not os.path.exists(workdir):
         os.mkdir(workdir)
@@ -565,6 +587,8 @@ def filter_OTOL(study_id,
     new analysis for as long as new seqs are found.
 
     This uses the FilterBlast subclass to be able to filter the blast output using data from OToL."""
+    license_print()
+
     debug("Debugging mode is on")
     if not os.path.exists(workdir):
         os.makedirs(workdir)
@@ -604,6 +628,7 @@ def filter_data_run(seqaln,
     new analysis for as long as new seqs are found. 
     This uses the FilterBlast subclass to be able to filter the blast output.
     """
+    license_print()
     debug("Debugging mode is on")
     print(workdir)
     print(os.path.exists(workdir))
@@ -646,6 +671,8 @@ def add_unpubl_to_backbone(seqaln,
     It adds unpublished data to an input tree (evalue should be higher than usual).
     Backbone will not be updated
     """
+    license_print()
+
 
     # read the config file into a configuration object
     conf = ConfigObj(configfi)
@@ -663,6 +690,8 @@ def concat(genelistdict, workdir_comb, email, num_threads=None, percentage=0.37,
     """This is to concatenate different physcraper runs into a single alignment and tree.
     genelistdict is a dict with gene names as key and the corresponding workdir
     """
+    license_print()
+
     if not os.path.exists(path="{}/concat_checkpoint.p".format(workdir_comb)):
         if not os.path.exists(path="{}/load_single_data.p".format(workdir_comb)):
             #save_copy_code(workdir_comb)
