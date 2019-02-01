@@ -243,7 +243,7 @@ There are some more features that can be changed.
     
     1. run `python scripts/get_ottid.py name_of_your_ingroup`
 
-    2. by going to [Open Tree of Life](https://ot14.opentreeoflife.org/opentree/argus/opentree9.1@ott93302) and type in the name of the lineage and get the OTT ID at the right side of the page. That number needs to be provided analysis file, as following:
+    2. by going to [Open Tree of Life](https://ot14.opentreeoflife.org/opentree/argus/opentree9.1@ott93302) and type in the name of the lineage and get the OTT ID at the right side of the page. 
     
     The identifying number need to be entered here:
     1. in an OToL run: within the function  `standard_run()`/`filter_OTOL()` in your analysis file in the field for `ingroup_mrca`.

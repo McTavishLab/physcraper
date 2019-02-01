@@ -8,7 +8,7 @@ import numpy
 import shutil
 from Bio.Blast import NCBIXML
 
-_DEBUG_MK = 1
+_DEBUG_MK = 0
 
 """Functions are used within the FilterBlast class to select sequences based on a local blast filtering step."""
 

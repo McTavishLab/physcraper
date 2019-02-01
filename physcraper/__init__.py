@@ -15,7 +15,7 @@ import pickle
 import random
 import contextlib
 import time
-#from mpi4py import MPI
+# from mpi4py import MPI
 from past.builtins import xrange
 from builtins import input
 from copy import deepcopy
@@ -521,7 +521,8 @@ def generate_ATT_from_files(seqaln,
         ott_ids = filter(None, ott_ids)
         ott_ids = set(ott_ids)
         ott_mrca = get_mrca_ott(ott_ids)
-    return AlignTreeTax(otu_newick, otu_dict, aln, ingroup_mrca=ott_mrca, workdir=workdir, config_obj=config_obj, schema=schema_trf)
+    return AlignTreeTax(otu_newick, otu_dict, aln, ingroup_mrca=ott_mrca, workdir=workdir,
+                        config_obj=config_obj, schema=schema_trf)
 
 
 def standardize_label(item):
@@ -923,7 +924,8 @@ class AlignTreeTax(object):
         aln_ids = set()
         for taxon in self.aln:
             aln_ids.add(taxon.label)
-        assert aln_ids.issubset(self.otu_dict.keys()), ([x for x in aln_ids if x not in self.otu_dict.keys()], self.otu_dict.keys())
+        assert aln_ids.issubset(self.otu_dict.keys()), \
+            ([x for x in aln_ids if x not in self.otu_dict.keys()], self.otu_dict.keys())
 
         treed_taxa = set()
         for leaf in self.tre.leaf_nodes():
@@ -1954,55 +1956,42 @@ class PhyscraperScrape(object):
                                     # debug(i)
                                     gi_id = sallseqid_l[i].split("|")[1]
                                     gb_acc = sallseqid_l[i].split("|")[3]
-                                    if gb_acc in query_dict or gb_acc in self.data.gb_dict:  # if gb acc was already read in before stop the for loop
+                                    # if gb acc was already read in before stop the for loop
+                                    if gb_acc in query_dict or gb_acc in self.data.gb_dict:
                                         # debug("set to true")
                                         stop_while = True
                                         break
                                     stitle = salltitles_l[i]
-                                    # max()
+                                    # spn_title are used to figure out if gb_acc is from same tax_id
+                                    # if both var are the same, we do not need to search GB for taxon info
                                     spn_title_before = salltitles_l[i-1].split(" ")[0:spn_range]
                                     spn_title = salltitles_l[i].split(" ")[0:spn_range]
                                     # print(spn_title, spn_title_before)
                                     # debug(gb_acc)
                                     # debug(found_taxids)
-                                    # sometimes if multiple seqs are merged, we lack the information which taxon is which gb_acc...
+                                    # sometimes if multiple seqs are merged,
+                                    # we lack information about which taxon is which gb_acc...
                                     # test it here:
-                                    if len(sallseqid_l) == len(staxids_l):  # if we have same number information go ahead as usual
-                                        # debug("if")
-                                        # debug(staxids_l)
-                                        # debug(sscinames_l)
+                                    # if we have same number of ids and taxon id go ahead as usual
+                                    if len(sallseqid_l) == len(staxids_l):
                                         staxids = staxids_l[i]
                                         sscinames = sscinames_l[i]
-                                    elif len(staxids_l) == 1:  # only one taxon id present, all are from same taxon
-                                        # debug("elif")
-                                        # debug(staxids_l)
-                                        # debug(salltitles_l)
-                                        # debug(staxids_l)
-                                        # debug(sscinames_l)
-                                        # debug(sallseqid_l)
+                                    # only one taxon id present, all are from same taxon
+                                    elif len(staxids_l) == 1:
                                         staxids = staxids_l[0]
                                         sscinames = sscinames_l[0]
-                                    elif i != 0 and spn_title != spn_title_before:
-                                        # staxids = self.ids.map_acc_ncbi(gb_acc)
-                                        # sscinames = self.ids.ncbiid_to_spn[staxids]
-                                        # debug(salltitles_l)
-                                        # debug(staxids_l)
-                                        # debug(sscinames_l)
-                                        # debug(sallseqid_l)
+                                    elif (i != 0 and spn_title != spn_title_before):
+
                                         read_handle = self.ids.entrez_efetch(gb_acc)
                                         sscinames = get_ncbi_tax_name(read_handle).replace(" ", "_").replace("/", "_")
                                         staxids = get_ncbi_tax_id(read_handle)
                                         spn_range = len(sscinames.split("_"))
-                                    elif i == 0:
-                                        # staxids = self.ids.map_acc_ncbi(gb_acc)
-                                        # sscinames = self.ids.ncbiid_to_spn[staxids]
-                                        # debug("i==1")
+                                    elif i == 0:  # for first item in redundant data, always get info
                                         read_handle = self.ids.entrez_efetch(gb_acc)
                                         sscinames = get_ncbi_tax_name(read_handle).replace(" ", "_").replace("/", "_")
                                         staxids = get_ncbi_tax_id(read_handle)
                                         spn_range = len(sscinames.split("_"))
-                                    else:
-                                        # print("next")
+                                    else:  # if spn_titles were the same, we do not need to add same seq again
                                         continue
 
                                     assert str(staxids) in staxids_l, (staxids, staxids_l)
@@ -2010,14 +1999,18 @@ class PhyscraperScrape(object):
                                     # self.ids.acc_ncbi_dict[gb_acc] = staxids
                                     # self.ids.ncbiid_to_spn[staxids] = sscinames 
                                     # self.ids.spn_to_ncbiid[sscinames] = staxids
-
+                                    # next vars are used to stop loop if all taxids were found
                                     found_taxids.add(staxids)
                                     found_spn.add(sscinames)
 
                                     if gb_acc not in query_dict and gb_acc not in self.newseqs_acc:
-                                        query_dict[gb_acc] = {'^ncbi:gi': gi_id, 'accession': gb_acc, 'staxids': staxids,
-                                                          'sscinames': sscinames, 'pident': pident, 'evalue': evalue,
-                                                          'bitscore': bitscore, 'sseq': sseq, 'title': stitle}
+                                        query_dict[gb_acc] = \
+                                            {'^ncbi:gi': gi_id, 'accession': gb_acc, 'staxids': staxids,
+                                             'sscinames': sscinames, 'pident': pident, 'evalue': evalue,
+                                             'bitscore': bitscore, 'sseq': sseq, 'title': stitle}
+                            # same loop as above, only that it mostly used entrez searches for tax_id
+                            # this is as sometimes the if above does not yield in stop_while == True,
+                            # through different taxa names
                             elif count >= 1 and stop_while is False:
                                 # debug("count>1")
                                 for i in range(0, len(sallseqid_l)):
@@ -2028,49 +2021,32 @@ class PhyscraperScrape(object):
 
                                     gb_acc = sallseqid_l[i].split("|")[3]
                                     stitle = salltitles_l[i]
+                                    # if gb acc was already read in before stop the for loop
                                     if gb_acc in query_dict or gb_acc in self.data.gb_dict:
                                         stop_while = True
-
                                         break
-                                    # debug(gb_acc) 
-                                    # debug(found_taxids)
                                     # sometimes if multiple seqs are merged, we lack the information which taxon is which gb_acc...
                                     # test it here:
                                     if len(sallseqid_l) == len(staxids_l):  # if we have same number information go ahead as usual
-                                        # debug("if")
-                                        # debug(staxids_l)
-                                        # debug(sscinames_l)
                                         staxids = staxids_l[i]
                                         sscinames = sscinames_l[i]
                                     elif len(staxids_l) == 1:  # only one taxon id present, all are from same taxon
-                                        # debug("elif")
-                                        # debug(staxids_l)
-                                        # debug(salltitles_l)
-                                        # debug(staxids_l)
-                                        # debug(sscinames_l)
-                                        # debug(sallseqid_l)
                                         staxids = staxids_l[0]
                                         sscinames = sscinames_l[0]
                                     else:
-                                        # staxids = self.ids.map_acc_ncbi(gb_acc)
-                                        # sscinames = self.ids.ncbiid_to_spn[staxids]
                                         read_handle = self.ids.entrez_efetch(gb_acc)
                                         sscinames = get_ncbi_tax_name(read_handle).replace(" ", "_").replace("/", "_")
                                         staxids = get_ncbi_tax_id(read_handle)
                                         spn_range = len(sscinames.split("_"))
                                     assert str(staxids) in staxids_l, (staxids, staxids_l)
-                                    #assert sscinames in sscinames_l, (sscinames, sscinames_l)
-                                    # self.ids.acc_ncbi_dict[gb_acc] = staxids
-                                    # self.ids.ncbiid_to_spn[staxids] = sscinames 
-                                    # self.ids.spn_to_ncbiid[sscinames] = staxids
+                                    # next vars are used to stop loop if all taxids were found
                                     found_taxids.add(staxids)
                                     found_spn.add(sscinames)
-
                                     if gb_acc not in query_dict and gb_acc not in self.newseqs_acc:
-                                        query_dict[gb_acc] = {'^ncbi:gi': gi_id, 'accession': gb_acc, 'staxids': staxids,
-                                                          'sscinames': sscinames, 'pident': pident, 'evalue': evalue,
-                                                          'bitscore': bitscore, 'sseq': sseq, 'title': stitle}
-
+                                        query_dict[gb_acc] = \
+                                             {'^ncbi:gi': gi_id, 'accession': gb_acc, 'staxids': staxids,
+                                              'sscinames': sscinames, 'pident': pident, 'evalue': evalue,
+                                              'bitscore': bitscore, 'sseq': sseq, 'title': stitle}
                             # debug(query_dict[gb_acc])
                 else:
                     staxids = int(staxids)
@@ -2088,7 +2064,8 @@ class PhyscraperScrape(object):
         for key in query_dict.keys():
             if float(query_dict[key]["evalue"]) < float(self.config.e_value_thresh):
                 gb_acc = query_dict[key]["accession"]
-                if gb_acc not in self.data.gb_dict or self.config.add_lower_taxa is True:  # skip ones we already wanted to add earlier, exception if add_lower_taxa
+                # skip ones we already wanted to add earlier, exception if add_lower_taxa
+                if gb_acc not in self.data.gb_dict or self.config.add_lower_taxa is True:
                     # debug("add gb_dict")
                     self.new_seqs[gb_acc] = query_dict[key]["sseq"]
                     self.data.gb_dict[gb_acc] = query_dict[key]
@@ -2109,7 +2086,6 @@ class PhyscraperScrape(object):
 
         """
         debug("read unpublished blast query")
-
         output_blast = "output_tst_fn.xml"
         gb_counter = 1
         general_wd = os.getcwd()
@@ -2187,8 +2163,10 @@ class PhyscraperScrape(object):
                             # if gb_id not in self.gb_not_added:
                             #     self.gb_not_added.append(gb_id)
                             #     writeinfofiles.write_not_added_info(self, gb_id, "threshold not passed")
-                            writeinfofiles.write_not_added_info(self, local_id, "threshold not passed")
-                            del self.data.gb_dict[gb_id]  # needs to be deleted from gb_dict, maybe we find a better fitting blast query seq and then it might get added
+                            writeinfofiles.write_not_added_info(self, gb_id, "threshold not passed")
+                            # needs to be deleted from gb_dict,
+                            # maybe we find a better fitting blast query seq and then it might get added
+                            del self.data.gb_dict[gb_id]
         except ValueError:
             sys.stderr.write("Problem reading {}, skipping\n".format(fn_path))
 
@@ -2311,10 +2289,13 @@ class PhyscraperScrape(object):
                     tax_name = self.ids.ncbiid_to_spn[id_of_label]
                 else:
                     tax_name = self.ids.ncbi_parser.get_name_from_id(id_of_label)
-                reason = "sequence too long: new seq len ({}) vs.  cutoff ({})".format(len(new_seq), sum(self.data.orig_seqlen) / len(self.data.orig_seqlen) * self.config.maxlen)
+                cutoff = sum(self.data.orig_seqlen) / len(self.data.orig_seqlen) * self.config.maxlen
+                reason = "sequence too long: new seq len ({}) vs.  cutoff ({})".format(len(new_seq), cutoff)
                 writeinfofiles.write_not_added(id_of_label, tax_name, gb_id, reason, self.workdir)
                 # writeinfofiles.write_not_added_info(self, local_id, "threshold not passed")
-                del self.data.gb_dict[gb_id]  # needs to be deleted from gb_dict, maybe we find a better fitting blast query seq and then it might get added
+                # needs to be deleted from gb_dict,
+                # maybe we find a better fitting blast query seq and then it might get added
+                del self.data.gb_dict[gb_id]
                                     
             elif len(inc_seq) >= len(new_seq):  # if seq is identical and shorter
                 if inc_seq.find(new_seq) != -1:
@@ -2323,7 +2304,7 @@ class PhyscraperScrape(object):
                             sys.stdout.write("seq {} is subsequence of {}, "
                                              "but different species name\n".format(label, tax_lab))
                         self.data.otu_dict[label]['^physcraper:status'] = "new seq added; " \
-                                                                          "subsequence, but different species"
+                                                                          "subsequence, but different taxon"
                         seq_dict[label] = seq
                         debug("{} and {} are subsequences, but different sp. concept".format(id_of_label, existing_id))
                         continue_search = True
@@ -2349,9 +2330,9 @@ class PhyscraperScrape(object):
                     elif type(existing_id) == int and existing_id != id_of_label:
                         if _VERBOSE:
                             sys.stdout.write("seq {} is supersequence of {}, but different "
-                                             "species concept\n".format(label, tax_lab))
+                                             "taxont\n".format(label, tax_lab))
                         self.data.otu_dict[label]['^physcraper:status'] = "new seq added; supersequence, " \
-                                                                          "but different species"
+                                                                          "but different taxon"
                         seq_dict[label] = seq
                         debug("{} and  {} supersequence, but different sp. concept".format(id_of_label, existing_id))
                         continue_search = True
@@ -2417,7 +2398,8 @@ class PhyscraperScrape(object):
         self.data.orig_seqlen = [len(self.data.aln[tax].symbols_as_string().replace("-", "").replace("N", "")) for tax in
                             self.data.aln]
         avg_seqlen = sum(self.data.orig_seqlen) / len(self.data.orig_seqlen)  # HMMMMMMMM
-        assert self.config.seq_len_perc <= 1, ("your config seq_len_param is not smaller than 1: {}".format(self.config.seq_len_perc))
+        assert self.config.seq_len_perc <= 1, \
+            ("your config seq_len_param is not smaller than 1: {}".format(self.config.seq_len_perc))
         seq_len_cutoff = avg_seqlen * self.config.seq_len_perc
         self.del_superseq  = set()  # will contain deleted superseqs for the assert below 
         # all_added_gi is to limit the adding to new seqs, if we change the rank of filtering later
@@ -2493,7 +2475,7 @@ class PhyscraperScrape(object):
                             # debug([ncbi_id, mrca_ncbi])
 
                             # input_rank_id = self.ids.ncbi_parser.get_downtorank_id(ncbi_id, rank_mrca_ncbi)
-                            try:  # sometimes ncbi has wrong id linked: since update of db 01/01/2019 or since retrieval of redundant seq information
+                            try:  # sometimes ncbi has wrong id linked
                                 input_rank_id = self.ids.ncbi_parser.match_id_to_mrca(ncbi_id, mrca_ncbi)
                             except:  # this is for the wrong ncbi link, get right tax_id and do search again
                                 debug("wrong tax_id given by ncbi? tax_id: {}, tax_name:{}".format(ncbi_id, tax_name))
@@ -2503,26 +2485,29 @@ class PhyscraperScrape(object):
                                 input_rank_id = self.ids.ncbi_parser.match_id_to_mrca(ncbi_id, mrca_ncbi)
 
                             # #######################################################
-                            if int(input_rank_id) == int(mrca_ncbi):  # belongs to ingroup mrca -> add to data, if not, leave it out
+                            if int(input_rank_id) == int(mrca_ncbi):  # belongs to ingroup mrca -> add to data
                                 # debug("input belongs to same mrca")
                                 self.newseqs_acc.append(gb_id)
                                 otu_id = self.data.add_otu(gb_id, self.ids)
                                 self.seq_dict_build(seq, otu_id, tmp_dict)
                                 # debug(some)
-                            elif gb_id not in self.gb_not_added:
+                            elif gb_id not in self.gb_not_added:  # if not, leave it out
                                     self.gb_not_added.append(gb_id)
                                     reason = "not_part_of_mrca: {} vs. {}".format(mrca_ncbi, input_rank_id)
                                     writeinfofiles.write_not_added(ncbi_id, tax_name, gb_id, reason, self.workdir)
                                     # writeinfofiles.write_not_added_info(self, gb_id, "not_part_of_mrca")
                                     # fn = open("{}/not_added_seq.csv".format(self.workdir), "a+")
-                                    # fn.write("not_part_of_mrca, {}, rankid: {}, ncbi_id:{}, tax_name:{}\n".format(gb_id, input_rank_id, ncbi_id, tax_name))
+                                    # fn.write("not_part_of_mrca, {}, rankid: {}, ncbi_id:{}, "
+                                    #          "tax_name:{}\n".format(gb_id, input_rank_id, ncbi_id, tax_name))
                                     # fn.close()
                         else:
                             self.newseqs_acc.append(gb_id)
                             otu_id = self.data.add_otu(gb_id, self.ids)
                             self.seq_dict_build(seq, otu_id, tmp_dict)
                     else:
-                        # do not add them to not added, as seq len depends on sequence which was blasted and there might be a better matching seq (one which will return a longer sequence...)
+                        debug("seq too short")
+                        # do not add them to not added, as seq len depends on sequence which was blasted and
+                        # there might be a better matching seq (one which will return a longer sequence...)
                         # if gb_id not in self.gb_not_added:
                         #     self.gb_not_added.append(gb_id)
                         # writeinfofiles.write_not_added_info(self, gb_id, "seqlen_threshold_not_passed")
@@ -2536,14 +2521,17 @@ class PhyscraperScrape(object):
                             ncbi_id = None
                         writeinfofiles.write_not_added(ncbi_id, tax_name, gb_id, reason, self.workdir)
                         self.gb_not_added.append(gb_id)
-                        del self.data.gb_dict[gb_id]  # needs to be deleted from gb_dict. If we later blast a seq which fits better with this one, it will not be tried to add, as we tried before with a bad matching one
+                        # needs to be deleted from gb_dict. If we later blast a seq which fits better with this one,
+                        # it will not be tried to add, as we tried before with a bad matching one
+                        del self.data.gb_dict[gb_id]
 
                                 
                         # fn = open("{}/not_added_seq.csv".format(self.workdir), "a+")
                         # fn.write(
                         #     "seqlen_threshold_not_passed, {}, {}, min len: {}\n".format(gb_id, len_seq, seq_len_cutoff))
                         # fn.close()
-        # this assert got more complicated, as sometimes superseqs are already deleted in seq_dict_build(). Then subset assert it not True
+        # this assert got more complicated, as sometimes superseqs are already deleted in seq_dict_build() ->
+        # then subset assert it not True
         old_seqs_ids = set()
         for tax in old_seqs:
             old_seqs_ids.add(tax)
@@ -2733,14 +2721,14 @@ class PhyscraperScrape(object):
             except:
                 try:
                     subprocess.call(["raxmlHPC", 
-                                 "-m", "GTRCAT",
-                                 "-f", "v",
-                                 "-s", "papara_alignment.extended",
-                                 "-t", "random_resolve.tre",
-                                 "-n", "PLACE"])
+                                     "-m", "GTRCAT",
+                                     "-f", "v",
+                                     "-s", "papara_alignment.extended",
+                                     "-t", "random_resolve.tre",
+                                     "-n", "PLACE"])
                     placetre = Tree.get(path="RAxML_labelledTree.PLACE",
-                                    schema="newick",
-                                    preserve_underscores=True)
+                                        schema="newick",
+                                        preserve_underscores=True)
                 except OSError as e:
                     if e.errno == os.errno.ENOENT:
                         sys.stderr.write("failed running raxmlHPC. Is it installed?")
@@ -2846,13 +2834,13 @@ class PhyscraperScrape(object):
                                  "-m", "GTRCAT",
                                  "-s", "previous_run/papara_alignment.extended",
                                  "-p", "1", "-b", "1", "-#", "autoMRE",
-                                  "-n", "{}".format(self.date)])
+                                 "-n", "{}".format(self.date)])
             except: 
                 subprocess.call(["raxmlHPC", 
                                  "-m", "GTRCAT",
                                  "-s", "previous_run/papara_alignment.extended",
                                  "-p", "1", "-b", "1", "-#", "autoMRE",
-                                  "-n", "{}".format(self.date)])
+                                 "-n", "{}".format(self.date)])
 
         try:
             subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(self.config.num_threads), "-m", "GTRCAT",
@@ -3264,7 +3252,8 @@ class FilterBlast(PhyscraperScrape):
         if seq_blast_score != {}:
             if (self.threshold - count) <= 0:
                 debug("already too many samples of sp in aln, skip adding more.")
-            elif len(seq_blast_score.keys()) == (self.threshold - count):  # exact amount of seq present which need to be added
+            # exact amount of seq present which need to be added
+            elif len(seq_blast_score.keys()) == (self.threshold - count):
                 random_seq_ofsp = seq_blast_score
             elif len(seq_blast_score.keys()) > (
                     self.threshold - count):  # more seq available than need to be added, choose by random
@@ -3498,8 +3487,8 @@ class FilterBlast(PhyscraperScrape):
             elif original > self.threshold:
                 sys.stdout.write("already more originals than requested by threshold...\n")
             else:
-                assert seq_added + original <= self.threshold, "seq_added {} and original {} have more than threshold {}.".format(seq_added, original, self.threshold)
-
+                assert seq_added + original <= self.threshold, \
+                    "seq_added ({}) and original ({}) have more than threshold ({}).".format(seq_added, original, self.threshold)
         return count_dict
 
     def how_many_sp_to_keep(self, selectby):

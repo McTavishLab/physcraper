@@ -13,7 +13,7 @@ slow = mark.slow
 
 def test_ncbi_parser():
 
-	workdir = "tests/output/test_run_raxml"
+	workdir = "tests/output/test_ncbi_parser"
 	absworkdir = os.path.abspath(workdir)
 	conf = ConfigObj("tests/data/test.config", interactive=False)
 

@@ -464,6 +464,10 @@ def add_different_rank(seqaln,
                 filteredScrape.repeat = 0
         writeinfofiles.get_additional_GB_info(filteredScrape)
         filteredScrape.dump()
+    dump_fn = "add_different_rank{}_{}.run".format(ingroup_mrca, downtorank)
+    file = open(dump_fn, "w") 
+    file.write("add different rank with following settings {} and {} finished".format(ingroup_mrca, downtorank)) 
+    file.close() 
     return filteredScrape
 
 
