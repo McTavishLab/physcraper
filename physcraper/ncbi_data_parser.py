@@ -243,13 +243,29 @@ class Parser:
     def get_name_from_id(self, tax_id):
         """ Find the scientific name for a given ID.
         """
-        if names is None:
-            self.initialize()
-        if tax_id == 0:
-            tax_name = "unidentified"
-        else:
-            tax_name = names[names["tax_id"] == tax_id]["name_txt"]
-            tax_name = tax_name.values[0].replace(" ", "_")
+        try:
+            if names is None:
+                self.initialize()
+            debug(names[names["tax_id"] == tax_id])
+            if tax_id == 0:
+                tax_name = "unidentified"
+            else:
+                tax_name = names[names["tax_id"] == tax_id]["name_txt"]
+                tax_name = tax_name.values[0].replace(" ", "_")
+                tax_name = tax_name.strip()
+        except IndexError:
+            sys.stdout.write(
+                    "tax_id {} unknown by ncbi_parser files (names.dmp)\n".format(tax_id)
+                )
+            tax_name = "unknown_{}".format(tax_id)
+            if os.path.exists("ncbi_id_unknown.err"):
+                fn = open("ncbi_id_unknown.err", "a")
+                fn.write(tax_id)
+                fn.close()
+            else:
+                fn = open("ncbi_id_unknown.err", "w")
+                fn.write(tax_id)
+                fn.close()
         return tax_name
 
     def get_id_from_name(self, tax_name):
@@ -302,5 +318,14 @@ class Parser:
                 )
                 tax_id = names[names["name_txt"] == tax_name]["tax_id"].values[0]
             else:
-                sys.stdout.write("something else is going wrong: {}\n".format(tax_name))
+                sys.stderr.write("ncbi taxon name unknown by parser files: {}\n".format(tax_name))
+                tax_id = 0
+                if os.path.exists("ncbi_taxonname_unknown.err"):
+                    fn = open("ncbi_taxonname_unknown.err", "a")
+                    fn.write(tax_id)
+                    fn.close()
+                else:
+                    fn = open("ncbi_taxonname_unknown.err", "w")
+                    fn.write(tax_id)
+                    fn.close()
         return tax_id
