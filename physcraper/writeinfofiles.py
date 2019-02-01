@@ -10,6 +10,7 @@ def debug(msg):
     if _DEBUG_MK == 1:
         print(msg)
 
+
 """
 Functions that write out additional sampling information for a PhyScraper run."""
 
@@ -180,6 +181,7 @@ def write_not_added_info(physcraper_obj, item, reason=None):
                 rowinfo.append("-")
         rowinfo.append(reason)
         writer.writerow(rowinfo)
+
 
 def write_not_added(ncbi_id, tax_name, gb_id, reason, workdir):
     """Writes out infos of not added seq based on information provided in reason.

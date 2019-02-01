@@ -11,7 +11,7 @@ import random
 import dendropy
 import contextlib
 
-from mpi4py import MPI
+# from mpi4py import MPI
 from copy import deepcopy
 from dendropy import Tree, DnaCharacterMatrix
 from Bio import AlignIO, SeqIO, Entrez
@@ -77,7 +77,7 @@ def log_debug(text, wd):
 @contextlib.contextmanager
 def cd(path):
     # print 'initially inside {0}'.format(os.getcwd())
-    CWD = os.getcwd()
+    cwd = os.getcwd()
     os.chdir(path)
     # print 'inside {0}'.format(os.getcwd())
     try:
@@ -86,7 +86,7 @@ def cd(path):
         print('Exception caught: ', sys.exc_info()[0])
     finally:
         # print 'finally inside {0}'.format(os.getcwd())
-        os.chdir(CWD)
+        os.chdir(cwd)
 
 
 """Code used to concatenate different single PhyScraper runs into a concatenated one.
@@ -204,6 +204,7 @@ class Concat(object):
         self.tmp_dict = subset of self.sp_acc_comb
         # self.part_len = holds sequence partition position to write the partitioning file
         self.backbone = T/F, if you want to keep one of the phylogenies as constraint backbone
+        self.del_columns = list of columns that were deleted because of gap only characters
     """
 
     def __init__(self, workdir_comb, email):
@@ -230,6 +231,9 @@ class Concat(object):
         self.backbone = False
         self.seq_filter = ['deleted', 'subsequence,', 'not', "removed", "deleted,",
                            "local"]  # TODO: Copy from physcraper class settings, try to import and read in here
+        self.del_col_dict = {}  # helper for next self-object
+        self.del_columns = []  # contains info which alignment bases were deleted, through gap only
+
 
     # debug file logger
     def li(self, text):
@@ -254,7 +258,8 @@ class Concat(object):
         self.single_runs[genename] = deepcopy(scrape)
         # remove gap only char from input aln and return modified aln
         self.rm_gap_only(self.single_runs[genename].aln, "{}.fas".format(genename))
-        self.concatenated_aln = dendropy.DnaCharacterMatrix.get(file=open("{}/{}_nogap.fas".format(self.workdir, genename)), schema="fasta")
+        self.concatenated_aln = dendropy.DnaCharacterMatrix.get(
+                file=open("{}/{}_nogap.fas".format(self.workdir, genename)), schema="fasta")
         return
 
     def combine(self):
@@ -525,7 +530,8 @@ class Concat(object):
                 self.tre_as_start.prune_taxa([leaf])
                 self.tre_as_start.prune_taxa_with_labels([leaf.label])
                 self.tre_as_start.prune_taxa_with_labels([leaf])
-                self.tre_as_start.prune_taxa_with_labels([leaf.taxon.label])  # this one is definately needed! Without it the assert below does not work.
+                # the next one is definately needed! Without it the assert below does not work.
+                self.tre_as_start.prune_taxa_with_labels([leaf.taxon.label])
                 self.tre_as_start.taxon_namespace.remove_taxon_label(leaf.taxon.label)
             else:
                 for otu in self.concat_tips.keys():
@@ -770,7 +776,7 @@ class Concat(object):
         #     break
         # self.rm_gap_only(self.concatenated_aln, "concat.fas")
         # self.concatenated_aln = dendropy.DnaCharacterMatrix.get(file=open("{}/concat_nogap.fas".format(self.workdir)), schema="fasta")
-        ### check that aln is reloaded as shorter aln!!
+        # ## check that aln is reloaded as shorter aln!!
         # for tax, seq in self.concatenated_aln.items():
         #     print(len(seq))
         #     break
@@ -784,6 +790,7 @@ class Concat(object):
         Partial copy from https://stackoverflow.com/questions/28220301/python-remove-special-column-from-multiple-sequence-alignment
         """
         fn_begin = fn.split(".")[0]
+        # TODO MK: seems like self.del_col_dict is unused now. check and remove
         self.del_col_dict = {}
         # fn_end = fn.split(".")[1]
         if hasattr(self, 'del_columns'):
@@ -821,7 +828,8 @@ class Concat(object):
             for item in self.del_columns:
                 del_file.write("{}\n".format(item))
         SeqIO.write(aln, "{}/{}_nogap.fas".format(self.workdir, fn_begin), mformat)
-        input_aln = dendropy.DnaCharacterMatrix.get(file=open("{}/{}_nogap.fas".format(self.workdir, fn_begin)), schema=mformat)
+        input_aln = dendropy.DnaCharacterMatrix.get(
+                    file=open("{}/{}_nogap.fas".format(self.workdir, fn_begin)), schema=mformat)
         return input_aln
 
     def get_short_seq_from_concat(self, percentage=0.37):
@@ -856,7 +864,8 @@ class Concat(object):
                         # print("change entry")
                         for gene in self.sp_acc_comb[tax_id].keys():
                             for entry in self.sp_acc_comb[tax_id][gene].keys():
-                                self.sp_acc_comb[tax_id][gene][entry]['concat:status'] = "del, concatenated seq is too short"
+                                self.sp_acc_comb[tax_id][gene][entry]['concat:status'] = \
+                                                        "del, concatenated seq is too short"
         self.short_concat_seq = prune_shortest
         with open("{}/short_seq_deleted.csv".format(self.workdir), "w") as output:
             writer = csv.writer(output)
@@ -889,7 +898,8 @@ class Concat(object):
         for tax in self.concatenated_aln.taxon_namespace:
             tax.label = tax.label.replace(" ", "_")
         self.rm_gap_only(self.concatenated_aln, "concat_red.fas")
-        self.concatenated_aln = DnaCharacterMatrix.get(path="{}/{}".format(self.workdir, "concat_red_nogap.fas"), schema="fasta")
+        fn_path = "{}/{}".format(self.workdir, "concat_red_nogap.fas")
+        self.concatenated_aln = DnaCharacterMatrix.get(path=fn_path, schema="fasta")
         # self.concatenated_aln.write(path="{}/{}".format(self.workdir, "concat_red_nogap.fas"), schema="fasta")
         # does not work here, seq not yet in tree
         tre_ids = set()
@@ -979,15 +989,15 @@ class Concat(object):
                 # physcraper.debug(shortend_len0)
                 # physcraper.debug(rm_col_a)
                 # subtract removed columns from len_gene
-                # count number of cols which are smaller than len_gene, must be done with original col length (rm_col_a))
+                # count number of cols which are smaller than len_gene, must be done with original col length (rm_col_a)
                 rm_col = []
                 for num in self.del_columns:
-                    if num > part_len1 and num <= (part_len1 + org_len_gene):
+                    # same as if num > part_len1 and num <= (part_len1 + org_len_gene):
+                    if part_len1 < num <= (part_len1 + org_len_gene):
                         # physcraper.debug(num)
                         rm_col.append(num)
                 # physcraper.debug(rm_col)
                 # physcraper.debug(len(rm_col))
-
                 shortend_len1 = shortend_len1 + org_len_gene - len(rm_col)
                 end = shortend_len0 + shortend_len1
                 part_len1 = part_len1 + org_len_gene
@@ -1164,7 +1174,7 @@ class Concat(object):
                                  "-m", "GTRCAT",
                                  "-s", "previous_run/papara_alignment.extended",
                                  "-p", "1", "-b", "1", "-#", "autoMRE",
-                                 "-n", "{}".format(self.date)])
+                                 "-n", "autoMRE_fa"])
         try:
             # strict consensus:
             subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(num_threads),
@@ -1386,7 +1396,7 @@ class Concat(object):
         """   
         self.ld("write_otu_info")
         otu_dict_keys = [
-            "unique_id", "sp_id","original_PS_id", "concat:status", "spn"]
+            "unique_id", "sp_id", "original_PS_id", "concat:status", "spn"]
         with open("{}/otu_seq_info.csv".format(self.workdir), "w") as output:
             writer = csv.writer(output)
             header = ["locus", "concat_id"]
@@ -1415,12 +1425,14 @@ class Concat(object):
                         writer.writerow(rowinfo_details)
 
     def write_labelled(self, tree_file):
+        """
+        write labelled  tree
 
+        :param tree_file: file name of tree file
+        :return:
+        """
         import pandas as pd
-        import sys
-
         self.write_otu_info()
-
         otu_fn = "{}/otu_seq_info.csv".format(self.workdir)
         tr_fn = "{}/{}".format(self.workdir, tree_file)
         # ######
@@ -1436,8 +1448,8 @@ class Concat(object):
                 for index, row in otu_info.iterrows():
                     # print(row)
                     # print(row['sp_id'])
-                    current_id = "{}:".format(row['sp_id'].replace(" ","_"))
-                    new_id = "{}_{}:".format(row['spn'].replace(" ","_"), row['unique_id'].replace(" ","_"))
+                    current_id = "{}:".format(row['sp_id'].replace(" ", "_"))
+                    new_id = "{}_{}:".format(row['spn'].replace(" ", "_"), row['unique_id'].replace(" ", "_"))
                     # print(new_id)
                     new_tree = new_tree.replace(current_id, new_id)
 

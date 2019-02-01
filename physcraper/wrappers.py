@@ -3,7 +3,6 @@ from __future__ import absolute_import
 import pickle
 import sys
 import os
-import subprocess
 import shutil
 import json
 from physcraper import (
@@ -16,8 +15,7 @@ from physcraper import (
     OtuJsonDict,
     FilterBlast,
     debug
-
-)# Concat
+)
 from dendropy import DnaCharacterMatrix
 
 import physcraper.writeinfofiles as writeinfofiles
@@ -52,10 +50,10 @@ print("Current Wrapper Version number: 12192018.0")
 #     ids = IdDicts(conf, cwd)
 #     return ids
 
+
 def license_print():
     sys.stdout.write(
     """
-    
     Physcraper: automatic updating of phylogenies
     Copyright (C) 2019  E.J. McTavish and M. Kandziora
 
@@ -71,8 +69,8 @@ def license_print():
 
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
     """)
+
 
 def load_ids_obj(conf, workdir):
     """
@@ -123,7 +121,8 @@ def load_otol_data(conf, ingroup_mrca, mattype, seqaln, study_id, tree_id, workd
                                                  phylesystem_loc=conf.phylesystem_loc,
                                                  ingroup_mrca=ingroup_mrca)
         # Prune sequences below a certain length threshold
-        # This is particularly important when using loci that have been de-concatenated, as some are 0 length which causes problems.
+        # This is particularly important when using loci that have been de-concatenated,
+        # as some are 0 length which causes problems.
         data_obj.prune_short()
         data_obj.write_files()
         data_obj.write_labelled(label="^ot:ottTaxonName")
@@ -140,6 +139,7 @@ def make_otujsondict(id_to_spn, workdir, ids, local=False):
     :param id_to_spn: csv delimited file, where tipnames correspond to species names
     :param workdir: the working directory
     :param ids: physcraper Id object
+    :param local: is needed for local database to change file name of otujson dict
     :return: otu dict as json file
     """
     workdir = os.path.abspath(workdir)
@@ -344,24 +344,22 @@ def PS_filter_run(add_unpubl_seq, blacklist, data_obj, downtorank, id_to_spn_add
     return filteredScrape
 
 
-# def add_different_rank(new_confifi, add_unpubl_seq, blacklist, data_obj, downtorank, id_to_spn_addseq_json, ids, selectby,
-#                   shared_blast_folder, threshold, backbone=None):
 def add_different_rank(seqaln,
-                    mattype,
-                    trfn,
-                    schema_trf,
-                    workdir,
-                    threshold,
-                    id_to_spn,
-                    new_confifi,
-                    selectby="blast",
-                    downtorank=None,
-                    blacklist=None,
-                    add_unpubl_seq=None,
-                    id_to_spn_addseq_json=None,
-                    ingroup_mrca=None,
-                    shared_blast_folder=None,
-                    backbone=False):
+                       mattype,
+                       trfn,
+                       schema_trf,
+                       workdir,
+                       threshold,
+                       id_to_spn,
+                       new_confifi,
+                       selectby="blast",
+                       downtorank=None,
+                       blacklist=None,
+                       add_unpubl_seq=None,
+                       id_to_spn_addseq_json=None,
+                       ingroup_mrca=None,
+                       shared_blast_folder=None,
+                       backbone=False):
     """looks for pickeled file to continue run, or builds and runs 
     new analysis for as long as new seqs are found. 
     This uses the FilterBlast subclass to be able to filter the blast output.
@@ -370,8 +368,8 @@ def add_different_rank(seqaln,
     debug("Debugging mode is on")
 
     dump_fn = "add_different_rank{}_{}.run".format(ingroup_mrca, downtorank)
-
-    if  os.path.isfile("{}/{}".format(workdir, dump_fn)):  # if files does not exists, this loop was not yet run, if exitsts, go to next
+    # if files does not exists, this loop was not yet run, if exitsts, go to next
+    if os.path.isfile("{}/{}".format(workdir, dump_fn)):
         filteredScrape = pickle.load(open("{}/scrape_checkpoint.p".format(workdir), 'rb'))
     else:
 
@@ -390,7 +388,7 @@ def add_different_rank(seqaln,
         src_files = os.listdir(workdir)
         for file_name in src_files:
             full_file_name = os.path.join(workdir, file_name)
-            if (os.path.isfile(full_file_name)):
+            if os.path.isfile(full_file_name):
                 shutil.copy(full_file_name, old_runs)
 
         filteredScrape.repeat = 1
@@ -399,13 +397,13 @@ def add_different_rank(seqaln,
         assert filteredScrape.config != conf
         filteredScrape.config = conf
         assert filteredScrape.config == conf
-        assert filteredScrape.config.add_lower_taxa == True, ("you only need to run this function if you want to change the rank of seqs to be added.")
+        assert filteredScrape.config.add_lower_taxa is True, \
+            "you only need to run this function if you want to change the rank of seqs to be added."
         
         # set new ingroup_mrca
         filteredScrape.data.ott_mrca = ingroup_mrca
         filteredScrape.mrca_ncbi = filteredScrape.ids.ott_to_ncbi[filteredScrape.data.ott_mrca]
         assert filteredScrape.data.ott_mrca == ingroup_mrca
-
 
         with open(filteredScrape.logfile, "a") as log:
                 log.write("You run 'add_different_rank' with the following settings: rank: {} and ingroup_mrca: {}. \n".format(downtorank, ingroup_mrca))
@@ -419,13 +417,13 @@ def add_different_rank(seqaln,
         # set new downtorank and numbers:
         filteredScrape.add_setting_to_self(downtorank, threshold)
         filteredScrape.blacklist = blacklist
-        if filteredScrape.config.add_lower_taxa == True:  # used if config file is changed to add lower ranks
+        if filteredScrape.config.add_lower_taxa is True:  # used if config file is changed to add lower ranks
             filteredScrape.reset_new_seqs_acc()
         if add_unpubl_seq is not None:
             filteredScrape.unpublished = True
         if filteredScrape.unpublished is True:  # use unpublished data
             sys.stdout.write("Blasting against local unpublished data")
-            filteredScrape.data.unpubl_otu_json = json.load(open("{}/otu_dict_localseq.json".format(data_obj.workdir)))
+            filteredScrape.data.unpubl_otu_json = json.load(open("{}/otu_dict_localseq.json".format(workdir)))
             filteredScrape.write_unpubl_blastdb(add_unpubl_seq)
             filteredScrape.run_blast_wrapper()
             filteredScrape.read_blast_wrapper()
@@ -457,7 +455,8 @@ def add_different_rank(seqaln,
             write_out_files(filteredScrape, downtorank)
             if backbone:
                 filteredScrape.repeat = 0
-            filteredScrape.config.add_lower_taxa = False  # set back to normal - only used to reassess formerly discarded seq in first round
+            # set back to normal - only used to reassess formerly discarded seq in first round
+            filteredScrape.config.add_lower_taxa = False
         while filteredScrape.repeat == 1:
             filteredScrape.data.write_labelled(label="^ot:ottTaxonName", add_gb_id=True)
             filteredScrape.data.write_otus("otu_info", schema="table")
@@ -486,9 +485,9 @@ def add_different_rank(seqaln,
         writeinfofiles.get_additional_GB_info(filteredScrape)
         filteredScrape.dump()
     dump_fn = "add_different_rank{}_{}.run".format(ingroup_mrca, downtorank)
-    file = open(dump_fn, "w") 
-    file.write("add different rank with following settings {} and {} finished".format(ingroup_mrca, downtorank)) 
-    file.close() 
+    fn = open(dump_fn, "w")
+    fn.write("add different rank with following settings {} and {} finished".format(ingroup_mrca, downtorank))
+    fn.close()
     return filteredScrape
 
 
@@ -673,7 +672,6 @@ def add_unpubl_to_backbone(seqaln,
     """
     license_print()
 
-
     # read the config file into a configuration object
     conf = ConfigObj(configfi)
 
@@ -694,7 +692,7 @@ def concat(genelistdict, workdir_comb, email, num_threads=None, percentage=0.37,
 
     if not os.path.exists(path="{}/concat_checkpoint.p".format(workdir_comb)):
         if not os.path.exists(path="{}/load_single_data.p".format(workdir_comb)):
-            #save_copy_code(workdir_comb)
+            # save_copy_code(workdir_comb)
             conc = Concat(workdir_comb, email)
             conc.concatfile = user_concat_fn
             for item in genelistdict.keys():

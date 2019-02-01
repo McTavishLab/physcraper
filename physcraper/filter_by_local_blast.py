@@ -12,6 +12,7 @@ _DEBUG_MK = 0
 
 """Functions are used within the FilterBlast class to select sequences based on a local blast filtering step."""
 
+
 def debug(msg):
     """short debugging command
     """
@@ -42,8 +43,9 @@ def run_filter_blast(workdir, blast_seq, blast_db, output=None):
 
     # Note: has test, runs -> test_run_local_blast.py
 
+    :param workdir: working directory
     :param blast_seq: Name of the file which contains the query seq
-    :param blast_db:  Name of the file which contains the seq that shall be blasted against - Note, file needs to be in fasta format
+    :param blast_db:  Name of the file which contains the seq in fasta format that shall be blasted against
     :param output: Optional outpu filename
     """
 
@@ -96,6 +98,7 @@ def read_filter_blast(workdir, seq_d, fn):
 
     Note: has test, runs: test_read_local_blast.py
 
+    :param workdir: working directory
     :param seq_d: sequence dictionary from FilterBlast
     :param fn: filename
     :return seq_blast_score, dictionary with the blast values
