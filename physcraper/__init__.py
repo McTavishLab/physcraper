@@ -2408,7 +2408,7 @@ class PhyscraperScrape(object):
                         rank_mrca_ncbi = self.ids.ncbi_parser.get_rank(mrca_ncbi)
                         # get rank to delimit seq to ingroup_mrca
                         # get name first
-                        ncbi_id, tax_name = get_tax_info_from_acc(gb_id, self.data_obj, self.ids_obj)
+                        ncbi_id, tax_name = get_tax_info_from_acc(gb_id, self.data, self.ids)
                         debug("REMOVE IDENTICAL: accession {} ncbi_id {}, taxon_name {}".format(gb_id, ncbi_id, tax_name))
                         tax_name = str(tax_name).replace(" ", "_")
                         # debug([ncbi_id, mrca_ncbi])
