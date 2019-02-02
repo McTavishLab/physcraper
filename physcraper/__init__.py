@@ -839,6 +839,7 @@ class AlignTreeTax(object):
         self.orig_seqlen = [len(self.aln[tax].symbols_as_string().replace("-", "").replace("N", "")) for tax in
                             self.aln]
         avg_seqlen = sum(self.orig_seqlen) / len(self.orig_seqlen)
+        sys.stdout.write("average sequence length is {avg_seqlen}")
         seq_len_cutoff = avg_seqlen * self.config.seq_len_perc
         prune = []
         aln_ids = set()
@@ -983,6 +984,7 @@ class AlignTreeTax(object):
         ncbi_id = None
         tax_name = None
         ott_id = None
+        print "trying to add an otu with accesion {}".format(gb_id)
         if gb_id[:6] == "unpubl":  # There may not be ncbi id, because they aren't published
             tax_name = self.gb_dict[gb_id]["^ot:ottTaxonName"]
             ncbi_id = self.gb_dict[gb_id]["^ncbi:taxon"]
@@ -1005,8 +1007,9 @@ class AlignTreeTax(object):
                     sys.stderr.write("no species name returned for {}".format(gb_id))
                 ncbi_id = ids_obj.map_acc_ncbi(gb_id)
         else:
-            sys.stderr.write("Something is wrong, I cannot add a new seq which has no gb_id or is not unpublished.")
-            exit(-1)
+            sys.stderr.write("Tried to add sequence with accession number {}, but failed.".format(gb_id))
+            pass
+#            exit(-1)
         if ncbi_id is None:
             # debug("ncbi_id is none")
             if ids_obj.otu_rank is not None: 
@@ -2225,32 +2228,29 @@ class PhyscraperScrape(object):
         """
         # debug("get_tax_id_of_otulabel")
         spn_of_label = self.ids.find_name(otu_dict_entry=self.data.otu_dict[label])
+        debug("searching label {}".format(label))
+        debug("generated species name {}".format(spn_of_label))
         if spn_of_label is not None:
             spn_of_label = str(spn_of_label).replace(" ", "_")
         else:
             debug("Problem, no tax_name found!")
+        ncbi_id = None
         if "^ncbi:taxon" in self.data.otu_dict[label]:
-            id_of_label = self.data.otu_dict[label]["^ncbi:taxon"]
+            ncbi_id = self.data.otu_dict[label]["^ncbi:taxon"]
         elif spn_of_label in self.ids.spn_to_ncbiid:
-            id_of_label = self.ids.spn_to_ncbiid[spn_of_label]
+            ncbi_id = self.ids.spn_to_ncbiid[spn_of_label]
         elif u"^ot:ottId" in self.data.otu_dict[label]:  # from OTT to ncbi id
-            info = get_ott_taxon_info(spn_of_label.replace("_", " "))
-            ottid, ottname, id_of_label = info
-            assert ottid == self.data.otu_dict[label][u"^ot:ottId"]
-            self.ids.ncbi_to_ott[id_of_label] = ottid
-            self.ids.ott_to_name[ottid] = spn_of_label
-        else:
+            ncbi_id = self.ids.ott_to_ncbi.get(self.data.otu_dict[label][ u"^ot:ottId"])
+        if ncbi_id == None:
             if self.config.blast_loc == "remote":
-                id_of_label = self.ids.get_rank_info_from_web(taxon_name=spn_of_label)
+                ncbi_id = self.ids.get_rank_info_from_web(taxon_name=spn_of_label)
                 # id_of_label = self.ids.otu_rank[spn_of_label]["taxon id"]
             else:
-                id_of_label = self.ids.ncbi_parser.get_id_from_name(spn_of_label)
-            self.ids.spn_to_ncbiid[spn_of_label] = id_of_label
-        # debug([id_of_label, label])
-        if type(id_of_label) is not int:
-            assert id_of_label.isdigit(), (id_of_label, self.data.otu_dict[label])
-            id_of_label = int(id_of_label)
-        return id_of_label
+                ncbi_id = self.ids.ncbi_parser.get_id_from_name(spn_of_label)
+            self.ids.spn_to_ncbiid[spn_of_label] = ncbi_id
+        ncbi_id = int(ncbi_id)
+        return ncbi_id
+
 
     def seq_dict_build(self, seq, label, seq_dict):
         """takes a sequence, a label (the otu_id) and a dictionary and adds the
@@ -2391,8 +2391,8 @@ class PhyscraperScrape(object):
         old_seqs = tmp_dict.keys()
         # Adding seqs that are different, but needs to be maintained as diff than aln that the tree has been run on
         # need to re-calculate orig_seq_len before using it
-        self.data.orig_seqlen = [len(self.data.aln[tax].symbols_as_string().replace("-", "").replace("N", "")) for tax in
-                                 self.data.aln]
+        if self.data.orig_seqlen == []:
+            self.data.orig_seqlen = [len(self.data.aln[tax].symbols_as_string().replace("-", "").replace("N", "")) for tax in self.data.aln]
         avg_seqlen = sum(self.data.orig_seqlen) / len(self.data.orig_seqlen)  # HMMMMMMMM
         assert self.config.seq_len_perc <= 1, \
             ("your config seq_len_param is not smaller than 1: {}".format(self.config.seq_len_perc))
