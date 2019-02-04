@@ -260,7 +260,7 @@ class Parser:
             tax_name = "unknown_{}".format(tax_id)
             if os.path.exists("ncbi_id_unknown.err"):
                 fn = open("ncbi_id_unknown.err", "a")
-                fn.write(tax_id)
+                fn.write("{}".format(tax_id))
                 fn.close()
             else:
                 fn = open("ncbi_id_unknown.err", "w")
@@ -322,7 +322,7 @@ class Parser:
                 tax_id = 0
                 if os.path.exists("ncbi_name_unknown.err"):
                     fn = open("ncbi_name_unknown.err", "a")
-                    fn.write(tax_id)
+                    fn.write("{}".format(tax_id))
                     fn.close()
                 else:
                     fn = open("ncbi_name_unknown.err", "w")
