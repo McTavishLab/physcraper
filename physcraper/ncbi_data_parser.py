@@ -264,7 +264,7 @@ class Parser:
                 fn.close()
             else:
                 fn = open("ncbi_id_unknown.err", "w")
-                fn.write(tax_id)
+                fn.write("{}".format(tax_id))
                 fn.close()
         return tax_name
 
@@ -320,12 +320,12 @@ class Parser:
             else:
                 sys.stderr.write("ncbi taxon name unknown by parser files: {}\n".format(tax_name))
                 tax_id = 0
-                if os.path.exists("ncbi_taxonname_unknown.err"):
-                    fn = open("ncbi_taxonname_unknown.err", "a")
+                if os.path.exists("ncbi_name_unknown.err"):
+                    fn = open("ncbi_name_unknown.err", "a")
                     fn.write(tax_id)
                     fn.close()
                 else:
-                    fn = open("ncbi_taxonname_unknown.err", "w")
-                    fn.write(tax_id)
+                    fn = open("ncbi_name_unknown.err", "w")
+                    fn.write("{}".format(tax_id))
                     fn.close()
         return tax_id
