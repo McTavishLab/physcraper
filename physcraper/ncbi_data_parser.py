@@ -232,7 +232,7 @@ class Parser:
         # debug(some)
         elif rank_mrca_id == rank_tax_id:
             return tax_id
-        elif rank_tax_id == "superkingdom" or tax_id == 2759 or tax_id == 1:
+        elif rank_tax_id == "superkingdom" or tax_id == 2759 or tax_id == 1 or tax_id ==0:
             tax_id = 0
             return tax_id
         else:
@@ -318,7 +318,7 @@ class Parser:
                 )
                 tax_id = names[names["name_txt"] == tax_name]["tax_id"].values[0]
             else:
-                sys.stderr.write("ncbi taxon name unknown by parser files: {}\n".format(tax_name))
+                sys.stderr.write("ncbi taxon name unknown by parser files: {}, taxid set to 0.\n".format(tax_name))
                 tax_id = 0
                 if os.path.exists("ncbi_name_unknown.err"):
                     fn = open("ncbi_name_unknown.err", "a")
