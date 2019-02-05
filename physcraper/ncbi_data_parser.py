@@ -189,6 +189,10 @@ class Parser:
         if tax_id in [81077, 28384]:  # other sequences/artifical sequences
             tax_id = 0
             return tax_id
+
+        if tax_id == 2759 or tax_id == 1 or tax_id ==0:
+            tax_id = 0
+            return tax_id
        
         if nodes is None:
             self.initialize()
@@ -232,7 +236,7 @@ class Parser:
         # debug(some)
         elif rank_mrca_id == rank_tax_id:
             return tax_id
-        elif rank_tax_id == "superkingdom" or tax_id == 2759 or tax_id == 1 or tax_id ==0:
+        elif rank_tax_id == "superkingdom":
             tax_id = 0
             return tax_id
         else:
