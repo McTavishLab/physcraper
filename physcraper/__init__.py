@@ -1230,8 +1230,8 @@ class IdDicts(object):
               * key: ncbi taxon identifier
               * value: ncbi taxon name
 
-          * **self.mrca_ott**: user defined list of mrca OTT-ID's
-          * **self.mrca_ncbi**: set, which is fed by self.get_ncbi_mrca()
+          user defined list of mrca OTT-ID's #TODO this is flipped form the dat aobj .ott_mrca. On purpose?
+         #reomved mrca's from ida, and put them into scrape object
 
           * **Optional**:
 
@@ -1240,19 +1240,16 @@ class IdDicts(object):
                * self.otu_rank: for remote blast to store the rank information
     """
 
-    def __init__(self, config_obj, workdir, mrca=None):
+    def __init__(self, config_obj, workdir):
         """Generates a series of name disambiguation dicts"""
         self.config = config_obj
         assert self.config.email
-        self.ott_to_ncbi = {}  # currently only used to find mcra ncbi id from mrca ott_id
+        self.ott_to_ncbi = {} 
         self.ncbi_to_ott = {}  # used to get ott_id for new Genbank query taxa
         self.ott_to_name = {}  # used in add_otu to get name from otuId
         self.acc_ncbi_dict = {}  # filled by ncbi_parser (by subprocess in earlier versions of the code).
         self.spn_to_ncbiid = {}  # spn to ncbi_id, it's only fed by the ncbi_data_parser, but makes it faster
         self.ncbiid_to_spn = {}
-        self.mrca_ott = mrca  # mrca_list
-        assert type(self.mrca_ott) in [int, list] or self.mrca_ott is None
-        self.mrca_ncbi = set()  # corresponding ids for mrca_ott list
         fi = open(config_obj.ott_ncbi)  # This is in the taxonomy folder of the repo, needs to be updated by devs when OpenTree taxonomy changes.
         for lin in fi:  # TODO This is insanely memory inefficient, how about using a pandas dataframe?
             lii = lin.split(",")
@@ -1269,22 +1266,9 @@ class IdDicts(object):
         else:  # ncbi parser contains information about spn, tax_id, and ranks
             self.ncbi_parser = ncbi_data_parser.Parser(names_file=self.config.ncbi_parser_names_fn,
                                                        nodes_file=self.config.ncbi_parser_nodes_fn)
-        if self.mrca_ott is not None:
-            self.get_ncbi_mrca()
 
-    def get_ncbi_mrca(self):
-        """ get the ncbi tax ids from a list of mrca ott ids.
-        add add
-        """
-        if len(list(self.mrca_ott)) > 1: #TODO I cahnges this from 'is not int' for clarity - that is what it is checking for, right?
-            for ott_id in self.mrca_ott:
-                ncbi_id = self.ott_to_ncbi.get(ott_id)
-                if ncbi_id is not None:
-                    self.mrca_ncbi.add(ncbi_id)
-        else:
-            ncbi_id = self.ott_to_ncbi.get(ott_id)
-            if ncbi_id is not None:
-                self.mrca_ncbi.add(ncbi_id)
+
+#moved self.get_ncbi_mrca to physcraper data object
 
 
 # removed funtion ottid_to_ncbiid.
@@ -1389,6 +1373,60 @@ class IdDicts(object):
         tax_name = tax_name.replace(" ", "_")
         return tax_name
 
+    def entrez_efetch(self, gb_id):
+        """ Wrapper function around efetch from ncbi to get taxonomic information if everything else is failing.
+            Also used when the local blast files have redundant information to access the taxon info of those sequences.
+        It adds information to various id_dicts.
+
+        :param gb_id: Genbank identifier
+        :return: read_handle
+        """
+        tries = 10
+        Entrez.email = self.config.email
+        handle = None
+
+        # method needs delay because of ncbi settings
+        for i in range(tries):
+            try:
+                # print("try")
+                delay = 1.0
+                previous = time.time()
+                while True:
+                    current = time.time()
+                    wait = previous + delay - current
+                    if wait > 0:
+                        # print("if", wait)
+                        time.sleep(wait)
+                        previous = current + wait
+                    else:
+                        # print("else", wait)
+                        previous = current
+                    if delay + .5 * delay <= 5:
+                        # print("if2", delay)
+                        delay += .5 * delay
+                    else:
+                        # print("else2",  delay)
+                        delay = 5
+                    # print("read handle")
+                    handle = Entrez.efetch(db="nucleotide", id=gb_id, retmode="xml")
+                    assert handle is not None, ("your handle file to access data from efetch does not exist. "
+                                                "Likely an issue with the internet connection of ncbi. Try rerun...")
+                    read_handle = Entrez.read(handle)
+                    handle.close()
+
+                    return read_handle
+            except (IndexError, HTTPError) as e:
+                if i < tries - 1:  # i is zero indexed
+                    continue
+                else:
+                    raise
+            # break
+        assert handle is not None, ("your handle file to access data from efetch does not exist. "
+                                    "Likely an issue with the internet connection of ncbi. Try rerun...")
+        read_handle = Entrez.read(handle)
+        handle.close()
+        return read_handle
+
     def dump(self, filename=None):
         if filename:
             ofi = open(filename, "wb")
@@ -1426,7 +1464,7 @@ class PhyscraperScrape(object):
             * key:
             * value:
           * **self._to_be_pruned**: list that contains ????
-          * **self.mrca_ncbi**: int or list of ncbi identifier of mrca
+          * **self.ncbi_mrca**: int or list of ncbi identifier of mrca
 
           * **self.tmpfi**: path to a file or folder???
           * **self.blast_subdir**: path to folder that contains the files writen during blast
@@ -1466,7 +1504,6 @@ class PhyscraperScrape(object):
         self.config = self.ids.config  # pointer to config
         self.new_seqs = {}  # all new seq after read_blast_wrapper
         self.new_seqs_otu_id = {}  # only new seq which passed remove_identical
-        self.mrca_ncbi = ids_obj.ott_to_ncbi[data_obj.ott_mrca]
         self.tmpfi = "{}/physcraper_run_in_progress".format(self.workdir)  # TODO: For what do we want to use this? Unused!
         self.blast_subdir = "{}/current_blast_run".format(self.workdir)
         if not os.path.exists(self.workdir):
@@ -1486,6 +1523,30 @@ class PhyscraperScrape(object):
         self.ids.ingroup_mrca = data_obj.ott_mrca  # added for mrca ingroup list
         self.gb_not_added = []  # list of blast seqs not added
         self.del_superseq = {}  # items that were deleted bc they are superseqs, needed for assert statement
+        self.ott_mrca = set([self.data.ott_mrca])
+        self.ncbi_mrca = self.get_ncbi_mrca()
+        assert len(self.ncbi_mrca) >= 1
+        debug("created physcaper ncbi_mrca {}, len {}".format(self.ncbi_mrca, len(self.ncbi_mrca)))
+
+    def get_ncbi_mrca(self):
+        """ get the ncbi tax ids from a set of mrca ott ids.
+        """
+        ncbi_mrca = set()
+        if self.ott_mrca > 1:
+            debug("ott_mrca is {}".format(self.ott_mrca))
+            for ott_id in self.ott_mrca:
+                ncbi_id = self.ids.ott_to_ncbi.get(ott_id)
+                if ncbi_id is not None:
+                    ncbi_mrca.add(ncbi_id)
+        else:
+            ncbi_id = self.ids.ott_to_ncbi.get(self.ott_mrca[0])
+            if ncbi_id is not None:
+                ncbi_mrca.add(ncbi_id)
+        if len(ncbi_mrca) == 0:
+            sys.stderr.write("No ncbi_id for MRCA found, ott_id was {}".format(self.data_obj.mrca_ott))
+        sys.stdout.write("setting ncabi mrca to {}\n".format(ncbi_mrca))
+        return ncbi_mrca
+
 
     # TODO is this the right place for this? MK: According to PEP8, no...
     def reset_markers(self):
@@ -1649,10 +1710,10 @@ class PhyscraperScrape(object):
                             if self.config.blast_loc == 'local':
                                 self.run_local_blast_cmd(query, taxon.label, fn_path)
                             if self.config.blast_loc == 'remote':
-                                if len(self.ids.mrca_ncbi) >= 2:
-                                    len_ncbi = len(self.ids.mrca_ncbi)
+                                if len(self.ncbi_mrca) >= 2:
+                                    len_ncbi = len(self.ncbi_mrca)
                                     equery = ''
-                                    for ncbi_id in self.ids.mrca_ncbi:  # add taxids of list to blast search
+                                    for ncbi_id in self.ncbi_mrca:  # add taxids of list to blast search
                                         if len_ncbi >= 2:
                                             equery = equery + "txid{}[orgn] OR ".format(ncbi_id)
                                             len_ncbi = len_ncbi - 1
@@ -1660,7 +1721,7 @@ class PhyscraperScrape(object):
                                             equery = equery + "txid{}[orgn]) ".format(ncbi_id)
                                     equery = "(" + equery + "AND {}:{}[mdat]".format(last_blast, today)
                                 else:
-                                    equery = "txid{}[orgn] AND {}:{}[mdat]".format(self.mrca_ncbi, last_blast, today)
+                                    equery = "txid{}[orgn] AND {}:{}[mdat]".format(self.ncbi_mrca, last_blast, today)
                                     self.run_web_blast_query(query, equery, fn_path)
                             self.data.otu_dict[otu_id]['^physcraper:last_blasted'] = today
                         else:
@@ -1675,38 +1736,6 @@ class PhyscraperScrape(object):
                                              "Use run_blast_wrapper(delay = 0) to force a search.\n".format(otu_id,
                                                                                                             last_blast))
         self._blasted = 1
-
-    # def get_all_acc_mrca(self):
-    #     """get all available acc numbers from Genbank for mrca.
-    #
-    #     The list will be used to filter out sequences from the local Blast search,
-    #     that do not belong to ingroup
-    #
-    #     :return: list of corresponding Genbank identifiers
-    #     """
-    #     # TODO MK: gi list limited to 100000000, for huge trees that is a problem. Think of what to do...
-    #     debug("get_all_acc_mrca")
-    #     Entrez.email = self.config.email
-    #     # NOTE MK: if mrca ingroup is list, use the list not the mrca_ncbi/ott
-    #     if len(self.ids.mrca_ncbi) >= 2:
-    #         len_ncbi = len(self.ids.mrca_ncbi)
-    #         equery = '('
-    #         for ncbi_id in self.ids.mrca_ncbi:
-    #             if len_ncbi >= 2:
-    #                 equery = equery + "txid{}[orgn] OR ".format(ncbi_id)
-    #                 len_ncbi = len_ncbi - 1
-    #             else:
-    #                 equery = equery + "txid{}[orgn])".format(ncbi_id)
-    #     else:
-    #         equery = "txid{}[orgn]".format(self.mrca_ncbi)
-    #     handle = Entrez.esearch(db="nucleotide", term=equery, idtype='acc',
-    #                             usehistory='n', RetMax=100000000)
-    #     records = Entrez.read(handle)
-    #     id_list = records['IdList']
-    #     acc_l = []
-    #     for acc_id in id_list:
-    #         acc_l.append(str(acc_id))
-    #     return acc_l
 
     def read_local_blast_query(self, fn_path):
         """ Implementation to read in results of local blast searches.
@@ -1784,12 +1813,12 @@ class PhyscraperScrape(object):
                                         staxids = staxids_l[0]
                                         sscinames = sscinames_l[0]
                                     elif i != 0 and spn_title != spn_title_before:
-                                        read_handle = entrez_efetch(gb_acc, self.config.email)
+                                        read_handle = self.ids.entrez_efetch(gb_acc)
                                         sscinames = get_ncbi_tax_name(read_handle).replace(" ", "_").replace("/", "_")
                                         staxids = get_ncbi_tax_id(read_handle)
                                         spn_range = len(sscinames.split("_"))
                                     elif i == 0:  # for first item in redundant data, always get info
-                                        read_handle = entrez_efetch(gb_acc,self.config.email)
+                                        read_handle = self.ids.entrez_efetch(gb_acc)
                                         sscinames = get_ncbi_tax_name(read_handle).replace(" ", "_").replace("/", "_")
                                         staxids = get_ncbi_tax_id(read_handle)
                                         spn_range = len(sscinames.split("_"))
@@ -1830,7 +1859,7 @@ class PhyscraperScrape(object):
                                         staxids = staxids_l[0]
                                         sscinames = sscinames_l[0]
                                     else:
-                                        read_handle = entrez_efetch(gb_acc, self.config.email)
+                                        read_handle = self.ids.entrez_efetch(gb_acc)
                                         sscinames = get_ncbi_tax_name(read_handle).replace(" ", "_").replace("/", "_")
                                         staxids = get_ncbi_tax_id(read_handle)
                                         spn_range = len(sscinames.split("_"))
@@ -2028,7 +2057,7 @@ class PhyscraperScrape(object):
         :return: ncbi id of corresponding label
         """
         # debug("get_tax_id_of_otulabel")
-        self.data.otu_dict[label].get("^ncbi:taxon",0,)
+        ncbi_id = self.data.otu_dict[label].get("^ncbi:taxon",0,)
         return ncbi_id
 
 
@@ -2187,7 +2216,7 @@ class PhyscraperScrape(object):
             if self.data.otu_dict[key]['^physcraper:status'].split(' ')[0] not in self.seq_filter:
                 if "^ncbi:accession" in self.data.otu_dict[key]:
                     all_added_gi.add(self.data.otu_dict[key]["^ncbi:accession"])
-        # debug(all_added_gi)
+        debug(all_added_gi)
         for gb_id, seq in self.new_seqs.items():
             # debug(gb_id)
             if len(gb_id.split(".")) == 1:
@@ -2199,40 +2228,40 @@ class PhyscraperScrape(object):
                 debug("passed, was already added")
                 pass
             else:
-                # debug(len(seq.replace("-", "").replace("N", "")))
-                # debug(seq_len_cutoff)
+                debug(len(seq.replace("-", "").replace("N", "")))
+                debug("seq_len_cutoff is {}".format(seq_len_cutoff))
                 if len(seq.replace("-", "").replace("N", "")) > seq_len_cutoff:
-                    # debug(self.config.blast_loc)
+                    debug("blast loc is {}".format(self.config.blast_loc))
                     if self.config.blast_loc != "remote":
                         # debug("ADD")
                         tax_name = None
                         # ######################################################
                         # ### new implementation of rank for delimitation
-                        if type(self.mrca_ncbi) is int:
-                            mrca_ncbi = self.mrca_ncbi
-                        elif len(self.mrca_ncbi) == 1:
-                            mrca_ncbi = list(self.mrca_ncbi)[0]
+                        debug("ncbi_mrca is {}".format(self.ncbi_mrca))
+                        assert len(ncbi_mrca) >= 1
+                        if len(self.ncbi_mrca) == 1:
+                            ncbi_mrca = list(self.ncbi_mrca)[0]
                         else:
-                            debug(self.mrca_ncbi)
+                            debug(self.ncbi_mrca)
                             debug("think about something to do!")
-                            mrca_ncbi = None
-                        # debug(mrca_ncbi)
-                        rank_mrca_ncbi = self.ids.ncbi_parser.get_rank(mrca_ncbi)
+                            ncbi_mrca = None #TODO what is happening it there are multiple mrcas?
+                        # debug(ncbi_mrca)
+                        rank_mrca_ncbi = self.ids.ncbi_parser.get_rank(ncbi_mrca)
                         # get rank to delimit seq to ingroup_mrca
                         # get name first
                         ncbi_id, tax_name = get_tax_info_from_acc(gb_id, self.data, self.ids)
                         debug("REMOVE IDENTICAL: accession {} ncbi_id {}, taxon_name {}".format(gb_id, ncbi_id, tax_name))
                         tax_name = str(tax_name).replace(" ", "_")
-                        # debug([ncbi_id, mrca_ncbi])
+                        # debug([ncbi_id, ncbi_mrca])
 
                         # input_rank_id = self.ids.ncbi_parser.get_downtorank_id(ncbi_id, rank_mrca_ncbi)
                         try:  # sometimes ncbi has wrong id linked: since update of db 01/01/2019 or since retrieval of redundant seq information
-                            input_rank_id = self.ids.ncbi_parser.match_id_to_mrca(ncbi_id, mrca_ncbi)
+                            input_rank_id = self.ids.ncbi_parser.match_id_to_mrca(ncbi_id, ncbi_mrca)
                         except:  # this is for the wrong ncbi link, get right tax_id and do search again
                             debug("wrong tax_id given by ncbi?")
                             ncbi_id = self.ids.ncbi_parser.get_id_from_name(tax_name)
                             self.data.gb_dict[gb_id]['staxids'] = ncbi_id
-                            input_rank_id = self.ids.ncbi_parser.match_id_to_mrca(ncbi_id, mrca_ncbi)
+                            input_rank_id = self.ids.ncbi_parser.match_id_to_mrca(ncbi_id, ncbi_mrca)
 
                         # #######################################################
                         if int(input_rank_id) == int(mrca_ncbi):  # belongs to ingroup mrca -> add to data, if not, leave it out
@@ -2240,30 +2269,30 @@ class PhyscraperScrape(object):
                             self.newseqs_acc.append(gb_id)
                             otu_id = self.data.add_otu(gb_id, self.ids)
                             self.seq_dict_build(seq, otu_id, tmp_dict)
+                else:
+                    debug("seq too short")
+                    # do not add them to not added, as seq len depends on sequence which was blasted and
+                    # there might be a better matching seq (one which will return a longer sequence...)
+                    # if gb_id not in self.gb_not_added:
+                    #     self.gb_not_added.append(gb_id)
+                    # writeinfofiles.write_not_added_info(self, gb_id, "seqlen_threshold_not_passed")
+                    len_seq = len(seq.replace("-", "").replace("N", ""))
+                    reason = "seqlen_threshold_not_passed: len seq: {}, min len: {}".format(len_seq, seq_len_cutoff)
+                    if "sscinames" in self.data.gb_dict[gb_id]:
+                        tax_name = self.data.gb_dict[gb_id]['sscinames']
+                        ncbi_id = self.data.gb_dict[gb_id]['staxids']
                     else:
-                        debug("seq too short")
-                        # do not add them to not added, as seq len depends on sequence which was blasted and
-                        # there might be a better matching seq (one which will return a longer sequence...)
-                        # if gb_id not in self.gb_not_added:
-                        #     self.gb_not_added.append(gb_id)
-                        # writeinfofiles.write_not_added_info(self, gb_id, "seqlen_threshold_not_passed")
-                        len_seq = len(seq.replace("-", "").replace("N", ""))
-                        reason = "seqlen_threshold_not_passed: len seq: {}, min len: {}".format(len_seq, seq_len_cutoff)
-                        if "sscinames" in self.data.gb_dict[gb_id]:
-                            tax_name = self.data.gb_dict[gb_id]['sscinames']
-                            ncbi_id = self.data.gb_dict[gb_id]['staxids']
-                        else:
-                            tax_name = None
-                            ncbi_id = None
-                        writeinfofiles.write_not_added(ncbi_id, tax_name, gb_id, reason, self.workdir)
-                        self.gb_not_added.append(gb_id)
-                        # needs to be deleted from gb_dict. If we later blast a seq which fits better with this one,
-                        # it will not be tried to add, as we tried before with a bad matching one
-                        del self.data.gb_dict[gb_id]
-                        # fn = open("{}/not_added_seq.csv".format(self.workdir), "a+")
-                        # fn.write(
-                        #     "seqlen_threshold_not_passed, {}, {}, min len: {}\n".format(gb_id, len_seq, seq_len_cutoff))
-                        # fn.close()
+                        tax_name = None
+                        ncbi_id = None
+                    writeinfofiles.write_not_added(ncbi_id, tax_name, gb_id, reason, self.workdir)
+                    self.gb_not_added.append(gb_id)
+                    # needs to be deleted from gb_dict. If we later blast a seq which fits better with this one,
+                    # it will not be tried to add, as we tried before with a bad matching one
+                    del self.data.gb_dict[gb_id]
+                    # fn = open("{}/not_added_seq.csv".format(self.workdir), "a+")
+                    # fn.write(
+                    #     "seqlen_threshold_not_passed, {}, {}, min len: {}\n".format(gb_id, len_seq, seq_len_cutoff))
+                    # fn.close()
         # this assert got more complicated, as sometimes superseqs are already deleted in seq_dict_build() ->
         # then subset assert it not True
         old_seqs_ids = set()
@@ -3338,62 +3367,6 @@ class FilterBlast(PhyscraperScrape):
 
 ####################
 #Funcs below here should be moved to ncbi_helpers.py
-
-def entrez_efetch(gb_id, email):
-    """ Wrapper function around efetch from ncbi to get taxonomic information if everything else is failing.
-        Also used when the local blast files have redundant information to access the taxon info of those sequences.
-    It adds information to various id_dicts.
-
-    :param gb_id: Genbank identifier
-    :return: read_handle
-    """
-    tries = 10
-    handle = None
-
-    # method needs delay because of ncbi settings
-    for i in range(tries):
-        try:
-            # print("try")
-            delay = 1.0
-            previous = time.time()
-            while True:
-                current = time.time()
-                wait = previous + delay - current
-                if wait > 0:
-                    # print("if", wait)
-                    time.sleep(wait)
-                    previous = current + wait
-                else:
-                    # print("else", wait)
-                    previous = current
-                if delay + .5 * delay <= 5:
-                    # print("if2", delay)
-                    delay += .5 * delay
-                else:
-                    # print("else2",  delay)
-                    delay = 5
-                # print("read handle")
-                handle = Entrez.efetch(db="nucleotide", id=gb_id, retmode="xml")
-                assert handle is not None, ("your handle file to access data from efetch does not exist. "
-                                            "Likely an issue with the internet connection of ncbi. Try rerun...")
-                read_handle = Entrez.read(handle)
-                handle.close()
-
-                return read_handle
-        except (IndexError, HTTPError) as e:
-            if i < tries - 1:  # i is zero indexed
-                continue
-            else:
-                raise
-        # break
-    assert handle is not None, ("your handle file to access data from efetch does not exist. "
-                                "Likely an issue with the internet connection of ncbi. Try rerun...")
-    read_handle = Entrez.read(handle)
-    handle.close()
-    return read_handle
-
-
-
 
 
 def get_tax_info_from_acc(gb_id, data_obj, ids_obj):
