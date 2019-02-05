@@ -991,6 +991,7 @@ class AlignTreeTax(object):
             ott_id = int(ids_obj.ncbi_to_ott[int(ncbi_id)])
         else:
             debug("{} Ncbi id not found in ott_ncbi dictionaries\n".format(ncbi_id))
+            ott_id = None
         if ott_id in ids_obj.ott_to_name:
             ott_name = ids_obj.ott_to_name[ott_id]
         else:
@@ -1594,11 +1595,12 @@ class PhyscraperScrape(object):
         self.OToL_unmapped_tips()  # added to do stuff with un-mapped tips from OToL
         self.ids.ingroup_mrca = data_obj.ott_mrca  # added for mrca ingroup list
         self.gb_not_added = []  # list of blast seqs not added
-        self.del_superseq = {}  # items that were deleted bc they are superseqs, needed for assert statement
+        self.del_superseq = set()  # items that were deleted bc they are superseqs, needed for assert statement
         self.ott_mrca = set([self.data.ott_mrca])
         self.ncbi_mrca = self.get_ncbi_mrca()
         assert len(self.ncbi_mrca) >= 1
         debug("created physcaper ncbi_mrca {}, len {}".format(self.ncbi_mrca, len(self.ncbi_mrca)))
+        self.map_taxa_to_ncbi()
 
     def get_ncbi_mrca(self):
         """ get the ncbi tax ids from a set of mrca ott ids.
@@ -1619,6 +1621,11 @@ class PhyscraperScrape(object):
         sys.stdout.write("setting ncabi mrca to {}\n".format(ncbi_mrca))
         return ncbi_mrca
 
+    def map_taxa_to_ncbi(self):
+        for otu in self.data.otu_dict:
+            if self.data.otu_dict[otu].get("^ncbi:taxon") == None:
+                ottid = self.data.otu_dict[otu]["^ot:ottId"]
+                self.data.otu_dict[otu]["^ncbi:taxon"]=self.ids.ott_to_ncbi.get(ottid,0)
 
     # TODO is this the right place for this? MK: According to PEP8, no...
     def reset_markers(self):
@@ -2129,7 +2136,8 @@ class PhyscraperScrape(object):
         :return: ncbi id of corresponding label
         """
         # debug("get_tax_id_of_otulabel")
-        ncbi_id = self.data.otu_dict[label].get("^ncbi:taxon",0,)
+        ncbi_id = self.data.otu_dict[label].get("^ncbi:taxon",0)
+        debug("otu {} has taxon id {}".format(label, ncbi_id))
         return ncbi_id
 
 
