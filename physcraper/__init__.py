@@ -1274,42 +1274,24 @@ class IdDicts(object):
 
     def get_ncbi_mrca(self):
         """ get the ncbi tax ids from a list of mrca ott ids.
+        add add
         """
-        if type(self.mrca_ott) is not int:
+        if len(list(self.mrca_ott)) is > 1: #TODO I cahnges this from 'is not int' for clarity - that is what it is checking for, right?
             for ott_id in self.mrca_ott:
-                ncbi_id = self.ottid_to_ncbiid(ott_id)
+                ncbi_id = self.ott_to_ncbi.get(ott_id)
                 if ncbi_id is not None:
                     self.mrca_ncbi.add(ncbi_id)
         else:
-            ncbi_id = self.ottid_to_ncbiid(self.mrca_ott)
+            ncbi_id = self.ott_to_ncbi.get(ott_id)
             if ncbi_id is not None:
                 self.mrca_ncbi.add(ncbi_id)
 
-    def ottid_to_ncbiid(self, ott_id):
-        """ Find ncbi id for ott id.
-        Is only used for the mrca list thing!
-        """
-        debug("ottid to ncbiid")
-        debug(ott_id)
-        if ott_id in self.ott_to_ncbi:
-            ncbi_id = self.ott_to_ncbi[ott_id]
-        elif ott_id in self.ott_to_name:
-            ott_name = self.ott_to_name[ott_id]
-            if self.config.blast_loc == "remote":
-                ncbi_id = self.get_rank_info_from_web(ott_name)
-            else:
-                ncbi_id = self.ncbi_parser.get_id_from_name(ott_name)
-        else:  # with new ncbi taxa there might be no match in ott_to_ncbi
-            tx = APIWrapper().taxomachine
-            nms = tx.taxon(ott_id)
-            # debug(nms)
-            ott_name = nms[u"unique_name"]
-            ncbi_id = None
-            if u"ncbi" in nms[u"tax_sources"]:
-                ncbi_id = nms[u"tax_sources"][u"ncbi"]
-        return ncbi_id
 
-    def get_ncbiid_from_tax_name(self, tax_name):
+# removed funtion ottid_to_ncbiid.
+# if ott is isn't mapped to ncbi_id in the opentree taxonomy, (ott_to_ncbi) we shouldn't map it here.
+
+
+    def get_ncbiid_from_tax_name(self, tax_name): #TODO when do we need this?
         """Get the ncbi_id from the species name using ncbi web query.
 
         :param tax_name: species name
@@ -1365,7 +1347,7 @@ class IdDicts(object):
         tax_name = taxon_name.replace(" ", "_")
         # if tax_name not in self.otu_rank.keys():
         ncbi_id = self.get_ncbiid_from_tax_name(tax_name)
-        if ncbi_id == 0:
+        if ncbi_id == None:
             self.otu_rank[ncbi_id] = {"taxon id": ncbi_id, "lineage": 'life', "rank": 'unassigned'}
         else:
             ncbi = NCBITaxa()
@@ -1476,7 +1458,7 @@ class IdDicts(object):
         It adds information to various id_dicts.
 
         :param gb_id: Genbank identifier
-        :return: tax_name
+        :return: read_handle
         """
         tries = 10
         Entrez.email = self.config.email
@@ -2188,35 +2170,17 @@ class PhyscraperScrape(object):
 
         self._blast_read = 1
 
-    def get_sp_id_of_otulabel(self, label):
+    def get_sp_id_of_otulabel(self, label): 
+        #TODO This was doing a bunch of searches that sould have already happened when creating the OTU.
+        #If we didn't find an ncbi_id then, we shouldn't look again.
+
         """Get the species name and the corresponding ncbi id of the otu.
 
         :param label: otu_label = key from otu_dict
         :return: ncbi id of corresponding label
         """
         # debug("get_tax_id_of_otulabel")
-        spn_of_label = self.ids.find_name(otu_dict_entry=self.data.otu_dict[label])
-        debug("searching label {}".format(label))
-        debug("generated species name {}".format(spn_of_label))
-        if spn_of_label is not None:
-            spn_of_label = str(spn_of_label).replace(" ", "_")
-        else:
-            debug("Problem, no tax_name found!")
-        ncbi_id = None
-        if "^ncbi:taxon" in self.data.otu_dict[label]:
-            ncbi_id = self.data.otu_dict[label]["^ncbi:taxon"]
-        elif spn_of_label in self.ids.spn_to_ncbiid:
-            ncbi_id = self.ids.spn_to_ncbiid[spn_of_label]
-        elif u"^ot:ottId" in self.data.otu_dict[label]:  # from OTT to ncbi id
-            ncbi_id = self.ids.ott_to_ncbi.get(self.data.otu_dict[label][ u"^ot:ottId"])
-        if ncbi_id == None:
-            if self.config.blast_loc == "remote":
-                ncbi_id = self.ids.get_rank_info_from_web(taxon_name=spn_of_label)
-                # id_of_label = self.ids.otu_rank[spn_of_label]["taxon id"]
-            else:
-                ncbi_id = self.ids.ncbi_parser.get_id_from_name(spn_of_label)
-            self.ids.spn_to_ncbiid[spn_of_label] = ncbi_id
-        ncbi_id = int(ncbi_id)
+        self.data.otu_dict[label].get("^ncbi:taxon",0,)
         return ncbi_id
 
 
