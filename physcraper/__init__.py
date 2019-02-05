@@ -1276,7 +1276,7 @@ class IdDicts(object):
         """ get the ncbi tax ids from a list of mrca ott ids.
         add add
         """
-        if len(list(self.mrca_ott)) is > 1: #TODO I cahnges this from 'is not int' for clarity - that is what it is checking for, right?
+        if len(list(self.mrca_ott)) > 1: #TODO I cahnges this from 'is not int' for clarity - that is what it is checking for, right?
             for ott_id in self.mrca_ott:
                 ncbi_id = self.ott_to_ncbi.get(ott_id)
                 if ncbi_id is not None:
@@ -1290,8 +1290,8 @@ class IdDicts(object):
 # removed funtion ottid_to_ncbiid.
 # if ott is isn't mapped to ncbi_id in the opentree taxonomy, (ott_to_ncbi) we shouldn't map it here.
 
-
-    def get_ncbiid_from_tax_name(self, tax_name): #TODO when do we need this?
+    def get_ncbiid_from_tax_name(self, tax_name): 
+    #TODO when do we need this? Move to NCBI_helpers.
         """Get the ncbi_id from the species name using ncbi web query.
 
         :param tax_name: species name
@@ -1340,6 +1340,7 @@ class IdDicts(object):
         return ncbi_id
 
     def get_rank_info_from_web(self, taxon_name):
+        #TODO, why input name rather than ID here?
         """Collects rank and lineage information from ncbi,
         used to delimit the sequences from blast,
         when the web blast service is used.
@@ -1359,52 +1360,24 @@ class IdDicts(object):
                 {"taxon id": ncbi_id, "lineage": lineage, "rank": lineage2ranks, "taxon name": tax_name}
         return ncbi_id
 
-    def find_tax_id(self, otu_dict_entry=None, acc=None):
-        """ Find the taxon id in the  otu_dict entry or of a Genbank accession number if no name is given.
-        If not already known it will ask ncbi using the accession number
+ #removed function find_tax_id because it wasn't being used
+    
 
-        :param otu_dict_entry: otu_dict entry
-        :param acc: Genbank accession number
-        :return: ncbi taxon id
-        """
-        # debug("find tax id")
-        inputinfo = False
-        if otu_dict_entry is not None or acc is not None:
-            inputinfo = True
-        assert inputinfo is True
-        ncbi_id = None
-        if otu_dict_entry:
-            ncbi_id = otu_dict_entry["^ncbi:taxon"]
-        if ncbi_id is None:
-            gb_id = None
-            if acc:
-                gb_id = acc
-            elif "^ncbi:accession" in otu_dict_entry:
-                gb_id = otu_dict_entry["^ncbi:accession"]
-            if gb_id in self.acc_ncbi_dict:
-                ncbi_id = self.acc_ncbi_dict[gb_id]
-            else:
-                read_handle = self.entrez_efetch(gb_id)
-                ncbi_id = get_ncbi_tax_id(read_handle)
-                self.acc_ncbi_dict[gb_id] = ncbi_id
-            assert ncbi_id is not None
-        return ncbi_id
-
-    def find_name(self, otu_dict_entry=None, acc=None):
+#If we didn't find name when creating otu_dict entry, we shouldn't look again.
+# if we have accession number, we can find name using ncebi_helpers.get_tax_info_from_acc
+    def find_name(self, otu_dict_entry):
         """ Find the taxon name in the  otu_dict entry or of a Genbank accession number.
         If not already known it will ask ncbi using the accession number
 
         :param otu_dict_entry: otu_dict entry
-        :param acc: Genbank accession number
         :return: ncbi taxon name
         """
         # debug("find_name")
         inputinfo = False
-        if otu_dict_entry is not None or acc is not None:
+        if otu_dict_entry is not None:
             inputinfo = True
         assert inputinfo is True
         tax_name = None
-        ncbi_id = None
         if otu_dict_entry:
             # debug(otu_dict_entry)
             if "^physcraper:TaxonName" in otu_dict_entry:
@@ -1413,133 +1386,8 @@ class IdDicts(object):
                 tax_name = otu_dict_entry["^ot:ottTaxonName"]
             elif "^user:TaxonName" in otu_dict_entry:
                 tax_name = otu_dict_entry["^user:TaxonName"]
-        if tax_name is None:
-            gb_id = None
-            if acc:
-                gb_id = acc
-            elif "^ncbi:accession" in otu_dict_entry:
-                gb_id = otu_dict_entry["^ncbi:accession"]
-            else:
-                sys.stderr.write("There is neither name or accession number given. This should not happen! Check!")
-            if len(gb_id.split(".")) == 1:
-                debug(gb_id)
-            if gb_id in self.acc_ncbi_dict:
-                ncbi_id = self.acc_ncbi_dict[gb_id]
-                if ncbi_id in self.ncbiid_to_spn.keys():
-                    tax_name = self.ncbiid_to_spn[ncbi_id]
-                else:
-                    read_handle = self.entrez_efetch(gb_id)
-                    tax_name = get_ncbi_tax_name(read_handle)
-                    ncbi_id = get_ncbi_tax_id(read_handle)
-                    self.ncbiid_to_spn[ncbi_id] = tax_name
-                    self.acc_ncbi_dict[gb_id] = ncbi_id
-                    if otu_dict_entry:
-                        otu_dict_entry["^ncbi:TaxonName"] = tax_name  # TODO does this actually edit the dictionary entry?
-                        otu_dict_entry["^physcraper:TaxonName"] = tax_name
-                        otu_dict_entry["^ncbi:taxon"] = ncbi_id
-            else:  # usually being used for web-queries, local blast searches should have the information
-                read_handle = self.entrez_efetch(gb_id)
-                tax_name = get_ncbi_tax_name(read_handle)
-                ncbi_id = get_ncbi_tax_id(read_handle)
-                self.ncbiid_to_spn[ncbi_id] = tax_name
-                self.acc_ncbi_dict[gb_id] = ncbi_id
-                if otu_dict_entry:
-                    otu_dict_entry["^ncbi:TaxonName"] = tax_name
-                    otu_dict_entry["^physcraper:TaxonName"] = tax_name
-                    otu_dict_entry["^ncbi:taxon"] = ncbi_id
-            assert ncbi_id is not None
-        assert tax_name is not None, (otu_dict_entry, acc)
         tax_name = tax_name.replace(" ", "_")
         return tax_name
-
-    def entrez_efetch(self, gb_id):
-        """ Wrapper function around efetch from ncbi to get taxonomic information if everything else is failing.
-            Also used when the local blast files have redundant information to access the taxon info of those sequences.
-        It adds information to various id_dicts.
-
-        :param gb_id: Genbank identifier
-        :return: read_handle
-        """
-        tries = 10
-        Entrez.email = self.config.email
-        handle = None
-
-        # method needs delay because of ncbi settings
-        for i in range(tries):
-            try:
-                # print("try")
-                delay = 1.0
-                previous = time.time()
-                while True:
-                    current = time.time()
-                    wait = previous + delay - current
-                    if wait > 0:
-                        # print("if", wait)
-                        time.sleep(wait)
-                        previous = current + wait
-                    else:
-                        # print("else", wait)
-                        previous = current
-                    if delay + .5 * delay <= 5:
-                        # print("if2", delay)
-                        delay += .5 * delay
-                    else:
-                        # print("else2",  delay)
-                        delay = 5
-                    # print("read handle")
-                    handle = Entrez.efetch(db="nucleotide", id=gb_id, retmode="xml")
-                    assert handle is not None, ("your handle file to access data from efetch does not exist. "
-                                                "Likely an issue with the internet connection of ncbi. Try rerun...")
-                    read_handle = Entrez.read(handle)
-                    handle.close()
-
-                    return read_handle
-            except (IndexError, HTTPError) as e:
-                if i < tries - 1:  # i is zero indexed
-                    continue
-                else:
-                    raise
-            # break
-        assert handle is not None, ("your handle file to access data from efetch does not exist. "
-                                    "Likely an issue with the internet connection of ncbi. Try rerun...")
-        read_handle = Entrez.read(handle)
-        handle.close()
-
-        return read_handle
-
-    def map_acc_ncbi(self, gb_id):
-        """get the ncbi taxon id's for a Genbank identifier input.
-
-        Finds different identifiers and information from a given gb_id and fills the corresponding self.objects
-        with the retrieved information.
-
-        :param gb_id: Genbank ID 
-        :return: ncbi taxon id
-        """
-        # debug("map_acc_ncbi")
-        tax_id = None
-        if len(gb_id.split(".")) == 1:
-            debug(gb_id)
-        if _DEBUG == 2:
-            sys.stderr.write("mapping acc {}\n".format(gb_id))
-        if gb_id in self.acc_ncbi_dict:
-            tax_id = self.acc_ncbi_dict[gb_id]
-        else:
-            tax_name = self.find_name(acc=gb_id)
-            if self.config.blast_loc == "remote":
-                try:
-                    tax_id = self.get_rank_info_from_web(taxon_name=tax_name)
-                    # tax_id = self.otu_rank[tax_name]["taxon id"]
-                except IndexError:  # get id via genbank query xref in description
-                    read_handle = self.entrez_efetch(gb_id)
-                    tax_name = get_ncbi_tax_name(read_handle)
-                    ncbi_id = get_ncbi_tax_id(read_handle)
-            else:
-                tax_id = self.ncbi_parser.get_id_from_name(tax_name)
-            self.ncbiid_to_spn[tax_id] = tax_name
-            self.acc_ncbi_dict[gb_id] = tax_id
-            self.spn_to_ncbiid[tax_name] = tax_id
-        return tax_id
 
     def dump(self, filename=None):
         if filename:
@@ -1936,12 +1784,12 @@ class PhyscraperScrape(object):
                                         staxids = staxids_l[0]
                                         sscinames = sscinames_l[0]
                                     elif i != 0 and spn_title != spn_title_before:
-                                        read_handle = self.ids.entrez_efetch(gb_acc)
+                                        read_handle = entrez_efetch(gb_acc, self.config.email)
                                         sscinames = get_ncbi_tax_name(read_handle).replace(" ", "_").replace("/", "_")
                                         staxids = get_ncbi_tax_id(read_handle)
                                         spn_range = len(sscinames.split("_"))
                                     elif i == 0:  # for first item in redundant data, always get info
-                                        read_handle = self.ids.entrez_efetch(gb_acc)
+                                        read_handle = entrez_efetch(gb_acc,self.config.email)
                                         sscinames = get_ncbi_tax_name(read_handle).replace(" ", "_").replace("/", "_")
                                         staxids = get_ncbi_tax_id(read_handle)
                                         spn_range = len(sscinames.split("_"))
@@ -1982,7 +1830,7 @@ class PhyscraperScrape(object):
                                         staxids = staxids_l[0]
                                         sscinames = sscinames_l[0]
                                     else:
-                                        read_handle = self.ids.entrez_efetch(gb_acc)
+                                        read_handle = entrez_efetch(gb_acc, self.config.email)
                                         sscinames = get_ncbi_tax_name(read_handle).replace(" ", "_").replace("/", "_")
                                         staxids = get_ncbi_tax_id(read_handle)
                                         spn_range = len(sscinames.split("_"))
@@ -3489,6 +3337,100 @@ class FilterBlast(PhyscraperScrape):
 
 
 ####################
+#Funcs below here should be moved to ncbi_helpers.py
+
+def entrez_efetch(gb_id, email):
+    """ Wrapper function around efetch from ncbi to get taxonomic information if everything else is failing.
+        Also used when the local blast files have redundant information to access the taxon info of those sequences.
+    It adds information to various id_dicts.
+
+    :param gb_id: Genbank identifier
+    :return: read_handle
+    """
+    tries = 10
+    handle = None
+
+    # method needs delay because of ncbi settings
+    for i in range(tries):
+        try:
+            # print("try")
+            delay = 1.0
+            previous = time.time()
+            while True:
+                current = time.time()
+                wait = previous + delay - current
+                if wait > 0:
+                    # print("if", wait)
+                    time.sleep(wait)
+                    previous = current + wait
+                else:
+                    # print("else", wait)
+                    previous = current
+                if delay + .5 * delay <= 5:
+                    # print("if2", delay)
+                    delay += .5 * delay
+                else:
+                    # print("else2",  delay)
+                    delay = 5
+                # print("read handle")
+                handle = Entrez.efetch(db="nucleotide", id=gb_id, retmode="xml")
+                assert handle is not None, ("your handle file to access data from efetch does not exist. "
+                                            "Likely an issue with the internet connection of ncbi. Try rerun...")
+                read_handle = Entrez.read(handle)
+                handle.close()
+
+                return read_handle
+        except (IndexError, HTTPError) as e:
+            if i < tries - 1:  # i is zero indexed
+                continue
+            else:
+                raise
+        # break
+    assert handle is not None, ("your handle file to access data from efetch does not exist. "
+                                "Likely an issue with the internet connection of ncbi. Try rerun...")
+    read_handle = Entrez.read(handle)
+    handle.close()
+    return read_handle
+
+
+
+
+
+def get_tax_info_from_acc(gb_id, data_obj, ids_obj):
+    '''takes an accessionumber and returns the ncabi_id and the taxon name'''
+    ncbi_id = None
+    tax_name = None
+    if gb_id[:6] == "unpubl":  # There may not be ncbi id, because they aren't published
+            tax_name = data_obj.gb_dict[gb_id]["^ot:ottTaxonName"]
+            ncbi_id = data_obj.gb_dict[gb_id]["^ncbi:taxon"]
+            ott_id = data_obj.gb_dict[gb_id]["^ot:ottId"]
+            if tax_name is None:
+                tax_name = data_obj.gb_dict[gb_id][u'^user:TaxonName']
+            if ncbi_id is None: 
+                # debug(tax_name.split(" ")[0])
+                tax_lin_name = tax_name.split(" ")[0]
+                tax_lin_name = tax_lin_name.split("_")[0]
+                # debug(tax_lin_name)
+                ncbi_id = ids_obj.ncbi_parser.get_id_from_name(tax_lin_name)
+    elif len(gb_id.split(".")) >= 2:  # used to figure out if gb_id is from Genbank
+            if gb_id in data_obj.gb_dict.keys() and "staxids" in data_obj.gb_dict[gb_id].keys():
+                tax_name = data_obj.gb_dict[gb_id]["sscinames"]
+                ncbi_id = data_obj.gb_dict[gb_id]["staxids"]
+            else:  # all web blast results
+                tax_name = ids_obj.find_name(acc=gb_id)
+                if tax_name is None:
+                    sys.stderr.write("no species name returned for {}".format(gb_id))
+                ncbi_id = ids_obj.map_acc_ncbi(gb_id)
+    else:
+        try:
+            ncbi_id = ids_obj.map_acc_ncbi(gb_id)
+            tax_name = ids_obj.find_name(acc=gb_id)
+        except:
+            pass
+    if ncbi_id == None:
+        sys.stderr.write("Failed to get information for sequence with accession number {}".format(gb_id))
+    return ncbi_id, tax_name
+
 
 
 def get_ncbi_tax_id(handle):
@@ -3523,38 +3465,3 @@ def get_ncbi_tax_name(handle):
             ncbi_sp = str(item[u"GBQualifier_value"])
             ncbi_sp = ncbi_sp.replace(" ", "_")
     return ncbi_sp
-
-def get_tax_info_from_acc(gb_id, data_obj, ids_obj):
-        '''takes an accessionumber and returns the ncabi_id and the taxon name'''
-        ncbi_id = None
-        tax_name = None
-        if gb_id[:6] == "unpubl":  # There may not be ncbi id, because they aren't published
-                tax_name = data_obj.gb_dict[gb_id]["^ot:ottTaxonName"]
-                ncbi_id = data_obj.gb_dict[gb_id]["^ncbi:taxon"]
-                ott_id = data_obj.gb_dict[gb_id]["^ot:ottId"]
-                if tax_name is None:
-                    tax_name = data_obj.gb_dict[gb_id][u'^user:TaxonName']
-                if ncbi_id is None: 
-                    # debug(tax_name.split(" ")[0])
-                    tax_lin_name = tax_name.split(" ")[0]
-                    tax_lin_name = tax_lin_name.split("_")[0]
-                    # debug(tax_lin_name)
-                    ncbi_id = ids_obj.ncbi_parser.get_id_from_name(tax_lin_name)
-        elif len(gb_id.split(".")) >= 2:  # used to figure out if gb_id is from Genbank
-                if gb_id in data_obj.gb_dict.keys() and "staxids" in data_obj.gb_dict[gb_id].keys():
-                    tax_name = data_obj.gb_dict[gb_id]["sscinames"]
-                    ncbi_id = data_obj.gb_dict[gb_id]["staxids"]
-                else:  # all web blast results
-                    tax_name = ids_obj.find_name(acc=gb_id)
-                    if tax_name is None:
-                        sys.stderr.write("no species name returned for {}".format(gb_id))
-                    ncbi_id = ids_obj.map_acc_ncbi(gb_id)
-        else:
-            try:
-                ncbi_id = ids_obj.map_acc_ncbi(gb_id)
-                tax_name = ids_obj.find_name(acc=gb_id)
-            except:
-                pass
-        if ncbi_id == None:
-            sys.stderr.write("Failed to get information for sequence with accession number {}".format(gb_id))
-        return ncbi_id, tax_name
