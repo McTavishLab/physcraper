@@ -1723,6 +1723,7 @@ class PhyscraperScrape(object):
         :return: runs web blast query and writes it to file
         """
         if self.config.url_base:
+            debug("blasting {} using {}".format(self.config.url_base))
             result_handle = AWSWWW.qblast("blastn",
                                           "nt",
                                           query,
@@ -1790,6 +1791,7 @@ class PhyscraperScrape(object):
                                 self.run_local_blast_cmd(query, taxon.label, fn_path)
                             if self.config.blast_loc == 'remote':
                                 if len(self.ncbi_mrca) >= 2:
+                                    debug("len(self.ncbi_mrca) is {}".format(len(self.ncbi_mrca)))
                                     len_ncbi = len(self.ncbi_mrca)
                                     equery = ''
                                     for ncbi_id in self.ncbi_mrca:  # add taxids of list to blast search
@@ -1800,7 +1802,9 @@ class PhyscraperScrape(object):
                                             equery = equery + "txid{}[orgn]) ".format(ncbi_id)
                                     equery = "(" + equery + "AND {}:{}[mdat]".format(last_blast, today)
                                 else:
-                                    equery = "txid{}[orgn] AND {}:{}[mdat]".format(self.ncbi_mrca, last_blast, today)
+                                    mrca = list(self.ncbi_mrca)[0]
+                                    equery = "txid{}[orgn] AND {}:{}[mdat]".format(mrca, last_blast, today)
+                                    debug(equery)
                                     self.run_web_blast_query(query, equery, fn_path)
                             self.data.otu_dict[otu_id]['^physcraper:last_blasted'] = today
                         else:
