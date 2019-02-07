@@ -61,14 +61,9 @@ def test_no_mrca():
     ids = IdDicts(conf, workdir=workdir, mrca=ingroup_mrca)
 
     # print(ids.mrca_ott, ids.mrca_ncbi)
-
-    assert len(ids.mrca_ncbi) == 1
-    assert ids.mrca_ott == ingroup_mrca
-    assert ids.mrca_ott != ids.mrca_ncbi
-
     data_obj = pickle.load(open("tests/data/precooked/tiny_dataobj.p", 'rb'))
     filteredScrape = FilterBlast(data_obj, ids)
-    assert len(filteredScrape.ids.mrca_ncbi) >= 2
+    assert len(filteredScrape.ids.mrca_ncbi) == 1
     blast_dir = "tests/data/precooked/fixed/tte_blast_files"
 
     filteredScrape.read_blast_wrapper(blast_dir=blast_dir)
@@ -96,13 +91,13 @@ def test_higher_mrca():
 
     # print(ids.mrca_ott, ids.mrca_ncbi)
 
-    assert len(ids.mrca_ncbi) >= 2
+    assert len(ids.mrca_ncbi) == 1
     assert ids.mrca_ott == ingroup_mrca
     assert ids.mrca_ott != ids.mrca_ncbi
 
     data_obj = pickle.load(open("tests/data/precooked/tiny_dataobj.p", 'rb'))
     filteredScrape = FilterBlast(data_obj, ids)
-    assert len(filteredScrape.ids.mrca_ncbi) >= 2
+    assert len(filteredScrape.ids.mrca_ncbi) == 1
     blast_dir = "tests/data/precooked/fixed/tte_blast_files"
 
     filteredScrape.read_blast_wrapper(blast_dir=blast_dir)
