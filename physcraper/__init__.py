@@ -1267,6 +1267,7 @@ class IdDicts(object):
         else:  # ncbi parser contains information about spn, tax_id, and ranks
             self.ncbi_parser = ncbi_data_parser.Parser(names_file=self.config.ncbi_parser_names_fn,
                                                        nodes_file=self.config.ncbi_parser_nodes_fn)
+        self.acc_tax_seq_dict = {} 
 
 #moved self.get_ncbi_mrca to physcraper data object
 
@@ -1345,11 +1346,46 @@ class IdDicts(object):
         return ncbi_id
 
  #removed function find_tax_id because it wasn't being used
-    
+   
+    def get_tax_seq_acc(self, acc=None):
+        gb_id = acc
+        if len(gb_id.split(".")) == 1:
+            debug("accession number {} not recognized".format(gb_id))
+        if gb_id in self.acc_tax_seq_dict:
+            taxname = self.acc_tax_seq_dict[gb_id]["taxname"]
+            ncbi_id = self.acc_tax_seq_dict[gb_id]["^ncbi:taxon"]
+            seq = self.acc_tax_seq_dict[gb_id]["seq"]
+        else:
+            read_handle = self.entrez_efetch(gb_id)
+            tax_name = get_ncbi_tax_name(read_handle)
+            ncbi_id = get_ncbi_tax_id(read_handle)
+            seq = read_handle[0][u'GBSeq_sequence']
+            self.ncbiid_to_spn[ncbi_id] = tax_name
+            self.acc_ncbi_dict[gb_id] = ncbi_id
+            self.acc_tax_seq_dict[gb_id] = {'taxname':tax_name, "^ncbi:taxon":ncbi_id, 'seq':seq}
+        assert ncbi_id is not None
+        return ncbi_id, tax_name, seq
 
-#If we didn't find name when creating otu_dict entry, we shouldn't look again.
-# if we have accession number, we can find name using ncebi_helpers.get_tax_info_from_acc
-    def find_name(self, otu_dict_entry=None, acc=None):
+    def get_ncbiid_from_acc(self, acc):
+        '''checks local dicts, and then runs eftech to get ncbi id for accession'''
+        if gb_id in self.acc_ncbi_dict:#TODO if the accession number and tax id are here, does that mena the name is in ncbiid_to_spn?
+            ncbi_id = self.acc_ncbi_dict[gb_id]
+        elif gb_id in self.acc_tax_seq_dict:
+            ncbi_id = self.acc_tax_seq_dict[gb_id]["^ncbi:taxon"]
+        else:
+            taxid, taxname, seq = self.get_tax_seq_acc(self, acc=gb_id)
+            ncbi_id = taxid
+        return ncbi_id
+
+   
+# If we didn't find name when creating otu_dict entry, we shouldn't look again.
+# if we have accession number, we can find name using get_tax_info_from_acc
+    def find_name_acc(self, acc):
+        ncbi_id = self.get_ncbiid_from_acc(acc)
+        self.ncbiid_to_spn[ncbi_id] = tax_name
+        return tax_name
+
+    def find_name_otu(self, otu_dict_entry=None):
         """ Find the taxon name in the  otu_dict entry or of a Genbank accession number.
         If not already known it will ask ncbi using the accession number
 
@@ -1359,7 +1395,7 @@ class IdDicts(object):
         """
         # debug("find_name")
         inputinfo = False
-        if otu_dict_entry is not None or acc is not None:
+        if otu_dict_entry is not None:
             inputinfo = True
         assert inputinfo is True
         tax_name = None
@@ -1372,41 +1408,6 @@ class IdDicts(object):
                 tax_name = otu_dict_entry["^ot:ottTaxonName"]
             elif "^user:TaxonName" in otu_dict_entry:
                 tax_name = otu_dict_entry["^user:TaxonName"]
-        if tax_name is None:
-            gb_id = None
-            if acc:
-                gb_id = acc
-            elif "^ncbi:accession" in otu_dict_entry:
-                gb_id = otu_dict_entry["^ncbi:accession"]
-            # else:
-            #    sys.stderr.write("There is no name supplied and no accession number. This should not happen! Check name!")
-            if len(gb_id.split(".")) == 1:
-                debug(gb_id)
-            if gb_id in self.acc_ncbi_dict:
-                ncbi_id = self.acc_ncbi_dict[gb_id]
-                if ncbi_id in self.ncbiid_to_spn.keys():
-                    tax_name = self.ncbiid_to_spn[ncbi_id]
-                else:
-                    read_handle = self.entrez_efetch(gb_id)
-                    tax_name = get_ncbi_tax_name(read_handle)
-                    ncbi_id = get_ncbi_tax_id(read_handle)
-                    self.ncbiid_to_spn[ncbi_id] = tax_name
-                    self.acc_ncbi_dict[gb_id] = ncbi_id
-                    if otu_dict_entry:
-                        otu_dict_entry["^ncbi:TaxonName"] = tax_name  # TODO does this actually edit the dictionary entry?
-                        otu_dict_entry["^physcraper:TaxonName"] = tax_name
-                        otu_dict_entry["^ncbi:taxon"] = ncbi_id
-            else:  # usually being used for web-queries, local blast searches should have the information
-                read_handle = self.entrez_efetch(gb_id)
-                tax_name = get_ncbi_tax_name(read_handle)
-                ncbi_id = get_ncbi_tax_id(read_handle)
-                self.ncbiid_to_spn[ncbi_id] = tax_name
-                self.acc_ncbi_dict[gb_id] = ncbi_id
-                if otu_dict_entry:
-                    otu_dict_entry["^ncbi:TaxonName"] = tax_name
-                    otu_dict_entry["^physcraper:TaxonName"] = tax_name
-                    otu_dict_entry["^ncbi:taxon"] = ncbi_id
-            assert ncbi_id is not None
         assert tax_name is not None
         tax_name = tax_name.replace(" ", "_")
         return tax_name
@@ -1466,39 +1467,6 @@ class IdDicts(object):
         handle.close()
         return read_handle
 
-    def map_acc_ncbi(self, gb_id):#TODO merge getting the ids and the names and the sequences, we are runningtoo many queries!
-        """get the ncbi taxon id's for a Genbank identifier input.
-
-        Finds different identifiers and information from a given gb_id and fills the corresponding self.objects
-        with the retrieved information.
-
-        :param gb_id: Genbank ID 
-        :return: ncbi taxon id
-        """
-        # debug("map_acc_ncbi")
-        tax_id = None
-        if len(gb_id.split(".")) == 1:
-            debug(gb_id)
-        if _DEBUG == 2:
-            sys.stderr.write("mapping acc {}\n".format(gb_id))
-        if gb_id in self.acc_ncbi_dict:
-            tax_id = self.acc_ncbi_dict[gb_id]
-        else:
-            tax_name = self.find_name(acc=gb_id)
-            if self.config.blast_loc == "remote":
-                try:
-                    tax_id = self.get_rank_info_from_web(taxon_name=tax_name)
-                    # tax_id = self.otu_rank[tax_name]["taxon id"]
-                except IndexError:  # get id via genbank query xref in description
-                    read_handle = self.entrez_efetch(gb_id)
-                    tax_name = get_ncbi_tax_name(read_handle)
-                    ncbi_id = get_ncbi_tax_id(read_handle)
-            else:
-                tax_id = self.ncbi_parser.get_id_from_name(tax_name)
-            self.ncbiid_to_spn[tax_id] = tax_name
-            self.acc_ncbi_dict[gb_id] = tax_id
-            self.spn_to_ncbiid[tax_name] = tax_id
-        return tax_id
 
     def dump(self, filename=None):
         if filename:
@@ -1891,7 +1859,7 @@ class PhyscraperScrape(object):
                                     elif len(staxids_l) == 1:
                                         staxids = staxids_l[0]
                                         sscinames = sscinames_l[0]
-                                    elif i != 0 and spn_title != spn_title_before:
+                                    elif i != 0 and spn_title != spn_title_before:#TODO I think this should get wrapped into get_tax_seq_acc
                                         read_handle = self.ids.entrez_efetch(gb_acc)
                                         sscinames = get_ncbi_tax_name(read_handle).replace(" ", "_").replace("/", "_")
                                         staxids = get_ncbi_tax_id(read_handle)
@@ -2055,7 +2023,8 @@ class PhyscraperScrape(object):
                                 # if len(self.acc_list_mrca) >= 1 and (gb_id not in self.acc_list_mrca):
                                 #     pass
                                 # else:
-                                self.new_seqs[gb_id] = hsp.sbjct
+                                taxid,taxname, seq = self.ids.get_tax_seq_acc(gb_id)
+                                self.new_seqs[gb_id] = seq
                                 gi_id = alignment.title.split('|')[1]
                                 gb_acc = alignment.__dict__['accession']
                                 stitle = alignment.__dict__['title']
@@ -2104,8 +2073,8 @@ class PhyscraperScrape(object):
                     file_ending = "txt"
                 else:
                     file_ending = "xml"
-                if self.config.gb_id_filename is True:
-                    fn = self.data.otu_dict[taxon.label].get('^ncbi:accession', taxon.label)
+                if self.config.gb_id_filename is True: #TODO what is this doing?
+                    fn = self.data.otu_dict[taxon.label].get('^ncbi:accession', taxon.label) 
                     if fn is None:
                         fn = self.data.otu_dict[taxon.label].get('^user:TaxonName', taxon.label)
                     fn_path = "{}/{}.{}".format(self.blast_subdir, fn, file_ending)
@@ -2918,16 +2887,7 @@ class FilterBlast(PhyscraperScrape):
         self.sp_d = {}
         for otu_id in self.data.otu_dict:
             if self.data.otu_dict[otu_id]['^physcraper:status'].split(' ')[0] not in self.seq_filter:
-                tax_name = self.ids.find_name(otu_dict_entry=self.data.otu_dict[otu_id])
-                # # TODO: next lines are likely doubled in find_name, remove lines below!
-                # if tax_name is None:
-                #     gb_id = self.data.otu_dict[otu_id]['^ncbi:accession']
-                #     if len(gb_id.split(".")) == 1:
-                #         debug(gb_id)
-                #     tax_name = self.ids.find_name(acc=gb_id)
-                #     if tax_name is None:
-                #         debug("something is going wrong!Check species name")
-                #         sys.stderr.write("{} has no corresponding tax_name! Check what is wrong!".format(otu_id))
+                tax_name = self.ids.find_name_otu(otu_dict_entry=self.data.otu_dict[otu_id])
                 if len(tax_name.split("(")) > 1:
                     tax_name = tax_name.split("(")[0]
                 tax_name = str(tax_name).replace(" ", "_")
@@ -3009,10 +2969,10 @@ class FilterBlast(PhyscraperScrape):
                 if '^physcraper:status' in otu_id and otu_id['^physcraper:status'].split(' ')[0] not in self.seq_filter:
                     # I am using the next if to delimit which seq where already present from an earlier run,
                     if otu_id['^physcraper:last_blasted'] != '1800/01/01':
-                        tax_name = self.ids.find_name(otu_dict_entry=otu_id)
+                        tax_name = self.ids.find_name_otu(otu_dict_entry=otu_id)
                         tax_id = key
                         for alntipname, seq in self.data.aln.items():
-                            otu_dict_label = self.ids.find_name(otu_dict_entry=self.data.otu_dict[alntipname.label])
+                            otu_dict_label = self.ids.find_name_otu(otu_dict_entry=self.data.otu_dict[alntipname.label])
                             aln_tip_id = self.get_sp_id_of_otulabel(alntipname.label)
                             if tax_id == aln_tip_id:
                                 debug([tax_id, aln_tip_id])
@@ -3213,9 +3173,9 @@ class FilterBlast(PhyscraperScrape):
         for otu_id in self.sp_d[key]:
             if '^physcraper:status' in otu_id and otu_id['^physcraper:status'].split(' ')[0] not in self.seq_filter:
                 if otu_id['^physcraper:last_blasted'] != '1800/01/01':  # old seq
-                    tax_name = self.ids.find_name(otu_dict_entry=otu_id)
+                    tax_name = self.ids.find_name_otu(otu_dict_entry=otu_id)
                     for tax_name_aln, seq in self.data.aln.items():
-                        otu_dict_name = self.ids.find_name(otu_dict_entry=self.data.otu_dict[tax_name_aln.label])
+                        otu_dict_name = self.ids.find_name_otu(otu_dict_entry=self.data.otu_dict[tax_name_aln.label])
                         tax_id = key
                         aln_tip_id = self.get_sp_id_of_otulabel(tax_name_aln.label)
                         # if tax_name == otu_dict_name:
@@ -3437,14 +3397,14 @@ def get_tax_info_from_acc(gb_id, data_obj, ids_obj):
                 tax_name = data_obj.gb_dict[gb_id]["sscinames"]
                 ncbi_id = data_obj.gb_dict[gb_id]["staxids"]
             else:  # all web blast results
-                tax_name = ids_obj.find_name(acc=gb_id)
+                tax_name = ids_obj.find_name_acc(acc=gb_id)
                 if tax_name is None:
                     sys.stderr.write("no species name returned for {}".format(gb_id))
-                ncbi_id = ids_obj.map_acc_ncbi(gb_id)
+                ncbi_id = ids_obj.get_ncbiid_from_acc(gb_id)
     else:
         try:
-            ncbi_id = ids_obj.map_acc_ncbi(gb_id)
-            tax_name = ids_obj.find_name(acc=gb_id)
+            ncbi_id = ids_obj.get_ncbiid_from_acc(gb_id)
+            tax_name = ids_obj.find_name_acc(acc=gb_id)
         except:
             pass
     if ncbi_id == None:
