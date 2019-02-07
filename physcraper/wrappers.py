@@ -595,7 +595,7 @@ def filter_OTOL(study_id,
     conf = ConfigObj(configfi)
     # Generate an linked Alignment-Tree-Taxa object
     data_obj = load_otol_data(conf, ingroup_mrca, mattype, seqaln, study_id, tree_id, workdir)
-    ids = load_ids_obj(conf, workdir)
+    ids = load_ids_obj(conf, workdir, ingroup_mrca)
 
     # make json file for unpublished database
     if add_unpubl_seq is not None:

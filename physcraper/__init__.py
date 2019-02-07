@@ -1662,7 +1662,7 @@ class PhyscraperScrape(object):
         self.backbone = False
         self.OToL_unmapped_tips()  # added to do stuff with un-mapped tips from OToL
         self.ids.ingroup_mrca = data_obj.ott_mrca  # added for mrca ingroup list
-        self.gb_not_added = set()  # list of blast seqs not added
+        #self.gb_not_added = set()  # list of blast seqs not added
         self.del_superseq = {}  # items that were deleted bc they are superseqs, needed for assert statement
 
     # TODO is this the right place for this? MK: According to PEP8, no...
@@ -2494,7 +2494,7 @@ class PhyscraperScrape(object):
                             tax_name = None
                             ncbi_id = None
                         writeinfofiles.write_not_added(ncbi_id, tax_name, gb_id, reason, self.workdir)
-                        self.gb_not_added.append(gb_id)
+                        #self.gb_not_added.append(gb_id)
                         # needs to be deleted from gb_dict. If we later blast a seq which fits better with this one,
                         # it will not be tried to add, as we tried before with a bad matching one
                         del self.data.gb_dict[gb_id]
