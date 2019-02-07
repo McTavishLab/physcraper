@@ -72,7 +72,7 @@ def license_print():
     """)
 
 
-def load_ids_obj(conf, workdir):
+def load_ids_obj(conf, workdir, ingroup_mrca):
     """
     Generates the IdDict class object.
 
@@ -86,7 +86,7 @@ def load_ids_obj(conf, workdir):
     else:
         sys.stdout.write("setting up ID dictionaries\n")
         sys.stdout.flush()
-        ids = IdDicts(conf, "{}/id_pickle.p".format(workdir))
+        ids = IdDicts(conf, "{}/id_pickle.p".format(workdir), ingroup_mrca)
         ids.dump("{}/id_pickle.p".format(workdir))
     return ids
 
@@ -521,7 +521,7 @@ def standard_run(study_id,
     conf = ConfigObj(configfi)
     data_obj = load_otol_data(conf, ingroup_mrca, mattype, seqaln, study_id, tree_id, workdir)
     # Mapping identifiers between OpenTree and NCBI requires an identifier dict object
-    ids = load_ids_obj(conf, workdir)
+    ids = load_ids_obj(conf, workdir, ingroup_mrca)
     # Now combine the data, the ids, and the configuration into a single physcraper scrape object
     scraper = PS_standard_run(data_obj, ids, shared_blast_folder)
     save_copy_code(workdir)
@@ -557,7 +557,7 @@ def own_data_run(seqaln,
     if not os.path.exists(workdir):
         os.mkdir(workdir)
     conf = ConfigObj(configfi)
-    ids = load_ids_obj(conf, workdir)
+    ids = load_ids_obj(conf, workdir, ingroup_mrca)
 
     make_otujsondict(id_to_spn, workdir, ids)
     data_obj = load_own_data(conf, seqaln, mattype, trfn, schema_trf, workdir, ingroup_mrca)
@@ -635,7 +635,7 @@ def filter_data_run(seqaln,
         print("make wd")
         os.makedirs(workdir)
     conf = ConfigObj(configfi)
-    ids = load_ids_obj(conf, workdir)
+    ids = load_ids_obj(conf, workdir, ingroup_mrca)
 
     make_otujsondict(id_to_spn, workdir, ids)
     # make json file for unpublished database
@@ -677,7 +677,7 @@ def add_unpubl_to_backbone(seqaln,
 
     # Generate an linked Alignment-Tree-Taxa object
     data_obj = load_own_data(conf, seqaln, mattype, trfn, schema_trf, workdir, ingroup_mrca)
-    ids = load_ids_obj(conf, workdir)
+    ids = load_ids_obj(conf, workdir, ingroup_mrca)
     filteredScrape = PS_filter_run(add_unpubl_seq, blacklist, data_obj, downtorank, id_to_spn_addseq_json, ids,
                                    selectby, shared_blast_folder, threshold, backbone=True)
     save_copy_code(workdir)
