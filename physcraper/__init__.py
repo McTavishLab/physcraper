@@ -1368,6 +1368,7 @@ class IdDicts(object):
 
     def get_ncbiid_from_acc(self, acc):
         '''checks local dicts, and then runs eftech to get ncbi id for accession'''
+        gb_id = acc
         if gb_id in self.acc_ncbi_dict:#TODO if the accession number and tax id are here, does that mena the name is in ncbiid_to_spn?
             ncbi_id = self.acc_ncbi_dict[gb_id]
         elif gb_id in self.acc_tax_seq_dict:
@@ -1382,7 +1383,7 @@ class IdDicts(object):
 # if we have accession number, we can find name using get_tax_info_from_acc
     def find_name_acc(self, acc):
         ncbi_id = self.get_ncbiid_from_acc(acc)
-        self.ncbiid_to_spn[ncbi_id] = tax_name
+        tax_name = self.ncbiid_to_spn[ncbi_id]  #TODO check that values are getting enetered into this dict
         return tax_name
 
     def find_name_otu(self, otu_dict_entry=None):
@@ -3379,6 +3380,7 @@ class FilterBlast(PhyscraperScrape):
 
 def get_tax_info_from_acc(gb_id, data_obj, ids_obj):
     '''takes an accessionumber and returns the ncabi_id and the taxon name'''
+    debug("Getting tax info from acc {}".format(gb_id))
     ncbi_id = None
     tax_name = None
     if gb_id[:6] == "unpubl":  # There may not be ncbi id, because they aren't published
