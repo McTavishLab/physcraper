@@ -839,7 +839,7 @@ class AlignTreeTax(object):
         self.orig_seqlen = [len(self.aln[tax].symbols_as_string().replace("-", "").replace("N", "")) for tax in
                             self.aln]
         avg_seqlen = sum(self.orig_seqlen) / len(self.orig_seqlen)
-        sys.stdout.write("average sequence length is {avg_seqlen}")
+        debug("average sequence length is {}".format(avg_seqlen))
         seq_len_cutoff = avg_seqlen * self.config.seq_len_perc
         prune = []
         aln_ids = set()
@@ -1768,7 +1768,8 @@ class PhyscraperScrape(object):
                                             equery = equery + "txid{}[orgn]) ".format(ncbi_id)
                                     equery = "(" + equery + "AND {}:{}[mdat]".format(last_blast, today)
                                 else:
-                                    equery = "txid{}[orgn] AND {}:{}[mdat]".format(self.ncbi_mrca, last_blast, today)
+                                    ncbi_id = list(self.ncbi_mrca)[0]
+                                    equery = "txid{}[orgn] AND {}:{}[mdat]".format(ncbi_id, last_blast, today)
                                     self.run_web_blast_query(query, equery, fn_path)
                             self.data.otu_dict[otu_id]['^physcraper:last_blasted'] = today
                         else:
