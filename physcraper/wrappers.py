@@ -72,7 +72,7 @@ def license_print():
     """)
 
 
-def load_ids_obj(conf, workdir, ingroup_mrca):
+def load_ids_obj(conf, workdir, ingroup_mrca=None):
     """
     Generates the IdDict class object.
 

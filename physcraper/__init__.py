@@ -1645,6 +1645,9 @@ class PhyscraperScrape(object):
         self.new_seqs = {}  # all new seq after read_blast_wrapper
         self.new_seqs_otu_id = {}  # only new seq which passed remove_identical
         self.mrca_ncbi = ids_obj.ott_to_ncbi[data_obj.ott_mrca]
+        if len(self.ids.mrca_ncbi) == 0:
+            self.ids.mrca_ncbi = set()
+            self.ids.mrca_ncbi.add(self.mrca_ncbi)
         self.tmpfi = "{}/physcraper_run_in_progress".format(self.workdir)  # TODO: For what do we want to use this? Unused!
         self.blast_subdir = "{}/current_blast_run".format(self.workdir)
         if not os.path.exists(self.workdir):
