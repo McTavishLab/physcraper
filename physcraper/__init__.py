@@ -1362,7 +1362,7 @@ class IdDicts(object):
             seq = read_handle[0][u'GBSeq_sequence']
             self.ncbiid_to_spn[ncbi_id] = tax_name
             self.acc_ncbi_dict[gb_id] = ncbi_id
-            self.acc_tax_seq_dict[gb_id] = {'taxname':tax_name, "^ncbi:taxon":ncbi_id, 'seq':seq}
+            self.acc_tax_seq_dict[gb_id] = {'taxname':tax_name, "^ncbi:taxon":ncbi_id, 'seq':seq} #This is going to be a memory hog...
         assert ncbi_id is not None
         return ncbi_id, tax_name, seq
 
@@ -1867,7 +1867,6 @@ class PhyscraperScrape(object):
                                         staxids = staxids_l[0]
                                         sscinames = sscinames_l[0]
                                     elif i != 0 and spn_title != spn_title_before:
-                                        staxids, sscinames = get_tax_info_from_acc(gb_id, self.data_obj, self.ids_obj)
                                         read_handle = self.ids.entrez_efetch(gb_acc)
                                         sscinames = get_ncbi_tax_name(read_handle).replace(" ", "_").replace("/", "_")
                                         staxids = get_ncbi_tax_id(read_handle)
