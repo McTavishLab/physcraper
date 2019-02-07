@@ -550,6 +550,7 @@ def get_ott_taxon_info(spp_name):
     :param spp_name: species name
     :return:
     """
+    #This is only used to write out the opentree info file. Could use NCBI id's instead of name, and likely be quicker.
     # debug(spp_name)
     try:
         res = taxomachine.TNRS(spp_name)["results"][0]
@@ -2299,7 +2300,7 @@ class PhyscraperScrape(object):
                             debug("wrong tax_id given by ncbi?")
                             ncbi_id = self.ids.ncbi_parser.get_id_from_name(tax_name)
                             self.data.gb_dict[gb_id]['staxids'] = ncbi_id
-                            input_rank_id = self.ids.ncbi_parser.match_id_to_mrca(ncbi_id, list(self.ncbi_mrca)[0])
+                            input_rank_id = self.ids.ncbi_parser.match_id_to_mrca(ncbi_id, list(self.ncbi_mrca)[0])#TODO HACK! will break mrca list
 
                         # #######################################################
                         if int(input_rank_id) == int(list(self.ncbi_mrca)[0]):  # belongs to ingroup mrca -> add to data, if not, leave it out
@@ -3405,7 +3406,7 @@ def get_tax_info_from_acc(gb_id, data_obj, ids_obj):
                 tax_lin_name = tax_name.split(" ")[0]
                 tax_lin_name = tax_lin_name.split("_")[0]
                 # debug(tax_lin_name)
-                ncbi_id = ids_obj.ncbi_parser.get_id_from_name(tax_lin_name)
+                ncbi_id = ids_obj.ncbi_parser.get_id_from_name(tax_lin_name) #TODO What should happen here if the unpublished sequence doesn't have a name that is found?
     elif len(gb_id.split(".")) >= 2:  # used to figure out if gb_id is from Genbank
             if gb_id in data_obj.gb_dict.keys() and "staxids" in data_obj.gb_dict[gb_id].keys():
                 tax_name = data_obj.gb_dict[gb_id]["sscinames"]
