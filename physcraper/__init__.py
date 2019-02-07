@@ -2320,15 +2320,15 @@ class PhyscraperScrape(object):
 
                         # input_rank_id = self.ids.ncbi_parser.get_downtorank_id(ncbi_id, rank_mrca_ncbi)
                         try:  # sometimes ncbi has wrong id linked: since update of db 01/01/2019 or since retrieval of redundant seq information
-                            input_rank_id = self.ids.ncbi_parser.match_id_to_mrca(ncbi_id, self.mrca_ncbi)#TODO how to handle list or set here?
+                            input_rank_id = self.ids.ncbi_parser.match_id_to_mrca(ncbi_id, list(self.ncbi_mrca)[0])#TODO how to handle list or set here?
                         except:  # this is for the wrong ncbi link, get right tax_id and do search again
                             debug("wrong tax_id given by ncbi?")
                             ncbi_id = self.ids.ncbi_parser.get_id_from_name(tax_name)
                             self.data.gb_dict[gb_id]['staxids'] = ncbi_id
-                            input_rank_id = self.ids.ncbi_parser.match_id_to_mrca(ncbi_id, self.mrca_ncbi)
+                            input_rank_id = self.ids.ncbi_parser.match_id_to_mrca(ncbi_id, list(self.ncbi_mrca)[0])
 
                         # #######################################################
-                        if int(input_rank_id) == int(ncbi_mrca):  # belongs to ingroup mrca -> add to data, if not, leave it out
+                        if int(input_rank_id) == int(list(self.ncbi_mrca)[0]):  # belongs to ingroup mrca -> add to data, if not, leave it out
                             # debug("input belongs to same mrca")
                             self.newseqs_acc.append(gb_id)
                             otu_id = self.data.add_otu(gb_id, self.ids)
