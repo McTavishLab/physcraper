@@ -1805,7 +1805,7 @@ class PhyscraperScrape(object):
                 sseqid, staxids, sscinames, pident, evalue, bitscore, sseq, salltitles, sallseqid = lin.strip().split('\t')
                 gi_id = int(sseqid.split("|")[1])
                 gb_acc = sseqid.split("|")[3]
-                sseq = sseq.replace("-", "")
+                sseq = sseq.replace("-", "") #TODO here is where we want to grab the full sequence
                 sscinames = sscinames.replace(" ", "_").replace("/", "_")
                 pident = float(pident)
                 evalue = float(evalue)
@@ -1858,6 +1858,7 @@ class PhyscraperScrape(object):
                                     # we lack information about which taxon is which gb_acc...
                                     # test it here:
                                     # if we have same number of ids and taxon id go ahead as usual
+                                    #TODO if we grab the full sequence using the accession number, we can also associate it with the correct taxon info 
                                     if len(sallseqid_l) == len(staxids_l):
                                         staxids = staxids_l[i]
                                         sscinames = sscinames_l[i]
@@ -1865,7 +1866,8 @@ class PhyscraperScrape(object):
                                     elif len(staxids_l) == 1:
                                         staxids = staxids_l[0]
                                         sscinames = sscinames_l[0]
-                                    elif i != 0 and spn_title != spn_title_before:#TODO I think this should get wrapped into get_tax_seq_acc
+                                    elif i != 0 and spn_title != spn_title_before:
+                                        staxids, sscinames = get_tax_info_from_acc(gb_id, self.data_obj, self.ids_obj)
                                         read_handle = self.ids.entrez_efetch(gb_acc)
                                         sscinames = get_ncbi_tax_name(read_handle).replace(" ", "_").replace("/", "_")
                                         staxids = get_ncbi_tax_id(read_handle)
