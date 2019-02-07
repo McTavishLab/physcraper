@@ -102,7 +102,7 @@ def test_higher_mrca():
 
     filteredScrape.read_blast_wrapper(blast_dir=blast_dir)
     filteredScrape.remove_identical_seqs()
-    assert len(filteredScrape.new_seqs_otu_id) > 38
+    assert len(filteredScrape.new_seqs_otu_id) >= 38
 
 
 # #EJM version
