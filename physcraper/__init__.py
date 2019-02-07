@@ -1250,12 +1250,12 @@ class IdDicts(object):
         self.ott_to_name = {}  # used in add_otu to get name from otuId
         self.acc_ncbi_dict = {}  # filled by ncbi_parser (by subprocess in earlier versions of the code).
         self.spn_to_ncbiid = {}  # spn to ncbi_id, it's only fed by the ncbi_data_parser, but makes it faster
-        self.ncbiid_to_spn = {}
+        self.ncbiid_to_spn = {} #TODO when is this generated?
         fi = open(config_obj.ott_ncbi)  # This is in the taxonomy folder of the repo, needs to be updated by devs when OpenTree taxonomy changes.
         for lin in fi:  # TODO This is insanely memory inefficient, how about using a pandas dataframe?
             lii = lin.split(",")
-            self.ott_to_ncbi[int(lii[0])] = int(lii[1])
-            self.ncbi_to_ott[int(lii[1])] = int(lii[0])
+            self.ott_to_ncbi[int(lii[0])] = int(lii[1]) #TODO EJM if an ottid matches 2 ncbi ids, only 1 appears
+            self.ncbi_to_ott[int(lii[1])] = int(lii[0]) #TODO EJM - ott ids that match two ncbi ids just show up once
             self.ott_to_name[int(lii[0])] = lii[2].strip()  # todo merge into ott_to_ncbi?
             assert len(self.ott_to_ncbi) > 0
             assert len(self.ncbi_to_ott) > 0
@@ -1276,7 +1276,7 @@ class IdDicts(object):
 # if ott is isn't mapped to ncbi_id in the opentree taxonomy, (ott_to_ncbi) we shouldn't map it here.
 
     def get_ncbiid_from_tax_name(self, tax_name): 
-    #TODO when do we need this? Move to NCBI_helpers.
+    #TODO when do we need this? Is this just when we read in the original data?
         """Get the ncbi_id from the species name using ncbi web query.
 
         :param tax_name: species name
@@ -1319,7 +1319,6 @@ class IdDicts(object):
                                      "correctly: {}! We set it to unidentified".format(tax_name))
                     tax_name = 'unidentified'
                     ncbi_id = 0
-                    # TODO: ADD otudict entries....MK: wrong class, otudict is in ATT
         assert type(ncbi_id) is int
         self.spn_to_ncbiid[tax_name] = ncbi_id
         return ncbi_id
@@ -1360,6 +1359,7 @@ class IdDicts(object):
             tax_name = get_ncbi_tax_name(read_handle)
             ncbi_id = get_ncbi_tax_id(read_handle)
             seq = read_handle[0][u'GBSeq_sequence']
+            tax_name = tax_name.replace(" ","_") #TODO check that searches are using names without spaces 
             self.ncbiid_to_spn[ncbi_id] = tax_name
             self.acc_ncbi_dict[gb_id] = ncbi_id
             self.acc_tax_seq_dict[gb_id] = {'taxname':tax_name, "^ncbi:taxon":ncbi_id, 'seq':seq} #This is going to be a memory hog...
@@ -1369,7 +1369,7 @@ class IdDicts(object):
     def get_ncbiid_from_acc(self, acc):
         '''checks local dicts, and then runs eftech to get ncbi id for accession'''
         gb_id = acc
-        if gb_id in self.acc_ncbi_dict:#TODO if the accession number and tax id are here, does that mena the name is in ncbiid_to_spn?
+        if gb_id in self.acc_ncbi_dict:#TODO if the accession number and tax id are here, does that mean the name is in ncbiid_to_spn?
             ncbi_id = self.acc_ncbi_dict[gb_id]
         elif gb_id in self.acc_tax_seq_dict:
             ncbi_id = self.acc_tax_seq_dict[gb_id]["^ncbi:taxon"]
@@ -2113,7 +2113,7 @@ class PhyscraperScrape(object):
         """
         # debug("get_tax_id_of_otulabel")
         ncbi_id = self.data.otu_dict[label].get("^ncbi:taxon",0)
-        debug("otu {} has taxon id {}".format(label, ncbi_id))
+#        debug("otu {} has taxon id {}".format(label, ncbi_id))
         return ncbi_id
 
 
@@ -2149,6 +2149,7 @@ class PhyscraperScrape(object):
                 gb_id = self.data.otu_dict[label]["^ncbi:accession"]
                 # if gb_id not in self.gb_not_added:
                 #     self.gb_not_added.append(gb_id)
+                #TODO merge with other label search
                 if id_of_label in self.ids.ncbiid_to_spn.keys():
                     tax_name = self.ids.ncbiid_to_spn[id_of_label]
                 else:
@@ -2159,7 +2160,7 @@ class PhyscraperScrape(object):
                 # writeinfofiles.write_not_added_info(self, local_id, "threshold not passed")
                 # needs to be deleted from gb_dict,
                 # maybe we find a better fitting blast query seq and then it might get added
-                del self.data.gb_dict[gb_id]
+#                del self.data.gb_dict[gb_id]
                                     
             elif len(inc_seq) >= len(new_seq):  # if seq is identical and shorter
                 if inc_seq.find(new_seq) != -1:
@@ -2279,11 +2280,12 @@ class PhyscraperScrape(object):
                 # debug(seq_len_cutoff)
                 if len(seq.replace("-", "").replace("N", "")) > seq_len_cutoff:
                     # debug(self.config.blast_loc)
+                    debug("seq with acc {} is {} bp. Cutoff is {}".format(gb_id, len(seq.replace("-", "").replace("N", "")), seq_len_cutoff))
                     if self.config.blast_loc != "remote":
                         # debug("ADD")
                         tax_name = None
                         # ######################################################
-                        rank_mrca_ncbi = self.ids.ncbi_parser.get_rank(list(self.ncbi_mrca))
+                        rank_mrca_ncbi = self.ids.ncbi_parser.get_rank(list(self.ncbi_mrca)) #TODO q - what does this represent?
                         # get rank to delimit seq to ingroup_mrca
                         # get name first
                         ncbi_id, tax_name = get_tax_info_from_acc(gb_id, self.data, self.ids)
@@ -2894,6 +2896,9 @@ class FilterBlast(PhyscraperScrape):
         self.sp_d = {}
         for otu_id in self.data.otu_dict:
             if self.data.otu_dict[otu_id]['^physcraper:status'].split(' ')[0] not in self.seq_filter:
+                #TODO these lines should not be necessary, as we have already mapped the ncbi_id when creating the otu
+                #can replace with 
+                #tax_id = self.get_sp_id_of_otulabel(otu_id)
                 tax_name = self.ids.find_name_otu(otu_dict_entry=self.data.otu_dict[otu_id])
                 if len(tax_name.split("(")) > 1:
                     tax_name = tax_name.split("(")[0]
@@ -2925,6 +2930,7 @@ class FilterBlast(PhyscraperScrape):
                                 tax_id = item.split(":")[1]
                             # tax_id = self.ids.ottid_to_ncbiid(ott_id)
                 if self.downtorank is not None:
+                    #TODO this is trying to get the ncbi_id from a name? or...?
                     downtorank_name = None
                     downtorank_id = None
                     if self.config.blast_loc == 'remote':
@@ -2945,7 +2951,7 @@ class FilterBlast(PhyscraperScrape):
                         downtorank_name = self.ids.ncbi_parser.get_name_from_id(downtorank_id)
                     tax_name = downtorank_name
                     tax_id = downtorank_id
-                tax_name = tax_name.replace(" ", "_")
+                tax_name = tax_name.replace(" ", "_") #TODO we should store the names with underscores in the dicts
                 self.ids.spn_to_ncbiid[tax_name] = tax_id
                 self.ids.ncbiid_to_spn[tax_id] = tax_name
                 if tax_id in self.sp_d:
