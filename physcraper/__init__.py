@@ -1624,8 +1624,9 @@ class PhyscraperScrape(object):
     def map_taxa_to_ncbi(self):
         for otu in self.data.otu_dict:
             if self.data.otu_dict[otu].get("^ncbi:taxon") == None:
-                ottid = self.data.otu_dict[otu]["^ot:ottId"]
-                self.data.otu_dict[otu]["^ncbi:taxon"]=self.ids.ott_to_ncbi.get(ottid,0)
+                if self.data.otu_dict[otu].get("^ot:ottId"):
+                    ottid = self.data.otu_dict[otu]["^ot:ottId"]
+                    self.data.otu_dict[otu]["^ncbi:taxon"]=self.ids.ott_to_ncbi.get(ottid,0)
 
     # TODO is this the right place for this? MK: According to PEP8, no...
     def reset_markers(self):
