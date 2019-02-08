@@ -119,7 +119,7 @@ class ConfigObj(object):
     To build the class the following is needed:
 
       * **configfi**: a configuration file in a specific format, e.g. to read in self.e_value_thresh.
-                
+
         The file needs to have a heading of the format: [blast] and then somewhere below that heading a string e_value_thresh = value
 
       * **interactive**: defaults to True, is used to interactively update the local blast databases
@@ -141,7 +141,7 @@ class ConfigObj(object):
           * either web-query (=remote)
           * from a local blast database (=local)
       * **self.num_threads**: number of cores to be used during a run
-      * **self.url_base**: 
+      * **self.url_base**:
 
           * if blastloc == remote: it defines the url for the blast queries.
           * if blastloc == local: url_base = None
@@ -168,11 +168,11 @@ class ConfigObj(object):
         assert os.path.isfile(configfi), "file `%s` does not exists" % configfi
         config = configparser.ConfigParser()
         config.read_file(open(configfi))
-        
+
         # read in blast settings
         self.email = config["blast"]["Entrez.email"]
         assert "@" in self.email, "your email `%s` does not have an @ sign" % self.email
-        
+
         self.e_value_thresh = config["blast"]["e_value_thresh"]
         assert is_number(self.e_value_thresh), (
                 "value `%s` does not exists" % self.e_value_thresh
@@ -184,7 +184,7 @@ class ConfigObj(object):
         self.blast_loc = config["blast"]["location"]
         assert self.blast_loc in ["local", "remote"], (
                 "your blast location `%s` is not remote or local" % self.email
-        )        
+        )
         if self.blast_loc == "local":
             self.blastdb = config["blast"]["localblastdb"]
             self.url_base = None
@@ -216,9 +216,9 @@ class ConfigObj(object):
         self.delay = int(config["blast"]["delay"])
         assert is_number(self.delay), (
                 "value `%s`is not a number" % self.delay
-        )       
+        )
         # #############
-        # read in physcraper settings       
+        # read in physcraper settings
         self.unmapped = config["physcraper"]["unmapped"]
         assert self.unmapped in ["remove", "keep"], (
                 "your unmapped statement `%s` in the config file is not remove or keep"
@@ -243,13 +243,13 @@ class ConfigObj(object):
             self.add_lower_taxa = False
         assert self.add_lower_taxa in [True, False], (
                 "self.add_lower_taxa `%s` is not True or False" % self.add_lower_taxa
-        )            
+        )
         # read in settings for internal Physcraper processes
         # default is api, but can run on local version of OpenTree datastore
         self.phylesystem_loc = config["phylesystem"]["location"]
         assert self.phylesystem_loc in ["local", "api"], \
             (
-                "phylesystem location must be either local or api")  
+                "phylesystem location must be either local or api")
         self.ott_ncbi = config["taxonomy"][
             "ott_ncbi"
         ]
@@ -258,7 +258,7 @@ class ConfigObj(object):
         )
         # rewrites relative path to absolute path so that it behaves when changing dirs
         self.id_pickle = os.path.abspath(config["taxonomy"]["id_pickle"])
-        
+
         ####
         # check database status
         if interactive is None:
@@ -322,7 +322,7 @@ class ConfigObj(object):
 
     def _download_ncbi_parser(self):
         """Check if files are present and if they are up to date.
-        If not files will be downloaded. 
+        If not files will be downloaded.
         """
         if self.blast_loc == "local":
             if not os.path.isfile(self.ncbi_parser_nodes_fn):
@@ -547,7 +547,7 @@ def standardize_label(item):
 def get_ott_taxon_info(spp_name):
     """get ottid, taxon name, and ncbid (if present) from Open Tree Taxonomy.
     ONLY works with version 3 of Open tree APIs
-    
+
     :param spp_name: species name
     :return:
     """
@@ -633,7 +633,7 @@ def OtuJsonDict(id_to_spn, id_dict):
                 sp_info_dict[otu_id]["^ncbi:TaxonName"] = ncbi_spn
             elif ottname is not None:
                 sp_info_dict[otu_id]["^physcraper:TaxonName"] = ottname
-            elif sp_info_dict[otu_id]['^user:TaxonName']: 
+            elif sp_info_dict[otu_id]['^user:TaxonName']:
                 sp_info_dict[otu_id]["^physcraper:TaxonName"] = sp_info_dict[otu_id]['^user:TaxonName']
             assert sp_info_dict[otu_id]["^physcraper:TaxonName"]  # is not None
     return sp_info_dict
@@ -658,10 +658,10 @@ class AlignTreeTax(object):
           * **self.aln**: contains the alignment and which will be updated during the run
           * **self.tre**: contains the phylogeny, which will be updated during the run
           * **self.otu_dict**: dictionary with taxon information and physcraper relevant stuff
-               
+
                * key: a unique identifier (otu plus either "tiplabel of phylogeny" or for newly found sequences PS_number.
                * value: dictionary with the following key:values:
-                   
+
                     * '^ncbi:gi': GenBank identifier - deprecated by Genbank - only older sequences will have it
                     * '^ncbi:accession': Genbanks accession number
                     * '^ncbi:title': title of Genbank sequence submission
@@ -669,8 +669,8 @@ class AlignTreeTax(object):
                     * '^ot:ottId': OToL taxon identifier
                     * '^physcraper:status': contains information if it was 'original', 'queried', 'removed', 'added during filtering process'
                     * '^ot:ottTaxonName': OToL taxon name
-                    * '^physcraper:last_blasted': contains the date when the sequence was blasted.                
-                         
+                    * '^physcraper:last_blasted': contains the date when the sequence was blasted.
+
                          If the year is different from the 20th century, it tells us
                          something about the initial status:
                          * 1800 = never blasted, not yet considered to be added
@@ -711,10 +711,10 @@ class AlignTreeTax(object):
 
           * **self._reconcile()**:
                 removes taxa, that are not found in both, the phylogeny and the aln
-          * **self._reconcile_names()**: 
+          * **self._reconcile_names()**:
                 is used for the own file stuff, it removes the character 'n' from tip names that start with a number
 
-        The physcraper class is then updating: 
+        The physcraper class is then updating:
 
           * self.aln, self.tre and self.otu_dict, self.ps_otu, self.gi_dict
     """
@@ -748,7 +748,7 @@ class AlignTreeTax(object):
         assert int(ingroup_mrca), ("your ingroup_mrca '%s' is not an integer." % ingroup_mrca)
         self.ott_mrca = ingroup_mrca  # ott_ingroup mrca can be pulled directly from phylesystem
         self.orig_seqlen = []  # will get filled in later...
-        self.gb_dict = {}  # has all info about new blast seq 
+        self.gb_dict = {}  # has all info about new blast seq
         self._reconciled = False
         self.unpubl_otu_json = None
 
@@ -756,7 +756,7 @@ class AlignTreeTax(object):
         """Taxa that are only found in the tree, or only in the alignment are deleted.
 
         This checks that the tree "original labels" from phylesystem
-        align with those found in the alignment. 
+        align with those found in the alignment.
         """
         debug("reconcile")
         treed_tax = set()
@@ -960,7 +960,7 @@ class AlignTreeTax(object):
             self.aln.discard_sequences([tax])
             self.aln.taxon_namespace.remove_taxon_label(taxon_label)  # raises an error if label not found
             # the first prune does not remove it sometimes...
-        if tax2:    
+        if tax2:
             self.tre.prune_taxa([tax2])
             self.tre.prune_taxa_with_labels([taxon_label])
             self.tre.prune_taxa_with_labels([tax2])
@@ -987,7 +987,7 @@ class AlignTreeTax(object):
         ncbi_id, tax_name = get_taxinfo_from_acc(gb_id, self, ids_obj)
         if ncbi_id is None:
             # debug("ncbi_id is none")
-            if ids_obj.otu_rank is not None: 
+            if ids_obj.otu_rank is not None:
                 ncbi_id = ids_obj.get_rank_info_from_web(tax_name)
             #     ncbi_id = ids_obj.otu_rank[tax_name]["taxon id"]
             # else:
@@ -1206,39 +1206,36 @@ class IdDicts(object):
 
           * **config_obj**: Object of class config (see above)
           * **workdir**: the path to the assigned working directory
-          * **mrca**: mrca as defined by input, can be a class
 
         During the initializing process the following self objects are generated:
 
           * **self.workdir**: contains path of working directory
           * **self.config**: contains the Config class object
           * **self.ott_to_ncbi**: dictionary
-          
+
               * key: OToL taxon identifier
               * value: ncbi taxon identifier
           * **self.ncbi_to_ott**: dictionary
-          
+
               * key: OToL taxon identifier
               * value: ncbi taxon identifier
           * **self.ott_to_name**: dictionary
-          
+
               * key: OToL taxon identifier
               * value: OToL taxon name
           * **self.acc_ncbi_dict**: dictionary
-          
+
               * key: Genbank identifier
               * value: ncbi taxon identifier
           * **self.spn_to_ncbiid**: dictionary
-          
+
               * key: OToL taxon name
               * value: ncbi taxon identifier
           * **self.ncbiid_to_spn**: dictionary
-          
+
               * key: ncbi taxon identifier
               * value: ncbi taxon name
 
-          * **self.mrca_ott**: user defined list of mrca OTT-ID's
-          * **self.mrca_ncbi**: set, which is fed by self.get_ncbi_mrca()
 
           * **Optional**:
 
@@ -1247,7 +1244,7 @@ class IdDicts(object):
                * self.otu_rank: for remote blast to store the rank information
     """
 
-    def __init__(self, config_obj, workdir, mrca=None):
+    def __init__(self, config_obj, workdir):
         """Generates a series of name disambiguation dicts"""
         self.config = config_obj
         assert self.config.email
@@ -1257,9 +1254,6 @@ class IdDicts(object):
         self.acc_ncbi_dict = {}  # filled by ncbi_parser (by subprocess in earlier versions of the code).
         self.spn_to_ncbiid = {}  # spn to ncbi_id, it's only fed by the ncbi_data_parser, but makes it faster
         self.ncbiid_to_spn = {}
-        self.mrca_ott = mrca  # mrca_list
-        assert type(self.mrca_ott) in [int, list] or self.mrca_ott is None
-        self.mrca_ncbi = set()  # corresponding ids for mrca_ott list
         fi = open(config_obj.ott_ncbi)  # This is in the taxonomy folder of the repo, needs to be updated by devs when OpenTree taxonomy changes.
         for lin in fi:  # TODO This is insanely memory inefficient, how about using a pandas dataframe?
             lii = lin.split(",")
@@ -1276,45 +1270,6 @@ class IdDicts(object):
         else:  # ncbi parser contains information about spn, tax_id, and ranks
             self.ncbi_parser = ncbi_data_parser.Parser(names_file=self.config.ncbi_parser_names_fn,
                                                        nodes_file=self.config.ncbi_parser_nodes_fn)
-        if self.mrca_ott is not None:
-            self.get_ncbi_mrca()
-
-    def get_ncbi_mrca(self):
-        """ get the ncbi tax ids from a list of mrca ott ids.
-        """
-        if type(self.mrca_ott) is not int:
-            for ott_id in self.mrca_ott:
-                ncbi_id = self.ottid_to_ncbiid(ott_id)
-                if ncbi_id is not None:
-                    self.mrca_ncbi.add(ncbi_id)
-        else:
-            ncbi_id = self.ottid_to_ncbiid(self.mrca_ott)
-            if ncbi_id is not None:
-                self.mrca_ncbi.add(ncbi_id)
-
-    def ottid_to_ncbiid(self, ott_id):
-        """ Find ncbi id for ott id.
-        Is only used for the mrca list thing!
-        """
-        debug("ottid to ncbiid")
-        debug(ott_id)
-        if ott_id in self.ott_to_ncbi:
-            ncbi_id = self.ott_to_ncbi[ott_id]
-        elif ott_id in self.ott_to_name:
-            ott_name = self.ott_to_name[ott_id]
-            if self.config.blast_loc == "remote":
-                ncbi_id = self.get_rank_info_from_web(ott_name)
-            else:
-                ncbi_id = self.ncbi_parser.get_id_from_name(ott_name)
-        else:  # with new ncbi taxa there might be no match in ott_to_ncbi, but in the new version which is online
-            tx = APIWrapper().taxomachine
-            nms = tx.taxon(ott_id)
-            # debug(nms)
-            ott_name = nms[u"unique_name"]
-            ncbi_id = None
-            if u"ncbi" in nms[u"tax_sources"]:
-                ncbi_id = nms[u"tax_sources"][u"ncbi"]
-        return ncbi_id
 
     def get_ncbiid_from_tax_name(self, tax_name):
         """Get the ncbi_id from the species name using ncbi web query.
@@ -1539,7 +1494,7 @@ class IdDicts(object):
         Finds different identifiers and information from a given gb_id and fills the corresponding self.objects
         with the retrieved information.
 
-        :param gb_id: Genbank ID 
+        :param gb_id: Genbank ID
         :return: ncbi taxon id
         """
         # debug("map_acc_ncbi")
@@ -1592,19 +1547,20 @@ class PhyscraperScrape(object):
           * **self.ids**: IdDict object
           * **self.config**: Config object
           * **self.new_seqs**: dictionary that contains the newly found seq using blast:
-            
+
             * key: gi id
             * value: corresponding seq
           * **self.new_seqs_otu_id**: dictionary that contains the new sequences that passed the remove_identical_seq() step:
-            
+
             * key: otu_id
             * value: see otu_dict, is a subset of the otu_dict, all sequences that will be newly added to aln and tre
           * **self.otu_by_gi**: dictionary that contains ????:
-            
+
             * key:
             * value:
           * **self._to_be_pruned**: list that contains ????
-          * **self.mrca_ncbi**: int or list of ncbi identifier of mrca
+          * **self.mrca_ott_list**: user defined list of mrca OTT-ID's
+          * **self.mrca_ncbi_list**:  int or list of ncbi identifier of mrca
 
           * **self.tmpfi**: path to a file or folder???
           * **self.blast_subdir**: path to folder that contains the files writen during blast
@@ -1614,7 +1570,6 @@ class PhyscraperScrape(object):
           * **self.repeat**: either 1 or 0, it is used to determine if we continue updating the tree, no new seqs found = 0
           * **self.newseqs_acc**: list of all gi_ids that were passed into remove_identical_seq(). Used to speed up adding process
           * **self.blacklist**: list of gi_id of sequences that shall not be added or need to be removed. Supplied by user.
-          * **self.acc_list_mrca**: list of all gi_ids available on GenBank for a given mrca. Used to limit possible seq to add.
           * **self.seq_filter**: list of words that may occur in otu_dict.status and which shall not be used in the building of FilterBlast.sp_d (that's the main function), but it is also used as assert statement to make sure unwanted seqs are not added.
           * **self.unpublished**: True/False. Used to look for local unpublished seq that shall be added if True.
           * **self.path_to_local_seq:** Usually False, contains path to unpublished sequences if option is used.
@@ -1632,7 +1587,7 @@ class PhyscraperScrape(object):
                 * self._full_tree_est: 0/1, if est_full_tree() was called, it is set to 1 for the round.
             * **self.OToL_unmapped_tips()**: function that either removes or maps unmapped taxa from OToL studies
     """
-    def __init__(self, data_obj, ids_obj):
+    def __init__(self, data_obj, ids_obj, ingroup_mrca=None):
         assert isinstance(data_obj, AlignTreeTax)
         assert isinstance(ids_obj, IdDicts)
         debug("start base class init")
@@ -1644,10 +1599,7 @@ class PhyscraperScrape(object):
         self.config = self.ids.config  # pointer to config
         self.new_seqs = {}  # all new seq after read_blast_wrapper
         self.new_seqs_otu_id = {}  # only new seq which passed remove_identical
-        self.mrca_ncbi = ids_obj.ott_to_ncbi[data_obj.ott_mrca]
-        if len(self.ids.mrca_ncbi) == 0:
-            self.ids.mrca_ncbi = set()
-            self.ids.mrca_ncbi.add(self.mrca_ncbi)
+
         self.tmpfi = "{}/physcraper_run_in_progress".format(self.workdir)  # TODO: For what do we want to use this? Unused!
         self.blast_subdir = "{}/current_blast_run".format(self.workdir)
         if not os.path.exists(self.workdir):
@@ -1667,6 +1619,58 @@ class PhyscraperScrape(object):
         self.ids.ingroup_mrca = data_obj.ott_mrca  # added for mrca ingroup list
         #self.gb_not_added = set()  # list of blast seqs not added
         self.del_superseq = {}  # items that were deleted bc they are superseqs, needed for assert statement
+        self.mrca_ott_list = ingroup_mrca
+        assert type(self.mrca_ott_list) in [int, list] or self.mrca_ott_list is None
+        self.mrca_ncbi_list = set()  # corresponding ids for mrca_ott list
+        if self.mrca_ott_list is not None:
+            self.get_ncbi_mrca()
+        # self.mrca_ncbi_of_all = ids_obj.ott_to_ncbi[data_obj.ott_mrca]
+        if len(self.mrca_ncbi_list) == 0:
+            # self.mrca_ncbi = set()
+            self.mrca_ncbi_list.add(ids_obj.ott_to_ncbi[data_obj.ott_mrca])
+        debug(self.mrca_ncbi_list)
+
+
+
+    def get_ncbi_mrca(self):
+        """ get the ncbi tax ids from a list of mrca ott ids.
+        """
+        if type(self.mrca_ott_list) is not int:
+            for ott_id in self.mrca_ott_list:
+                ncbi_id = self.ottid_to_ncbiid(ott_id)
+                if ncbi_id is not None:
+                    self.mrca_ncbi_list.add(ncbi_id)
+        else:
+            ncbi_id = self.ottid_to_ncbiid(self.mrca_ott_list)
+            if ncbi_id is not None:
+                self.mrca_ncbi_list.add(ncbi_id)
+
+    def ottid_to_ncbiid(self, ott_id):
+        """ Find ncbi id for ott id.
+        Is only used for the mrca list thing!
+        """
+        debug("ottid to ncbiid")
+        debug(ott_id)
+        if ott_id in self.ids.ott_to_ncbi:
+            ncbi_id = self.ids.ott_to_ncbi[ott_id]
+        elif ott_id in self.ids.ott_to_name:
+            ott_name = self.ids.ott_to_name[ott_id]
+            if self.config.blast_loc == "remote":
+                ncbi_id = self.ids.get_rank_info_from_web(ott_name)
+            else:
+                ncbi_id = self.ids.ncbi_parser.get_id_from_name(ott_name)
+        else:  # with new ncbi taxa there might be no match in ott_to_ncbi, but in the new version which is online
+            tx = APIWrapper().taxomachine
+            nms = tx.taxon(ott_id)
+            # debug(nms)
+            ott_name = nms[u"unique_name"]
+            ncbi_id = None
+            if u"ncbi" in nms[u"tax_sources"]:
+                ncbi_id = nms[u"tax_sources"][u"ncbi"]
+        return ncbi_id
+
+
+
 
     # TODO is this the right place for this? MK: According to PEP8, no...
     def reset_markers(self):
@@ -1755,7 +1759,7 @@ class PhyscraperScrape(object):
             os.system(blastcmd)
 
     def run_web_blast_query(self, query, equery, fn_path):
-        """Equivalent to run_local_blast_cmd() but for webqueries, 
+        """Equivalent to run_local_blast_cmd() but for webqueries,
         that need to be implemented differently.
 
         :param query: query sequence
@@ -1830,10 +1834,10 @@ class PhyscraperScrape(object):
                             if self.config.blast_loc == 'local':
                                 self.run_local_blast_cmd(query, taxon.label, fn_path)
                             if self.config.blast_loc == 'remote':
-                                if len(self.ids.mrca_ncbi) >= 2:
-                                    len_ncbi = len(self.ids.mrca_ncbi)
+                                if len(self.mrca_ncbi_list) >= 2:
+                                    len_ncbi = len(self.mrca_ncbi_list)
                                     equery = ''
-                                    for ncbi_id in self.ids.mrca_ncbi:  # add taxids of list to blast search
+                                    for ncbi_id in self.mrca_ncbi_list:  # add taxids of list to blast search
                                         if len_ncbi >= 2:
                                             equery = equery + "txid{}[orgn] OR ".format(ncbi_id)
                                             len_ncbi = len_ncbi - 1
@@ -1841,7 +1845,7 @@ class PhyscraperScrape(object):
                                             equery = equery + "txid{}[orgn]) ".format(ncbi_id)
                                     equery = "(" + equery + "AND {}:{}[mdat]".format(last_blast, today)
                                 else:
-                                    equery = "txid{}[orgn] AND {}:{}[mdat]".format(self.mrca_ncbi, last_blast, today)
+                                    equery = "txid{}[orgn] AND {}:{}[mdat]".format(self.mrca_ncbi_list, last_blast, today)
                                     self.run_web_blast_query(query, equery, fn_path)
                             self.data.otu_dict[otu_id]['^physcraper:last_blasted'] = today
                         else:
@@ -2036,7 +2040,7 @@ class PhyscraperScrape(object):
                                               'bitscore': bitscore, 'sseq': sseq, 'title': stitle}
                 if len(sscinames.split(" ")) == 1:
                     print(sscinames, gb_acc)
-                
+
         # debug("key in query")
         for key in query_dict.keys():
             if float(query_dict[key]["evalue"]) < float(self.config.e_value_thresh):
@@ -2277,7 +2281,7 @@ class PhyscraperScrape(object):
                 # needs to be deleted from gb_dict,
                 # maybe we find a better fitting blast query seq and then it might get added
                 del self.data.gb_dict[gb_id]
-                                    
+
             elif len(inc_seq) >= len(new_seq):  # if seq is identical and shorter
                 if inc_seq.find(new_seq) != -1:
                     if type(existing_id) == int and existing_id != id_of_label:  # different otus, add
@@ -2431,18 +2435,17 @@ class PhyscraperScrape(object):
                             #     mrca_ncbi = None
                             # # debug(stop)
                             # # debug(mrca_ncbi)
-                            
+
 
                             # rank_mrca_ncbi = self.ids.ncbi_parser.get_rank(mrca_ncbi)
                             # get rank to delimit seq to ingroup_mrca
                             ncbi_id, tax_name = get_taxinfo_from_acc(gb_id, self.data, self.ids)
 
-                           
-                            rank_mrca_ncbi = set()
-                            # print(self.mrca_ncbi)
-                            # print(self.ids.mrca_ncbi)
 
-                            for mrca in self.ids.mrca_ncbi:
+                            rank_mrca_ncbi = set()
+                            print(self.mrca_ncbi_list)
+                            # print(stop)
+                            for mrca in self.mrca_ncbi_list:
                                 debug("mrca")
                                 debug(mrca)
                                 rank_mrca = self.ids.ncbi_parser.get_rank(mrca)
@@ -2470,7 +2473,7 @@ class PhyscraperScrape(object):
                                     # debug([mrca, input_rank_id])
                                     # self.gb_not_added.append(gb_id)
                                     # not_added.append(gb_id)
-                                    reason = "not_part_of_mrca: {}".format(self.ids.mrca_ncbi)
+                                    reason = "not_part_of_mrca: {}".format(self.mrca_ncbi_list)
                                     # writeinfofiles.write_not_added(ncbi_id, tax_name, gb_id, reason, self.workdir)
                                     # writeinfofiles.write_not_added_info(self, gb_id, "not_part_of_mrca")
                                     # fn = open("{}/not_added_seq.csv".format(self.workdir), "a+")
@@ -2527,6 +2530,7 @@ class PhyscraperScrape(object):
         with open(self.logfile, "a") as log:
             log.write("{} new sequences added from Genbank after removing identical seq, "
                       "of {} before filtering\n".format(len(self.new_seqs_otu_id), len(self.new_seqs)))
+        # print(some)
         self.data.dump()
 
     # def find_otudict_gi(self):
@@ -2555,7 +2559,7 @@ class PhyscraperScrape(object):
             ofi = open(filename, "wb")
         else:
             ofi = open("{}/scrape_checkpoint.p".format(self.workdir), "wb")
-        pickle.dump(self, ofi, pickle.HIGHEST_PROTOCOL)  
+        pickle.dump(self, ofi, pickle.HIGHEST_PROTOCOL)
         sys.setrecursionlimit(current)
 
     def write_query_seqs(self):
@@ -2603,7 +2607,7 @@ class PhyscraperScrape(object):
                                    "-n", papara_runname])  # FIXME directory ugliness
             if _VERBOSE:
                 sys.stdout.write("Papara done")
-        except subprocess.CalledProcessError as grepexc:                                                                                                   
+        except subprocess.CalledProcessError as grepexc:
             print "error code", grepexc.returncode, grepexc.output
         except OSError as e:
             if e.errno == os.errno.ENOENT:
@@ -2682,8 +2686,8 @@ class PhyscraperScrape(object):
         with cd(self.workdir):
             try:
                 debug("try")
-                subprocess.call(["raxmlHPC-PTHREADS", 
-                                 "-T", "{}".format(self.config.num_threads), 
+                subprocess.call(["raxmlHPC-PTHREADS",
+                                 "-T", "{}".format(self.config.num_threads),
                                  "-m", "GTRCAT",
                                  "-f", "v",
                                  "-s", "papara_alignment.extended",
@@ -2694,7 +2698,7 @@ class PhyscraperScrape(object):
                                     preserve_underscores=True)
             except:
                 try:
-                    subprocess.call(["raxmlHPC", 
+                    subprocess.call(["raxmlHPC",
                                      "-m", "GTRCAT",
                                      "-f", "v",
                                      "-s", "papara_alignment.extended",
@@ -2795,7 +2799,7 @@ class PhyscraperScrape(object):
             mpi = True
         if mpi:
             debug("run with mpi")
-            subprocess.call(["mpiexec", "-n", "{}".format(env_var), "raxmlHPC-MPI-AVX2", 
+            subprocess.call(["mpiexec", "-n", "{}".format(env_var), "raxmlHPC-MPI-AVX2",
                              # "raxmlHPC-PTHREADS", "-T", "{}".format(num_threads),
                              "-m", "GTRCAT",
                              "-s", "previous_run/papara_alignment.extended",
@@ -2803,13 +2807,13 @@ class PhyscraperScrape(object):
                              "-n", "{}".format(self.date)])
         else:
             try:
-                subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(self.config.num_threads), 
+                subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(self.config.num_threads),
                                  "-m", "GTRCAT",
                                  "-s", "previous_run/papara_alignment.extended",
                                  "-p", "1", "-b", "1", "-#", "autoMRE",
                                  "-n", "{}".format(self.date)])
-            except: 
-                subprocess.call(["raxmlHPC", 
+            except:
+                subprocess.call(["raxmlHPC",
                                  "-m", "GTRCAT",
                                  "-s", "previous_run/papara_alignment.extended",
                                  "-p", "1", "-b", "1", "-#", "autoMRE",
@@ -3042,10 +3046,11 @@ class FilterBlast(PhyscraperScrape):
 
     # TODO MK: self.sp_d = {} does not need to contain all otu_dict info, key is sufficient
 
-    def __init__(self, data_obj, ids, settings=None):
-        super(FilterBlast, self).__init__(data_obj, ids)
+    def __init__(self, data_obj, ids, ingroup_mrca=None):
+        super(FilterBlast, self).__init__(data_obj, ids, ingroup_mrca)
         debug("start derived class init")
         # additional things that are needed for the filtering process
+        debug(self.mrca_ncbi_list)
         self.sp_d = {}
         self.sp_seq_d = {}
         self.filtered_seq = {}
@@ -3200,7 +3205,7 @@ class FilterBlast(PhyscraperScrape):
     def select_seq_by_local_blast(self, seq_d, fn, count):
         """
         Selects number of sequences from local_blast to fill up sequences to the threshold.
-        Count is the return value from self.count_num_seq(tax_id)["seq_present"], that tells the program 
+        Count is the return value from self.count_num_seq(tax_id)["seq_present"], that tells the program
         how many sequences for the taxon are already available in the aln.
 
         It will only include species which have a blast score of mean plus/minus sd.
@@ -3238,8 +3243,8 @@ class FilterBlast(PhyscraperScrape):
                 # print(len(seq_blast_score.keys()))
                 # print(self.threshold - count)
                 random_seq_ofsp = seq_blast_score
-        # no similar seq found. think about what to do. was the other seq already present? 
-        else: 
+        # no similar seq found. think about what to do. was the other seq already present?
+        else:
             debug("blast did not find similar seqs")
             if len(seq_d.keys()) > 2 and no_similar_seqs == 0:  # try with different seq to blast
                 debug("blast with different seq...")
@@ -3304,7 +3309,7 @@ class FilterBlast(PhyscraperScrape):
         """
         debug("select_seq_by_length")
         max_len = max(self.sp_seq_d[taxon_id].values())
-        
+
         seq_w_maxlen = {}
         for key, val in self.sp_seq_d[taxon_id].items():
             for item in self.sp_d[taxon_id]:
@@ -3414,7 +3419,7 @@ class FilterBlast(PhyscraperScrape):
         during earlier cycles.
 
         Function is only used in how_many_sp_to_keep().
-        
+
         :param tax_id: key from self.sp_seq_d
         :return: dict which contains information of how many seq are already present in aln, how many new seq have been
                 found and if the taxon is a new taxon or if seq are already present
@@ -3599,7 +3604,7 @@ def get_ncbi_tax_id(handle):
 
 
 def get_ncbi_tax_name(handle):
-    """Get the sp name from ncbi. 
+    """Get the sp name from ncbi.
     Could be replaced by direct lookup to ott_ncbi.
 
     :param handle: NCBI read.handle

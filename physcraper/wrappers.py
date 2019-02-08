@@ -86,7 +86,7 @@ def load_ids_obj(conf, workdir, ingroup_mrca=None):
     else:
         sys.stdout.write("setting up ID dictionaries\n")
         sys.stdout.flush()
-        ids = IdDicts(conf, "{}/id_pickle.p".format(workdir), ingroup_mrca)
+        ids = IdDicts(conf, "{}/id_pickle.p".format(workdir))
         ids.dump("{}/id_pickle.p".format(workdir))
     return ids
 
@@ -219,7 +219,7 @@ def PS_standard_run(data_obj, ids, shared_blast_folder):
         scraper = pickle.load(open("{}/scrape_checkpoint.p".format(data_obj.workdir), 'rb'))
         scraper.repeat = 1
     else:
-        scraper = PhyscraperScrape(data_obj, ids)
+        scraper = PhyscraperScrape(data_obj, ids, ingroup_mrca)
         # run the analyses
         if shared_blast_folder:
             scraper.blast_subdir = shared_blast_folder
@@ -248,7 +248,7 @@ def PS_standard_run(data_obj, ids, shared_blast_folder):
 
 
 def PS_filter_run(add_unpubl_seq, blacklist, data_obj, downtorank, id_to_spn_addseq_json, ids, selectby,
-                  shared_blast_folder, threshold, backbone=None):
+                  shared_blast_folder, threshold, ingroup_mrca, backbone=None):
     """
     This is the filtering mode for a Physcraper run:
     update aln and tre as long as new seqs are found, but filters the found sequences according to user settings.
@@ -271,7 +271,7 @@ def PS_filter_run(add_unpubl_seq, blacklist, data_obj, downtorank, id_to_spn_add
         filteredScrape.repeat = 1
     else:
         # Now combine the data, the ids, and the configuration into a single physcraper scrape object
-        filteredScrape = FilterBlast(data_obj, ids)
+        filteredScrape = FilterBlast(data_obj, ids, ingroup_mrca)
         if backbone is True:
             filteredScrape.backbone = backbone
             filteredScrape.data.write_files(treepath="backbone.tre", alnpath="backbone.fas")
@@ -603,7 +603,7 @@ def filter_OTOL(study_id,
 
     # Now combine the data, the ids, and the configuration into a single physcraper scrape object
     filteredScrape = PS_filter_run(add_unpubl_seq, blacklist, data_obj, downtorank, id_to_spn_addseq_json, ids,
-                                   selectby, shared_blast_folder, threshold)
+                                   selectby, shared_blast_folder, threshold, ingroup_mrca)
     save_copy_code(workdir)
     return filteredScrape
 
@@ -645,7 +645,7 @@ def filter_data_run(seqaln,
     # Generate an linked Alignment-Tree-Taxa object
     data_obj = load_own_data(conf, seqaln, mattype, trfn, schema_trf, workdir, ingroup_mrca)
     filteredScrape = PS_filter_run(add_unpubl_seq, blacklist, data_obj, downtorank, id_to_spn_addseq_json, ids,
-                                   selectby, shared_blast_folder, threshold)
+                                   selectby, shared_blast_folder, threshold, ingroup_mrca)
     save_copy_code(workdir)
     return filteredScrape
 
@@ -679,7 +679,7 @@ def add_unpubl_to_backbone(seqaln,
     data_obj = load_own_data(conf, seqaln, mattype, trfn, schema_trf, workdir, ingroup_mrca)
     ids = load_ids_obj(conf, workdir, ingroup_mrca)
     filteredScrape = PS_filter_run(add_unpubl_seq, blacklist, data_obj, downtorank, id_to_spn_addseq_json, ids,
-                                   selectby, shared_blast_folder, threshold, backbone=True)
+                                   selectby, shared_blast_folder, threshold, ingroup_mrca, backbone=True)
     save_copy_code(workdir)
     return filteredScrape
 
