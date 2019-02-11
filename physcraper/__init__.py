@@ -1640,6 +1640,8 @@ class PhyscraperScrape(object):
                 ncbi_id = self.ottid_to_ncbiid(ott_id)
                 if ncbi_id is not None:
                     self.mrca_ncbi_list.add(ncbi_id)
+                else:
+                    sys.stderr.write("ott_id {} is not mapped to ncbi_id".format(ott_id))
         else:
             ncbi_id = self.ottid_to_ncbiid(self.mrca_ott_list)
             if ncbi_id is not None:
