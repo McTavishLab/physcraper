@@ -37,7 +37,7 @@ def test_mrca_list():
 
     filteredScrape.read_blast_wrapper(blast_dir=blast_dir)
     filteredScrape.remove_identical_seqs()
-    assert len(filteredScrape.new_seqs_otu_id) == 61
+    assert len(filteredScrape.new_seqs_otu_id) == 63
 
 
 def test_no_mrca():
@@ -70,7 +70,7 @@ def test_no_mrca():
 
     filteredScrape.read_blast_wrapper(blast_dir=blast_dir)
     filteredScrape.remove_identical_seqs()
-    assert len(filteredScrape.new_seqs_otu_id) <= 61
+    assert len(filteredScrape.new_seqs_otu_id) <= 63
 
 def test_higher_mrca():
     seqaln = "tests/data/tiny_test_example/test.fas"
