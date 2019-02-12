@@ -19,6 +19,7 @@ conf.blast_loc='remote' #saves time over loading names and nodes, and they aren'
 def test_remove_identical_seqs():
     data_obj = pickle.load(open("tests/data/precooked/tiny_dataobj.p", 'rb'))
     data_obj.workdir = absworkdir
+
     ids = IdDicts(conf, workdir=data_obj.workdir)
     ids.acc_ncbi_dict = pickle.load(open("tests/data/precooked/tiny_acc_map.p", "rb"))
 
@@ -26,28 +27,26 @@ def test_remove_identical_seqs():
     scraper = PhyscraperScrape(data_obj, ids)
     scraper.ids.otu_rank = {}
     scraper.config.gifilename = False
-
     scraper._blasted = 1
     blast_dir = "tests/data/precooked/fixed/tte_blast_files"
     #scraper.gi_list_mrca = pickle.load(open("tests/data/precooked/gi_list_mrca.p", 'rb'))
     scraper.read_blast_wrapper(blast_dir=blast_dir)
-
-    a = len(scraper.new_seqs) == 40
-    b = len(scraper.data.aln) == 5
-    c = len(scraper.new_seqs_otu_id) == 0
+    print scraper.ncbi_mrca
+    assert(len(scraper.new_seqs) == 40)
+    assert(len(scraper.data.aln) == 5)
+    assert(len(scraper.new_seqs_otu_id) == 0)
 
     scraper.remove_identical_seqs()
 
-    d = len(scraper.new_seqs) == 40
-    e = len(scraper.data.aln) == 5
-    f = len(scraper.new_seqs_otu_id) == 38
-    g = 1
+    assert(len(scraper.new_seqs) == 40)
+    assert(len(scraper.data.aln) == 5)
+    assert len(scraper.new_seqs_otu_id) == 38
+
+
     for taxon in scraper.data.tre.taxon_namespace:
-        h = taxon.label in scraper.data.otu_dict
-        g = g*h
+        assert(taxon.label in scraper.data.otu_dict)
         status = scraper.data.otu_dict[taxon.label].get(u'^physcraper:status')
-        i = status in ('original', 'query')
-        g = g*i
+        assert(status in ('original', 'query'))
 
     # Second test checks that seq len prec is affecting results
     data_obj = pickle.load(open("tests/data/precooked/tiny_dataobj.p", 'rb')) #reload bc data object is mutable
@@ -56,19 +55,19 @@ def test_remove_identical_seqs():
     scraper2.ids.otu_rank = {}
 
     scraper2.config.gifilename = False
-    j = len(scraper2.data.aln) == 5
+    assert(len(scraper2.data.aln) == 5)
     # scraper2.gi_list_mrca = pickle.load(open("tests/data/precooked/gi_list_mrca.p", 'rb'))
     scraper2.read_blast_wrapper(blast_dir="tests/data/precooked/fixed/tte_blast_files")
     scraper2.config.seq_len_perc = 0.998  # Change seq len percentage from default of 75%
 
-    k = len(scraper2.new_seqs) == 40
-    l = len(scraper2.new_seqs_otu_id) == 0
+    assert(len(scraper2.new_seqs) == 40)
+    assert(len(scraper2.new_seqs_otu_id) == 0)
 
     scraper2.remove_identical_seqs()
     # print(scraper2.data.otu_dict)
     # print(len(scraper.new_seqs_otu_id), 38)
     # print(len(scraper2.new_seqs_otu_id), 36)
-    m = len(scraper2.new_seqs_otu_id) == 36
+    assert(len(scraper2.new_seqs_otu_id) == 36)
     count = 0
-    assert a*b*c*d*e*f*g*h*i*j*k*l*m ==True
+
   

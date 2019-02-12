@@ -26,6 +26,7 @@ def test_mrca_list():
 
     # print(ids.mrca_ott, ids.mrca_ncbi)
 
+
     data_obj = pickle.load(open("tests/data/precooked/tiny_dataobj.p", 'rb'))
     filteredScrape = FilterBlast(data_obj, ids, ingroup_mrca)
     assert len(filteredScrape.mrca_ncbi_list) >= 2
@@ -104,3 +105,4 @@ def test_higher_mrca():
     filteredScrape.read_blast_wrapper(blast_dir=blast_dir)
     filteredScrape.remove_identical_seqs()
     assert len(filteredScrape.new_seqs_otu_id) > 61
+
