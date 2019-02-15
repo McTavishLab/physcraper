@@ -72,7 +72,7 @@ def license_print():
     """)
 
 
-def load_ids_obj(conf, workdir, ingroup_mrca=None):
+def load_ids_obj(conf, workdir):
     """
     Generates the IdDict class object.
 
@@ -557,7 +557,7 @@ def own_data_run(seqaln,
     if not os.path.exists(workdir):
         os.mkdir(workdir)
     conf = ConfigObj(configfi)
-    ids = load_ids_obj(conf, workdir, ingroup_mrca)
+    ids = load_ids_obj(conf, workdir)
 
     make_otujsondict(id_to_spn, workdir, ids)
     data_obj = load_own_data(conf, seqaln, mattype, trfn, schema_trf, workdir, ingroup_mrca)
@@ -595,7 +595,7 @@ def filter_OTOL(study_id,
     conf = ConfigObj(configfi)
     # Generate an linked Alignment-Tree-Taxa object
     data_obj = load_otol_data(conf, ingroup_mrca, mattype, seqaln, study_id, tree_id, workdir)
-    ids = load_ids_obj(conf, workdir, ingroup_mrca)
+    ids = load_ids_obj(conf, workdir)
 
     # make json file for unpublished database
     if add_unpubl_seq is not None:
@@ -635,7 +635,7 @@ def filter_data_run(seqaln,
         print("make wd")
         os.makedirs(workdir)
     conf = ConfigObj(configfi)
-    ids = load_ids_obj(conf, workdir, ingroup_mrca)
+    ids = load_ids_obj(conf, workdir)
 
     make_otujsondict(id_to_spn, workdir, ids)
     # make json file for unpublished database
@@ -677,7 +677,7 @@ def add_unpubl_to_backbone(seqaln,
 
     # Generate an linked Alignment-Tree-Taxa object
     data_obj = load_own_data(conf, seqaln, mattype, trfn, schema_trf, workdir, ingroup_mrca)
-    ids = load_ids_obj(conf, workdir, ingroup_mrca)
+    ids = load_ids_obj(conf, workdir)
     filteredScrape = PS_filter_run(add_unpubl_seq, blacklist, data_obj, downtorank, id_to_spn_addseq_json, ids,
                                    selectby, shared_blast_folder, threshold, ingroup_mrca, backbone=True)
     save_copy_code(workdir)
@@ -756,4 +756,5 @@ def write_out_files(obj, downtorank=None):
     writeinfofiles.write_otu_info(obj)
     if isinstance(obj, FilterBlast):
         writeinfofiles.taxon_sampling(obj, downtorank)
+
 
