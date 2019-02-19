@@ -1352,7 +1352,7 @@ class IdDicts(object):
         if len(gb_id.split(".")) == 1:
             debug("accession number {} not recognized".format(gb_id))
         if gb_id in self.acc_tax_seq_dict:
-            taxname = self.acc_tax_seq_dict[gb_id]["taxname"]
+            tax_name = self.acc_tax_seq_dict[gb_id]["taxname"]
             ncbi_id = self.acc_tax_seq_dict[gb_id]["^ncbi:taxon"]
             seq = self.acc_tax_seq_dict[gb_id]["seq"]
         else:
@@ -2905,48 +2905,42 @@ class FilterBlast(PhyscraperScrape):
                     tax_name = tax_name.split("(")[0]
                 tax_name = str(tax_name).replace(" ", "_")
                 if self.config.blast_loc == 'remote':
-                    if '^ncbi:accession' in self.data.otu_dict[otu_id]:
-                        gb_id = self.data.otu_dict[otu_id]['^ncbi:accession']
-                        if len(gb_id.split(".")) == 1:
-                            debug(gb_id)
-                        if gb_id in self.ids.acc_ncbi_dict:
-                            tax_id = self.ids.acc_ncbi_dict[gb_id]
-                    tax_id = self.ids.get_rank_info_from_web(taxon_name=tax_name)
+                    sys.stderr.write("Filtering by taxon not functional for remote ncbi searches yet.")
+                    sys.exit(-7)
+                    #if '^ncbi:accession' in self.data.otu_dict[otu_id]:
+                    #     gb_id = self.data.otu_dict[otu_id]['^ncbi:accession']
+                    #    if len(gb_id.split(".")) == 1:
+                    #        debug(gb_id)
+                    #    if gb_id in self.ids.acc_ncbi_dict:
+                    #        tax_id = self.ids.acc_ncbi_dict[gb_id]
+                    #tax_id = self.ids.get_rank_info_from_web(taxon_name=tax_name)
                     # print(tax_name)
                     # print(self.ids.otu_rank.keys())
                     # tax_id = self.ids.otu_rank[tax_name]["taxon id"]
                 else:
-                    try:
-                        tax_id = self.ids.ncbi_parser.get_id_from_name(tax_name)
-                    except UnboundLocalError:
-                        ott_id = self.data.otu_dict[otu_id][u'^ot:ottId']
-                        tx = APIWrapper().taxomachine
-                        nms = tx.taxon(ott_id)
-                        # debug(nms)
-                        # if u"ncbi" in nms[u"tax_sources"]:
-                        # debug(nms[u"tax_sources"])
-                        for item in nms[u"tax_sources"]:
-                            # debug(item.split(":")[0])
-                            if item.split(":")[0] == "ncbi":
-                                tax_id = item.split(":")[1]
-                            # tax_id = self.ids.ottid_to_ncbiid(ott_id)
+                    #We already earched for the taxon_id when creating the otu dict entry.
+                    # We want to make sure that the ncbi_id we are using is the same one we report in the otu_dict
+                    tax_id = self.data.otu_dict[otu_id].get('^ncbi:taxon') 
+                    assert tax_id not in set([0, None]) # every OTU must have a taxon_id for filter blast
+                    # we cannot include unmapped taxa in fliter blast.
                 if self.downtorank is not None:
-                    #TODO this is trying to get the ncbi_id from a name? or...?
                     downtorank_name = None
                     downtorank_id = None
                     if self.config.blast_loc == 'remote':
-                        tax_id = self.ids.get_rank_info_from_web(taxon_name=tax_name)
-                        lineage2ranks = self.ids.otu_rank[tax_id]["rank"]
-                        ncbi = NCBITaxa()
-                        if lineage2ranks == 'unassigned':
-                            downtorank_id = tax_id
-                            downtorank_name = tax_name
-                        else:
-                            for key_rank, val in lineage2ranks.items():
-                                if val == downtorank:
-                                    downtorank_id = key_rank
-                                    value_d = ncbi.get_taxid_translator([downtorank_id])
-                                    downtorank_name = value_d[int(downtorank_id)]
+                        sys.stderr.write("Filtering by taxon not functional for remote ncbi searches yet.")
+                        sys.exit(-7)
+                        #tax_id = self.ids.get_rank_info_from_web(taxon_name=tax_name)
+                        #lineage2ranks = self.ids.otu_rank[tax_id]["rank"]
+                        #ncbi = NCBITaxa()
+                        #if lineage2ranks == 'unassigned':
+                        #    downtorank_id = tax_id
+                        #    downtorank_name = tax_name
+                        #else:
+                        #    for key_rank, val in lineage2ranks.items():
+                        #        if val == downtorank:
+                        #            downtorank_id = key_rank
+                        #            value_d = ncbi.get_taxid_translator([downtorank_id])
+                        #            downtorank_name = value_d[int(downtorank_id)]
                     else:
                         downtorank_id = self.ids.ncbi_parser.get_downtorank_id(tax_id, self.downtorank)
                         downtorank_name = self.ids.ncbi_parser.get_name_from_id(downtorank_id)
@@ -2980,6 +2974,7 @@ class FilterBlast(PhyscraperScrape):
             for otu_id in self.sp_d[key]:
                 # following if statement should not be necessary as it is already filtered in the step before.
                 # I leave it in for now.
+                # TODO delete this isn't doing anything, or update to use ncbi_id from otu_dict
                 if '^physcraper:status' in otu_id and otu_id['^physcraper:status'].split(' ')[0] not in self.seq_filter:
                     # I am using the next if to delimit which seq where already present from an earlier run,
                     if otu_id['^physcraper:last_blasted'] != '1800/01/01':
@@ -3387,7 +3382,7 @@ class FilterBlast(PhyscraperScrape):
 
 
 ####################
-#Funcs below here should be moved to ncbi_helpers.py
+#Funcs below here should be moved to a separate script at some point
 
 
 def get_tax_info_from_acc(gb_id, data_obj, ids_obj):
