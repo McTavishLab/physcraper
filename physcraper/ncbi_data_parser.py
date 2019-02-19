@@ -250,7 +250,6 @@ class Parser:
         try:
             if names is None:
                 self.initialize()
-            debug(names[names["tax_id"] == tax_id])
             if tax_id == 0:
                 tax_name = "unidentified"
             else:
