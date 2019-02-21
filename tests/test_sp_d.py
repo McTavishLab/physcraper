@@ -37,6 +37,7 @@ def test_sp_d():
     for key in filteredScrape.sp_d:
         v = filteredScrape.sp_d[key]  
         for v2 in v:
+            v2 = filteredScrape.data.otu_dict[v2]
             if '^ncbi:gi' in v2:
                 gi_sp_d.append(v2['^ncbi:gi'])
     user_data_otu_dict = []
@@ -46,6 +47,7 @@ def test_sp_d():
     user_sp_d = []
     for v in filteredScrape.sp_d.values():
         for v2 in v:
+            v2 = filteredScrape.data.otu_dict[v2]
             if '^user:TaxonName' in v2:
                 user_sp_d.append(v2['^user:TaxonName'])
     assert sorted(gi_data_otu_dict_added) == sorted(gi_sp_d)
