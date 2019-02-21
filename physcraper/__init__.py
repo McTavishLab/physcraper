@@ -45,8 +45,8 @@ if sys.version_info < (3,):
 else:
     from urllib.error import HTTPError
 
-_DEBUG = 0
-_DEBUG_MK = 0
+_DEBUG = 1
+_DEBUG_MK = 1
 _deep_debug = 0
 
 _VERBOSE = 0
@@ -3286,9 +3286,10 @@ class FilterBlast(PhyscraperScrape):
             # debug(tax_id)
             if seq_present <= self.threshold:  # add seq to aln
                 if seq_present + query_count <= self.threshold:  # to add all stuff to self.filtered_seq[gi_n]
-                    debug("add all")
+                    debug("taxon {}, has {} seqs present, and we found {}, which totals less than the threshold {}, so we will add all".format(tax_id, seq_present, query_count, self.threshold))
                     self.add_all(tax_id)
                 else:  # filter number of sequences
+                    debug("taxon {}, has {} seqs present, and we found {}, which totals MORE than the threshold {}, so we will select by {}".format(tax_id, seq_present, query_count, self.threshold,selectby))
                     if tax_id in self.sp_seq_d.keys():
                         if selectby == "length":
                             self.select_seq_by_length(tax_id, seq_present)
