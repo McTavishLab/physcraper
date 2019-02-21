@@ -138,8 +138,8 @@ def taxon_sampling(filterblast_obj, downtorank=None):
             if filterblast_obj.config.blast_loc == "remote":
                 spn = filterblast_obj.ids.ncbiid_to_spn[key]
             else:
-                spn = filterblast_obj.ids.ncbiid_to_spn[key]
-#                spn = filterblast_obj.ids.ncbi_parser.get_name_from_id(key) #TODO this was throwing a pandas error
+#                spn = filterblast_obj.ids.ncbiid_to_spn[key]
+                spn = filterblast_obj.ids.ncbi_parser.get_name_from_id(key) #TODO this was throwing a pandas error
             writer.writerow([key, spn, value])
 
 
