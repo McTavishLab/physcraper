@@ -46,7 +46,7 @@ else:
     from urllib.error import HTTPError
 
 _DEBUG = 0
-_DEBUG_MK = 1
+_DEBUG_MK = 0
 _deep_debug = 0
 
 _VERBOSE = 0
@@ -1937,8 +1937,8 @@ class PhyscraperScrape(object):
                         query_dict[gb_acc] = {'^ncbi:gi': gi_id, 'accession': gb_acc, 'staxids': staxids,
                                               'sscinames': sscinames, 'pident': pident, 'evalue': evalue,
                                               'bitscore': bitscore, 'sseq': sseq, 'title': stitle}
-                if len(sscinames.split(" ")) == 1:
-                    print(sscinames, gb_acc)
+#                if len(sscinames.split(" ")) == 1:
+#                    print(sscinames, gb_acc)
                 
         # debug("key in query")
         for key in query_dict.keys():
@@ -2165,7 +2165,7 @@ class PhyscraperScrape(object):
                                     
             elif len(inc_seq) >= len(new_seq):  # if seq is identical and shorter
                 if inc_seq.find(new_seq) != -1:
-                    if type(existing_id) == int and existing_id != id_of_label:  # different otus, add
+                    if type(existing_id) == int and existing_id != int(id_of_label):  # different otus, add
                         if _VERBOSE:
                             sys.stdout.write("seq {} is subsequence of {}, "
                                              "but different species name\n".format(label, tax_lab))
@@ -3169,39 +3169,38 @@ class FilterBlast(PhyscraperScrape):
         # debug(key)
         for otu_id in self.sp_d[key]:
             otu_info = self.data.otu_dict[otu_id]
-            #I deleted filtering because it already happened when we were adding things to the sp_d
-            try:
-                seq = self.data.aln[otu_id]
-            except KeyError:
-                seq = None
-            if seq:
-                    tax_id = key
-                    assert tax_id not in set([0, None])
-                    aln_tip_id = self.get_sp_id_of_otulabel(otu_id)
-                    # assert tax_id == aln_tip_id (this may not be true if we have filtered downtorank)
-                        # debug([tax_name_aln, tax_name_aln.label])
-                    debug("writing filter by local blast 1. {} {} {} {}".format(self.workdir, aln_tip_id, seq, nametoreturn))
-                    filter_by_local_blast.write_filterblast_files(self.workdir, aln_tip_id, seq, fn=nametoreturn)
-            elif otu_info.get('^ncbi:accession'):
-                    gb_id = otu_info.get('^ncbi:accession')
-                    if len(gb_id.split(".")) == 1:
-                        debug(gb_id)
-                    file_present = False
-                    if gb_id in self.new_seqs.keys():
-                        file_present = True
-                    if file_present:  # short for if file_present == True
-                        if '^physcraper:status' in otu_id:
-                            if otu_id['^physcraper:status'].split(' ')[0] not in self.seq_filter:
-                                debug("writing filter by local blast 2. {} {} {} {}".format(self.workdir, aln_tip_id, seq, nametoreturn))
-                                seq = self.sp_seq_d[key][gb_id]
-                                filter_by_local_blast.write_filterblast_files(self.workdir, gb_id, seq, db=True,
-                                                                              fn=nametoreturn)
+            if '^physcraper:status' in otu_info and otu_info['^physcraper:status'].split(' ')[0] not in self.seq_filter:
+                if otu_info['^physcraper:last_blasted'] != '1800/01/01':  # old seq
+                    tax_name = self.ids.find_name_otu(otu_dict_entry=otu_info)
+                    for tax_name_aln, seq in self.data.aln.items():
+                        otu_dict_name = self.ids.find_name_otu(otu_dict_entry=self.data.otu_dict[tax_name_aln.label])
+                        tax_id = key
+                        aln_tip_id = self.get_sp_id_of_otulabel(tax_name_aln.label)
+                        # if tax_name == otu_dict_name:
+                        if tax_id == aln_tip_id:
+                            # debug([tax_name_aln, tax_name_aln.label])
+                            filter_by_local_blast.write_filterblast_files(self.workdir, tax_name_aln.label, seq, fn=nametoreturn)
+                else:
+                    if '^ncbi:accession' in otu_info:
+                        gb_id = otu_info['^ncbi:accession']
+                        if len(gb_id.split(".")) == 1:
+                            debug(gb_id)
+                        file_present = False
+                        if gb_id in self.new_seqs.keys():
+                            file_present = True
+                        if file_present:  # short for if file_present == True
+                            if '^physcraper:status' in otu_info:
+                                if otu_info['^physcraper:status'].split(' ')[0] not in self.seq_filter:
+                                    seq = self.sp_seq_d[key][gb_id]
+                                    filter_by_local_blast.write_filterblast_files(self.workdir, gb_id, seq, db=True, fn=nametoreturn)
                     name_gbid = key
-            else:
-                sys.stderr.write("COuld not find a seq for {}".format(otu_id))
         if self.downtorank is not None:
             nametoreturn = key
+        # if nametoreturn is None:
+        #     nametoreturn = name_gbid
+        # assert nametoreturn is not None
         return nametoreturn
+
 
     def count_num_seq(self, tax_id):
         """Counts how many sequences there are for a tax_name, excluding sequences that have not been added
