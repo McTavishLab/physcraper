@@ -31,7 +31,7 @@ def test_remove_identical_seqs():
     blast_dir = "tests/data/precooked/fixed/tte_blast_files"
     #scraper.gi_list_mrca = pickle.load(open("tests/data/precooked/gi_list_mrca.p", 'rb'))
     scraper.read_blast_wrapper(blast_dir=blast_dir)
-    print scraper.ncbi_mrca
+    #print scraper.ncbi_mrca
     assert(len(scraper.new_seqs) == 40)
     assert(len(scraper.data.aln) == 5)
     assert(len(scraper.new_seqs_otu_id) == 0)
