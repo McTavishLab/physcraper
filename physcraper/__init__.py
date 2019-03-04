@@ -2302,12 +2302,14 @@ class PhyscraperScrape(object):
                     if "^ncbi:accession" in self.data.otu_dict[key]:
                         all_added_gi.add(self.data.otu_dict[key]["^ncbi:accession"])
         for gb_id, seq in self.new_seqs.items():
+            if seq == None:
+                sys.stderr.write("No sequence found for accession number {}\n".format(gb_id))
+                continue
             added = False
             assert gb_id in self.data.gb_dict.keys(), (gb_id, self.data.gb_dict.keys())
             if gb_id not in all_added_gi:
                 reason = ""
                 all_added_gi.add(gb_id)
-
                 # debug(gb_id)
                 if len(gb_id.split(".")) == 1:
                     debug(gb_id)
