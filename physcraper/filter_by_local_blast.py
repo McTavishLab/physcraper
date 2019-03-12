@@ -189,9 +189,8 @@ def write_filterblast_query(workdir, seq_name, seq, fn):
     """
     if not os.path.exists("{}/blast".format(workdir)):
         os.makedirs("{}/blast/".format(workdir))
-    else:
-        fnw = "{}/blast/{}_tobeblasted".format(workdir, fn)
-        fi_o = open(fnw, "w")
+    fnw = "{}/blast/{}_tobeblasted".format(workdir, fn)
+    fi_o = open(fnw, "w")
     fi_o.write(">{}\n".format(seq_name))
     fi_o.write("{}\n".format(str(seq).replace("-", "")))
     fi_o.close()
