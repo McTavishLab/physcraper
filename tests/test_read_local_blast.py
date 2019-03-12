@@ -39,13 +39,13 @@ def test_read_local_blast():
             # print(taxonID)
             blast_seq = filteredScrape.sp_seq_d[taxonID].keys()[0]
             seq = filteredScrape.sp_seq_d[taxonID][blast_seq]
-            local_blast.write_filterblast_files(filteredScrape.workdir, taxonID, seq, fn=str(taxonID))
+            local_blast.write_filterblast_query(filteredScrape.workdir, taxonID, seq, fn=str(taxonID))
             # print(filteredScrape.sp_seq_d[taxonID].keys()[1:] )
             blast_db = [item for item in filteredScrape.sp_seq_d[taxonID].keys()[1:] if len(item.split(".")) >= 2]
             # print(blast_db)
             for blast_key in blast_db:
                 seq = filteredScrape.sp_seq_d[taxonID][blast_key]
-                local_blast.write_filterblast_files(filteredScrape.workdir, blast_key, seq, db=True, fn=str(taxonID))
+                local_blast.write_filterblast_db(filteredScrape.workdir, blast_key, seq, fn=str(taxonID))
             break
 
     # print(taxonID) 

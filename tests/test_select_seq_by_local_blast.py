@@ -76,13 +76,12 @@ def test_select_seq_by_local_blast():
             # print(filteredScrape.sp_seq_d[tax_id].keys())
             blast_seq_id = filteredScrape.sp_seq_d[tax_id].keys()[0]
             seq = filteredScrape.sp_seq_d[tax_id][blast_seq_id]
-            local_blast.write_filterblast_files(filteredScrape.workdir, blast_seq_id, seq,
+            local_blast.write_filterblast_query(filteredScrape.workdir, blast_seq_id, seq,
                                                 fn=tax_id)  # blast guy
             blast_db = filteredScrape.sp_seq_d[tax_id].keys()[1:]
             for blast_key in blast_db:
                 seq = filteredScrape.sp_seq_d[tax_id][blast_key]
-                local_blast.write_filterblast_files(filteredScrape.workdir, blast_key, seq, db=True,
-                                                    fn=tax_id)
+                local_blast.write_filterblast_db(filteredScrape.workdir, blast_key, seq, fn=tax_id)
             # make local blast of sequences
             local_blast.run_filter_blast(filteredScrape.workdir, tax_id, tax_id)
             seq_blast_score = local_blast.read_filter_blast(filteredScrape.workdir, seq_d, fn)

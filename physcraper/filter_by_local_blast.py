@@ -8,7 +8,7 @@ import numpy
 import shutil
 from Bio.Blast import NCBIXML
 
-_DEBUG_MK = 0
+_DEBUG_MK = 1
 
 """Functions are used within the FilterBlast class to select sequences based on a local blast filtering step."""
 
@@ -53,6 +53,7 @@ def run_filter_blast(workdir, blast_seq, blast_db, output=None):
     general_wd = os.getcwd()
     os.chdir(os.path.join(workdir, "blast"))
     out_fn = "{}_tobeblasted".format(str(blast_seq))
+    assert os.path.isfile(out_fn)
     cmd1 = "makeblastdb -in {}_db -dbtype nucl".format(blast_db)
     os.system(cmd1)
     if output is None:
@@ -154,27 +155,45 @@ def read_filter_blast(workdir, seq_d, fn):
     return seq_blast_score
 
 
-def write_filterblast_files(workdir, seq_name, seq, db=False, fn=None):
-    """Writes local blast files which will be read by run_filter_blast.
+def write_filterblast_db(workdir, seq_name, seq, fn):
+    """Writes local blast db which will be read by run_filter_blast.
 
     :param workdir: working directory
     :param seq_name: sequence identifier
     :param seq: sequence to write
-    :param db: if True, will be written to database file instead
-    :param fn: optional file name
+    :param fn: file name
     :return: files with sequences written to it in fasta format
     """
     """
     """
-    debug("writing files")
     if not os.path.exists("{}/blast".format(workdir)):
         os.makedirs("{}/blast/".format(workdir))
-    if db:
-        fnw = "{}/blast/{}_db".format(workdir, fn)
-        fi_o = open(fnw, "a")
+    fnw = "{}/blast/{}_db".format(workdir, fn)
+    fi_o = open(fnw, "a")
+    fi_o.write(">{}\n".format(seq_name))
+    fi_o.write("{}\n".format(str(seq).replace("-", "")))
+    fi_o.close()
+    debug("writing seq {} to blast db {}\n".format(seq_name, fnw))
+
+
+def write_filterblast_query(workdir, seq_name, seq, fn):
+    """Writes local query files which will be read by run_filter_blast.
+
+    :param workdir: working directory
+    :param seq_name: sequence identifier
+    :param seq: sequence to write
+    :param fn: file name
+    :return: files with sequences written to it in fasta format
+    """
+    """
+    """
+    if not os.path.exists("{}/blast".format(workdir)):
+        os.makedirs("{}/blast/".format(workdir))
     else:
         fnw = "{}/blast/{}_tobeblasted".format(workdir, fn)
         fi_o = open(fnw, "w")
     fi_o.write(">{}\n".format(seq_name))
     fi_o.write("{}\n".format(str(seq).replace("-", "")))
     fi_o.close()
+    debug("writing query file for {} to {}\n".format(seq_name, fnw))
+

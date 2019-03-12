@@ -37,11 +37,11 @@ def test_write_blast():
         if len(filteredScrape.sp_seq_d[taxonID]) > treshold:
             blast_seq = filteredScrape.sp_seq_d[taxonID].keys()[0]
             seq = filteredScrape.sp_seq_d[taxonID][blast_seq]
-            local_blast.write_filterblast_files(workdir, taxonID, seq)
+            local_blast.write_filterblast_query(workdir, taxonID, seq,  taxonID)
             blast_db = filteredScrape.sp_seq_d[taxonID].keys()[1:]
             for blast_key in blast_db:
                 seq = filteredScrape.sp_seq_d[taxonID][blast_key]
-                local_blast.write_filterblast_files(workdir, blast_key, seq, db=True, fn=str(taxonID))
+                local_blast.write_filterblast_db(workdir, blast_key, seq,fn=str(taxonID))
             break
 
     blast_file_blast = "{}/blast/{}_tobeblasted".format(workdir, taxonID)

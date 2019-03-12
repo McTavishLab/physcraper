@@ -511,8 +511,8 @@ def generate_ATT_from_files(seqaln,
     assert tre.taxon_namespace is aln.taxon_namespace, "tre and aln have not the same namespace."
     otu_newick = tre.as_string(schema=schema_trf)
     otu_dict = json.load(open(otu_json, "r"))
-    debug("get mrca: ")
-    debug(ingroup_mrca)
+   # debug("get mrca: ")
+   # debug(ingroup_mrca)
     if ingroup_mrca:
         if type(ingroup_mrca) == list:
             ott_ids = set(ingroup_mrca)
@@ -841,7 +841,7 @@ class AlignTreeTax(object):
         self.orig_seqlen = [len(self.aln[tax].symbols_as_string().replace("-", "").replace("N", "")) for tax in
                             self.aln]
         avg_seqlen = sum(self.orig_seqlen) / len(self.orig_seqlen)
-        debug("average sequence length is {}".format(avg_seqlen))
+        #debug("average sequence length is {}".format(avg_seqlen))
         seq_len_cutoff = avg_seqlen * self.config.seq_len_perc
         prune = []
         aln_ids = set()
@@ -992,7 +992,7 @@ class AlignTreeTax(object):
         if ncbi_id in ids_obj.ncbi_to_ott.keys():
             ott_id = int(ids_obj.ncbi_to_ott[int(ncbi_id)])
         else:
-            debug("{} Ncbi id not found in ott_ncbi dictionaries\n".format(ncbi_id))
+            #debug("{} Ncbi id not found in ott_ncbi dictionaries\n".format(ncbi_id))
             ott_id = None
         if ott_id in ids_obj.ott_to_name:
             ott_name = ids_obj.ott_to_name[ott_id]
@@ -1036,7 +1036,7 @@ class AlignTreeTax(object):
 
         Is only used within func align_query_seqs.
         """
-        debug('write papara files')
+        #debug('write papara files')
         self.tre.resolve_polytomies()
         self.tre.deroot()
         tmptre = self.tre.as_string(schema="newick",
@@ -1052,7 +1052,7 @@ class AlignTreeTax(object):
     def write_files(self, treepath="physcraper.tre", treeschema="newick", alnpath="physcraper.fas", alnschema="fasta"):
         """Outputs both the streaming files, labeled with OTU ids.
         Can be mapped to original labels using otu_dict.json or otu_seq_info.csv"""
-        debug("write_files")
+        #debug("write_files")
         self.tre.write(path="{}/{}".format(self.workdir, treepath),
                        schema=treeschema, unquoted_underscores=True)
         self.aln.write(path="{}/{}".format(self.workdir, alnpath),
@@ -1074,7 +1074,7 @@ class AlignTreeTax(object):
         :param add_gb_id: optional, to supplement tiplabel with corresponding GenBank sequence identifier
         :return: writes out labelled phylogeny and alignment to file
         """
-        debug("write labelled files")
+        #debug("write labelled files")
         if treepath is None:
             treepath = "{}/{}".format(self.workdir, "labelled.tre")
         if alnpath is None:
@@ -1307,11 +1307,11 @@ class IdDicts(object):
                             raise
                     break
             except (IndexError, HTTPError) as err:
-                debug("except")
+                #debug("except")
                 try:
                     ncbi = NCBITaxa()
                     tax_info = ncbi.get_name_translator([tax_name])
-                    debug(tax_info)
+                    #debug(tax_info)
                     if tax_info == {}:
                         tax_name = "'{}'".format(tax_name)
                         tax_info = ncbi.get_name_translator([tax_name])
@@ -1576,7 +1576,7 @@ class PhyscraperScrape(object):
         if len(self.mrca_ncbi_list) == 0:
             # self.mrca_ncbi = set()
             self.mrca_ncbi_list.add(ids_obj.ott_to_ncbi[data_obj.ott_mrca])
-        debug(self.mrca_ncbi_list)
+        #debug(self.mrca_ncbi_list)
         debug("created physcaper ncbi_mrca {}, len {}".format(self.mrca_ncbi_list, len(self.mrca_ncbi_list)))
         self.map_taxa_to_ncbi()
 
@@ -1608,7 +1608,7 @@ class PhyscraperScrape(object):
         Is only used for the mrca list thing!
         """
         debug("ottid to ncbiid")
-        debug(ott_id)
+        #debug(ott_id)
         ncbi_id = None
         if ott_id in self.ids.ott_to_ncbi:
             ncbi_id = self.ids.ott_to_ncbi[ott_id]
@@ -2309,7 +2309,7 @@ class PhyscraperScrape(object):
 
                 # debug(gb_id)
                 if len(gb_id.split(".")) == 1:
-                    debug(gb_id)
+                    debug("problem gb_id {}".format(gb_id))
                 if self.blacklist is not None and gb_id in self.blacklist:
                     debug("gb_id in blacklist, not added")
                     pass
@@ -2347,11 +2347,11 @@ class PhyscraperScrape(object):
 
 
                             rank_mrca_ncbi = set()
-                            print(self.mrca_ncbi_list)
+                            #print(self.mrca_ncbi_list)
                             # print(stop)
                             for mrca in self.mrca_ncbi_list:
-                                debug("mrca")
-                                debug(mrca)
+                                #debug("mrca")
+                                #debug(mrca)
                                 rank_mrca = self.ids.ncbi_parser.get_rank(mrca)
                                 rank_mrca_ncbi.add(rank_mrca)
                                 try:  # sometimes ncbi has wrong id linked
@@ -2367,9 +2367,9 @@ class PhyscraperScrape(object):
                                     input_rank_id = self.ids.ncbi_parser.match_id_to_mrca(ncbi_id, mrca)
                                     sys.stderr.write("accession number {} was assigned taxon id {}, which is not in ncbi taxonomy\n".format(gb_id, old_ncbi_id))
                                     sys.stderr.write("searched on name {} and assigned taxon id {} instead \n".format(tax_name, ncbi_id))
-                                debug([input_rank_id, mrca])
+                                #debug([input_rank_id, mrca])
                                 if int(input_rank_id) == int(mrca):  # belongs to ingroup mrca -> add to data
-                                    debug("input belongs to same mrca")
+                                   # debug("input belongs to same mrca")
                                     self.newseqs_acc.append(gb_id)
                                     otu_id = self.data.add_otu(gb_id, self.ids)
                                     self.seq_dict_build(seq, otu_id, tmp_dict)
@@ -2906,7 +2906,7 @@ class PhyscraperScrape(object):
                 key = gb_id_l[i].replace(">", "")
                 count = count + 1
                 seq = seq_l[i]
-                filter_by_local_blast.write_filterblast_files(self.workdir, key, seq, db=True, fn="local_unpubl_seq")
+                filter_by_local_blast.write_filterblast_db(self.workdir, key, seq, fn="local_unpubl_seq")
         with cd(os.path.join(self.workdir, "blast")):
             cmd1 = "makeblastdb -in {}_db -dbtype nucl".format("local_unpubl_seq")
             os.system(cmd1)
@@ -3126,12 +3126,12 @@ class FilterBlast(PhyscraperScrape):
                 # all the next line is from how_many_seq_to_keep()
                 blast_seq_id = seq_d.keys()[1]  # seq 1 instead of 0 now
                 seq = seq_d[blast_seq_id]
-                filter_by_local_blast.write_filterblast_files(self.workdir, blast_seq_id, seq,
+                filter_by_local_blast.write_filterblast_query(self.workdir, blast_seq_id, seq,
                                                               fn=fn)  # blast guy
                 blast_db = seq_d.keys()[2:]
                 for blast_key in blast_db:
                     seq = seq_d[blast_key]
-                    filter_by_local_blast.write_filterblast_files(self.workdir, blast_key, seq, db=True,
+                    filter_by_local_blast.write_filterblast_db(self.workdir, blast_key, seq,
                                                                   fn=fn)
                 # make local blast of sequences
                 filter_by_local_blast.run_filter_blast(self.workdir, fn, fn)
@@ -3244,52 +3244,37 @@ class FilterBlast(PhyscraperScrape):
                         self.filtered_seq[gb_id] = seq
         return self.filtered_seq
 
-    def loop_for_write_blast_files(self, key):
+    def loop_for_write_blast_files(self, tax_id):
         """This loop is needed to be able to write the local blast files for the filtering step correctly.
 
         Function returns a filename for the filter blast.
 
         Note: has test,test_loop_for_blast.py
 
-        :param key: key of self.sp_d (taxon name)
+        :param key: key of self.sp_d (taxon id)
         :return: name of the blast file
         """
         debug("loop_for_write_blast_files")
-        nametoreturn = key
-        # debug(key)
-        for otu_id in self.sp_d[key]:
+        aln_otus = set([taxon.label for taxon in self.data.aln])
+        for otu_id in self.sp_d[tax_id]:
             otu_info = self.data.otu_dict[otu_id]
-            if '^physcraper:status' in otu_info and otu_info['^physcraper:status'].split(' ')[0] not in self.seq_filter:
-                if otu_info['^physcraper:last_blasted'] != '1800/01/01':  # old seq
-                    tax_name = self.ids.find_name_otu(otu_dict_entry=otu_info)
-                    for tax_name_aln, seq in self.data.aln.items():
-                        otu_dict_name = self.ids.find_name_otu(otu_dict_entry=self.data.otu_dict[tax_name_aln.label])
-                        tax_id = key
-                        aln_tip_id = self.get_sp_id_of_otulabel(tax_name_aln.label)
+            if otu_id   in aln_otus:#we know this is in the alignment
+                for otu_iter in aln_otus:
+                    aln_tip_id = self.data.otu_dict[otu_iter]["^ncbi:taxon"]
                         # if tax_name == otu_dict_name:
-                        if tax_id == aln_tip_id:
-                            # debug([tax_name_aln, tax_name_aln.label])
-                            filter_by_local_blast.write_filterblast_files(self.workdir, tax_name_aln.label, seq, fn=nametoreturn)
-                else:
-                    if '^ncbi:accession' in otu_info:
-                        gb_id = otu_info['^ncbi:accession']
-                        if len(gb_id.split(".")) == 1:
-                            debug(gb_id)
-                        file_present = False
-                        if gb_id in self.new_seqs.keys():
-                            file_present = True
-                        if file_present:  # short for if file_present == True
-                            if '^physcraper:status' in otu_info:
-                                if otu_info['^physcraper:status'].split(' ')[0] not in self.seq_filter:
-                                    seq = self.sp_seq_d[key][gb_id]
-                                    filter_by_local_blast.write_filterblast_files(self.workdir, gb_id, seq, db=True, fn=nametoreturn)
-                    name_gbid = key
-        if self.downtorank is not None:
-            nametoreturn = key
-        # if nametoreturn is None:
-        #     nametoreturn = name_gbid
-        # assert nametoreturn is not None
-        return nametoreturn
+                    seq = self.data.aln[otu_iter]
+                    if tax_id == aln_tip_id:
+                        filter_by_local_blast.write_filterblast_query(self.workdir, otu_iter, seq, fn=tax_id)
+            elif '^physcraper:status' in otu_info and otu_info['^physcraper:status'].split(' ')[0] not in self.seq_filter: # these are the new sequences that haven't been filtered out
+                assert '^ncbi:accession' in otu_info
+                gb_id = otu_info['^ncbi:accession']
+                assert len(gb_id.split(".")) == 2 #we should have already gotten rid of any bad ids
+                assert gb_id in self.new_seqs.keys()
+                seq = self.new_seqs[gb_id]
+                filter_by_local_blast.write_filterblast_db(self.workdir, gb_id, seq, fn=tax_id)
+            else:
+                debug("otu_id {} was not in the alignemnt, but was filtered out due to {}".format(otu_id, otu_info['^physcraper:status']))
+        return tax_id
 
 
     def count_num_seq(self, tax_id):
@@ -3372,7 +3357,7 @@ class FilterBlast(PhyscraperScrape):
             seq_present = count_dict["seq_present"]
             query_count = count_dict["query_count"]
             new_taxon = count_dict["new_taxon"]
-            debug(count_dict)
+            #debug(count_dict)
             # debug(tax_id)
             if seq_present <= self.threshold:  # add seq to aln
                 if seq_present + query_count <= self.threshold:  # to add all stuff to self.filtered_seq[gi_n]
@@ -3389,13 +3374,12 @@ class FilterBlast(PhyscraperScrape):
                                 debug(self.sp_seq_d[tax_id].keys())
                                 blast_seq_id = self.sp_seq_d[tax_id].keys()[0]
                                 seq = self.sp_seq_d[tax_id][blast_seq_id]
-                                filter_by_local_blast.write_filterblast_files(self.workdir, blast_seq_id, seq,
+                                filter_by_local_blast.write_filterblast_query(self.workdir, blast_seq_id, seq,
                                                                               fn=tax_id)  # blast guy
                                 blast_db = self.sp_seq_d[tax_id].keys()[1:]
                                 for blast_key in blast_db:
                                     seq = self.sp_seq_d[tax_id][blast_key]
-                                    filter_by_local_blast.write_filterblast_files(self.workdir, blast_key, seq, db=True,
-                                                                                  fn=tax_id)
+                                    filter_by_local_blast.write_filterblast_db(self.workdir, blast_key, seq, fn=tax_id)
                                 # make local blast of sequences
                                 filter_by_local_blast.run_filter_blast(self.workdir, tax_id, tax_id)
                                 debug(self.sp_seq_d[tax_id])
