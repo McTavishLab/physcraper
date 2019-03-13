@@ -156,11 +156,11 @@ class Parser:
         if nodes is None:
             self.initialize()
         if type(tax_id) != int:
-            sys.stdout.write(
-                "WARNING: tax_id {} is no integer. Will convert value to int\n".format(
-                    tax_id
-                )
-            )
+           # sys.stdout.write(
+           #     "WARNING: tax_id {} is no integer. Will convert value to int\n".format(
+           #         tax_id
+           #     )
+           # )
             tax_id = int(tax_id)
         # debug(downtorank)
         # following statement is to get id of taxa if taxa is higher ranked than specified
