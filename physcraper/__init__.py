@@ -3259,12 +3259,8 @@ class FilterBlast(PhyscraperScrape):
         for otu_id in self.sp_d[tax_id]:
             otu_info = self.data.otu_dict[otu_id]
             if otu_id   in aln_otus:#we know this is in the alignment
-                for otu_iter in aln_otus:
-                    aln_tip_id = self.data.otu_dict[otu_iter]["^ncbi:taxon"]
-                        # if tax_name == otu_dict_name:
-                    seq = self.data.aln[otu_iter]
-                    if tax_id == aln_tip_id:
-                        filter_by_local_blast.write_filterblast_query(self.workdir, otu_iter, seq, fn=tax_id)
+                seq = self.data.aln[otu_id]
+                filter_by_local_blast.write_filterblast_query(self.workdir, otu_id, seq, fn=tax_id)
             elif '^physcraper:status' in otu_info and otu_info['^physcraper:status'].split(' ')[0] not in self.seq_filter: # these are the new sequences that haven't been filtered out
                 assert '^ncbi:accession' in otu_info
                 gb_id = otu_info['^ncbi:accession']
@@ -3295,11 +3291,10 @@ class FilterBlast(PhyscraperScrape):
         seq_in_aln = 0
         for otu_id in self.sp_d[tax_id]:
             item = self.data.otu_dict[otu_id]
-            try:
-                seq  = self.data.aln[otu_id] # will check if seq is in current alignemnet
+            aln_otus = set([taxon.label for taxon in self.data.aln])
+            if otu_id in aln_otus:
                 seq_in_aln += 1
-            except KeyError:
-                pass 
+                new_taxon = False
             status = item.get('^physcraper:status')
             assert status is not None
             if status.split(' ')[0] not in self.seq_filter:
