@@ -2395,7 +2395,7 @@ class PhyscraperScrape(object):
                             self.seq_dict_build(seq, otu_id, tmp_dict)
                         
                     else:
-                        debug("seq too short")
+                        #debug("seq too short")
                         # do not add them to not added, as seq len depends on sequence which was blasted and
                         # there might be a better matching seq (one which will return a longer sequence...)
                         # if gb_id not in self.gb_not_added:
@@ -3256,12 +3256,14 @@ class FilterBlast(PhyscraperScrape):
         """
         debug("loop_for_write_blast_files")
         aln_otus = set([taxon.label for taxon in self.data.aln])
-        for otu_id in self.sp_d[tax_id]:
+        query_otu = None
+        db_otus = []
+        for otu_id in self.sp_d[tax_id]: 
             otu_info = self.data.otu_dict[otu_id]
-            if otu_id   in aln_otus:#we know this is in the alignment
-                seq = self.data.aln[otu_id]
-                filter_by_local_blast.write_filterblast_query(self.workdir, otu_id, seq, fn=tax_id)
+            if otu_id in aln_otus:
+                query_otu = otu_id #we end up overwriting the query file repeatedly. Might as well just choose one otu and write it once.
             elif '^physcraper:status' in otu_info and otu_info['^physcraper:status'].split(' ')[0] not in self.seq_filter: # these are the new sequences that haven't been filtered out
+                db_otus.append(otu_id)
                 assert '^ncbi:accession' in otu_info
                 gb_id = otu_info['^ncbi:accession']
                 assert len(gb_id.split(".")) == 2 #we should have already gotten rid of any bad ids
@@ -3270,6 +3272,10 @@ class FilterBlast(PhyscraperScrape):
                 filter_by_local_blast.write_filterblast_db(self.workdir, gb_id, seq, fn=tax_id)
             else:
                 debug("otu_id {} was not in the alignemnt, but was filtered out due to {}".format(otu_id, otu_info['^physcraper:status']))
+        assert query_otu is not None#at least 1 otu must be in the alignment
+        debug("for taxon {} will use otu {} for query".format(tax_id, query_otu))
+        query_seq = self.data.aln[query_otu]
+        filter_by_local_blast.write_filterblast_query(self.workdir, query_otu, query_seq, fn=tax_id)
         return tax_id
 
 
