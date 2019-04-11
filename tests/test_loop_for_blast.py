@@ -49,7 +49,7 @@ def test_loop_for_write_blast_files():
                                     
 # MAKE TEST FOR loop_for_write_blast_files
 
-
+    print(filteredScrape.workdir)
     for key in filteredScrape.sp_d:
         count = 0
         count_int = 0
@@ -66,23 +66,40 @@ def test_loop_for_write_blast_files():
                 else:
                     count_int += 1
             folder = '{}/blast/'.format(filteredScrape.workdir)
+            assert len(os.listdir(folder)) > 1, os.listdir(folder)
             for the_file in os.listdir(folder):
-                spn = the_file.split("_")[0]
-                spn = "_".join(the_file.split("_")[0])
+                # print(the_file)
+                spn = int(the_file.split("_")[0])
+                # print(spn)
+                # spn = "_".join(the_file.split("_")[0])
                 file_type = the_file.split("_")[1]
-                if spn == key and file_type == "db": # 
-                    db = True
-                    f = open('{}/blast/{}'.format(filteredScrape.workdir, the_file))
-                    for line in iter(f):
-                        if line[0] == ">":
-                            count_gi_file += 1
-                if spn == key and file_type == "tobeblasted":
-                    blasted = True
-                    count_str_file += 1
-            if blasted:
-                if count + count_int != threshold:
-                    assert count_str_file == count
-            if db:
-                if count + count_int != threshold:
-                    assert count_gi_file == count_int
+                assert spn in filteredScrape.sp_d.keys(), (spn, filteredScrape.sp_d.keys())
+
+                print(spn, file_type)
+                print(key)
+
+                if spn == key:
+                    if spn == key and file_type == "db": # 
+                        db = True
+                        f = open('{}/blast/{}'.format(filteredScrape.workdir, the_file))
+                        for line in iter(f):
+                            if line[0] == ">":
+                                count_gi_file += 1
+                    if spn == key and file_type == "tobeblasted":
+                        blasted = True
+                        count_str_file += 1
+                    tested_both_files = 0
+                    if blasted:
+                        tested_both_files += 1
+                        if count + count_int != threshold:
+                            assert count_str_file == 1
+                    if db:
+                        tested_both_files += 1
+                        if count + count_int != threshold:
+                            assert count_gi_file == count_int
+                
+    assert tested_both_files >= 2
+
+    shutil.rmtree('{}/blast/'.format(filteredScrape.workdir))
+
  

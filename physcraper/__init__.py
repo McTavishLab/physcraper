@@ -1785,19 +1785,16 @@ class PhyscraperScrape(object):
                             if self.config.blast_loc == 'local':
                                 self.run_local_blast_cmd(query, taxon.label, fn_path)
                             if self.config.blast_loc == 'remote':
-                                if len(self.mrca_ncbi_list) >= 2:
-                                    len_ncbi = len(self.mrca_ncbi_list)
-                                    equery = ''
-                                    for ncbi_id in self.mrca_ncbi_list:  # add taxids of list to blast search
-                                        if len_ncbi >= 2:
-                                            equery = equery + "txid{}[orgn] OR ".format(ncbi_id)
-                                            len_ncbi = len_ncbi - 1
-                                        else:
-                                            equery = equery + "txid{}[orgn]) ".format(ncbi_id)
-                                    equery = "(" + equery + "AND {}:{}[mdat]".format(last_blast, today)
-                                else:
-                                    equery = "txid{}[orgn] AND {}:{}[mdat]".format(self.mrca_ncbi_list, last_blast, today)
-                                    self.run_web_blast_query(query, equery, fn_path)
+                                len_ncbi = len(self.mrca_ncbi_list)
+                                equery = ''
+                                for ncbi_id in self.mrca_ncbi_list:  # add taxids of list to blast search
+                                    if len_ncbi >= 2:
+                                        equery = equery + "txid{}[orgn] OR ".format(ncbi_id)
+                                        len_ncbi = len_ncbi - 1
+                                    else:
+                                        equery = equery + "txid{}[orgn]) ".format(ncbi_id)
+                                equery = "(" + equery + "AND {}:{}[mdat]".format(last_blast, today)
+                                self.run_web_blast_query(query, equery, fn_path)
                             self.data.otu_dict[otu_id]['^physcraper:last_blasted'] = today
                         else:
                             if _DEBUG:
@@ -1811,6 +1808,44 @@ class PhyscraperScrape(object):
                                              "Use run_blast_wrapper(delay = 0) to force a search.\n".format(otu_id,
                                                                                                             last_blast))
         self._blasted = 1
+
+    def get_acc_from_blast(self, query_string):
+        """
+        Get the accession number from a local blast query.
+        
+        Get acc is more difficult now, as new seqs not always have gi number, then query changes.
+        
+        :param query_string: string that contains acc and gi from local blast query result
+        :return: gb_acc 
+
+        """
+        # debug("get_acc_from_blast")
+        # debug(query_string.split("|"))
+        if len(query_string.split("|")) >= 3:
+            gb_acc = query_string.split("|")[3]
+        else:
+            gb_acc = query_string.split("|")[0]
+        if len(gb_acc.split(".")) < 2:
+            return None
+        assert len(gb_acc.split(".")) >= 2, (len(gb_acc.split(".")), gb_acc)
+        return gb_acc
+
+    def get_gi_from_blast(self, query_string):
+        """
+        Get the gi number from a local blast query. 
+        Get acc is more difficult now, as new seqs not always have gi number, then query changes.
+
+        If not available return None. 
+
+        :param query_string: string that contains acc and gi from local blast query result
+        :return: gb_id if available
+        """      
+        if len(query_string.split("|")) >= 3:
+            gb_id = query_string.split("|")[1]
+        else:
+            return None
+        assert len(gb_id.split(".")) < 2, (len(gb_id.split(".")), gb_id)
+        return gb_id
 
     def read_local_blast_query(self, fn_path):
         """ Implementation to read in results of local blast searches.
@@ -1834,26 +1869,30 @@ class PhyscraperScrape(object):
                 bitscore = float(bitscore)
                 stitle = salltitles
                 # NOTE: sometimes there are seq which are identical & are combined in the local blast db...
-                # Get all of them! (get redundant seq info)
+                # Get all of them! (they can be of a different taxon ids = get redundant seq info)
                 found_taxids = set()
                 found_spn = set()
-                if len(sallseqid.split(";")) > 1:
-                    # get additional info only for seq that pass the eval
-                    if evalue < float(self.config.e_value_thresh):
+                # get additional info only for seq that pass the eval
+                if evalue < float(self.config.e_value_thresh):
+                    if len(sallseqid.split(";")) > 1:
+                        # FOR MERGED SEQS
                         staxids_l = staxids.split(";")
                         sscinames_l = sscinames.split(";")
                         sallseqid_l = sallseqid.split(";")
-                        # debug(salltitles)
                         salltitles_l = salltitles.split("<>")
-                        # debug(staxids_l)
-                        # debug(sscinames_l)
-                        # debug(sallseqid_l)
-                        # debug(salltitles_l)
-                        # print(len(found_taxids), len(staxids_l))
+
+                        # make sure you have the correct infos
+                        tax_id_l = self.get_taxid_from_acc(gb_acc)
+                        for item in tax_id_l:
+                            assert str(item) in staxids_l
+
+                        # this while loop is here to speed up the process of finding the correct information
                         count = 0
                         spn_range = 0
                         stop_while = False
-                        while len(found_taxids) < len(staxids_l):  # as long as i have not found all taxids for the seq
+                        id_before = 0
+                        id_now = -2
+                        while len(found_taxids) < len(set(staxids_l)):  # as long as i have not found all taxids for the seq
                             count += 1
                             if stop_while:
                                 # debug("stop while")
@@ -1862,64 +1901,66 @@ class PhyscraperScrape(object):
                                 break  # too many tries to find correct number of redundant taxa
                             elif count == 1:
                                 for i in range(0, len(sallseqid_l)):
-                                    if len(found_taxids) == len(staxids_l):
+                                    if len(found_taxids) == len(staxids_l):  # if we found all taxon_ids present in the initial list, stop looking for more
                                         break
-                                    gi_id = sallseqid_l[i].split("|")[1]
-                                    gb_acc = sallseqid_l[i].split("|")[3]
+                                    gb_acc = self.get_acc_from_blast(sallseqid_l[i])
+                                    gb_id = self.get_gi_from_blast(sallseqid_l[i])
+                                    stitle = salltitles_l[i]
+                                    # if both var are the same, we do not need to search GB for taxon info                
+                                    staxids = tax_id_l[i]
+                                    qtaxid = int(self.get_taxid_from_acc(gb_acc)[0])
+                                    id_before = id_now
+                                    id_now = qtaxid
+
+                                    assert str(qtaxid) in staxids_l, (str(qtaxid), staxids_l)
+                                    assert qtaxid in tax_id_l, (qtaxid, tax_id_l)
                                     # if gb acc was already read in before stop the for loop
                                     if gb_acc in query_dict or gb_acc in self.data.gb_dict:
                                         # debug("set to true")
                                         stop_while = True
                                         break
-                                    stitle = salltitles_l[i]
-                                    # spn_title are used to figure out if gb_acc is from same tax_id
-                                    # if both var are the same, we do not need to search GB for taxon info
-                                    spn_title_before = salltitles_l[i-1].split(" ")[0:spn_range]
-                                    spn_title = salltitles_l[i].split(" ")[0:spn_range]
+
                                     # sometimes if multiple seqs are merged,
                                     # we lack information about which taxon is which gb_acc...
                                     # test it here:
-                                    # if we have same number of ids and taxon id go ahead as usual
-                                    #TODO if we grab the full sequence using the accession number, we can also associate it with the correct taxon info 
+                                    # if we have same number of gb_acc and taxon id go ahead as usual
+                                    # debug("get name from id")
                                     if len(sallseqid_l) == len(staxids_l):
-                                        staxids = staxids_l[i]
                                         sscinames = sscinames_l[i]
                                     # only one taxon id present, all are from same taxon
                                     elif len(staxids_l) == 1:
-                                        staxids = staxids_l[0]
                                         sscinames = sscinames_l[0]
-                                    elif i != 0 and spn_title != spn_title_before:
-                                        read_handle = self.ids.entrez_efetch(gb_acc)
-                                        sscinames = get_ncbi_tax_name(read_handle).replace(" ", "_").replace("/", "_")
-                                        staxids = get_ncbi_tax_id(read_handle)
-                                        spn_range = len(sscinames.split("_"))
+                                        qtaxid = staxids_l[0]
+                                    # if not the first item and id different from before: get name
+                                    elif i != 0 and id_before != id_now:
+                                        sscinames = self.ids.ncbi_parser.get_name_from_id(qtaxid)
                                     elif i == 0:  # for first item in redundant data, always get info
-                                        read_handle = self.ids.entrez_efetch(gb_acc)
-                                        sscinames = get_ncbi_tax_name(read_handle).replace(" ", "_").replace("/", "_")
-                                        staxids = get_ncbi_tax_id(read_handle)
-                                        spn_range = len(sscinames.split("_"))
-                                    else:  # if spn_titles were the same, we do not need to add same seq again
+                                        sscinames = self.ids.ncbi_parser.get_name_from_id(qtaxid)
+                                    else:  # if id_before and id_now were the same, we do not need to add same seq again
                                         continue
-                                    assert str(staxids) in staxids_l, (staxids, staxids_l)
-                                    # next vars are used to stop loop if all taxids were found
-                                    found_taxids.add(staxids)
-                                    found_spn.add(sscinames)
-                                    if gb_acc not in query_dict and gb_acc not in self.newseqs_acc:
-                                        query_dict[gb_acc] = \
-                                            {'^ncbi:gi': gi_id, 'accession': gb_acc, 'staxids': staxids,
-                                             'sscinames': sscinames, 'pident': pident, 'evalue': evalue,
-                                             'bitscore': bitscore, 'sseq': sseq, 'title': stitle}
-                            # same loop as above, only that it mostly used entrez searches for tax_id
-                            # this is as sometimes the if above does not yield in stop_while == True,
+                                    try:
+                                        assert str(staxids) in staxids_l, (str(staxids), staxids_l)
+                                        # next vars are used to stop loop if all taxids were found
+                                        found_taxids.add(staxids)
+                                        found_spn.add(sscinames)
+                                        if gb_acc not in query_dict and gb_acc not in self.newseqs_acc:
+                                            query_dict[gb_acc] = \
+                                                {'^ncbi:gi': gb_id, 'accession': gb_acc, 'staxids': staxids,
+                                                 'sscinames': sscinames, 'pident': pident, 'evalue': evalue,
+                                                 'bitscore': bitscore, 'sseq': sseq, 'title': stitle}
+                                    except AssertionError:
+                                        sys.stderr.write("Taxon Id {} was not initally found in the blast search - corresponding Genbank accession number is: {}. Sequence will not be added. Check with ncbi. \n".format(staxids, gb_acc))
+                         
+                            # same loop as above, only that it does more blastdbcmd's
+                            # this is used as sometimes the if above does not yield in stop_while == True,
                             # through different taxa names
                             elif count >= 1 and stop_while is False:
                                 # debug("count>1")
                                 for i in range(0, len(sallseqid_l)):
                                     if len(found_taxids) == len(staxids_l):
                                         break
-                                    # debug(i)
-                                    gi_id = sallseqid_l[i].split("|")[1]
-                                    gb_acc = sallseqid_l[i].split("|")[3]
+                                    gb_acc = self.get_acc_from_blast(sallseqid_l[i])
+                                    gb_id = self.get_gi_from_blast(sallseqid_l[i])
                                     stitle = salltitles_l[i]
                                     # if gb acc was already read in before stop the for loop
                                     if gb_acc in query_dict or gb_acc in self.data.gb_dict:
@@ -1935,32 +1976,27 @@ class PhyscraperScrape(object):
                                         staxids = staxids_l[0]
                                         sscinames = sscinames_l[0]
                                     else:
-                                        read_handle = self.ids.entrez_efetch(gb_acc)
-                                        sscinames = get_ncbi_tax_name(read_handle).replace(" ", "_").replace("/", "_")
-                                        staxids = get_ncbi_tax_id(read_handle)
-                                        spn_range = len(sscinames.split("_"))
+                                        staxids = self.get_taxid_from_acc(gb_acc)
+                                        sscinames = self.ids.ncbi_parser.get_name_from_id(staxids)
                                     assert str(staxids) in staxids_l, (staxids, staxids_l)
                                     # next vars are used to stop loop if all taxids were found
                                     found_taxids.add(staxids)
                                     found_spn.add(sscinames)
                                     if gb_acc not in query_dict and gb_acc not in self.newseqs_acc:
                                         query_dict[gb_acc] = \
-                                             {'^ncbi:gi': gi_id, 'accession': gb_acc, 'staxids': staxids,
+                                             {'^ncbi:gi': gb_id, 'accession': gb_acc, 'staxids': staxids,
                                               'sscinames': sscinames, 'pident': pident, 'evalue': evalue,
                                               'bitscore': bitscore, 'sseq': sseq, 'title': stitle}
                             # debug(query_dict[gb_acc])
-                else:
-                    staxids = int(staxids)
-                    self.ids.spn_to_ncbiid[sscinames] = staxids
-                    if gb_acc not in self.ids.acc_ncbi_dict:  # fill up dict with more information.
-                        self.ids.acc_ncbi_dict[gb_acc] = staxids
-                    if gb_acc not in query_dict and gb_acc not in self.newseqs_acc:
-                        query_dict[gb_acc] = {'^ncbi:gi': gi_id, 'accession': gb_acc, 'staxids': staxids,
-                                              'sscinames': sscinames, 'pident': pident, 'evalue': evalue,
-                                              'bitscore': bitscore, 'sseq': sseq, 'title': stitle}
-#                if len(sscinames.split(" ")) == 1:
-#                    print(sscinames, gb_acc)
-                
+                    else:
+                        staxids = int(staxids)
+                        self.ids.spn_to_ncbiid[sscinames] = staxids
+                        if gb_acc not in self.ids.acc_ncbi_dict:  # fill up dict with more information.
+                            self.ids.acc_ncbi_dict[gb_acc] = staxids
+                        if gb_acc not in query_dict and gb_acc not in self.newseqs_acc:
+                            query_dict[gb_acc] = {'^ncbi:gi': gi_id, 'accession': gb_acc, 'staxids': staxids,
+                                                  'sscinames': sscinames, 'pident': pident, 'evalue': evalue,
+                                                  'bitscore': bitscore, 'sseq': sseq, 'title': stitle}
         # debug("key in query")
         for key in query_dict.keys():
             if float(query_dict[key]["evalue"]) < float(self.config.e_value_thresh):
@@ -1980,6 +2016,39 @@ class PhyscraperScrape(object):
                 fn.write("{}, {}, {}\n".format(query_dict[key]["sscinames"], query_dict[key]["accession"],
                                                query_dict[key]["evalue"]))
                 fn.close()
+
+    def get_taxid_from_acc(self, gb_acc):
+        """
+        Use the blastdb to get the taxon id from a queried gb acc. 
+
+        Sometimes there are more than a singel id, as database has merged redundant seqs.
+
+        :param gb_acc: Genbank accession number
+        :return: list of taxon ids associated with the GB id - there are multiple because of the merging of redundant data
+        """
+        if not os.path.exists("{}/tmp".format(self.workdir)):
+            os.mkdir("{}/tmp".format(self.workdir))
+        fn = "{}/tmp/tmp_search.csv".format(self.workdir)
+        fn_open = open(fn, "w+")                                        
+        fn_open.write("{}\n".format(gb_acc))
+        fn_open.close()
+        cmd1 = "blastdbcmd -db {}/nt  -entry_batch {} -outfmt %T -out {}/tmp/tax_id_{}.csv".format(self.config.blastdb, fn, self.workdir, gb_acc)
+        if not self.config.blastdb == "./tests/data/precooked/testing_localdb":
+            os.system(cmd1)
+            f = open("{}/tmp/tax_id_{}.csv".format(self.workdir, gb_acc))
+            tax_id_l = []
+            for line in iter(f):
+                line = line.rstrip().lstrip()
+                tax_id_l.append(int(line))
+            f.close() 
+        else: 
+            f = open("./tests/data/precooked/testing_localdb/tax_id_{}.csv".format(gb_acc))
+        tax_id_l = []
+        for line in iter(f):
+            line = line.rstrip().lstrip()
+            tax_id_l.append(int(line))
+        f.close() 
+        return tax_id_l
 
     def read_unpublished_blast_query(self):
         """
@@ -2064,13 +2133,13 @@ class PhyscraperScrape(object):
                                               'length': length, 'hsps': hsps}
                                 self.data.gb_dict[gb_id] = query_dict
                         else:
-                            # if gb_id not in self.gb_not_added:
-                            #     self.gb_not_added.append(gb_id)
-                            #     writeinfofiles.write_not_added_info(self, gb_id, "threshold not passed")
-                            writeinfofiles.write_not_added_info(self, gb_id, "threshold not passed")
+                            # if gb_acc not in self.gb_not_added:
+                            #     self.gb_not_added.append(gb_acc)
+                            #     writeinfofiles.write_not_added_info(self, gb_acc, "threshold not passed")
+                            writeinfofiles.write_not_added_info(self, gb_acc, "threshold not passed")
                             # needs to be deleted from gb_dict,
                             # maybe we find a better fitting blast query seq and then it might get added
-                            del self.data.gb_dict[gb_id]
+                            del self.data.gb_dict[gb_acc]
         except ValueError:
             sys.stderr.write("Problem reading {}, skipping\n".format(fn_path))
 
@@ -2306,8 +2375,6 @@ class PhyscraperScrape(object):
             if gb_id not in all_added_gi:
                 reason = ""
                 all_added_gi.add(gb_id)
-
-                # debug(gb_id)
                 if len(gb_id.split(".")) == 1:
                     debug("problem gb_id {}".format(gb_id))
                 if self.blacklist is not None and gb_id in self.blacklist:
@@ -2395,7 +2462,7 @@ class PhyscraperScrape(object):
                             self.seq_dict_build(seq, otu_id, tmp_dict)
                         
                     else:
-                        debug("seq too short")
+                        #debug("seq too short")
                         # do not add them to not added, as seq len depends on sequence which was blasted and
                         # there might be a better matching seq (one which will return a longer sequence...)
                         # if gb_id not in self.gb_not_added:
@@ -3256,16 +3323,14 @@ class FilterBlast(PhyscraperScrape):
         """
         debug("loop_for_write_blast_files")
         aln_otus = set([taxon.label for taxon in self.data.aln])
-        for otu_id in self.sp_d[tax_id]:
+        query_otu = None
+        db_otus = []
+        for otu_id in self.sp_d[tax_id]: 
             otu_info = self.data.otu_dict[otu_id]
-            if otu_id   in aln_otus:#we know this is in the alignment
-                for otu_iter in aln_otus:
-                    aln_tip_id = self.data.otu_dict[otu_iter]["^ncbi:taxon"]
-                        # if tax_name == otu_dict_name:
-                    seq = self.data.aln[otu_iter]
-                    if tax_id == aln_tip_id:
-                        filter_by_local_blast.write_filterblast_query(self.workdir, otu_iter, seq, fn=tax_id)
+            if otu_id in aln_otus:
+                query_otu = otu_id #we end up overwriting the query file repeatedly. Might as well just choose one otu and write it once.
             elif '^physcraper:status' in otu_info and otu_info['^physcraper:status'].split(' ')[0] not in self.seq_filter: # these are the new sequences that haven't been filtered out
+                db_otus.append(otu_id)
                 assert '^ncbi:accession' in otu_info
                 gb_id = otu_info['^ncbi:accession']
                 assert len(gb_id.split(".")) == 2 #we should have already gotten rid of any bad ids
@@ -3274,6 +3339,10 @@ class FilterBlast(PhyscraperScrape):
                 filter_by_local_blast.write_filterblast_db(self.workdir, gb_id, seq, fn=tax_id)
             else:
                 debug("otu_id {} was not in the alignemnt, but was filtered out due to {}".format(otu_id, otu_info['^physcraper:status']))
+        assert query_otu is not None#at least 1 otu must be in the alignment
+        debug("for taxon {} will use otu {} for query".format(tax_id, query_otu))
+        query_seq = self.data.aln[query_otu]
+        filter_by_local_blast.write_filterblast_query(self.workdir, query_otu, query_seq, fn=tax_id)
         return tax_id
 
 
@@ -3295,11 +3364,10 @@ class FilterBlast(PhyscraperScrape):
         seq_in_aln = 0
         for otu_id in self.sp_d[tax_id]:
             item = self.data.otu_dict[otu_id]
-            try:
-                seq  = self.data.aln[otu_id] # will check if seq is in current alignemnet
+            aln_otus = set([taxon.label for taxon in self.data.aln])
+            if otu_id in aln_otus:
                 seq_in_aln += 1
-            except KeyError:
-                pass 
+                new_taxon = False
             status = item.get('^physcraper:status')
             assert status is not None
             if status.split(' ')[0] not in self.seq_filter:
