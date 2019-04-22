@@ -1580,6 +1580,7 @@ class PhyscraperScrape(object):
         debug("created physcaper ncbi_mrca {}, len {}".format(self.mrca_ncbi_list, len(self.mrca_ncbi_list)))
         self.map_taxa_to_ncbi()
 
+
     def get_ncbi_mrca(self):
         """ get the ncbi tax ids from a set of mrca ott ids.
         """
@@ -1809,43 +1810,137 @@ class PhyscraperScrape(object):
                                                                                                             last_blast))
         self._blasted = 1
 
-    def get_acc_from_blast(self, query_string):
+    def get_new_seqs_for_mergedseq(self, var_list, query_dict):
         """
-        Get the accession number from a local blast query.
+        Get the sequence information and fill dict for new sequences when there are merged information.
         
-        Get acc is more difficult now, as new seqs not always have gi number, then query changes.
-        
-        :param query_string: string that contains acc and gi from local blast query result
-        :return: gb_acc 
-
+        :param var_list: list of needed variables
+        :param query_dict: dict with a query seqs that is filled and returned
         """
-        # debug("get_acc_from_blast")
-        # debug(query_string.split("|"))
-        if len(query_string.split("|")) >= 3:
-            gb_acc = query_string.split("|")[3]
-        else:
-            gb_acc = query_string.split("|")[0]
-        if len(gb_acc.split(".")) < 2:
-            return None
-        assert len(gb_acc.split(".")) >= 2, (len(gb_acc.split(".")), gb_acc)
-        return gb_acc
+        gb_acc, gi_id, sseq, staxids, sscinames, pident, evalue, bitscore, salltitles, sallseqid =  [var for var in var_list]
 
-    def get_gi_from_blast(self, query_string):
-        """
-        Get the gi number from a local blast query. 
-        Get acc is more difficult now, as new seqs not always have gi number, then query changes.
+        found_taxids = set()
+        found_spn = set()
+        # FOR MERGED SEQS
+        staxids_l = staxids.split(";")
+        sscinames_l = sscinames.split(";")
+        sallseqid_l = sallseqid.split(";")
+        salltitles_l = salltitles.split("<>")
 
-        If not available return None. 
+        # make sure you have the correct infos
+        tax_id_l = self.get_taxid_from_acc(gb_acc)
+        # debug([staxids, gb_acc, tax_id_l])
+        for item in tax_id_l:
+            try:
+                assert str(item) in staxids_l, (item, staxids_l, tax_id_l, gb_acc)
+            except AssertionError:
+                sys.stderr.write("Genbank accession {} does map to different taxonid in database: {} vs {}. Check with ncbi\n".format(gb_acc, item, staxids_l)) 
 
-        :param query_string: string that contains acc and gi from local blast query result
-        :return: gb_id if available
-        """      
-        if len(query_string.split("|")) >= 3:
-            gb_id = query_string.split("|")[1]
-        else:
-            return None
-        assert len(gb_id.split(".")) < 2, (len(gb_id.split(".")), gb_id)
-        return gb_id
+        # this while loop is here to speed up the process of finding the correct information
+        count = 0
+        spn_range = 0
+        stop_while = False
+        id_before = 0
+        id_now = -2
+        while len(found_taxids) < len(set(staxids_l)):  # as long as i have not found all taxids for the seq
+            count += 1
+            if stop_while:
+                # debug("stop while")
+                break
+            if count == 5:
+                break  # too many tries to find correct number of redundant taxa
+            elif count == 1:
+                for i in range(0, len(sallseqid_l)):
+                    if len(found_taxids) == len(staxids_l):  # if we found all taxon_ids present in the initial list, stop looking for more
+                        break
+                    # debug("do all the stuff")
+                    gb_acc = get_acc_from_blast(sallseqid_l[i])
+                    gi_id = get_gi_from_blast(sallseqid_l[i])
+                    stitle = salltitles_l[i]
+                    # if both var are the same, we do not need to search GB for taxon info
+                    # staxids = tax_id_l[i]
+                    print("check out what goes wrong here")
+                    print(gb_acc, self.get_taxid_from_acc(gb_acc))
+                    print(gb_acc, self.get_taxid_from_acc(gb_acc)[0])
+
+                    staxids = int(self.get_taxid_from_acc(gb_acc)[0])  # corresponding taxid is always in first position
+                    # debug(qtaxid)
+                    id_before = id_now
+                    id_now = staxids
+          
+                    for item in tax_id_l:
+                        try:
+                            assert str(staxids) in staxids_l or str(staxids) in tax_id_l, (item, staxids_l, tax_id_l, gb_acc)
+                        except AssertionError:
+                            sys.stderr.write("Merged Genbank accession {} does map to different taxonid in database: {} vs {}. Check with ncbi\n".format(gb_acc, item, staxids_l)) 
+                    # assert str(staxids) in staxids_l or staxids in tax_id_l, (str(staxids), staxids_l, tax_id_l)
+                    
+                    # if gb acc was already read in before stop the for loop
+                    if gb_acc in query_dict or gb_acc in self.data.gb_dict:
+                        # debug("set to true")
+                        stop_while = True
+                        break
+                    sscinames = self.ids.ncbi_parser.get_name_from_id(staxids)
+                    # # likely not a speec up to just the single line above
+                    # # sometimes if multiple seqs are merged,
+                    # # we lack information about which taxon is which gb_acc...
+                    # # test it here:
+                    # # if we have same number of gb_acc and taxon id go ahead as usual
+                    # # debug("get name from id")
+                    # if len(sallseqid_l) == len(staxids_l):
+                    #     sscinames = sscinames_l[i]
+                    # # only one taxon id present, all are from same taxon
+                    # elif len(staxids_l) == 1:
+                    #     sscinames = sscinames_l[0]
+                    #     qtaxid = staxids_l[0]
+                    # # if not the first item and id different from before: get name
+                    # elif i != 0 and id_before != id_now:
+                    #     sscinames = self.ids.ncbi_parser.get_name_from_id(qtaxid)
+                    # elif i == 0:  # for first item in redundant data, always get info
+                    #     sscinames = self.ids.ncbi_parser.get_name_from_id(qtaxid)
+                    # else:  # if id_before and id_now were the same, we do not need to add same seq again
+                    #     continue
+                    try:
+                        # assert str(staxids) in staxids_l, (str(staxids), staxids_l)
+                        # next vars are used to stop loop if all taxids were found
+                        found_taxids.add(staxids)
+                        found_spn.add(sscinames)
+                        if gb_acc not in query_dict and gb_acc not in self.newseqs_acc:
+                            query_dict[gb_acc] = \
+                                {'^ncbi:gi': gi_id, 'accession': gb_acc, 'staxids': staxids,
+                                 'sscinames': sscinames, 'pident': pident, 'evalue': evalue,
+                                 'bitscore': bitscore, 'sseq': sseq, 'title': stitle}
+                    except AssertionError:
+                        sys.stderr.write("Taxon Id {} was not initally found in the blast search - corresponding Genbank accession number is: {}. Sequence will not be added. Check with ncbi. \n".format(staxids, gb_acc))
+         
+            # same loop as above, only that it does more blastdbcmd's
+            # this is used as sometimes the if above does not yield in stop_while == True,
+            # through different taxa names
+            elif count >= 1 and stop_while is False:
+                # debug("count>1")
+                for i in range(0, len(sallseqid_l)):
+                    if len(found_taxids) == len(staxids_l):
+                        break
+                    gb_acc = get_acc_from_blast(sallseqid_l[i])
+                    gi_id = get_gi_from_blast(sallseqid_l[i])
+                    stitle = salltitles_l[i]
+                    # if gb acc was already read in before stop the for loop
+                    if gb_acc in query_dict or gb_acc in self.data.gb_dict:
+                        stop_while = True
+                        break
+                 
+                    staxids = self.get_taxid_from_acc(gb_acc)[0]
+                    sscinames = self.ids.ncbi_parser.get_name_from_id(staxids)
+                    assert str(staxids) in staxids_l, (staxids, staxids_l)
+                    # next vars are used to stop loop if all taxids were found
+                    found_taxids.add(staxids)
+                    found_spn.add(sscinames)
+                    if gb_acc not in query_dict and gb_acc not in self.newseqs_acc:
+                        query_dict[gb_acc] = \
+                             {'^ncbi:gi': gi_id, 'accession': gb_acc, 'staxids': staxids,
+                              'sscinames': sscinames, 'pident': pident, 'evalue': evalue,
+                              'bitscore': bitscore, 'sseq': sseq, 'title': stitle}
+        return query_dict
 
     def read_local_blast_query(self, fn_path):
         """ Implementation to read in results of local blast searches.
@@ -1853,142 +1948,30 @@ class PhyscraperScrape(object):
         :param fn_path: path to file containing the local blast searches
         :return: updated self.new_seqs and self.data.gb_dict dictionaries
         """
-        # debug("read_local_blast_query")
+        debug("read_local_blast_query")
         query_dict = {}
         with open(fn_path, mode="r") as infile:
             for lin in infile:
                 # debug("new lin")
                 # sseqid, staxids, sscinames, pident, evalue, bitscore, sseq, stitle = lin.strip().split('\t')
                 sseqid, staxids, sscinames, pident, evalue, bitscore, sseq, salltitles, sallseqid = lin.strip().split('\t')
-                gi_id = int(sseqid.split("|")[1])
-                gb_acc = sseqid.split("|")[3]
-                sseq = sseq.replace("-", "") #TODO here is where we want to grab the full sequence
+                gb_acc = get_acc_from_blast(sseqid)
+                gi_id = get_gi_from_blast(sseqid)                
+                sseq = sseq.replace("-", "") #TODO here is where we want to grab the full sequence MK: I wrote a batch query for the seqs we are interested. Makes it faster.
                 sscinames = sscinames.replace(" ", "_").replace("/", "_")
                 pident = float(pident)
                 evalue = float(evalue)
                 bitscore = float(bitscore)
                 stitle = salltitles
-                # NOTE: sometimes there are seq which are identical & are combined in the local blast db...
-                # Get all of them! (they can be of a different taxon ids = get redundant seq info)
-                found_taxids = set()
-                found_spn = set()
                 # get additional info only for seq that pass the eval
                 if evalue < float(self.config.e_value_thresh):
+                    # NOTE: sometimes there are seq which are identical & are combined in the local blast db...
+                    # Get all of them! (they can be of a different taxon ids = get redundant seq info)
                     if len(sallseqid.split(";")) > 1:
-                        # FOR MERGED SEQS
-                        staxids_l = staxids.split(";")
-                        sscinames_l = sscinames.split(";")
-                        sallseqid_l = sallseqid.split(";")
-                        salltitles_l = salltitles.split("<>")
-
-                        # make sure you have the correct infos
-                        tax_id_l = self.get_taxid_from_acc(gb_acc)
-                        for item in tax_id_l:
-                            assert str(item) in staxids_l
-
-                        # this while loop is here to speed up the process of finding the correct information
-                        count = 0
-                        spn_range = 0
-                        stop_while = False
-                        id_before = 0
-                        id_now = -2
-                        while len(found_taxids) < len(set(staxids_l)):  # as long as i have not found all taxids for the seq
-                            count += 1
-                            if stop_while:
-                                # debug("stop while")
-                                break
-                            if count == 5:
-                                break  # too many tries to find correct number of redundant taxa
-                            elif count == 1:
-                                for i in range(0, len(sallseqid_l)):
-                                    if len(found_taxids) == len(staxids_l):  # if we found all taxon_ids present in the initial list, stop looking for more
-                                        break
-                                    gb_acc = self.get_acc_from_blast(sallseqid_l[i])
-                                    gb_id = self.get_gi_from_blast(sallseqid_l[i])
-                                    stitle = salltitles_l[i]
-                                    # if both var are the same, we do not need to search GB for taxon info                
-                                    staxids = tax_id_l[i]
-                                    qtaxid = int(self.get_taxid_from_acc(gb_acc)[0])
-                                    id_before = id_now
-                                    id_now = qtaxid
-
-                                    assert str(qtaxid) in staxids_l, (str(qtaxid), staxids_l)
-                                    assert qtaxid in tax_id_l, (qtaxid, tax_id_l)
-                                    # if gb acc was already read in before stop the for loop
-                                    if gb_acc in query_dict or gb_acc in self.data.gb_dict:
-                                        # debug("set to true")
-                                        stop_while = True
-                                        break
-
-                                    # sometimes if multiple seqs are merged,
-                                    # we lack information about which taxon is which gb_acc...
-                                    # test it here:
-                                    # if we have same number of gb_acc and taxon id go ahead as usual
-                                    # debug("get name from id")
-                                    if len(sallseqid_l) == len(staxids_l):
-                                        sscinames = sscinames_l[i]
-                                    # only one taxon id present, all are from same taxon
-                                    elif len(staxids_l) == 1:
-                                        sscinames = sscinames_l[0]
-                                        qtaxid = staxids_l[0]
-                                    # if not the first item and id different from before: get name
-                                    elif i != 0 and id_before != id_now:
-                                        sscinames = self.ids.ncbi_parser.get_name_from_id(qtaxid)
-                                    elif i == 0:  # for first item in redundant data, always get info
-                                        sscinames = self.ids.ncbi_parser.get_name_from_id(qtaxid)
-                                    else:  # if id_before and id_now were the same, we do not need to add same seq again
-                                        continue
-                                    try:
-                                        assert str(staxids) in staxids_l, (str(staxids), staxids_l)
-                                        # next vars are used to stop loop if all taxids were found
-                                        found_taxids.add(staxids)
-                                        found_spn.add(sscinames)
-                                        if gb_acc not in query_dict and gb_acc not in self.newseqs_acc:
-                                            query_dict[gb_acc] = \
-                                                {'^ncbi:gi': gb_id, 'accession': gb_acc, 'staxids': staxids,
-                                                 'sscinames': sscinames, 'pident': pident, 'evalue': evalue,
-                                                 'bitscore': bitscore, 'sseq': sseq, 'title': stitle}
-                                    except AssertionError:
-                                        sys.stderr.write("Taxon Id {} was not initally found in the blast search - corresponding Genbank accession number is: {}. Sequence will not be added. Check with ncbi. \n".format(staxids, gb_acc))
-                         
-                            # same loop as above, only that it does more blastdbcmd's
-                            # this is used as sometimes the if above does not yield in stop_while == True,
-                            # through different taxa names
-                            elif count >= 1 and stop_while is False:
-                                # debug("count>1")
-                                for i in range(0, len(sallseqid_l)):
-                                    if len(found_taxids) == len(staxids_l):
-                                        break
-                                    gb_acc = self.get_acc_from_blast(sallseqid_l[i])
-                                    gb_id = self.get_gi_from_blast(sallseqid_l[i])
-                                    stitle = salltitles_l[i]
-                                    # if gb acc was already read in before stop the for loop
-                                    if gb_acc in query_dict or gb_acc in self.data.gb_dict:
-                                        stop_while = True
-                                        break
-                                    # sometimes if multiple seqs are merged, we lack the information
-                                    # which taxon is which gb_acc...test it here:
-                                    # if we have same number information go ahead as usual
-                                    if len(sallseqid_l) == len(staxids_l):
-                                        staxids = staxids_l[i]
-                                        sscinames = sscinames_l[i]
-                                    elif len(staxids_l) == 1:  # only one taxon id present, all are from same taxon
-                                        staxids = staxids_l[0]
-                                        sscinames = sscinames_l[0]
-                                    else:
-                                        staxids = self.get_taxid_from_acc(gb_acc)
-                                        sscinames = self.ids.ncbi_parser.get_name_from_id(staxids)
-                                    assert str(staxids) in staxids_l, (staxids, staxids_l)
-                                    # next vars are used to stop loop if all taxids were found
-                                    found_taxids.add(staxids)
-                                    found_spn.add(sscinames)
-                                    if gb_acc not in query_dict and gb_acc not in self.newseqs_acc:
-                                        query_dict[gb_acc] = \
-                                             {'^ncbi:gi': gb_id, 'accession': gb_acc, 'staxids': staxids,
-                                              'sscinames': sscinames, 'pident': pident, 'evalue': evalue,
-                                              'bitscore': bitscore, 'sseq': sseq, 'title': stitle}
-                            # debug(query_dict[gb_acc])
-                    else:
+                        var_list = [gb_acc, gi_id, sseq, staxids, sscinames, pident, evalue, bitscore, stitle, sallseqid]
+                        query_dict = self.get_new_seqs_for_mergedseq(var_list, query_dict)
+                        taxids_l = staxids.split(";")
+                    else:  # if there are no non-redundant data
                         staxids = int(staxids)
                         self.ids.spn_to_ncbiid[sscinames] = staxids
                         if gb_acc not in self.ids.acc_ncbi_dict:  # fill up dict with more information.
@@ -2010,7 +1993,6 @@ class PhyscraperScrape(object):
                 # else:
                     # debug("was added before")
             else:
-
                 fn = open("{}/blast_threshold_not_passed.csv".format(self.workdir), "a+")
                 fn.write("blast_threshold_not_passed:\n")
                 fn.write("{}, {}, {}\n".format(query_dict[key]["sscinames"], query_dict[key]["accession"],
@@ -2040,13 +2022,12 @@ class PhyscraperScrape(object):
             for line in iter(f):
                 line = line.rstrip().lstrip()
                 tax_id_l.append(int(line))
-            f.close() 
         else: 
             f = open("./tests/data/precooked/testing_localdb/tax_id_{}.csv".format(gb_acc))
-        tax_id_l = []
-        for line in iter(f):
-            line = line.rstrip().lstrip()
-            tax_id_l.append(int(line))
+            tax_id_l = []
+            for line in iter(f):
+                line = line.rstrip().lstrip()
+                tax_id_l.append(int(line))
         f.close() 
         return tax_id_l
 
@@ -3324,13 +3305,11 @@ class FilterBlast(PhyscraperScrape):
         debug("loop_for_write_blast_files")
         aln_otus = set([taxon.label for taxon in self.data.aln])
         query_otu = None
-        db_otus = []
         for otu_id in self.sp_d[tax_id]: 
             otu_info = self.data.otu_dict[otu_id]
             if otu_id in aln_otus:
                 query_otu = otu_id #we end up overwriting the query file repeatedly. Might as well just choose one otu and write it once.
             elif '^physcraper:status' in otu_info and otu_info['^physcraper:status'].split(' ')[0] not in self.seq_filter: # these are the new sequences that haven't been filtered out
-                db_otus.append(otu_id)
                 assert '^ncbi:accession' in otu_info
                 gb_id = otu_info['^ncbi:accession']
                 assert len(gb_id.split(".")) == 2 #we should have already gotten rid of any bad ids
@@ -3521,6 +3500,50 @@ class FilterBlast(PhyscraperScrape):
         self.sp_d.clear()
         self.filtered_seq.clear()
         return
+
+
+
+
+def get_acc_from_blast(query_string):
+    """
+    Get the accession number from a blast query.
+    
+    Get acc is more difficult now, as new seqs not always have gi number, then query changes.
+    
+    :param query_string: string that contains acc and gi from local blast query result
+    :return: gb_acc 
+
+    """
+    debug("get_acc_from_blast")
+    debug(query_string.split("|"))
+    if len(query_string.split("|")) >= 3:
+        gb_acc = query_string.split("|")[3]
+    else:
+        gb_acc = query_string.split("|")[0]
+    if len(gb_acc.split(".")) < 2:
+        sys.stderr.write("query string {} does not contain a Genbank accession number.".format(query_string))
+        exit(-15)
+    assert len(gb_acc.split(".")) >= 2, (len(gb_acc.split(".")), gb_acc)
+    return gb_acc
+
+def get_gi_from_blast(query_string):
+    """
+    Get the gi number from a blast query. 
+    Get acc is more difficult now, as new seqs not always have gi number, then query changes.
+
+    If not available return None. 
+
+    :param query_string: string that contains acc and gi from local blast query result
+    :return: gb_id if available
+    """      
+    if len(query_string.split("|")) >= 3:
+        gb_id = query_string.split("|")[1]
+    else:
+        return None
+    assert len(gb_id.split(".")) < 2, (len(gb_id.split(".")), gb_id)
+    assert gb_id.isdigit() is True
+    return int(gb_id)
+
 
 
 ####################
