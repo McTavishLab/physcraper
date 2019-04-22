@@ -110,7 +110,7 @@ def get_user_input():
             if x == "yes" or x == "no":
                 is_valid = 1  # set it to 1 to validate input and to terminate the while..not loop
         except ValueError as e:
-            print("'%s' is not a valid answer." % e.args[0].split(": ")[1])
+            print("'{}' is not a valid answer.".format(e.args[0].split(": ")[1]))
     return x
 
 
@@ -165,25 +165,25 @@ class ConfigObj(object):
         debug(os.path.isfile(configfi))
         if _DEBUG:
             sys.stdout.write("Building config object\n")
-        assert os.path.isfile(configfi), "file `%s` does not exists" % configfi
+        assert os.path.isfile(configfi), "file `{}` does not exists".format(configfi)
         config = configparser.ConfigParser()
         config.read_file(open(configfi))
 
         # read in blast settings
         self.email = config["blast"]["Entrez.email"]
-        assert "@" in self.email, "your email `%s` does not have an @ sign" % self.email
+        assert "@" in self.email, "your email `{}` does not have an @ sign".format(self.email)
 
         self.e_value_thresh = config["blast"]["e_value_thresh"]
         assert is_number(self.e_value_thresh), (
-                "value `%s` does not exists" % self.e_value_thresh
+                "value `{}` does not exists".format(self.e_value_thresh)
         )
         self.hitlist_size = int(config["blast"]["hitlist_size"])
         assert is_number(self.hitlist_size), (
-                "value `%s`is not a number" % self.e_value_thresh
+                "value `{}`is not a number".format(self.e_value_thresh)
         )
         self.blast_loc = config["blast"]["location"]
         assert self.blast_loc in ["local", "remote"], (
-                "your blast location `%s` is not remote or local" % self.email
+                "your blast location `{}` is not remote or local".format(self.email)
         )
         if self.blast_loc == "local":
             self.blastdb = config["blast"]["localblastdb"]
@@ -215,26 +215,26 @@ class ConfigObj(object):
         debug("shared blast folder? {}".format(self.gb_id_filename))
         self.delay = int(config["blast"]["delay"])
         assert is_number(self.delay), (
-                "value `%s`is not a number" % self.delay
+                "value `{}`is not a number".format(self.delay)
         )
         # #############
         # read in physcraper settings
         self.unmapped = config["physcraper"]["unmapped"]
         assert self.unmapped in ["remove", "keep"], (
-                "your unmapped statement `%s` in the config file is not remove or keep"
-                % self.unmapped
+                "your unmapped statement '{}'' in the config file is not remove or keep"
+               .format(self.unmapped)
         )
         self.seq_len_perc = float(config["physcraper"]["seq_len_perc"])
         assert 0 < self.seq_len_perc <= 1, (
-                "value `%s` is not between 0 and 1" % self.seq_len_perc
+                "value `{}` is not between 0 and 1".format(self.seq_len_perc)
         )
         self.trim_perc = float(config["physcraper"]["trim_perc"])
         assert 0 < self.trim_perc < 1, (
-                "value `%s` is not between 0 and 1" % self.trim_perc
+                "value `{}` is not between 0 and 1".format(self.trim_perc)
         )
         self.maxlen = float(config["physcraper"]["max_len"])
         assert 1 < self.maxlen, (
-                "value `%s` is not larger than 1" % self.maxlen
+                "value `{}` is not larger than 1".format(self.maxlen)
         )
         self.add_lower_taxa = config["physcraper"]["add_lower_taxa"]
         if self.add_lower_taxa == "True" or self.add_lower_taxa == "true":
@@ -242,7 +242,7 @@ class ConfigObj(object):
         else:
             self.add_lower_taxa = False
         assert self.add_lower_taxa in [True, False], (
-                "self.add_lower_taxa `%s` is not True or False" % self.add_lower_taxa
+                "self.add_lower_taxa `{}` is not True or False".format(self.add_lower_taxa)
         )
         # read in settings for internal Physcraper processes
         # default is api, but can run on local version of OpenTree datastore
@@ -254,7 +254,7 @@ class ConfigObj(object):
             "ott_ncbi"
         ]
         assert os.path.isfile(self.ott_ncbi), (
-                "file `%s` does not exists" % self.ott_ncbi
+                "file `{}` does not exists".format(self.ott_ncbi)
         )
         # rewrites relative path to absolute path so that it behaves when changing dirs
         self.id_pickle = os.path.abspath(config["taxonomy"]["id_pickle"])
@@ -406,7 +406,7 @@ def generate_ATT_from_phylesystem(aln,
     :return: object of class ATT
     """
     assert isinstance(aln, datamodel.charmatrixmodel.DnaCharacterMatrix), \
-            "your alignment `%s` ist not of type DnaCharacterMatrix" % aln
+            "your alignment `{}` ist not of type DnaCharacterMatrix".format(aln)
     for tax in aln.taxon_namespace:
         tax.label = tax.label.replace(" ", "_")  # Forcing all spaces to underscore
     nexson = get_nexson(study_id, phylesystem_loc)
@@ -725,7 +725,7 @@ class AlignTreeTax(object):
         debug("build ATT class")
         self.aln = alignment
         assert isinstance(self.aln, datamodel.charmatrixmodel.DnaCharacterMatrix), \
-                ("your aln '%s' is not a DnaCharacterMatrix" % alignment)
+                ("your aln '{}' is not a DnaCharacterMatrix".format(alignment))
         if schema is None:
             self.tre = Tree.get(data=newick,
                                 schema="newick",
@@ -737,7 +737,7 @@ class AlignTreeTax(object):
                                 preserve_underscores=True,
                                 taxon_namespace=self.aln.taxon_namespace)
         assert (self.tre.taxon_namespace is self.aln.taxon_namespace), "tre and aln taxon_namespace are not identical"
-        assert isinstance(otu_dict, dict), ("otu_dict '%s' is not of type dict" % otu_dict)
+        assert isinstance(otu_dict, dict), ("otu_dict '{}' is not of type dict".format(otu_dict))
         self.otu_dict = otu_dict
         self.config = config_obj
         self.ps_otu = 1  # iterator for new otu IDs
@@ -746,7 +746,7 @@ class AlignTreeTax(object):
         self.workdir = os.path.abspath(workdir)
         if not os.path.exists(self.workdir):
             os.makedirs(self.workdir)
-        assert int(ingroup_mrca), ("your ingroup_mrca '%s' is not an integer." % ingroup_mrca)
+        assert int(ingroup_mrca), ("your ingroup_mrca '{}' is not an integer.".format(ingroup_mrca))
         self.ott_mrca = ingroup_mrca  # ott_ingroup mrca can be pulled directly from phylesystem
         self.orig_seqlen = []  # will get filled in later...
         self.gb_dict = {}  # has all info about new blast seq
@@ -1675,7 +1675,7 @@ class PhyscraperScrape(object):
         toblast.write(">{}\n".format(taxon_label))
         toblast.write("{}\n".format(query))
         toblast.close()
-        assert os.path.isdir(self.config.blastdb), ("blast dir does not exist: '%s'." % self.config.blastdb)
+        assert os.path.isdir(self.config.blastdb), ("blast dir does not exist: '{}'.".format(self.config.blastdb))
         with cd(self.config.blastdb):
             # this format (6) allows to get the taxonomic information at the same time
             outfmt = " -outfmt '6 sseqid staxids sscinames pident evalue bitscore sseq salltitles sallseqid'"
@@ -2555,7 +2555,7 @@ class PhyscraperScrape(object):
             if _VERBOSE:
                 sys.stdout.write("Papara done")
         except subprocess.CalledProcessError as grepexc:
-            print "error code", grepexc.returncode, grepexc.output
+            print("error code", grepexc.returncode, grepexc.output)
         except OSError as e:
             if e.errno == os.errno.ENOENT:
                 sys.stderr.write("failed running papara. Is it installed?\n")
@@ -3373,14 +3373,14 @@ class FilterBlast(PhyscraperScrape):
         }
         # if self.config.add_lower_taxa is not True:
         if new_taxon is False:
-            assert original != 0 or seq_added != 0, ("count_dict `%s` has more seq added than threshold: 0." % count_dict)
+            assert original != 0 or seq_added != 0, ("count_dict `{}` has more seq added than threshold: 0.".format(count_dict))
         if new_taxon is True:
-            assert original == 0, ("count_dict `%s` has more original seq than allowed for new taxon." % count_dict)
-            assert seq_added == 0, ("count_dict `%s` has more seq added than allowed for new taxon." % count_dict)
+            assert original == 0, ("count_dict `{}` has more original seq than allowed for new taxon.".format(count_dict))
+            assert seq_added == 0, ("count_dict `{}` has more seq added than allowed for new taxon.".format(count_dict))
         # debug([seq_added, original, self.threshold])
         if self.config.add_lower_taxa is not True:
             if original < self.threshold:
-                assert seq_added <= self.threshold, ("count_dict `%s` has more seq added than threshold." % count_dict)
+                assert seq_added <= self.threshold, ("count_dict `{}` has more seq added than threshold.".format(count_dict))
             elif original > self.threshold:
                 sys.stdout.write("already more originals than requested by threshold...\n")
             else:
