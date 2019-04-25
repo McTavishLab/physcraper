@@ -12,7 +12,7 @@ setup(name='Physcraper',
           'dendropy==4.1.0',
           'configparser',
           'biopython',
-          'urllib3',
+          'urllib3<1.25',
           'peyotl',
       ]
      )

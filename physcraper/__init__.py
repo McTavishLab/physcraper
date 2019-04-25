@@ -979,8 +979,6 @@ class AlignTreeTax(object):
         :return: the unique otu_id - the key from self.otu_dict of the corresponding sequence
         """
         # debug("add_otu function")
-        if len(gb_id.split(".")) == 1:
-            debug(gb_id)
         otu_id = "otuPS{}".format(self.ps_otu)
         self.ps_otu += 1
         ott_id = None
@@ -1682,7 +1680,7 @@ class PhyscraperScrape(object):
             # outfmt = " -outfmt 5"  # format for xml file type
             # TODO query via stdin
             blastcmd = "blastn -query " + "{}/tmp.fas".format(abs_blastdir) + \
-                       " -db {}nt -out ".format(self.config.blastdb) + abs_fn + \
+                       " -db {}/nt -out ".format(self.config.blastdb) + abs_fn + \
                        " {} -num_threads {}".format(outfmt, self.config.num_threads) + \
                        " -max_target_seqs {} -max_hsps {}".format(self.config.hitlist_size,
                                                                   self.config.hitlist_size)
@@ -1853,16 +1851,11 @@ class PhyscraperScrape(object):
                 for i in range(0, len(sallseqid_l)):
                     if len(found_taxids) == len(staxids_l):  # if we found all taxon_ids present in the initial list, stop looking for more
                         break
-                    # debug("do all the stuff")
                     gb_acc = get_acc_from_blast(sallseqid_l[i])
                     gi_id = get_gi_from_blast(sallseqid_l[i])
                     stitle = salltitles_l[i]
                     # if both var are the same, we do not need to search GB for taxon info
                     # staxids = tax_id_l[i]
-                    print("check out what goes wrong here")
-                    print(gb_acc, self.get_taxid_from_acc(gb_acc))
-                    print(gb_acc, self.get_taxid_from_acc(gb_acc)[0])
-
                     staxids = int(self.get_taxid_from_acc(gb_acc)[0])  # corresponding taxid is always in first position
                     # debug(qtaxid)
                     id_before = id_now
@@ -1877,11 +1870,10 @@ class PhyscraperScrape(object):
                     
                     # if gb acc was already read in before stop the for loop
                     if gb_acc in query_dict or gb_acc in self.data.gb_dict:
-                        # debug("set to true")
                         stop_while = True
                         break
                     sscinames = self.ids.ncbi_parser.get_name_from_id(staxids)
-                    # # likely not a speec up to just the single line above
+                    # # likely not a speed up to just the single line above
                     # # sometimes if multiple seqs are merged,
                     # # we lack information about which taxon is which gb_acc...
                     # # test it here:
@@ -1952,8 +1944,6 @@ class PhyscraperScrape(object):
         query_dict = {}
         with open(fn_path, mode="r") as infile:
             for lin in infile:
-                # debug("new lin")
-                # sseqid, staxids, sscinames, pident, evalue, bitscore, sseq, stitle = lin.strip().split('\t')
                 sseqid, staxids, sscinames, pident, evalue, bitscore, sseq, salltitles, sallseqid = lin.strip().split('\t')
                 gb_acc = get_acc_from_blast(sseqid)
                 gi_id = get_gi_from_blast(sseqid)                
@@ -1994,9 +1984,8 @@ class PhyscraperScrape(object):
                     # debug("was added before")
             else:
                 fn = open("{}/blast_threshold_not_passed.csv".format(self.workdir), "a+")
-                fn.write("blast_threshold_not_passed:\n")
-                fn.write("{}, {}, {}\n".format(query_dict[key]["sscinames"], query_dict[key]["accession"],
-                                               query_dict[key]["evalue"]))
+                fn.write("blast_threshold_not_passed: {}, {}, {}\n".format(query_dict[key]["sscinames"], query_dict[key]["accession"],
+                         query_dict[key]["evalue"]))
                 fn.close()
 
     def get_taxid_from_acc(self, gb_acc):
@@ -2058,19 +2047,11 @@ class PhyscraperScrape(object):
                             self.new_seqs[unpbl_local_id] = hsp.sbjct
                             # debug(self.new_seqs[unpbl_local_id])
                             self.data.gb_dict[unpbl_local_id] = {'title': "unpublished", 'localID': local_id}
-                            # debug(self.data.unpubl_otu_json)
-                            # debug(local_id)
-                            # debug(type(local_id))
-                            # debug('otu{}'.format(local_id.replace("_", "").replace("-", "")))
                             self.data.gb_dict[unpbl_local_id].update(
                                 self.data.unpubl_otu_json['otu{}'.format(local_id.replace("_", "").replace("-", ""))])
                             gb_counter += 1
-                            # debug(self.data.gb_dict[unpbl_local_id])
-                            # debug(some)
                     else:
                         fn.write("{}: {}".format(alignment.title.split("|")[-1].split(" ")[-1], hsp.expect))
-                        # if local_id not in self.gb_not_added:
-                        #     self.gb_not_added.append(local_id)
                         writeinfofiles.write_not_added_info(self, local_id, "threshold not passed")
                         # needs to be deleted from gb_dict,
                         # maybe we find a better fitting blast query seq and then it might get added
@@ -2114,9 +2095,6 @@ class PhyscraperScrape(object):
                                               'length': length, 'hsps': hsps}
                                 self.data.gb_dict[gb_id] = query_dict
                         else:
-                            # if gb_acc not in self.gb_not_added:
-                            #     self.gb_not_added.append(gb_acc)
-                            #     writeinfofiles.write_not_added_info(self, gb_acc, "threshold not passed")
                             writeinfofiles.write_not_added_info(self, gb_acc, "threshold not passed")
                             # needs to be deleted from gb_dict,
                             # maybe we find a better fitting blast query seq and then it might get added
@@ -2387,16 +2365,13 @@ class PhyscraperScrape(object):
                             #     mrca_ncbi = None
                             # # debug(stop)
                             # # debug(mrca_ncbi)
-
+                            # #############################################
 
                             # rank_mrca_ncbi = self.ids.ncbi_parser.get_rank(mrca_ncbi)
                             # get rank to delimit seq to ingroup_mrca
                             ncbi_id, tax_name = get_tax_info_from_acc(gb_id, self.data, self.ids)
 
-
                             rank_mrca_ncbi = set()
-                            #print(self.mrca_ncbi_list)
-                            # print(stop)
                             for mrca in self.mrca_ncbi_list:
                                 #debug("mrca")
                                 #debug(mrca)
@@ -2427,32 +2402,16 @@ class PhyscraperScrape(object):
                                 # elif gb_id not in self.gb_not_added:  # if not, leave it out
                                     debug("does not match")
                                     # debug([mrca, input_rank_id])
-                                    # self.gb_not_added.append(gb_id)
-                                    # not_added.append(gb_id)
                                     reason = "not_part_of_mrca: {}".format(self.mrca_ncbi_list)
-                                    # writeinfofiles.write_not_added(ncbi_id, tax_name, gb_id, reason, self.workdir)
-                                    # writeinfofiles.write_not_added_info(self, gb_id, "not_part_of_mrca")
-                                    # fn = open("{}/not_added_seq.csv".format(self.workdir), "a+")
-                                    # fn.write("not_part_of_mrca, {}, rankid: {}, ncbi_id:{}, "
-                                    #          "tax_name:{}\n".format(gb_id, input_rank_id, ncbi_id, tax_name))
-                                    # fn.close()
                         else:
                             added = True
                             self.newseqs_acc.append(gb_id)
                             otu_id = self.data.add_otu(gb_id, self.ids)
                             self.seq_dict_build(seq, otu_id, tmp_dict)
-                        
                     else:
-                        #debug("seq too short")
-                        # do not add them to not added, as seq len depends on sequence which was blasted and
-                        # there might be a better matching seq (one which will return a longer sequence...)
-                        # if gb_id not in self.gb_not_added:
-                        #     self.gb_not_added.append(gb_id)
-                        # writeinfofiles.write_not_added_info(self, gb_id, "seqlen_threshold_not_passed")
                         len_seq = len(seq.replace("-", "").replace("N", ""))
                         reason = "seqlen_threshold_not_passed: len seq: {}, min len: {}".format(len_seq, seq_len_cutoff)
  
-
                 # sequences that could not be added are written out to file
                 if added is False:
                     if "sscinames" in self.data.gb_dict[gb_id]:
@@ -2463,10 +2422,6 @@ class PhyscraperScrape(object):
                         ncbi_id = None
                     writeinfofiles.write_not_added(ncbi_id, tax_name, gb_id, reason, self.workdir)
 
-                        # fn = open("{}/not_added_seq.csv".format(self.workdir), "a+")
-                        # fn.write(
-                        #     "seqlen_threshold_not_passed, {}, {}, min len: {}\n".format(gb_id, len_seq, seq_len_cutoff))
-                        # fn.close()
         # this assert got more complicated, as sometimes superseqs are already deleted in seq_dict_build() ->
         # then subset assert it not True
         old_seqs_ids = set()
@@ -2477,7 +2432,6 @@ class PhyscraperScrape(object):
             tmp_dict_plus_super.add(item)
         for item in self.del_superseq:
             tmp_dict_plus_super.add(item)
-        # print(tmp_dict_plus_super)
         # assert old_seqs_ids.issubset(tmp_dict.keys()), ([x for x in old_seqs_ids if x not in tmp_dict.keys()])
         assert old_seqs_ids.issubset(tmp_dict_plus_super), ([x for x in old_seqs_ids if x not in tmp_dict_plus_super])
         for tax in old_seqs:
@@ -3286,8 +3240,6 @@ class FilterBlast(PhyscraperScrape):
                     if otu_info['^physcraper:last_blasted'] == '1800/01/01' \
                             and otu_info['^physcraper:status'] != "original":
                         gb_id = otu_info['^ncbi:accession']
-                        if len(gb_id.split(".")) == 1:
-                            debug(gb_id)
                         seq = self.new_seqs[gb_id]
                         self.filtered_seq[gb_id] = seq
         return self.filtered_seq
@@ -3418,7 +3370,6 @@ class FilterBlast(PhyscraperScrape):
                         elif selectby == "blast":
                             if seq_present == 0 and new_taxon is True and query_count >= 1:  # if new taxon
                                 # debug("new taxon")
-                                debug(self.sp_seq_d[tax_id].keys())
                                 blast_seq_id = self.sp_seq_d[tax_id].keys()[0]
                                 seq = self.sp_seq_d[tax_id][blast_seq_id]
                                 filter_by_local_blast.write_filterblast_query(self.workdir, blast_seq_id, seq,
@@ -3429,7 +3380,6 @@ class FilterBlast(PhyscraperScrape):
                                     filter_by_local_blast.write_filterblast_db(self.workdir, blast_key, seq, fn=tax_id)
                                 # make local blast of sequences
                                 filter_by_local_blast.run_filter_blast(self.workdir, tax_id, tax_id)
-                                debug(self.sp_seq_d[tax_id])
                                 if len(self.sp_seq_d[tax_id]) + seq_present >= self.threshold:
                                     self.select_seq_by_local_blast(self.sp_seq_d[tax_id], tax_id, seq_present)
                                 elif len(self.sp_seq_d[tax_id]) + seq_present < self.threshold:
@@ -3466,8 +3416,6 @@ class FilterBlast(PhyscraperScrape):
         seq_not_added = self.new_seqs.keys()
         reduced_new_seqs_dic = {}
         for gb_id in seq_not_added:
-            if len(gb_id.split(".")) == 1:
-                debug(gb_id)
             for key in self.data.otu_dict.keys():
                 if '^ncbi:accession' in self.data.otu_dict[key]:
                     if self.data.otu_dict[key]['^ncbi:accession'] == gb_id:
@@ -3479,8 +3427,6 @@ class FilterBlast(PhyscraperScrape):
                                                                             'there are enough seq per sp in tre'
         for gb_id in keylist:
             added = False
-            if len(gb_id.split(".")) == 1:
-                debug(gb_id)
             for key in self.data.otu_dict.keys():
                 if "^ncbi:accession" in self.data.otu_dict[key]:
                     if self.data.otu_dict[key]["^ncbi:accession"] == gb_id and added is False:
@@ -3514,8 +3460,6 @@ def get_acc_from_blast(query_string):
     :return: gb_acc 
 
     """
-    debug("get_acc_from_blast")
-    debug(query_string.split("|"))
     if len(query_string.split("|")) >= 3:
         gb_acc = query_string.split("|")[3]
     else:
