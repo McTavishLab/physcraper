@@ -70,8 +70,7 @@ def test_select_seq_by_local_blast():
         seq_d = filteredScrape.sp_seq_d[tax_id]
         fn = tax_id
         count2 = seq_present
-
-        if seq_present == 0 and new_taxon is True and query_count > 1:  # if new taxon and more than 1 seq to blast
+        if seq_present < threshold and query_count > 1:  # if below threhold  and more than 1 seq to blast
             # print("new taxon")
             # print(tax_id,query_count)
             # print(filteredScrape.sp_seq_d[tax_id].keys())

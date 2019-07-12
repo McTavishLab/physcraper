@@ -210,11 +210,11 @@ class Parser:
                 )
             )
             mrca_id = int(mrca_id)
-        debug([tax_id, mrca_id])
+       #debug([tax_id, mrca_id])
         # debug(nodes[nodes["tax_id"] == tax_id]["rank"].values[0])
         rank_mrca_id = nodes[nodes["tax_id"] == mrca_id]["rank"].values[0]
         rank_tax_id = nodes[nodes["tax_id"] == tax_id]["rank"].values[0]
-        debug([rank_mrca_id, rank_tax_id])
+        #debug([rank_mrca_id, rank_tax_id])
         if tax_id == mrca_id:
             # debug("found right rank")
             return tax_id
@@ -250,7 +250,6 @@ class Parser:
         try:
             if names is None:
                 self.initialize()
-            debug(names[names["tax_id"] == tax_id])
             if tax_id == 0:
                 tax_name = "unidentified"
             else:
