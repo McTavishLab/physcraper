@@ -4,6 +4,7 @@ import os
 import pickle#
 import physcraper
 import physcraper.filter_by_local_blast as local_blast
+from physcraper.filterblast import FilterBlast
 
 
 sys.stdout.write("\ntests select_seq_by_local_blast\n")
@@ -30,7 +31,7 @@ def test_select_seq_by_local_blast():
     ids.acc_ncbi_dict = pickle.load(open("tests/data/precooked/tiny_acc_map.p", "rb"))
 
 
-    filteredScrape =  physcraper.FilterBlast(data_obj, ids)
+    filteredScrape =  FilterBlast(data_obj, ids)
     filteredScrape.add_setting_to_self(downtorank, threshold)
 
     filteredScrape._blasted = 1

@@ -1,7 +1,8 @@
 import os
 import pickle
 import sys
-from physcraper import FilterBlast, ConfigObj, IdDicts
+from physcraper import ConfigObj, IdDicts
+from physcraper.filterblast import FilterBlast
 
 sys.stdout.write("\ntests remove_taxa_aln_tre\n")
 

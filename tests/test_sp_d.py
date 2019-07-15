@@ -1,6 +1,7 @@
 import sys
 import os
-from physcraper import ConfigObj, IdDicts, FilterBlast
+from physcraper import ConfigObj, IdDicts
+from physcraper.filterblast import FilterBlast
 import pickle#
 
 sys.stdout.write("\ntests sp_dict\n")

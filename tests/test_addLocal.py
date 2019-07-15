@@ -1,4 +1,5 @@
-from physcraper import OtuJsonDict, ConfigObj, IdDicts, FilterBlast
+from physcraper import OtuJsonDict, ConfigObj, IdDicts
+from physcraper.filterblast import FilterBlast
 import os
 import json
 import sys

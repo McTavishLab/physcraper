@@ -13,9 +13,9 @@ from physcraper import (
     PhyscraperScrape,
     AlignTreeTax,
     OtuJsonDict,
-    FilterBlast,
     debug
 )
+from physcraper.filterblast import FilterBlast
 from dendropy import DnaCharacterMatrix
 
 import physcraper.writeinfofiles as writeinfofiles

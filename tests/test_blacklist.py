@@ -2,7 +2,8 @@ import sys
 import os
 import pickle
 import shutil
-from physcraper import ConfigObj, IdDicts, FilterBlast, debug
+from physcraper import ConfigObj, IdDicts,debug
+from physcraper.filterblast import FilterBlast
 from pytest import mark
 
 

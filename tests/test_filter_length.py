@@ -2,7 +2,9 @@ import os
 import json
 import sys
 import pickle
-from physcraper import wrappers, OtuJsonDict, ConfigObj, IdDicts, generate_ATT_from_files, FilterBlast
+from physcraper import wrappers, OtuJsonDict, ConfigObj, IdDicts, generate_ATT_from_files
+from physcraper.filterblast import FilterBlast
+
 #
 from pytest import mark
 
@@ -55,3 +57,5 @@ def test_filter_length():
     length_filtered = len(filteredScrape.new_seqs)
 
     assert length_filtered != length_unfiltered
+
+test_filter_length()

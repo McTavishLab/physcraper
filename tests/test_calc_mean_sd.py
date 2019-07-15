@@ -4,8 +4,11 @@ import pickle
 from math import sqrt
 from Bio.Blast import NCBIXML
 #from physcraper import ConfigObj, IdDicts, FilterBlast
+
 import physcraper
 import physcraper.filter_by_local_blast as local_blast
+from physcraper.filterblast import FilterBlast
+
 
 
 sys.stdout.write("\ntests calculate_mean_sd\n")
@@ -27,7 +30,7 @@ def test_calculate_mean_sd():
     ids = physcraper.IdDicts(conf, workdir=data_obj.workdir)
     ids.acc_ncbi_dict = pickle.load(open("tests/data/precooked/tiny_acc_map.p", "rb"))
 
-    filteredScrape = physcraper.FilterBlast(data_obj, ids)
+    filteredScrape = FilterBlast(data_obj, ids)
 
     # test begins
     fn = 'Senecio_scopolii_subsp._scopolii'

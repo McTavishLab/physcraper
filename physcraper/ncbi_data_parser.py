@@ -8,13 +8,164 @@ import sys
 import pandas as pd
 
 
-_DEBUG_MK = 0
+
+_DEBUG = 1
+def debug(msg):
+    """short debugging command
+    """
+    if _DEBUG == 1:
+        print(msg)
+
+
+
+def get_tax_info_from_acc(gb_id, data_obj, ids_obj):
+    '''takes an accessionumber and returns the ncabi_id and the taxon name'''
+#    debug("Getting tax info from acc {}".format(gb_id))
+    ncbi_id = None
+    tax_name = None
+    if gb_id[:6] == "unpubl":  # There may not be ncbi id, because they aren't published
+            tax_name = data_obj.gb_dict[gb_id]["^ot:ottTaxonName"]
+            ncbi_id = data_obj.gb_dict[gb_id]["^ncbi:taxon"]
+            ott_id = data_obj.gb_dict[gb_id]["^ot:ottId"]
+            if tax_name is None:
+                tax_name = data_obj.gb_dict[gb_id][u'^user:TaxonName']
+            if ncbi_id is None: 
+                # debug(tax_name.split(" ")[0])
+                tax_lin_name = tax_name.split(" ")[0]
+                tax_lin_name = tax_lin_name.split("_")[0]
+                # debug(tax_lin_name)
+                ncbi_id = ids_obj.ncbi_parser.get_id_from_name(tax_lin_name) #TODO What should happen here if the unpublished sequence doesn't have a name that is found?
+    elif len(gb_id.split(".")) >= 2:  # used to figure out if gb_id is from Genbank
+            if gb_id in data_obj.gb_dict.keys() and "staxids" in data_obj.gb_dict[gb_id].keys():
+                tax_name = data_obj.gb_dict[gb_id]["sscinames"]
+                ncbi_id = data_obj.gb_dict[gb_id]["staxids"]
+            else:  # all web blast results
+                if tax_name is None:
+                    sys.stderr.write("no species name returned for {}\n".format(gb_id))
+                ncbi_id = ids_obj.get_ncbiid_from_acc(gb_id)
+    else:
+        try:
+            ncbi_id = ids_obj.get_ncbiid_from_acc(gb_id)
+            tax_name = ids_obj.ncbiid_to_spn[ncbi_id] 
+        except:
+            pass
+    if ncbi_id == None:
+        sys.stderr.write("Failed to get information for sequence with accession number {}".format(gb_id))
+    return ncbi_id, tax_name
+
+
+
+def get_ncbi_tax_id(handle):
+    """Get the taxon ID from ncbi. ONly used for web queries
+
+    :param handle: NCBI read.handle
+    :return: ncbi_id
+    """
+    ncbi_id = None
+    gb_list = handle[0]["GBSeq_feature-table"][0]["GBFeature_quals"]
+    for item in gb_list:
+        if item[u"GBQualifier_name"] == "db_xref":
+            if item[u"GBQualifier_value"][:5] == "taxon":
+                ncbi_id = int(item[u"GBQualifier_value"][6:])
+                break
+            else:
+                continue
+    return ncbi_id
+
+
+def get_ncbi_tax_name(handle):
+    """Get the sp name from ncbi. 
+    Could be replaced by direct lookup to ott_ncbi.
+
+    :param handle: NCBI read.handle
+    :return: ncbi_spn
+    """
+    ncbi_sp = None
+    gb_list = handle[0]["GBSeq_feature-table"][0]["GBFeature_quals"]
+    for item in gb_list:
+        if item[u"GBQualifier_name"] == "organism":
+            ncbi_sp = str(item[u"GBQualifier_value"])
+            ncbi_sp = ncbi_sp.replace(" ", "_")
+    return ncbi_sp
+
+
+#def get_rank_info_from_web(self, ncbi_id):
+#        #TODO, why input name rather than ID here?
+        # """Collects rank and lineage information from ncbi,
+        # used to delimit the sequences from blast,
+        # when the web blast service is used.
+        # """
+        # if ncbi_id == None:
+        #     self.otu_rank[ncbi_id] = {"taxon id": ncbi_id, "lineage": 'life', "rank": 'unassigned'}
+        # else:
+        #     ncbi = NCBITaxa()
+        #     lineage = ncbi.get_lineage(ncbi_id)
+        #     lineage2ranks = ncbi.get_rank(lineage)
+        #     tax_name = str(tax_name).replace(" ", "_")
+        #     assert type(ncbi_id) is int
+        #     self.otu_rank[ncbi_id] = \
+        #         {"taxon id": ncbi_id, "lineage": lineage, "rank": lineage2ranks, "taxon name": tax_name}
+        # return ncbi_id
+
+
+
+
+
+# def get_ncbiid_from_tax_name(self, tax_name): 
+#     #TODO when do we need this? Is this just when we read in the original data?
+#         """Get the ncbi_id from the species name using ncbi web query.
+
+#         :param tax_name: species name
+#         :return: corresponding ncbi id
+#         """
+#         ncbi_id = None
+#         if tax_name in self.spn_to_ncbiid:
+#             ncbi_id = self.spn_to_ncbiid[tax_name]
+#         else:
+#             try:
+#                 tries = 15
+#                 for i in range(tries):
+#                     try:
+#                         Entrez.email = self.config.email
+#                         if tries >= 5:
+#                             ncbi_id = Entrez.read(Entrez.esearch(db="taxonomy", term=tax_name, RetMax=100))['IdList'][0]
+#                         else:
+#                             tax_name = "'{}'".format(tax_name)
+#                             ncbi_id = Entrez.read(Entrez.esearch(db="taxonomy", term=tax_name, RetMax=100))['IdList'][0]
+
+#                         ncbi_id = int(ncbi_id)
+#                     except (IndexError, HTTPError) as err:
+#                         if i < tries - 1:  # i is zero indexed
+#                             continue
+#                         else:
+#                             raise
+#                     break
+#             except (IndexError, HTTPError) as err:
+#                 try:
+#                     ncbi = NCBITaxa()
+#                     tax_info = ncbi.get_name_translator([tax_name])
+#                     if tax_info == {}:
+#                         tax_name = "'{}'".format(tax_name)
+#                         tax_info = ncbi.get_name_translator([tax_name])
+#                     ncbi_id = int(tax_info.items()[0][1][0])
+#                 except (IndexError, HTTPError) as err:
+#                     sys.stderr.write("Taxon name does not match any name in ncbi. Check that name is written "
+#                                      "correctly: {}! We set it to unidentified".format(tax_name))
+#                     tax_name = 'unidentified'
+#                     ncbi_id = 0
+#         assert type(ncbi_id) is int
+#         self.spn_to_ncbiid[tax_name] = ncbi_id
+#         return ncbi_id
+
+
+
+
 
 
 def debug(msg):
     """short debugging command
     """
-    if _DEBUG_MK == 1:
+    if _DEBUG == 1:
         print(msg)
 
 

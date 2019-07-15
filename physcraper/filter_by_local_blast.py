@@ -76,8 +76,6 @@ def calculate_mean_sd(hsp_scores):
                         hsp_scores[gi_id] = {'hsp.bits': hsp.bits, 'hsp.score': hsp.score,
                                             'alignment.length': alignment.length, 'hsp.expect': hsp.expect}
     """
-    debug('calculate_mean_sd')
-    debug(hsp_scores)
     total_seq = 0
     bit_sum = 0
     bit_l = []
@@ -110,7 +108,6 @@ def read_filter_blast(workdir, seq_d, fn):
     xml_file = open(output_blast)
     os.chdir(general_wd)
     blast_out = NCBIXML.parse(xml_file)
-    debug(blast_out)
     hsp_scores = {}
     tries = 5
     for i in range(tries):

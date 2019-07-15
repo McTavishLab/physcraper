@@ -4,6 +4,7 @@ import pickle
 #from physcraper import FilterBlast, ConfigObj, IdDicts
 import physcraper
 import physcraper.filter_by_local_blast as local_blast
+from physcraper.filterblast import FilterBlast
 
 
 sys.stdout.write("\ntests run_filter_blast\n")
@@ -20,7 +21,7 @@ def test_run_filter_blast():
     data_obj.workdir = absworkdir
     ids = physcraper.IdDicts(conf, workdir=data_obj.workdir)
     ids.acc_ncbi_dict = pickle.load(open("tests/data/precooked/tiny_acc_map.p", "rb"))
-    filteredScrape =  physcraper.FilterBlast(data_obj, ids)
+    filteredScrape =  FilterBlast(data_obj, ids)
 
     blast_db = "otuSlagascanus"
     blast_seq = "otuSlagascanus"

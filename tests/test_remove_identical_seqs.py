@@ -93,3 +93,4 @@ def test_remove_identical_seqs():
 
 
   
+test_remove_identical_seqs()

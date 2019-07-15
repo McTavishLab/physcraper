@@ -1,7 +1,8 @@
 import sys
 import os
 import pickle  #
-from physcraper import ConfigObj, IdDicts, FilterBlast
+from physcraper import ConfigObj, IdDicts
+from physcraper.filterblast import FilterBlast
 
 
 workdir = "tests/output/add_all"

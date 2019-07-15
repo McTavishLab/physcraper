@@ -3,7 +3,7 @@ import pickle
 import sys
 import os
 from physcraper import ConfigObj, IdDicts
-from physcraper import FilterBlast
+from physcraper.filterblast import FilterBlast
 import physcraper.filter_by_local_blast as local_blast
 
 

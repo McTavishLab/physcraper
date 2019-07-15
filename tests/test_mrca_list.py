@@ -2,7 +2,9 @@
 import os
 import json
 import pickle
-from physcraper import wrappers, OtuJsonDict, ConfigObj, IdDicts, FilterBlast
+from physcraper import wrappers, OtuJsonDict, ConfigObj, IdDicts
+from physcraper.filterblast import FilterBlast
+
 
 # define here your files
 def test_mrca_list():
