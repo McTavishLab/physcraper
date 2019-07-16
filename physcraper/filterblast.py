@@ -1,6 +1,7 @@
 import random
 from copy import deepcopy
 from physcraper import PhyscraperScrape, filter_by_local_blast
+from physcraper import ncbi_data_parser
 
 _DEBUG = 1
 def debug(msg):
@@ -420,21 +421,19 @@ class FilterBlast(PhyscraperScrape):
             "query_count": query_count,
             "new_taxon": new_taxon,
         }
-        # if self.config.add_lower_taxa is not True:
         if new_taxon is False:
             assert original != 0 or seq_added != 0, ("count_dict `%s` has more seq added than threshold: 0." % count_dict)
         if new_taxon is True:
             assert original == 0, ("count_dict `%s` has more original seq than allowed for new taxon." % count_dict)
             assert seq_added == 0, ("count_dict `%s` has more seq added than allowed for new taxon." % count_dict)
         # debug([seq_added, original, self.threshold])
-        if self.config.add_lower_taxa is not True:
-            if original < self.threshold:
-                assert seq_added <= self.threshold, ("count_dict `%s` has more seq added than threshold." % count_dict)
-            elif original > self.threshold:
-                sys.stdout.write("already more originals than requested by threshold...\n")
-            else:
-                assert seq_added + original <= self.threshold, \
-                    "seq_added ({}) and original ({}) have more than threshold ({}).".format(seq_added, original, self.threshold)
+        if original < self.threshold:
+            assert seq_added <= self.threshold, ("count_dict `%s` has more seq added than threshold." % count_dict)
+        elif original > self.threshold:
+            sys.stdout.write("already more originals than requested by threshold...\n")
+        else:
+            assert seq_added + original <= self.threshold, \
+                "seq_added ({}) and original ({}) have more than threshold ({}).".format(seq_added, original, self.threshold)
         return count_dict
 
     def how_many_sp_to_keep(self, selectby):

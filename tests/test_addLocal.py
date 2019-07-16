@@ -1,4 +1,7 @@
-from physcraper import OtuJsonDict, ConfigObj, IdDicts
+import pickle  #
+from physcraper.configobj import ConfigObj
+from physcraper.ids import IdDicts
+from physcraper.opentree_helpers import OtuJsonDict
 from physcraper.filterblast import FilterBlast
 import os
 import json

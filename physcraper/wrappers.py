@@ -397,9 +397,7 @@ def add_different_rank(seqaln,
         assert filteredScrape.config != conf
         filteredScrape.config = conf
         assert filteredScrape.config == conf
-        assert filteredScrape.config.add_lower_taxa is True, \
-            "you only need to run this function if you want to change the rank of seqs to be added."
-        
+
         # set new ingroup_mrca
         filteredScrape.data.ott_mrca = ingroup_mrca
         filteredScrape.mrca_ncbi = filteredScrape.ids.ott_to_ncbi[filteredScrape.data.ott_mrca]
@@ -417,8 +415,7 @@ def add_different_rank(seqaln,
         # set new downtorank and numbers:
         filteredScrape.add_setting_to_self(downtorank, threshold)
         filteredScrape.blacklist = blacklist
-        if filteredScrape.config.add_lower_taxa is True:  # used if config file is changed to add lower ranks
-            filteredScrape.reset_new_seqs_acc()
+    
         if add_unpubl_seq is not None:
             filteredScrape.unpublished = True
         if filteredScrape.unpublished is True:  # use unpublished data
@@ -456,7 +453,6 @@ def add_different_rank(seqaln,
             if backbone:
                 filteredScrape.repeat = 0
             # set back to normal - only used to reassess formerly discarded seq in first round
-            filteredScrape.config.add_lower_taxa = False
         while filteredScrape.repeat == 1:
             filteredScrape.data.write_labelled(label="^ot:ottTaxonName", add_gb_id=True)
             filteredScrape.data.write_otus("otu_info", schema="table")
