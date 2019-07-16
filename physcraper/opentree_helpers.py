@@ -1,8 +1,24 @@
 import requests
 import json
 import sys
+import os
+import physcraper
 from peyotl.sugar import tree_of_life, taxomachine
+from peyotl.api.phylesystem_api import PhylesystemAPI, APIWrapper
+from peyotl.sugar import tree_of_life, taxomachine
+from peyotl.nexson_syntax import (
+    extract_tree,
+    get_subtree_otus,
+    extract_otu_nexson,
+    PhyloSchema
+)
 
+from dendropy import Tree, DnaCharacterMatrix, DataSet, datamodel
+
+from physcraper.helpers import cd, standardize_label
+
+
+_VERBOSE = 1
 _DEBUG = 1
 def debug(msg):
     """short debugging command
@@ -97,7 +113,7 @@ def generate_ATT_from_phylesystem(aln,
     else:  # just get the mrca for teh whole tree
         ott_mrca = get_mrca_ott([otu_dict[otu_id].get(u"^ot:ottId") for otu_id in otu_dict])
     workdir = os.path.abspath(workdir)
-    return AlignTreeTax(otu_newick, otu_dict, aln, ingroup_mrca=ott_mrca, workdir=workdir, config_obj=config_obj)
+    return physcraper.aligntreetax.AlignTreeTax(otu_newick, otu_dict, aln, ingroup_mrca=ott_mrca, workdir=workdir, config_obj=config_obj)
     # newick should be bare, but alignment should be DNACharacterMatrix
 
 
@@ -151,7 +167,7 @@ def OtuJsonDict(id_to_spn, id_dict):
             assert clean_lab not in sp_info_dict, ("standardized label ('{}') of `{}` already exists".format(clean_lab, tipname))
             otu_id = "otu{}".format(clean_lab)
             spn = species.replace("_", " ")
-            info = opentree_helpers.get_ott_taxon_info(spn)
+            info = get_ott_taxon_info(spn)
             if info:
                 ottid, ottname, ncbiid = info
             if not info:
@@ -213,7 +229,7 @@ def get_mrca_ott(ott_ids):
     synth_tree_ott_ids = []
     ott_ids_not_in_synth = []
     for ott in ott_ids:
-        r = opentree_helpers.check_if_ottid_in_synth(ott)
+        r = check_if_ottid_in_synth(ott)
         if r == 1:
             synth_tree_ott_ids.append(ott)
         else:

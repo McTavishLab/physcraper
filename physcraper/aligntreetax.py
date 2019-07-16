@@ -12,7 +12,12 @@ import contextlib
 import time
 import csv
 
+from dendropy import Tree, DnaCharacterMatrix, DataSet, datamodel
+from physcraper import ncbi_data_parser
+from physcraper.opentree_helpers import get_mrca_ott
+from physcraper.helpers import standardize_label
 
+_VERBOSE = 1
 _DEBUG = 1
 def debug(msg):
     """short debugging command
@@ -84,23 +89,6 @@ def generate_ATT_from_files(seqaln,
         ott_mrca = get_mrca_ott(ott_ids)
     return AlignTreeTax(otu_newick, otu_dict, aln, ingroup_mrca=ott_mrca, workdir=workdir,
                         config_obj=config_obj, schema=schema_trf)
-
-
-
-def standardize_label(item):
-    """Make sure that the tip names are unicode.
-
-    Function is only used if own files are used for the OtuJsonDict() function.
-
-    :param item: original tip name
-    :return: tip name in unicode
-    """
-    item_edit = item.replace("-", "")
-    item_edit = item_edit.replace(" ", "")
-    item_edit = item_edit.replace("_", "")
-    item_edit = item_edit.replace("'", "")
-    item_edit = item_edit.replace("/", "")
-    return item_edit
 
 
 

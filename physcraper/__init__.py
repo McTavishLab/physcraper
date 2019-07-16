@@ -13,7 +13,6 @@ import json
 import configparser
 import pickle
 import random
-import contextlib
 import time
 import csv
 # from mpi4py import MPI
@@ -21,10 +20,9 @@ from past.builtins import xrange
 from builtins import input
 from copy import deepcopy
 from ete2 import NCBITaxa
-import physcraper.AWSWWW as AWSWWW
-from Bio.Blast import NCBIXML
+
+
 from Bio import Entrez
-from dendropy import Tree, DnaCharacterMatrix, DataSet, datamodel
 from peyotl.api.phylesystem_api import PhylesystemAPI, APIWrapper
 from peyotl.sugar import tree_of_life, taxomachine
 from peyotl.nexson_syntax import (
@@ -34,6 +32,7 @@ from peyotl.nexson_syntax import (
     PhyloSchema
 )
 
+import physcraper.AWSWWW as AWSWWW
 # extension functions
 from . import concat  # is the local concat class
 from . import ncbi_data_parser  # is the ncbi data parser class and associated functions
@@ -41,11 +40,13 @@ from . import filter_by_local_blast  # functions for the FilterBlast filtering
 from . import opentree_helpers
 from . import writeinfofiles
 
+
 from physcraper.configobj import ConfigObj
 from physcraper.ids import IdDicts
 from physcraper.aligntreetax import AlignTreeTax
 from physcraper.scrape import PhyscraperScrape
-
+from physcraper.opentree_helpers import generate_ATT_from_phylesystem, OtuJsonDict, get_mrca_ott
+from physcraper.aligntreetax import generate_ATT_from_files
 
 if sys.version_info < (3,):
     from urllib2 import HTTPError
@@ -64,19 +65,6 @@ def debug(msg):
         print(msg)
 
 
-@contextlib.contextmanager
-def cd(path):
-    # print 'initially inside {0}'.format(os.getcwd())
-    CWD = os.getcwd()
-    os.chdir(path)
-    # print 'inside {0}'.format(os.getcwd())
-    try:
-        yield
-    except:
-        print('Exception caught: ', sys.exc_info()[0])
-    finally:
-        # print 'finally inside {0}'.format(os.getcwd())
-        os.chdir(CWD)
 
 
 
@@ -103,5 +91,3 @@ def get_user_input():
         except ValueError as e:
             print("'%s' is not a valid answer." % e.args[0].split(": ")[1])
     return x
-
-

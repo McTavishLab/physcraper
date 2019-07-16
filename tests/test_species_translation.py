@@ -1,6 +1,7 @@
 import sys
 
-from physcraper import get_mrca_ott, get_ott_taxon_info, OtuJsonDict, ConfigObj, IdDicts
+from physcraper import  OtuJsonDict, ConfigObj, IdDicts
+from physcraper.opentree_helpers import get_mrca_ott, get_ott_taxon_info
 from peyotl.sugar import taxomachine, tree_of_life
 
 

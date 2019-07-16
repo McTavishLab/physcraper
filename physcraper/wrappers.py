@@ -6,7 +6,6 @@ import os
 import shutil
 import json
 from physcraper import (
-    generate_ATT_from_phylesystem,
     generate_ATT_from_files,
     ConfigObj,
     IdDicts,

@@ -20,4 +20,7 @@ def test_config():
 
     assert len(conf.email.split("@")) == 2
     assert conf.url_base == None
-    assert conf.__dict__.keys() == expected_keys
+    assert set(conf.__dict__.keys())==set(expected_keys)
+
+
+test_config()

@@ -349,14 +349,14 @@ class Parser:
             self.initialize()
         if type(tax_id) != int:
             sys.stdout.write(
-                "WARNING: tax_id {} is no integer. Will convert value to int\n".format(
+                "WARNING: tax_id {} is not integer. Will convert value to int\n".format(
                     tax_id
                 )
             )
             tax_id = int(tax_id)
         if type(mrca_id) != int:
             sys.stdout.write(
-                "WARNING: mrca_id {} is no integer. Will convert value to int\n".format(
+                "WARNING: mrca_id {} is not integer. Will convert value to int\n".format(
                     mrca_id
                 )
             )
@@ -392,7 +392,6 @@ class Parser:
             return tax_id
         else:
             parent_id = int(nodes[nodes["tax_id"] == tax_id]["parent_tax_id"].values[0])
-            debug(parent_id)
             return self.match_id_to_mrca(parent_id, mrca_id)
 
     def get_name_from_id(self, tax_id):
@@ -435,7 +434,6 @@ class Parser:
         try:
             tax_id = names[names["name_txt"] == tax_name]["tax_id"].values[0]
         except IndexError:
-            debug(names[names["name_txt"] == tax_name])
             if len(tax_name.split(" ")) == 3:
                 tax_name = "{} {}-{}".format(
                     tax_name.split(" ")[0],

@@ -1,7 +1,8 @@
 import pickle
 import sys
 import os
-from physcraper import ConfigObj, PhyscraperScrape, IdDicts, cd
+from physcraper import ConfigObj, PhyscraperScrape, IdDicts
+from physcraper.helpers import cd
 
 import requests
 import signal
