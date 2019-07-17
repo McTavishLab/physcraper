@@ -2,6 +2,7 @@ import os
 import json
 import pickle
 from physcraper import OtuJsonDict, generate_ATT_from_files, ConfigObj, IdDicts, PhyscraperScrape
+from physcraper import opentree_helpers
 #
 
 
@@ -28,6 +29,10 @@ with open(otu_jsonfi,"w") as outfile:
     json.dump(otu_json, outfile)
 
 
+ottids = [otu_json[ite]['^ot:ottId'] for ite in otu_json]
+mrca = opentree_helpers.get_mrca_ott(ottids)
+
+
 
 data_obj = generate_ATT_from_files(seqaln=seqaln, 
                              mattype=mattype, 
@@ -36,7 +41,7 @@ data_obj = generate_ATT_from_files(seqaln=seqaln,
                              treefile=trfn,
                              schema_trf = schema_trf,
                              otu_json=otu_jsonfi,
-                             ingroup_mrca=None)
+                             ingroup_mrca=mrca)
 
 data_obj.prune_short()
 data_obj.dump(filename = "tests/data/precooked/tiny_dataobj.p")

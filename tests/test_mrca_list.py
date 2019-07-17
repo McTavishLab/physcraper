@@ -6,6 +6,13 @@ from physcraper import wrappers, OtuJsonDict, ConfigObj, IdDicts
 from physcraper.filterblast import FilterBlast
 
 
+from pytest import mark
+# you can actually do whatever
+# ruftrum = mark.ruftrum will work and create a "ruftrum" test. 
+
+
+# @concatfull
+@mark.xfail
 # define here your files
 def test_mrca_list():
     seqaln = "tests/data/tiny_test_example/test.fas"
@@ -42,7 +49,7 @@ def test_mrca_list():
     assert len(filteredScrape.new_seqs_otu_id) == 61
     #fixed length to reflect new length after taxon_id as integer fix in line 2190
 
-
+@mark.xfail
 def test_no_mrca():
     seqaln = "tests/data/tiny_test_example/test.fas"
     mattype = "fasta"
@@ -75,6 +82,8 @@ def test_no_mrca():
     filteredScrape.remove_identical_seqs()
     assert len(filteredScrape.new_seqs_otu_id) <= 63
 
+
+@mark.xfail
 def test_higher_mrca():
     seqaln = "tests/data/tiny_test_example/test.fas"
     mattype = "fasta"

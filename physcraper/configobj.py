@@ -33,6 +33,23 @@ def is_number(s):
         return False
 
 
+def get_user_input():
+    """Asks for yes or no user input.
+
+    :return: user input
+    """
+    debug("get user input")
+    is_valid = 0
+    x = None
+    while not is_valid:
+        try:
+            x = input("Please write either 'yes' or 'no': ")
+            if str(x) == "yes" or x == "no":
+                is_valid = 1  # set it to 1 to validate input and to terminate the while..not loop
+        except ValueError as e:
+            print("'%s' is not a valid answer." % e.args[0].split(": ")[1])
+    return x
+
 
 class ConfigObj(object):
     """

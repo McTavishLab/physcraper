@@ -23,16 +23,7 @@ from ete2 import NCBITaxa
 
 
 from Bio import Entrez
-from peyotl.api.phylesystem_api import PhylesystemAPI, APIWrapper
-from peyotl.sugar import tree_of_life, taxomachine
-from peyotl.nexson_syntax import (
-    extract_tree,
-    get_subtree_otus,
-    extract_otu_nexson,
-    PhyloSchema
-)
 
-import physcraper.AWSWWW as AWSWWW
 # extension functions
 from . import concat  # is the local concat class
 from . import ncbi_data_parser  # is the ncbi data parser class and associated functions
@@ -75,19 +66,3 @@ debug("Current --init-- version number: 12-17-2018.0")
 debug(os.path.realpath(__file__))
 
 
-def get_user_input():
-    """Asks for yes or no user input.
-
-    :return: user input
-    """
-    debug("get user input")
-    is_valid = 0
-    x = None
-    while not is_valid:
-        try:
-            x = input("Please write either 'yes' or 'no': ")
-            if x == "yes" or x == "no":
-                is_valid = 1  # set it to 1 to validate input and to terminate the while..not loop
-        except ValueError as e:
-            print("'%s' is not a valid answer." % e.args[0].split(": ")[1])
-    return x

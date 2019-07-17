@@ -398,7 +398,7 @@ def add_different_rank(seqaln,
         assert filteredScrape.config == conf
 
         # set new ingroup_mrca
-        filteredScrape.data.ott_mrca = ingroup_mrca
+        filteredScrape.data.mrca_ott = ingroup_mrca
         filteredScrape.mrca_ncbi = filteredScrape.ids.ott_to_ncbi[filteredScrape.data.ott_mrca]
         assert filteredScrape.data.ott_mrca == ingroup_mrca
 

@@ -79,15 +79,15 @@ def generate_ATT_from_files(seqaln,
     if ingroup_mrca:
         if type(ingroup_mrca) == list:
             ott_ids = set(ingroup_mrca)
-            ott_mrca = get_mrca_ott(ott_ids)
+            mrca_ott = get_mrca_ott(ott_ids)
         else:
-            ott_mrca = int(ingroup_mrca)
+            mrca_ott = int(ingroup_mrca)
     else:
         ott_ids = [otu_dict[otu].get(u'^ot:ottId', ) for otu in otu_dict]
         ott_ids = filter(None, ott_ids)
         ott_ids = set(ott_ids)
-        ott_mrca = get_mrca_ott(ott_ids)
-    return AlignTreeTax(otu_newick, otu_dict, aln, ingroup_mrca=ott_mrca, workdir=workdir,
+        mrca_ott = get_mrca_ott(ott_ids)
+    return AlignTreeTax(otu_newick, otu_dict, aln, ingroup_mrca=mrca_ott, workdir=workdir,
                         config_obj=config_obj, schema=schema_trf)
 
 
@@ -134,7 +134,7 @@ class AlignTreeTax(object):
                     * "^ot:originalLabel" optional, user given tip label of phylogeny
           * **self.ps_otu**: iterator for new otu IDs, is used as key for self.otu_dict
           * **self.workdir**: contains the path to the working directory, if folder does not exists it is generated.
-          * **self.ott_mrca**: OToL taxon Id for the most recent common ancestor of the ingroup
+          * **self.mrca_ott**: OToL taxon Id for the most recent common ancestor of the ingroup
           * **self.orig_seqlen**: list of the original sequence length of the input data
           * **self.gi_dict**: dictionary, that has all information from sequences found during the blasting.
             * key: GenBank sequence identifier
@@ -200,7 +200,7 @@ class AlignTreeTax(object):
         if not os.path.exists(self.workdir):
             os.makedirs(self.workdir)
         assert int(ingroup_mrca), ("your ingroup_mrca '%s' is not an integer." % ingroup_mrca)
-        self.ott_mrca = ingroup_mrca  # ott_ingroup mrca can be pulled directly from phylesystem
+        self.mrca_ott = ingroup_mrca  # ott_ingroup mrca can be pulled directly from phylesystem
         self.orig_seqlen = []  # will get filled in later...
         self.gb_dict = {}  # has all info about new blast seq
         self._reconciled = False

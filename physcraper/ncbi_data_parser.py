@@ -89,84 +89,26 @@ def get_ncbi_tax_name(handle):
     return ncbi_sp
 
 
-#def get_rank_info_from_web(self, ncbi_id):
-#        #TODO, why input name rather than ID here?
-        # """Collects rank and lineage information from ncbi,
-        # used to delimit the sequences from blast,
-        # when the web blast service is used.
-        # """
-        # if ncbi_id == None:
-        #     self.otu_rank[ncbi_id] = {"taxon id": ncbi_id, "lineage": 'life', "rank": 'unassigned'}
-        # else:
-        #     ncbi = NCBITaxa()
-        #     lineage = ncbi.get_lineage(ncbi_id)
-        #     lineage2ranks = ncbi.get_rank(lineage)
-        #     tax_name = str(tax_name).replace(" ", "_")
-        #     assert type(ncbi_id) is int
-        #     self.otu_rank[ncbi_id] = \
-        #         {"taxon id": ncbi_id, "lineage": lineage, "rank": lineage2ranks, "taxon name": tax_name}
-        # return ncbi_id
-
-
-
-
-
-# def get_ncbiid_from_tax_name(self, tax_name): 
-#     #TODO when do we need this? Is this just when we read in the original data?
-#         """Get the ncbi_id from the species name using ncbi web query.
-
-#         :param tax_name: species name
-#         :return: corresponding ncbi id
-#         """
-#         ncbi_id = None
-#         if tax_name in self.spn_to_ncbiid:
-#             ncbi_id = self.spn_to_ncbiid[tax_name]
+# def get_rank_info_from_web(self, ncbi_id):
+# #        #TODO, why input name rather than ID here?
+#         # """Collects rank and lineage information from ncbi,
+#         # used to delimit the sequences from blast,
+#         # when the web blast service is used.
+#         # """
+#         rank_dict = {}
+#         if ncbi_id == None:
+#              rank_dict = {"taxon id": ncbi_id, "lineage": 'life', "rank": 'unassigned'}
 #         else:
-#             try:
-#                 tries = 15
-#                 for i in range(tries):
-#                     try:
-#                         Entrez.email = self.config.email
-#                         if tries >= 5:
-#                             ncbi_id = Entrez.read(Entrez.esearch(db="taxonomy", term=tax_name, RetMax=100))['IdList'][0]
-#                         else:
-#                             tax_name = "'{}'".format(tax_name)
-#                             ncbi_id = Entrez.read(Entrez.esearch(db="taxonomy", term=tax_name, RetMax=100))['IdList'][0]
-
-#                         ncbi_id = int(ncbi_id)
-#                     except (IndexError, HTTPError) as err:
-#                         if i < tries - 1:  # i is zero indexed
-#                             continue
-#                         else:
-#                             raise
-#                     break
-#             except (IndexError, HTTPError) as err:
-#                 try:
-#                     ncbi = NCBITaxa()
-#                     tax_info = ncbi.get_name_translator([tax_name])
-#                     if tax_info == {}:
-#                         tax_name = "'{}'".format(tax_name)
-#                         tax_info = ncbi.get_name_translator([tax_name])
-#                     ncbi_id = int(tax_info.items()[0][1][0])
-#                 except (IndexError, HTTPError) as err:
-#                     sys.stderr.write("Taxon name does not match any name in ncbi. Check that name is written "
-#                                      "correctly: {}! We set it to unidentified".format(tax_name))
-#                     tax_name = 'unidentified'
-#                     ncbi_id = 0
-#         assert type(ncbi_id) is int
-#         self.spn_to_ncbiid[tax_name] = ncbi_id
-#         return ncbi_id
+#              ncbi = NCBITaxa()
+#              lineage = ncbi.get_lineage(ncbi_id)
+#              lineage2ranks = ncbi.get_rank(lineage)
+#              tax_name = str(tax_name).replace(" ", "_")
+#              assert type(ncbi_id) is int
+#              rank_dict = \
+#                  {"taxon id": ncbi_id, "lineage": lineage, "rank": lineage2ranks, "taxon name": tax_name}
+#         return rank_dict
 
 
-
-
-
-
-def debug(msg):
-    """short debugging command
-    """
-    if _DEBUG == 1:
-        print(msg)
 
 
 debug("Current ncbi_parser version number: 11272018.0")
@@ -284,7 +226,7 @@ class Parser:
         gigantic pickle file sizes).
         Instead every time the function is loaded after loading a pickle file, it will be 'initialized'.
         """
-        print("Initialize NODES and NAMES!!")
+        sys.stdout.write("Reading in local NCBI taxonomy information")
         global nodes
         nodes = load_nodes(self.nodes_file)
         global names
@@ -297,7 +239,10 @@ class Parser:
         """
         if nodes is None:
             self.initialize()
-        rank = nodes[nodes["tax_id"] == tax_id]["rank"].values[0]
+        if tax_id == None:
+            rank = "unassigned"
+        else:
+            rank = nodes[nodes["tax_id"] == tax_id]["rank"].values[0]
         return rank
 
     def get_downtorank_id(self, tax_id, downtorank="species"):
@@ -337,63 +282,24 @@ class Parser:
         """ Recursive function to find out if tax_id is part of mrca_id.
         """
         # debug("match_id_to_mrca")
-        if tax_id in [81077, 28384]:  # other sequences/artifical sequences
-            tax_id = 0
-            return tax_id
-
-        if tax_id == 2759 or tax_id == 1 or tax_id ==0:
-            tax_id = 0
-            return tax_id
-       
         if nodes is None:
             self.initialize()
-        if type(tax_id) != int:
-            sys.stdout.write(
-                "WARNING: tax_id {} is not integer. Will convert value to int\n".format(
-                    tax_id
-                )
-            )
-            tax_id = int(tax_id)
-        if type(mrca_id) != int:
-            sys.stdout.write(
-                "WARNING: mrca_id {} is not integer. Will convert value to int\n".format(
-                    mrca_id
-                )
-            )
-            mrca_id = int(mrca_id)
-       #debug([tax_id, mrca_id])
-        # debug(nodes[nodes["tax_id"] == tax_id]["rank"].values[0])
-        rank_mrca_id = nodes[nodes["tax_id"] == mrca_id]["rank"].values[0]
-        rank_tax_id = nodes[nodes["tax_id"] == tax_id]["rank"].values[0]
+       # debug("testing if {} within {}".format(tax_id, mrca_id))
+        current_id = int(tax_id)
+        mrca_id = int(mrca_id)
         #debug([rank_mrca_id, rank_tax_id])
-        if tax_id == mrca_id:
-            # debug("found right rank")
-            return tax_id
-        # elif does not work, as synonyms have same tax id     
-        # elif rank_tax_id == rank_mrca_id and mrca_id != tax_id:
-        #     # try to figure out if synonym would fit mrca_id
-        #     if original_tax_id:
-        #         debug('original_tax_id:')
-        #         debug(original_tax_id)
-        #         debug(names[names["tax_id"] == original_tax_id])
-        #         debug((synonyms[synonyms["tax_id"] == original_tax_id]))
-        #         try:
-        #             tax_id = synonyms[synonyms["tax_id"] == original_tax_id]["tax_id"].values[0]
-        #             return self.match_id_to_mrca(tax_id, mrca_id)
-        #         except IndexError:
-        #             tax_id = 0
-        #             return tax_id
+        while current_id:
+            if current_id == mrca_id:
+                # debug("found right rank")
+                return True
+            elif current_id == 1:
+   #             debug("current id is: {}".format(current_id))
+                return False
+            else: #try parent
+                current_id = int(nodes[nodes["tax_id"] == current_id]["parent_tax_id"].values[0])
+    #            debug("parent id is: {}".format(current_id))
 
-        # debug(some)
-        elif rank_mrca_id == rank_tax_id:
-            return tax_id
-        elif rank_tax_id == "superkingdom":
-            tax_id = 0
-            return tax_id
-        else:
-            parent_id = int(nodes[nodes["tax_id"] == tax_id]["parent_tax_id"].values[0])
-            return self.match_id_to_mrca(parent_id, mrca_id)
-
+                
     def get_name_from_id(self, tax_id):
         """ Find the scientific name for a given ID.
         """
@@ -481,3 +387,5 @@ class Parser:
                     fn.write("{}".format(tax_id))
                     fn.close()
         return tax_id
+
+
