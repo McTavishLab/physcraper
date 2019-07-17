@@ -43,8 +43,10 @@ before_install:
   #- sudo apt install libopenmpi-dev
   - sudo apt install mpich
   - export MPICC=mpiicc
+
 install:
   # install requirements of physcraper
+  - pip uninstall numpy -y
   - pip install --quiet -r requirements.txt
   - pip install --quiet . 
 
