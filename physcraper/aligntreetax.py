@@ -55,17 +55,11 @@ def generate_ATT_from_files(seqaln,
     """
 
     # replace ? in seqaln with - : papara handles them as different characters
-    with open(seqaln, "r") as fin:
-        filedata = fin.read()
-    filedata = filedata.replace("?", "-")
-    # Write the file out again
+
     if not os.path.exists(workdir):
         os.makedirs(workdir)
-    new_seq_file = "{}/replaced_inputaln.fasta".format(workdir)
-    with open("{}/replaced_inputaln.fasta".format(workdir), "w") as aln_file:
-        aln_file.write(filedata)
     # use replaced aln as input
-    aln = DnaCharacterMatrix.get(path=new_seq_file, schema=mattype)
+    aln = DnaCharacterMatrix.get(path=seqaln, schema=mattype)
     assert aln.taxon_namespace
     for tax in aln.taxon_namespace:
         tax.label = tax.label.replace(" ", "_")  # Forcing all spaces to underscore
@@ -77,11 +71,7 @@ def generate_ATT_from_files(seqaln,
     otu_newick = tre.as_string(schema=schema_trf)
     otu_dict = json.load(open(otu_json, "r"))
     if ingroup_mrca:
-        if type(ingroup_mrca) == list:
-            ott_ids = set(ingroup_mrca)
-            mrca_ott = get_mrca_ott(ott_ids)
-        else:
-            mrca_ott = int(ingroup_mrca)
+        mrca_ott = int(ingroup_mrca)
     else:
         ott_ids = [otu_dict[otu].get(u'^ot:ottId', ) for otu in otu_dict]
         ott_ids = filter(None, ott_ids)
@@ -124,12 +114,6 @@ class AlignTreeTax(object):
                     * '^physcraper:status': contains information if it was 'original', 'queried', 'removed', 'added during filtering process'
                     * '^ot:ottTaxonName': OToL taxon name
                     * '^physcraper:last_blasted': contains the date when the sequence was blasted.
-
-                         If the year is different from the 20th century, it tells us
-                         something about the initial status:
-                         * 1800 = never blasted, not yet considered to be added
-                         * 1900 = never blasted and not added - see status for more information
-                         * this century = blasted and added.
                     * '^user:TaxonName': optional, user given label from OtuJsonDict
                     * "^ot:originalLabel" optional, user given tip label of phylogeny
           * **self.ps_otu**: iterator for new otu IDs, is used as key for self.otu_dict
@@ -173,22 +157,16 @@ class AlignTreeTax(object):
           * self.aln, self.tre and self.otu_dict, self.ps_otu, self.gi_dict
     """
 
-    def __init__(self, newick, otu_dict, alignment, ingroup_mrca, workdir, config_obj,
-                 schema=None, taxon_namespace=None):
+    def __init__(self, tree, otu_dict, alignment, ingroup_mrca, workdir, config_obj,
+                 schema='newick', taxon_namespace=None):
         debug("build ATT class")
         self.aln = alignment
         assert isinstance(self.aln, datamodel.charmatrixmodel.DnaCharacterMatrix), \
                 ("your aln '%s' is not a DnaCharacterMatrix" % alignment)
-        if schema is None:
-            self.tre = Tree.get(data=newick,
-                                schema="newick",
-                                preserve_underscores=True,
-                                taxon_namespace=self.aln.taxon_namespace)
-        else:
-            self.tre = Tree.get(data=newick,
-                                schema=schema,
-                                preserve_underscores=True,
-                                taxon_namespace=self.aln.taxon_namespace)
+        self.tre = Tree.get(data=tree,
+                            schema=schema,
+                            preserve_underscores=True,
+                            taxon_namespace=self.aln.taxon_namespace)
         assert (self.tre.taxon_namespace is self.aln.taxon_namespace), "tre and aln taxon_namespace are not identical"
         assert isinstance(otu_dict, dict), ("otu_dict '%s' is not of type dict" % otu_dict)
         self.otu_dict = otu_dict
@@ -411,6 +389,16 @@ class AlignTreeTax(object):
         else:
             self.otu_dict[taxon_label]['^physcraper:status'] = "deleted, updated otu_dict but was never in tre or aln!"
 
+    
+    def get_otu_for_acc(self, gb_id):
+        if gb_id in set([self.otu_dict[otu].get("^ncbi:accession",'UNK') for otu in self.otu_dict]):
+            for otu in self.otu_dict:
+                if self.otu_dict[otu].get("^ncbi:accession") == gb_id:
+                    debug("tried to create OTU for {} but already had otu {}".format(gb_id, otu))
+                    return otu
+        else:
+            return None
+
     def add_otu(self, gb_id, ids_obj):
         """ Generates an otu_id for new sequences and adds them into self.otu_dict.
         Needs to be passed an IdDict to do the mapping.
@@ -420,12 +408,15 @@ class AlignTreeTax(object):
         :return: the unique otu_id - the key from self.otu_dict of the corresponding sequence
         """
         # debug("add_otu function")
+        otu_id = self.get_otu_for_acc(gb_id)
+        if otu_id:
+            return otu_id
         otu_id = "otuPS{}".format(self.ps_otu)
         self.ps_otu += 1
         ott_id = None
      #   debug("trying to add an otu with accesion {}".format(gb_id))
         ncbi_id, tax_name = ncbi_data_parser.get_tax_info_from_acc(gb_id, self, ids_obj)
-     #   debug("ADD OTU: accession {} ncbi_id {}, taxon_name {}".format(gb_id, ncbi_id, tax_name))
+        debug("ADD OTU: accession {} ncbi_id {}, taxon_name {}".format(gb_id, ncbi_id, tax_name))
         if ncbi_id == None:
             return None
         if ncbi_id in ids_obj.ncbi_to_ott.keys():
@@ -444,8 +435,7 @@ class AlignTreeTax(object):
         self.otu_dict[otu_id]["^ot:ottId"] = ott_id
         self.otu_dict[otu_id]["^physcraper:status"] = "query"
         self.otu_dict[otu_id]["^ot:ottTaxonName"] = ott_name
-        # last_blasted date infos: 1800 = never blasted; 1900 = blasted 1x, not added; this century = blasted and added
-        self.otu_dict[otu_id]["^physcraper:last_blasted"] = "1800/01/01"
+        self.otu_dict[otu_id]["^physcraper:last_blasted"] = None
         if gb_id[:6] == "unpubl":
             self.otu_dict[otu_id]["^physcraper:status"] = "local seq"
             self.otu_dict[otu_id]["^ot:originalLabel"] = self.gb_dict[gb_id]["localID"]
@@ -496,6 +486,8 @@ class AlignTreeTax(object):
                        schema=treeschema, unquoted_underscores=True)
         self.aln.write(path="{}/{}".format(self.workdir, alnpath),
                        schema=alnschema)
+
+
 
     def write_labelled(self, label, treepath=None, alnpath=None, norepeats=True, add_gb_id=False):
         """output tree and alignment with human readable labels

@@ -38,7 +38,7 @@ def test_remove_identical_seqs():
 
     scraper.remove_identical_seqs()
 
-    assert(len(scraper.new_seqs) == 40)
+    assert(len(scraper.new_seqs) == 0)
     assert(len(scraper.data.aln) == 5)
     assert len(scraper.new_seqs_otu_id) == 40
     #Now that we are pulling the full remote sequences, we don'thave any identical seuqnces in the test.

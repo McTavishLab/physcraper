@@ -83,7 +83,7 @@ def generate_ATT_from_phylesystem(aln,
     for otu_id in otus:
         otu_dict[otu_id] = extract_otu_nexson(nexson, otu_id)[otu_id]
         otu_dict[otu_id]["^physcraper:status"] = "original"
-        otu_dict[otu_id]["^physcraper:last_blasted"] = "1800/01/01"
+        otu_dict[otu_id]["^physcraper:last_blasted"] = None
         orig = otu_dict[otu_id].get(u"^ot:originalLabel").replace(" ", "_")
         orig_lab_to_otu[orig] = otu_id
         treed_taxa[orig] = otu_dict[otu_id].get(u"^ot:ottId")
@@ -192,7 +192,7 @@ def OtuJsonDict(id_to_spn, id_dict):
                 "^ot:originalLabel": tipname,
                 "^user:TaxonName": species,
                 "^physcraper:status": "original",
-                "^physcraper:last_blasted": "1900/01/01",
+                "^physcraper:last_blasted": None,
                 }
             if ncbi_spn is not None:
                 sp_info_dict[otu_id]["^physcraper:TaxonName"] = ncbi_spn

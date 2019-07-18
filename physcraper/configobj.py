@@ -172,6 +172,7 @@ class ConfigObj(object):
         assert 1 < self.maxlen, (
                 "value `%s` is not larger than 1" % self.maxlen
         )
+        
 
         # read in settings for internal Physcraper processes
         self.phylesystem_loc = config["phylesystem"]["location"]

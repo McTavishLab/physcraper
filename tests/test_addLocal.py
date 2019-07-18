@@ -81,3 +81,6 @@ def test_add_local():
                 break
     assert test == True
 
+
+
+test_add_local()

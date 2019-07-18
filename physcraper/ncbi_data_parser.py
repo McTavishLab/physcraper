@@ -35,14 +35,14 @@ def get_tax_info_from_acc(gb_id, data_obj, ids_obj):
                 tax_lin_name = tax_lin_name.split("_")[0]
                 # debug(tax_lin_name)
                 ncbi_id = ids_obj.ncbi_parser.get_id_from_name(tax_lin_name) #TODO What should happen here if the unpublished sequence doesn't have a name that is found?
-    elif len(gb_id.split(".")) >= 2:  # used to figure out if gb_id is from Genbank
-            if gb_id in data_obj.gb_dict.keys() and "staxids" in data_obj.gb_dict[gb_id].keys():
-                tax_name = data_obj.gb_dict[gb_id]["sscinames"]
-                ncbi_id = data_obj.gb_dict[gb_id]["staxids"]
-            else:  # all web blast results
-                if tax_name is None:
-                    sys.stderr.write("no species name returned for {}\n".format(gb_id))
-                ncbi_id = ids_obj.get_ncbiid_from_acc(gb_id)
+  #  elif len(gb_id.split(".")) >= 2:  # used to figure out if gb_id is from Genbank
+  #          if gb_id in data_obj.gb_dict.keys() and "staxids" in data_obj.gb_dict[gb_id].keys():
+  #              tax_name = data_obj.gb_dict[gb_id]["sscinames"]
+  #              ncbi_id = data_obj.gb_dict[gb_id]["staxids"]
+  #          else:  # all web blast results
+  #              if tax_name is None:
+  #                  sys.stderr.write("no species name returned for {}\n".format(gb_id))
+  #              ncbi_id = ids_obj.get_ncbiid_from_acc(gb_id)
     else:
         try:
             ncbi_id = ids_obj.get_ncbiid_from_acc(gb_id)
@@ -295,6 +295,9 @@ class Parser:
             elif current_id == 1:
    #             debug("current id is: {}".format(current_id))
                 return False
+            elif current_id == 0:
+                debug("current id is: {}, in search for {} in {}".format(current_id, tax_id, mrca_id))
+                return False             
             else: #try parent
                 current_id = int(nodes[nodes["tax_id"] == current_id]["parent_tax_id"].values[0])
     #            debug("parent id is: {}".format(current_id))

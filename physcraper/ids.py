@@ -122,8 +122,9 @@ class IdDicts(object):
             ncbi_id = taxid
         return ncbi_id
 
-    
-   
+
+
+
  #removed function find_tax_id because it wasn't being used
    
     def get_tax_seq_acc(self, acc=None):

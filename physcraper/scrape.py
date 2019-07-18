@@ -108,7 +108,6 @@ class PhyscraperScrape(object):
         self.blast_subdir = "{}/current_blast_run".format(self.workdir)
         if not os.path.exists(self.workdir):
             os.makedirs(self.workdir)
-        self.newseqs_file = ""
         self.date = str(datetime.date.today())  # Date of the run - may lag behind real date!
         self.repeat = 1  # used to determine if we continue updating the tree
         self.newseqs_acc = []  # all ever added Genbank accession numbers during any PhyScraper run, used to speed up adding process
@@ -272,49 +271,47 @@ class PhyscraperScrape(object):
             log.write("Blast run {} \n".format(datetime.date.today()))
         for taxon, seq in self.data.aln.items():
             otu_id = taxon.label
-            if otu_id in self.data.otu_dict:
-                if _VERBOSE:
-                    sys.stdout.write("blasting {}\n".format(otu_id))
-                last_blast = self.data.otu_dict[otu_id]['^physcraper:last_blasted']
+            assert otu_id in self.data.otu_dict
+            if _VERBOSE:
+                sys.stdout.write("blasting {}\n".format(otu_id))
+            last_blast = self.data.otu_dict[otu_id]['^physcraper:last_blasted']
+            if last_blast == None:
+                time_passed = delay + 1
+            else:
                 today = str(datetime.date.today()).replace("-", "/")
                 time_passed = abs((datetime.datetime.strptime(today, "%Y/%m/%d") - datetime.datetime.strptime(
-                    last_blast, "%Y/%m/%d")).days)
+                last_blast, "%Y/%m/%d")).days)
+            if time_passed > delay:
                 query = seq.symbols_as_string().replace("-", "").replace("?", "")
-                if self.unpublished:
-                    self.local_blast_for_unpublished(query, taxon.label)
-                    if self.backbone is True:
-                        self.data.otu_dict[otu_id]["^physcraper:last_blasted"] = today
+                if self.config.blast_loc == "local":
+                    file_ending = "txt"
                 else:
-                    if time_passed > delay:
-                        if self.config.blast_loc == "local":
-                            file_ending = "txt"
-                        else:
-                            file_ending = "xml"
-                        if self.config.gb_id_filename is True:
-                            fn = self.data.otu_dict[taxon.label].get('^ncbi:accession', taxon.label)
-                            fn_path = "{}/{}.{}".format(self.blast_subdir, fn, file_ending)
-                        else:
-                            fn_path = "{}/{}.{}".format(self.blast_subdir, taxon.label, file_ending)
-                        # if _DEBUG:
-                        #     sys.stdout.write("attempting to write {}\n".format(fn_path))
-                        if not os.path.isfile(fn_path):
-                            if _VERBOSE:
-                                sys.stdout.write("blasting seq {}\n".format(taxon.label))
-                            if self.config.blast_loc == 'local':
-                                self.run_local_blast_cmd(query, taxon.label, fn_path)
-                            if self.config.blast_loc == 'remote':
-                                equery = "txid{}[orgn] AND {}:{}[mdat]".format(self.mrca_ncbi, last_blast, today)
-                                self.run_web_blast_query(query, equery, fn_path)
-                            self.data.otu_dict[otu_id]['^physcraper:last_blasted'] = today
-                        else:
-                            if _DEBUG:
-                                sys.stdout.write("file {} exists in current blast run. Will not blast, "
-                                                 "delete file to force\n".format(fn_path))
-                    else:
-                        if _VERBOSE:
-                            sys.stdout.write("otu {} was last blasted {} days ago and is not being re-blasted. "
-                                             "Use run_blast_wrapper(delay = 0) to force a search.\n".format(otu_id,
-                                                                                                            last_blast))
+                    file_ending = "xml"
+                if self.config.gb_id_filename is True:
+                    fn = self.data.otu_dict[taxon.label].get('^ncbi:accession', taxon.label)
+                    fn_path = "{}/{}.{}".format(self.blast_subdir, fn, file_ending)
+                else:
+                    fn_path = "{}/{}.{}".format(self.blast_subdir, taxon.label, file_ending)
+                # if _DEBUG:
+                #     sys.stdout.write("attempting to write {}\n".format(fn_path))
+                if not os.path.isfile(fn_path):
+                    if _VERBOSE:
+                        sys.stdout.write("blasting seq {}\n".format(taxon.label))
+                    if self.config.blast_loc == 'local':
+                        self.run_local_blast_cmd(query, taxon.label, fn_path)
+                    if self.config.blast_loc == 'remote':
+                        equery = "txid{}[orgn] AND {}:{}[mdat]".format(self.mrca_ncbi, last_blast, today)
+                        self.run_web_blast_query(query, equery, fn_path)
+                    self.data.otu_dict[otu_id]['^physcraper:last_blasted'] = today
+                else:
+                    if _DEBUG:
+                        sys.stdout.write("file {} exists in current blast run. Will not blast, "
+                                         "delete file to force\n".format(fn_path))
+            else:
+                if _VERBOSE:
+                    sys.stdout.write("otu {} was last blasted {} days ago and is not being re-blasted. "
+                                     "Use run_blast_wrapper(delay = 0) to force a search.\n".format(otu_id,
+                                                                                                    last_blast))
         self._blasted = 1
 
     def read_local_blast_query(self, fn_path):
@@ -327,8 +324,6 @@ class PhyscraperScrape(object):
         query_dict = {}
         with open(fn_path, mode="r") as infile:
             for lin in infile:
-                # debug("new lin")
-                # sseqid, staxids, sscinames, pident, evalue, bitscore, sseq, stitle = lin.strip().split('\t')
                 sseqid, staxids, sscinames, pident, evalue, bitscore, sseq, salltitles, sallseqid = lin.strip().split('\t')
                 gi_id = int(sseqid.split("|")[1])
                 gb_acc = sseqid.split("|")[3]
@@ -600,7 +595,7 @@ class PhyscraperScrape(object):
                 else:
                     fn_path = "{}/{}.{}".format(self.blast_subdir, taxon.label, file_ending)
                 if _DEBUG:
-                    sys.stdout.write("attempting to read {}\n".format(fn_path))
+                    sys.stdout.write("reading {}\n".format(fn_path))
                 if os.path.isfile(fn_path):
                     if self.config.blast_loc == 'local':  # new method to read in txt format
                         self.read_local_blast_query(fn_path)
@@ -614,22 +609,8 @@ class PhyscraperScrape(object):
 
         self._blast_read = 1
 
-    def get_sp_id_of_otulabel(self, label): 
-        #TODO This was doing a bunch of searches that sould have already happened when creating the OTU.
-        #If we didn't find an ncbi_id then, we shouldn't look again.
 
-        """Get the species name and the corresponding ncbi id of the otu.
-
-        :param label: otu_label = key from otu_dict
-        :return: ncbi id of corresponding label
-        """
-        # debug("get_tax_id_of_otulabel")
-        ncbi_id = self.data.otu_dict[label].get("^ncbi:taxon",0)
-#        debug("otu {} has taxon id {}".format(label, ncbi_id))
-        return ncbi_id
-
-
-    def seq_dict_build(self, seq, label, seq_dict):
+    def seq_dict_build(self, seq, new_otu_label, seq_dict):
         """takes a sequence, a label (the otu_id) and a dictionary and adds the
         sequence to the dict only if it is not a subsequence of a
         sequence already in the dict.
@@ -641,120 +622,86 @@ class PhyscraperScrape(object):
         :param seq_dict: the tmp_dict generated in add_otu()
         :return: updated seq_dict
         """
-        if label == None: #in case of add_otu failure, doean't edit dict 
-            debug("otu_id None")
+        #debug("new_lab: {}".format(new_otu_label))
+        if new_otu_label == None: #in case of add_otu failure, doean't edit dict 
+            #debug("otu_id None")
             sys.stderr.write("otu_id None")
             return seq_dict
-        id_of_label = self.get_sp_id_of_otulabel(label)
+        tax_new_seq = self.data.otu_dict[new_otu_label].get('^ncbi:taxon', 1)
+        if self.config.blast_loc == "local": #need to check if included in taxon of intrest (mrca)
+            if self.ids.ncbi_parser.match_id_to_mrca(tax_new_seq, self.mrca_ncbi):
+                #taxon is within mrca, continue
+                #debug("local: otu is within mrca")
+                pass
+            else:
+                #debug("local: otu is NOT within mrca")
+                return seq_dict
+        #debug("otu {} has tax_id {}".format(new_otu_label, tax_new_seq))
         new_seq = seq.replace("-", "")
-        tax_list = deepcopy(seq_dict.keys())
+        otu_list = deepcopy(seq_dict.keys())
+        should_add = True
+        reason = 'new'
         i = 0
-        continue_search = False
-        never_add = False
-        for tax_lab in tax_list:
-            existing_id = self.get_sp_id_of_otulabel(tax_lab)
+        assert new_otu_label not in otu_list
+        for otu_lab in otu_list:
+            #debug("old lab: {}".format(otu_lab))
             i += 1
-            inc_seq = seq_dict[tax_lab].replace("-", "")
-            if len(new_seq) >= sum(self.data.orig_seqlen) / len(self.data.orig_seqlen) * self.config.maxlen:
-                debug("seq not added because it's too long...")
-                self.data.otu_dict[label]['^physcraper:status'] = "not added; sequence is too long"
-                gb_id = self.data.otu_dict[label]["^ncbi:accession"]
-                # if gb_id not in self.gb_not_added:
-                #     self.gb_not_added.append(gb_id)
-                #TODO merge with other label search
-                if id_of_label in self.ids.ncbiid_to_spn.keys():
-                    tax_name = self.ids.ncbiid_to_spn[id_of_label]
-                else:
-                    tax_name = self.ids.ncbi_parser.get_name_from_id(id_of_label)
-                cutoff = sum(self.data.orig_seqlen) / len(self.data.orig_seqlen) * self.config.maxlen
-                reason = "sequence too long: new seq len ({}) vs.  cutoff ({})".format(len(new_seq), cutoff)
-                writeinfofiles.write_not_added(id_of_label, tax_name, gb_id, reason, self.workdir)
-                # writeinfofiles.write_not_added_info(self, local_id, "threshold not passed")
-                # needs to be deleted from gb_dict,
-                # maybe we find a better fitting blast query seq and then it might get added
-#                del self.data.gb_dict[gb_id]
-                                    
-            elif len(inc_seq) >= len(new_seq):  # if seq is identical and shorter
-                if inc_seq.find(new_seq) != -1:
-                    if type(existing_id) == int and existing_id != int(id_of_label):  # different otus, add
-                        if _VERBOSE:
+            if _VERBOSE:
+                sys.stdout.write(".")
+                if i % 50 == 0:
+                    sys.stdout.write("\n")
+            existing_tax_id = self.data.otu_dict[otu_lab].get('^ncbi:taxon', None)
+            inc_seq = seq_dict[otu_lab].replace("-", "")
+            if len(inc_seq) >= len(new_seq):  
+                #debug("seq {} is shorter than {}".format(new_otu_label, otu_lab))
+                if new_seq in inc_seq:# if seq is identical and shorter
+                    #debug("seq is identical and shorter")
+                    if existing_tax_id != tax_new_seq:  # different taxa
+                        if _VERBOSE or _DEBUG:
                             sys.stdout.write("seq {} is subsequence of {}, "
-                                             "but different species name\n".format(label, tax_lab))
-                        self.data.otu_dict[label]['^physcraper:status'] = "new seq added; " \
-                                                                          "subsequence, but different taxon"
-                        seq_dict[label] = seq
-                        debug("{} and {} are subsequences, but different sp. concept".format(id_of_label, existing_id))
-                        continue_search = True
-                        continue
+                                             "but different species name\n".format(new_otu_label, otu_lab))
+                        status = "new seq added; subsequence of {}, but different taxon".format(otu_lab)
+                        #still should be added, but need to check other samples
                     else:  # subseq of same otu
                         if _VERBOSE:
-                            sys.stdout.write("seq {} is subsequence of {}, not added\n".format(label, tax_lab))
-                        self.data.otu_dict[label]['^physcraper:status'] = "subsequence, not added"
-                        debug("{} not added, subseq of {}".format(id_of_label, existing_id))
-                        never_add = True
-                        continue
-            else:  # if seq is longer and identical
+                            sys.stdout.write("seq {} is subsequence of {}, not added\n".format(new_otu_label, otu_lab))
+                        self.data.otu_dict[new_otu_label]['^physcraper:status'] = "subsequence, not added"
+                        #debug("{} not added, subseq of {}".format(new_otu_label, otu_lab))
+                        return seq_dict
+                else:
+                    pass
+                    #didn't run into any problems yet, should_add still true
+            elif len(new_seq) > len(inc_seq):  
+                #debug("seq is longer")
                 if new_seq.find(inc_seq) != -1:
                     if self.data.otu_dict[tax_lab].get('^physcraper:status') == "original":
-                        if _VERBOSE:
-                            sys.stdout.write("seq {} is supersequence of original seq {}, "
-                                             "both kept in alignment\n".format(label, tax_lab))
-                        self.data.otu_dict[label]['^physcraper:status'] = "new seq added"
-                        seq_dict[label] = seq
-                        debug("{} and  {} added".format(id_of_label, existing_id))
-                        continue_search = True
-                        continue
-                    elif type(existing_id) == int and existing_id != id_of_label:
-                        if _VERBOSE:
-                            sys.stdout.write("seq {} is supersequence of {}, but different "
-                                             "taxon\n".format(label, tax_lab))
-                        self.data.otu_dict[label]['^physcraper:status'] = "new seq added; supersequence, " \
-                                                                          "but different taxon"
-                        seq_dict[label] = seq
-                        debug("{} and  {} supersequence, but different sp. concept".format(id_of_label, existing_id))
-                        continue_search = True
-                        continue
-                    elif self.data.otu_dict[tax_lab].get('^physcraper:status') == "local seq":
-                        if _VERBOSE:
-                            sys.stdout.write("seq {} is supersequence of local seq {}, "
-                                             "both kept in alignment\n".format(label, tax_lab))
-                        self.data.otu_dict[label]['^physcraper:status'] = "new seq added"
-                        seq_dict[label] = seq
-                        debug("{} and  {} added".format(id_of_label, existing_id))
-                        continue_search = True
-                        continue
+                        reason = "seq {} is supersequence of original seq {}, "\
+                                             "both kept in alignment\n".format(label, tax_lab)
+                        if _VERBOSE or _DEBUG:
+                            sys.stdout.write(reason)
+                    elif existing_tax_id != tax_new_seq:  # different taxa
+                        reason = "seq {} is supersequence of {}, but different taxon\n".format(label, tax_lab)
+                        if _VERBOSE or _DEBUG:
+                            sys.stdout.write(reason)
+                        #can still be added
                     else:
-                        del seq_dict[tax_lab]
+                        # new seq s a super sequence, delet old one and add new one. DO NOT KEEP CHECKING
+                        del seq_dict[otu_lab]
                         seq_dict[label] = seq
-                        self.data.remove_taxa_aln_tre(tax_lab)
-                        if _VERBOSE:
-                            sys.stdout.write("seq {} is supersequence of {}, {} added "
-                                             "and {} removed\n".format(label, tax_lab, label, tax_lab))
-                        self.data.otu_dict[label]['^physcraper:status'] = "new seq added in place of {}".format(tax_lab)
-                        self.data.otu_dict[tax_lab]['^physcraper:status'] = "deleted, {} is supersequence".format(label)
-                        debug("{} added, instead of  {}".format(id_of_label, existing_id))
-                        self.del_superseq.add(tax_lab)
-                        continue_search = True
-                        continue
-
-        if continue_search is True or never_add is True:
-            if (self.data.otu_dict[label]['^physcraper:status'].split(' ')[0] in self.seq_filter) or never_add is True:
-                if label in seq_dict.keys():
-                    del seq_dict[label]
-                if label in self.data.aln.taxon_namespace or label in self.data.tre.taxon_namespace:
-                    self.data.remove_taxa_aln_tre(label)
-                # should not be necessary, information what happened to seq should have been added in lines before
-                # else:
-                #     debug("label was never added to aln or tre")
-                # Note: should not be the word 'deleted', as this is used in self.seq_filter
-                # self.data.otu_dict[label]['^physcraper:status'] = "removed in seq dict build"
+                        self.data.remove_taxa_aln_tre(otu_lab)
+                        reason = "seq {} is supersequence of {}, {} added and {} removed\n".format(new_otu_label, otu_lab, new_otu_label, otu_lab)
+                        if _VERBOSE or _DEBUG:
+                            sys.stdout.write(reason)
+                        self.data.otu_dict[otu_lab]['^physcraper:status'] = "deleted, {} is supersequence".format(new_otu_label)
+                        self.data.otu_dict[new_otu_label]['^physcraper:status'] = "new seq added in place of {}".format(otu_lab)
+                        seq_dict[new_otu_label] = seq
+                        self.data.otu_dict[new_otu_label]['^physcraper:status'] = reason
+                        return seq_dict
+                seq_dict[new_otu_label] = seq
+                self.data.otu_dict[new_otu_label]['^physcraper:status'] = reason
+                #debug("{} was added".format(new_otu_label))
                 return seq_dict
-        if _VERBOSE:
-            sys.stdout.write(".")
-            if i % 50 == 0:
-                sys.stdout.write("\n")
-        seq_dict[label] = seq
-        return seq_dict
+
 
 
     def remove_identical_seqs(self):
@@ -776,96 +723,27 @@ class PhyscraperScrape(object):
         self.data.orig_seqlen = [len(self.data.aln[tax].symbols_as_string().replace("-", "").replace("N", "")) for tax in
                                  self.data.aln]
         avg_seqlen = sum(self.data.orig_seqlen) / len(self.data.orig_seqlen)  # HMMMMMMMM
-        assert self.config.seq_len_perc <= 1, \
-            ("your config seq_len_param is not smaller than 1: {}".format(self.config.seq_len_perc))
-        seq_len_cutoff = avg_seqlen * self.config.seq_len_perc
-        self.del_superseq = set()  # will contain deleted superseqs for the assert below
-        # all_added_gi is to limit the adding to new seqs, if we change the rank of filtering later
-        all_added_gi = set()
+        seq_len_min = avg_seqlen * self.config.seq_len_perc
+        seq_len_max = avg_seqlen * self.config.maxlen
+        all_added_gi = set([self.data.otu_dict[otu].get("^ncbi:accession",'UNK') for otu in self.data.otu_dict])
         for gb_id, seq in self.new_seqs.items():
-            if seq == None:
-                sys.stderr.write("No sequence found for accession number {}\n".format(gb_id))
-                continue
-            added = False
-            assert gb_id in self.data.gb_dict.keys(), (gb_id, self.data.gb_dict.keys())
-            if gb_id not in all_added_gi:
-                all_added_gi.add(gb_id)
-                # debug(gb_id)
-                if len(gb_id.split(".")) == 1:
-                    debug("problem gb_id {}".format(gb_id))
+            assert gb_id in self.data.gb_dict.keys()
+            if seq_len_min < len(seq) < seq_len_max:
                 if self.blacklist is not None and gb_id in self.blacklist:
-                    debug("gb_id in blacklist, not added")
+                    debug("gb_id {} in blacklist, not added".format(gb_id))
                     pass
-                elif gb_id in self.newseqs_acc:  # added to increase speed. often seq was found in another blast file
-                    debug("passed, was already added")
+                if gb_id in all_added_gi:
+                    debug("already have {}, not added".format(gb_id))
                     pass
                 else:
-                    # debug(len(seq.replace("-", "").replace("N", "")))
-                    # debug(seq_len_cutoff)
-                    if len(seq.replace("-", "").replace("N", "")) > seq_len_cutoff:
-                        # debug(self.config.blast_loc)
-                        if self.config.blast_loc == "local":
-                            #in local blast need to check if new seqs are in taxon on interest
-                            ncbi_id, tax_name = ncbi_data_parser.get_tax_info_from_acc(gb_id, self.data, self.ids)
-                            if self.ids.ncbi_parser.match_id_to_mrca(ncbi_id, self.mrca_ncbi):  # belongs to ingroup mrca -> add to data
-                                self.newseqs_acc.append(gb_id)
-                                otu_id = self.data.add_otu(gb_id, self.ids)
-                                self.seq_dict_build(seq, otu_id, tmp_dict)
-                                added = True
-                                    # debug(some)
-                            else:
-                                debug("does not match")
-                                reason = "not_part_of_mrca: {}".format(self.mrca_ncbi)
-                        else: #in remote we have already checked for MRCA
-                            added = True
-                            self.newseqs_acc.append(gb_id)
-                            otu_id = self.data.add_otu(gb_id, self.ids)
-                            self.seq_dict_build(seq, otu_id, tmp_dict)
-                        
-                    else:
-                        #debug("seq too short")
-                        # do not add them to not added, as seq len depends on sequence which was blasted and
-                        # there might be a better matching seq (one which will return a longer sequence...)
-                        # if gb_id not in self.gb_not_added:
-                        #     self.gb_not_added.append(gb_id)
-                        # writeinfofiles.write_not_added_info(self, gb_id, "seqlen_threshold_not_passed")
-                        len_seq = len(seq.replace("-", "").replace("N", ""))
-                        reason = "seqlen_threshold_not_passed: len seq: {}, min len: {}".format(len_seq, seq_len_cutoff)
- 
-
-                # sequences that could not be added are written out to file
-                if added is False:
-                    if "sscinames" in self.data.gb_dict[gb_id]:
-                            tax_name = self.data.gb_dict[gb_id]['sscinames']
-                            ncbi_id = self.data.gb_dict[gb_id]['staxids']
-                    else:
-                        tax_name = None
-                        ncbi_id = None
-                    writeinfofiles.write_not_added(ncbi_id, tax_name, gb_id, reason, self.workdir)
-
-                        # fn = open("{}/not_added_seq.csv".format(self.workdir), "a+")
-                        # fn.write(
-                        #     "seqlen_threshold_not_passed, {}, {}, min len: {}\n".format(gb_id, len_seq, seq_len_cutoff))
-                        # fn.close()
-        # this assert got more complicated, as sometimes superseqs are already deleted in seq_dict_build() ->
-        # then subset assert it not True
-        old_seqs_ids = set()
-        for tax in old_seqs:
-            old_seqs_ids.add(tax)
-        tmp_dict_plus_super = set()
-        for item in tmp_dict.keys():
-            tmp_dict_plus_super.add(item)
-        for item in self.del_superseq:
-            tmp_dict_plus_super.add(item)
-        # print(tmp_dict_plus_super)
-        # assert old_seqs_ids.issubset(tmp_dict.keys()), ([x for x in old_seqs_ids if x not in tmp_dict.keys()])
-        assert old_seqs_ids.issubset(tmp_dict_plus_super), ([x for x in old_seqs_ids if x not in tmp_dict_plus_super])
-        for tax in old_seqs:
-            if tax in tmp_dict:
-                del tmp_dict[tax]
+                    otu_id = self.data.add_otu(gb_id, self.ids)
+                    self.seq_dict_build(seq, otu_id, tmp_dict)
+        tax_in_aln = set([taxon.label for taxon in self.data.aln])
+        for tax in tax_in_aln:
+            del tmp_dict[tax]
         self.new_seqs_otu_id = tmp_dict  # renamed new seq to their otu_ids from GI's, but all info is in self.otu_dict
-        debug("len new seqs dict after remove identical")
-        debug(len(self.new_seqs_otu_id))
+        self.new_seqs = {} #Wipe clean
+        debug("len new seqs dict after remove identical{}".format(len(self.new_seqs_otu_id)))
         with open(self.logfile, "a") as log:
             log.write("{} new sequences added from Genbank after removing identical seq, "
                       "of {} before filtering\n".format(len(self.new_seqs_otu_id), len(self.new_seqs)))
@@ -889,20 +767,44 @@ class PhyscraperScrape(object):
         pickle.dump(self, ofi, pickle.HIGHEST_PROTOCOL)
         sys.setrecursionlimit(current)
 
-    def write_query_seqs(self):
+    def write_query_seqs(self, filename='date'):
         """writes out the query sequence file"""
         debug("write query seq")
         if not self._blast_read:
             self.read_blast_wrapper()
-        self.newseqs_file = "{}.fasta".format(self.date)
+        if filename == 'date':
+            self.newseqs_file = "{}.fasta".format(self.date)
+        else:
+            self.newseqs_file = filename
         fi = open("{}/{}".format(self.workdir, self.newseqs_file), "w")
         if _VERBOSE:
             sys.stdout.write("writing out sequences\n")
         for otu_id in self.new_seqs_otu_id.keys():
-            if otu_id not in self.data.aln:  # new seqs only
                 fi.write(">{}\n".format(otu_id))
                 fi.write("{}\n".format(self.new_seqs_otu_id[otu_id]))
         self._query_seqs_written = 1
+
+    def write_all_unaligned(self, filename='date'):
+        """writes out the query sequence file"""
+        debug("write query + aligned seqs")
+        if not self._blast_read:
+            self.read_blast_wrapper()
+        if filename == 'date':
+            self.allseqs_file = "{}_ALL.fasta".format(self.date)
+        else:
+            self.allseqs_file = filename
+        fipath =  "{}/{}".format(self.workdir, self.allseqs_file)  
+        #write out existing
+        self.data.aln.write(path=fipath, schema='fasta')
+        #append new
+        fi = open(fipath, "a")
+        if _VERBOSE:
+            sys.stdout.write("writing out ALL sequences\n")
+        for otu_id in self.new_seqs_otu_id.keys():
+                fi.write(">{}\n".format(otu_id))
+                fi.write("{}\n".format(self.new_seqs_otu_id[otu_id]))
+        self._query_seqs_written = 1
+
 
     def align_query_seqs(self, papara_runname="extended"):
         """runs papara on the tree, the alignment and the new query sequences

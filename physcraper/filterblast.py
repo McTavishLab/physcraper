@@ -172,8 +172,9 @@ class FilterBlast(PhyscraperScrape):
                 try:
                     seq = self.data.aln[otu_id].symbols_as_string()
                 except KeyError:
-                    assert gb_id in self.new_seqs # if it is not already in the alignment it must be in new seqs
-                    seq = self.new_seqs[gb_id]
+                    otu = self.data.get_otu_for_acc(gb_id)
+                    assert otu in self.new_seqs_otu_id # if it is not already in the alignment it must be in new seqs
+                    seq = self.new_seqs_otu_id[otu]
                 seq = seq.replace("-", "")
                 seq = seq.replace("?", "")
                 seq_d[gb_id] = seq
@@ -337,12 +338,9 @@ class FilterBlast(PhyscraperScrape):
             if '^physcraper:status' in otu_info:
                 # debug(otu_id)
                 if otu_info['^physcraper:status'].split(' ')[0] not in self.seq_filter:
-                    if otu_info['^physcraper:last_blasted'] == '1800/01/01' \
+                    if otu_info['^physcraper:last_blasted'] == None \
                             and otu_info['^physcraper:status'] != "original":
-                        gb_id = otu_info['^ncbi:accession']
-                        if len(gb_id.split(".")) == 1:
-                            debug(gb_id)
-                        seq = self.new_seqs[gb_id]
+                        seq = self.new_seqs_otu_id[otu_id]
                         self.filtered_seq[gb_id] = seq
         return self.filtered_seq
 
@@ -408,9 +406,6 @@ class FilterBlast(PhyscraperScrape):
             if status.split(' ')[0] not in self.seq_filter:
 #                debug(item['^physcraper:status'])
                 item_split = item['^physcraper:status'].split(' ')[0]
-                # if item['^physcraper:last_blasted'] != '1800/01/01':
-                    # new_taxon = False
-                # if item["^physcraper:status"] == "query" or item_split == "new":
                 if item["^physcraper:status"] == "query" or item_split == "new" or item_split == "added,":
                     query_count += 1
                 if item["^physcraper:status"] == 'added as representative of taxon':
@@ -516,7 +511,7 @@ class FilterBlast(PhyscraperScrape):
             for key in self.data.otu_dict.keys():
                 if '^ncbi:accession' in self.data.otu_dict[key]:
                     if self.data.otu_dict[key]['^ncbi:accession'] == gb_id:
-                        self.data.otu_dict[key]['^physcraper:last_blasted'] = "1900/01/01"
+                        self.data.otu_dict[key]['^physcraper:last_blasted'] = None
                         # debug(self.data.otu_dict[key]['^physcraper:status'])
                         if self.data.otu_dict[key]['^physcraper:status'] == "query" \
                                 or self.data.otu_dict[key]['^physcraper:status'].split(" ")[0] == 'new':
@@ -529,7 +524,7 @@ class FilterBlast(PhyscraperScrape):
                     if self.data.otu_dict[key]["^ncbi:accession"] == gb_id and added is False:
                         added = True
                         reduced_new_seqs_dic[key] = self.filtered_seq[gb_id]
-                        self.data.otu_dict[key]['^physcraper:last_blasted'] = "1900/01/01"
+                        self.data.otu_dict[key]['^physcraper:last_blasted'] = None
                         self.data.otu_dict[key]['^physcraper:status'] = 'added as representative of taxon'
 
         reduced_new_seqs = {k: self.filtered_seq[k] for k in keylist}
