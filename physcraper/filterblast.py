@@ -91,37 +91,14 @@ class FilterBlast(PhyscraperScrape):
         self.sp_d = {}
         for otu_id in self.data.otu_dict:
             if self.data.otu_dict[otu_id]['^physcraper:status'].split(' ')[0] not in self.seq_filter:
-                #TODO these lines should not be necessary, as we have already mapped the ncbi_id when creating the otu
-                #can replace with 
-                #tax_id = self.get_sp_id_of_otulabel(otu_id)
-                tax_name = self.ids.find_name_otu(otu_dict_entry=self.data.otu_dict[otu_id])
-                if len(tax_name.split("(")) > 1:
-                    tax_name = tax_name.split("(")[0]
-                tax_name = str(tax_name).replace(" ", "_")
-                if self.config.blast_loc == 'remote':
-                    sys.stderr.write("Filtering by taxon not functional for remote ncbi searches yet.")
-                    sys.exit(-7)
-                    #if '^ncbi:accession' in self.data.otu_dict[otu_id]:
-                    #     gb_id = self.data.otu_dict[otu_id]['^ncbi:accession']
-                    #    if len(gb_id.split(".")) == 1:
-                    #        debug(gb_id)
-                    #    if gb_id in self.ids.acc_ncbi_dict:
-                    #        tax_id = self.ids.acc_ncbi_dict[gb_id]
-                    #tax_id = self.ids.get_rank_info_from_web(taxon_name=tax_name)
-                    # print(tax_name)
-                    # print(self.ids.otu_rank.keys())
-                    # tax_id = self.ids.otu_rank[tax_name]["taxon id"]
-                else:
-                    #We already earched for the taxon_id when creating the otu dict entry.
-                    # We want to make sure that the ncbi_id we are using is the same one we report in the otu_dict
-                    tax_id = self.data.otu_dict[otu_id].get('^ncbi:taxon') 
-                    assert tax_id not in set([0, None]) # every OTU must have a taxon_id for filter blast
+                tax_id = self.data.otu_dict[otu_id].get('^ncbi:taxon') 
+                assert tax_id not in set([0, None]) # every OTU must have a taxon_id for filter blast
                     # we cannot include unmapped taxa in fliter blast.
                 if self.downtorank is not None:
                     downtorank_name = None
                     downtorank_id = None
                     if self.config.blast_loc == 'remote':
-                        sys.stderr.write("Filtering by taxon not functional for remote ncbi searches yet.")
+                        sys.stderr.write("Filtering by taxon ranks not functional for remote ncbi searches yet.")
                         sys.exit(-7)
                         #tax_id = self.ids.get_rank_info_from_web(taxon_name=tax_name)
                         #lineage2ranks = self.ids.otu_rank[tax_id]["rank"]
@@ -140,10 +117,6 @@ class FilterBlast(PhyscraperScrape):
                         downtorank_name = self.ids.ncbi_parser.get_name_from_id(downtorank_id)
                     tax_name = downtorank_name
                     tax_id = downtorank_id
-                tax_name = tax_name.replace(" ", "_") #TODO we should store the names with underscores in the dicts
-                self.ids.spn_to_ncbiid[tax_name] = tax_id
-                self.ids.ncbiid_to_spn[tax_id] = tax_name
-                tax_id=int(tax_id)
                 if tax_id in self.sp_d:
                     self.sp_d[tax_id].append(otu_id)
                 else:
@@ -166,109 +139,107 @@ class FilterBlast(PhyscraperScrape):
             # loop to populate dict. key1 = sp id, key2= gb id, value = seq,
             # number of items in key2 will be filtered according to threshold and already present seq
             seq_d = {}
-            for otu_id in self.sp_d[key]:
+            for otu_id in self.sp_d[taxon]:
 #                debug("otu id is {}".format(otu_id))
-                gb_id = self.data.otu_dict[otu_id].get('^ncbi:accession', otu_id) #this will get the gen bank accession number if it has one, or use the otu_id if not
                 try:
                     seq = self.data.aln[otu_id].symbols_as_string()
                 except KeyError:
-                    otu = self.data.get_otu_for_acc(gb_id)
                     assert otu in self.new_seqs_otu_id # if it is not already in the alignment it must be in new seqs
                     seq = self.new_seqs_otu_id[otu]
                 seq = seq.replace("-", "")
                 seq = seq.replace("?", "")
-                seq_d[gb_id] = seq
-            self.sp_seq_d[key] = seq_d
+                seq_d[otu_id] = seq
+            self.sp_seq_d[taxon] = seq_d
         return
 
-    def select_seq_by_local_blast(self, seq_d, fn, count):
-        """
-        Selects number of sequences from local_blast to fill up sequences to the threshold.
-        Count is the return value from self.count_num_seq(tax_id)["seq_present"], that tells the program
-        how many sequences for the taxon are already available in the aln.
+#    def select_seq_by_local_blast(self, seq_d, fn, count):
+        # """
+        # Selects number of sequences from local_blast to fill up sequences to the threshold.
+        # Count is the return value from self.count_num_seq(tax_id)["seq_present"], that tells the program
+        # how many sequences for the taxon are already available in the aln.
 
-        It will only include species which have a blast score of mean plus/minus sd.
-        Uses the information returned by read_local_blast_query()
-        to select which sequences shall be added in a filtered run.
+        # It will only include species which have a blast score of mean plus/minus sd.
+        # Uses the information returned by read_local_blast_query()
+        # to select which sequences shall be added in a filtered run.
 
-        Note: has test,test_select_seq_by_local_blast.py
+        # Note: has test,test_select_seq_by_local_blast.py
 
-        :param seq_d: is the value of self.sp_d (= another dict)
-        :param fn: refers to a filename to find the local blast file produced before,
-                    which needs to be read in by read_local_blast_query() - currently tax_id
-        :param count: self.count_num_seq(tax_id)["seq_present"]
-        :return: self.filtered_seq
-        """
-        debug("select_seq_by_local_blast")
-        no_similar_seqs = 0
-        seq_blast_score = filter_by_local_blast.read_filter_blast(self.workdir, seq_d, fn)
-        random_seq_ofsp = {}
+        # :param seq_d: is the value of self.sp_d (= another dict)
+        # :param fn: refers to a filename to find the local blast file produced before,
+        #             which needs to be read in by read_local_blast_query() - currently tax_id
+        # :param count: self.count_num_seq(tax_id)["seq_present"]
+        # :return: self.filtered_seq
+        # """
+        # debug("select_seq_by_local_blast")
+        # no_similar_seqs = 0
+        # seq_blast_score = filter_by_local_blast.read_filter_blast(self.workdir, seq_d, fn)
+        # random_seq_ofsp = {}
 
-        if seq_blast_score != {}:
-            if (self.threshold - count) <= 0:
-                debug("already too many samples of sp in aln, skip adding more.")
-            # exact amount of seq present which need to be added
-            elif len(seq_blast_score.keys()) == (self.threshold - count):
-                random_seq_ofsp = seq_blast_score
-            elif len(seq_blast_score.keys()) > (
-                    self.threshold - count):  # more seq available than need to be added, choose by random
-                debug("choose random")
-                random_seq_ofsp = random.sample(seq_blast_score.items(), (self.threshold - count))
-                random_seq_ofsp = dict(random_seq_ofsp)
-            elif len(seq_blast_score.keys()) < (
-                    self.threshold - count):  # less seq available than need to be added, just use all
-                debug("add all")
-                # print(len(seq_blast_score.keys()))
-                # print(self.threshold - count)
-                random_seq_ofsp = seq_blast_score
-        # no similar seq found. think about what to do. was the other seq already present?
-        else:
-            debug("blast did not find similar seqs")
-            if len(seq_d.keys()) > 2 and no_similar_seqs == 0:  # try with different seq to blast
-                debug("blast with different seq...")
-                # all the next line is from how_many_seq_to_keep()
-                blast_seq_id = seq_d.keys()[1]  # seq 1 instead of 0 now
-                seq = seq_d[blast_seq_id]
-                filter_by_local_blast.write_filterblast_query(self.workdir, blast_seq_id, seq,
-                                                              fn=fn)  # blast guy
-                blast_db = seq_d.keys()[2:]
-                for blast_key in blast_db:
-                    seq = seq_d[blast_key]
-                    filter_by_local_blast.write_filterblast_db(self.workdir, blast_key, seq,
-                                                                  fn=fn)
-                # make local blast of sequences
-                filter_by_local_blast.run_filter_blast(self.workdir, fn, fn)
-                no_similar_seqs = 1
-                count_dict = self.count_num_seq(fn)
-                seq_present = count_dict["seq_present"]
-                if len(seq_d) + seq_present >= self.threshold:
-                    self.select_seq_by_local_blast(seq_d, fn, count)
-                elif len(seq_d) + seq_present < self.threshold:
-                    self.add_all(fn)
-            elif len(seq_d.keys()) > 2 and no_similar_seqs == 1:  # also with different seq no result, select random seq!
-                if len(seq_d.keys()) == (self.threshold - count):  # exact amount of seq present which need to be added
-                    for item in seq_d.keys():
-                        random_seq_ofsp[item] = seq_d[item]
-                elif len(seq_d.keys()) > (
-                        self.threshold - count):  # more seq available than need to be added, choose by random
-                    debug("choose random - else")
-                    random_seq = random.sample(seq_d.items(), (self.threshold - count))
-                    for item in random_seq.keys():
-                        random_seq_ofsp[item] = random_seq[item]
-                elif len(seq_blast_score.keys()) < (
-                        self.threshold - count):  # less seq available than need to be added, just use all
-                    debug("add all - else")
-                    for item in seq_d.keys():
-                        random_seq_ofsp[item] = seq_d[item]
-            else:
-                seq_id = seq_d.keys()[1]
-                seq = seq_d[seq_id]
-                random_seq_ofsp[seq_id] = seq
-        # debug(random_seq_ofsp)
-        if len(random_seq_ofsp) > 0:  # add everything to filtered seq
-            for key, val in random_seq_ofsp.items():
-                self.filtered_seq[key] = val
-        return self.filtered_seq
+        # if seq_blast_score != {}:
+        #     if (self.threshold - count) <= 0:
+        #         debug("already too many samples of sp in aln, skip adding more.")
+        #     # exact amount of seq present which need to be added
+        #     elif len(seq_blast_score.keys()) == (self.threshold - count):
+        #         random_seq_ofsp = seq_blast_score
+        #     elif len(seq_blast_score.keys()) > (
+        #             self.threshold - count):  # more seq available than need to be added, choose by random
+        #         debug("choose random")
+        #         random_seq_ofsp = random.sample(seq_blast_score.items(), (self.threshold - count))
+        #         random_seq_ofsp = dict(random_seq_ofsp)
+        #     elif len(seq_blast_score.keys()) < (
+        #             self.threshold - count):  # less seq available than need to be added, just use all
+        #         debug("add all")
+        #         # print(len(seq_blast_score.keys()))
+        #         # print(self.threshold - count)
+        #         random_seq_ofsp = seq_blast_score
+        # # no similar seq found. think about what to do. was the other seq already present?
+        # else:
+        #     debug("blast did not find similar seqs")
+        #     if len(seq_d.keys()) > 2 and no_similar_seqs == 0:  # try with different seq to blast
+        #         debug("blast with different seq...")
+        #         # all the next line is from how_many_seq_to_keep()
+        #         blast_seq_id = seq_d.keys()[1]  # seq 1 instead of 0 now
+        #         seq = seq_d[blast_seq_id]
+        #         filter_by_local_blast.write_filterblast_query(self.workdir, blast_seq_id, seq,
+        #                                                       fn=fn)  # blast guy
+        #         blast_db = seq_d.keys()[2:]
+        #         for blast_key in blast_db:
+        #             seq = seq_d[blast_key]
+        #             filter_by_local_blast.write_filterblast_db(self.workdir, blast_key, seq,
+        #                                                           fn=fn)
+        #         # make local blast of sequences
+        #         filter_by_local_blast.run_filter_blast(self.workdir, fn, fn)
+        #         no_similar_seqs = 1
+        #         count_dict = self.count_num_seq(fn)
+        #         seq_present = count_dict["seq_present"]
+        #         if len(seq_d) + seq_present >= self.threshold:
+        #             self.select_seq_by_local_blast(seq_d, fn, count)
+        #         elif len(seq_d) + seq_present < self.threshold:
+        #             self.add_all(fn)
+        #     elif len(seq_d.keys()) > 2 and no_similar_seqs == 1:  # also with different seq no result, select random seq!
+        #         if len(seq_d.keys()) == (self.threshold - count):  # exact amount of seq present which need to be added
+        #             for item in seq_d.keys():
+        #                 random_seq_ofsp[item] = seq_d[item]
+        #         elif len(seq_d.keys()) > (
+        #                 self.threshold - count):  # more seq available than need to be added, choose by random
+        #             debug("choose random - else")
+        #             random_seq = random.sample(seq_d.items(), (self.threshold - count))
+        #             for item in random_seq.keys():
+        #                 random_seq_ofsp[item] = random_seq[item]
+        #         elif len(seq_blast_score.keys()) < (
+        #                 self.threshold - count):  # less seq available than need to be added, just use all
+        #             debug("add all - else")
+        #             for item in seq_d.keys():
+        #                 random_seq_ofsp[item] = seq_d[item]
+        #     else:
+        #         seq_id = seq_d.keys()[1]
+        #         seq = seq_d[seq_id]
+        #         random_seq_ofsp[seq_id] = seq
+        # # debug(random_seq_ofsp)
+        # if len(random_seq_ofsp) > 0:  # add everything to filtered seq
+        #     for key, val in random_seq_ofsp.items():
+        #         self.filtered_seq[key] = val
+        # return self.filtered_seq
 
     def select_seq_by_length(self, taxon_id, count):
         """This is another mode to filter the sequences, if there are more than the threshold.
@@ -341,42 +312,39 @@ class FilterBlast(PhyscraperScrape):
                     if otu_info['^physcraper:last_blasted'] == None \
                             and otu_info['^physcraper:status'] != "original":
                         seq = self.new_seqs_otu_id[otu_id]
-                        self.filtered_seq[gb_id] = seq
+                        self.filtered_seq[otu_id] = seq
         return self.filtered_seq
 
-    def loop_for_write_blast_files(self, tax_id):
-        """This loop is needed to be able to write the local blast files for the filtering step correctly.
+#    def loop_for_write_blast_files(self, tax_id):
+        # """This loop is needed to be able to write the local blast files for the filtering step correctly.
 
-        Function returns a filename for the filter blast.
+        # Function returns a filename for the filter blast.
 
-        Note: has test,test_loop_for_blast.py
+        # Note: has test,test_loop_for_blast.py
 
-        :param key: key of self.sp_d (taxon id)
-        :return: name of the blast file
-        """
-        debug("loop_for_write_blast_files")
-        aln_otus = set([taxon.label for taxon in self.data.aln])
-        query_otu = None
-        db_otus = []
-        for otu_id in self.sp_d[tax_id]: 
-            otu_info = self.data.otu_dict[otu_id]
-            if otu_id in aln_otus:
-                query_otu = otu_id #we end up overwriting the query file repeatedly. Might as well just choose one otu and write it once.
-            elif '^physcraper:status' in otu_info and otu_info['^physcraper:status'].split(' ')[0] not in self.seq_filter: # these are the new sequences that haven't been filtered out
-                db_otus.append(otu_id)
-                assert '^ncbi:accession' in otu_info
-                gb_id = otu_info['^ncbi:accession']
-                assert len(gb_id.split(".")) == 2 #we should have already gotten rid of any bad ids
-                assert gb_id in self.new_seqs.keys()
-                seq = self.new_seqs[gb_id]
-                filter_by_local_blast.write_filterblast_db(self.workdir, gb_id, seq, fn=tax_id)
-            else:
-                debug("otu_id {} was not in the alignemnt, but was filtered out due to {}".format(otu_id, otu_info['^physcraper:status']))
-        assert query_otu is not None#at least 1 otu must be in the alignment
-        debug("for taxon {} will use otu {} for query".format(tax_id, query_otu))
-        query_seq = self.data.aln[query_otu]
-        filter_by_local_blast.write_filterblast_query(self.workdir, query_otu, query_seq, fn=tax_id)
-        return tax_id
+        # :param key: key of self.sp_d (taxon id)
+        # :return: name of the blast file
+        # """
+        # debug("loop_for_write_blast_files")
+        # aln_otus = set([taxon.label for taxon in self.data.aln])
+        # query_otu = None
+        # db_otus = []
+        # for otu_id in self.sp_d[tax_id]: 
+        #     otu_info = self.data.otu_dict[otu_id]
+        #     if otu_id in aln_otus:
+        #         query_otu = otu_id #we end up overwriting the query file repeatedly. Might as well just choose one otu and write it once.
+        #     elif '^physcraper:status' in otu_info and otu_info['^physcraper:status'].split(' ')[0] not in self.seq_filter: # these are the new sequences that haven't been filtered out
+        #         db_otus.append(otu_id)
+        #         assert otu_id in self.new_seqs_otu_id.keys()
+        #         seq = self.new_seqs_otu_id[otu_id]
+        #         filter_by_local_blast.write_filterblast_db(self.workdir, gb_id, seq, fn=tax_id)
+        #     else:
+        #         debug("otu_id {} was not in the alignemnt, but was filtered out due to {}".format(otu_id, otu_info['^physcraper:status']))
+        # assert query_otu is not None#at least 1 otu must be in the alignment
+        # debug("for taxon {} will use otu {} for query".format(tax_id, query_otu))
+        # query_seq = self.data.aln[query_otu]
+        # filter_by_local_blast.write_filterblast_query(self.workdir, query_otu, query_seq, fn=tax_id)
+        # return tax_id
 
 
     def count_num_seq(self, tax_id):
@@ -505,27 +473,13 @@ class FilterBlast(PhyscraperScrape):
         keylist = self.filtered_seq.keys()
         if not self.unpublished:
             keylist = [x for x in keylist if x[:6] != "unpubl"]
-        seq_not_added = self.new_seqs.keys()
+        seq_not_added = self.new_seqs_otu_id.keys()
         reduced_new_seqs_dic = {}
-        for gb_id in seq_not_added:
-            for key in self.data.otu_dict.keys():
-                if '^ncbi:accession' in self.data.otu_dict[key]:
-                    if self.data.otu_dict[key]['^ncbi:accession'] == gb_id:
-                        self.data.otu_dict[key]['^physcraper:last_blasted'] = None
-                        # debug(self.data.otu_dict[key]['^physcraper:status'])
-                        if self.data.otu_dict[key]['^physcraper:status'] == "query" \
-                                or self.data.otu_dict[key]['^physcraper:status'].split(" ")[0] == 'new':
-                            self.data.otu_dict[key]['^physcraper:status'] = 'not added, ' \
-                                                                            'there are enough seq per sp in tre'
-        for gb_id in keylist:
-            added = False
-            for key in self.data.otu_dict.keys():
-                if "^ncbi:accession" in self.data.otu_dict[key]:
-                    if self.data.otu_dict[key]["^ncbi:accession"] == gb_id and added is False:
-                        added = True
-                        reduced_new_seqs_dic[key] = self.filtered_seq[gb_id]
-                        self.data.otu_dict[key]['^physcraper:last_blasted'] = None
-                        self.data.otu_dict[key]['^physcraper:status'] = 'added as representative of taxon'
+        for otu_id in seq_not_added:
+            self.data.otu_dict[otu_id]['^physcraper:status'] = 'not added, there are enough seq per sp in tre'
+        for otu_id in keylist:
+                reduced_new_seqs_dic[otu_id] = self.filtered_seq[otu_id]
+                self.data.otu_dict[otu_id]['^physcraper:status'] = 'added as representative of taxon'
 
         reduced_new_seqs = {k: self.filtered_seq[k] for k in keylist}
         with open(self.logfile, "a") as log:
