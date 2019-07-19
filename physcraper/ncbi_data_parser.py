@@ -248,7 +248,7 @@ class Parser:
     def get_downtorank_id(self, tax_id, downtorank="species"):
         """ Recursive function to find the parent id of a taxon as defined by downtorank.
         """
-        debug("get downtorank")
+#        debug("get downtorank")
         if nodes is None:
             self.initialize()
         if type(tax_id) != int:

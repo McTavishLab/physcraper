@@ -135,7 +135,7 @@ class FilterBlast(PhyscraperScrape):
         return: self.sp_seq_d
         """
         debug("make_sp_seq_dict")
-        for key in self.sp_d:
+        for taxon in self.sp_d:
             # loop to populate dict. key1 = sp id, key2= gb id, value = seq,
             # number of items in key2 will be filtered according to threshold and already present seq
             seq_d = {}
@@ -257,63 +257,72 @@ class FilterBlast(PhyscraperScrape):
         :return: self.filtered_seq
         """
         debug("select_seq_by_length")
-        max_len = max(self.sp_seq_d[taxon_id].values())
-
-        seq_w_maxlen = {}
-        for key, val in self.sp_seq_d[taxon_id].items():
-            for otu_id in self.sp_d[taxon_id]:
-                item = self.data.otu_dict[otu_id]
-                if '^ncbi:accession' in item and item['^ncbi:accession'] == key:
-                    if item['^physcraper:status'].split(' ')[0] != ["added", "deleted", "original", "new"]:
-                        if len(val) == len(max_len):
-                                seq_w_maxlen[key] = val
-        if (self.threshold - count) <= 0:
-            debug("already to many samples of sp in aln, skip adding more.")
-            random_seq_ofsp = None
-        elif len(seq_w_maxlen) == (self.threshold - count):
-            random_seq_ofsp = seq_w_maxlen
-        elif len(seq_w_maxlen) > (self.threshold - count):
-            random_seq_ofsp = random.sample(seq_w_maxlen.items(), (self.threshold - count))
-            random_seq_ofsp = dict(random_seq_ofsp)
+        number_needed = self.threshold - count
+        if number_needed < 1:
+            return None
         else:
-            toselect = range(len(seq_w_maxlen), (self.threshold - count))
-            keymax = seq_w_maxlen.keys()
-            subdict = {k: v for k, v in self.sp_seq_d[taxon_id].items() if k not in keymax}
-            second_len = max(subdict.values())
-            seq2len = {}
-            for key, val in subdict.items():
-                if len(val) == len(second_len):
-                    seq2len[key] = val
-            random_seq_ofsp = random.sample(seq2len.items(), len(toselect))
-            random_seq_ofsp = dict(random_seq_ofsp)
-            random_seq_ofsp.update(seq_w_maxlen)
-        if (self.threshold - count) >= 1:
-            assert random_seq_ofsp is not None
-        if random_seq_ofsp is not None:
-            for key in random_seq_ofsp.keys():
-                self.filtered_seq[key] = random_seq_ofsp[key]
+            lens = []
+            otu_len_dict = {}
+            for otu in self.sp_d[taxon_id]:
+                otu_len_dict[otu] = len(self.new_seqs_otu_id[otu])
+                lens.append(len(self.new_seqs_otu_id[otu]))
+            lens.sort(reverse=True)
+            cutoff = lens[number_needed]
+            selected_otus = []
+            for otu in otu_len_dict:
+                if otu_len_dict[otu] > cutoff:
+                    selected_otus.append(otu)
+                    i+=1
+                    if len(selected) == number needed:
+                        return selected_otus
+            return selected_otus
+        
 
-    def add_all(self, key):
-        """It adds all seq to filtered_seq dict as the number of sequences present is smaller than the threshold value.
+    def select_seq_at_random(self, taxon_id, count):
+        """This is another mode to filter the sequences, if there are more than the threshold.
 
-        It is only used, when sequences selection happens via blasting.
+        This one selects new sequences by length instead of by score values. It is selected by "selectby='length'".
+        Count is the return value from self.count_num_seq(tax_id)["seq_present"], that tells the program how many
+        sequences for the taxon are already available in the aln.
 
-        Note: has test, test_add_all.py
+        !!! sometimes the only seq in seq_w_maxlen is the original seq,
+        then this is the one to be added, but it will be removed,
+        later as it is no new seq! thus no new seq for that species is added
 
-        :param key: key of self.sp_d (taxon id)
+        :param taxon_id: key from self.sp_seq_d
+        :param count: self.count_num_seq(tax_id)["seq_present"]
         :return: self.filtered_seq
         """
-        debug('add_all')
-        for otu_id in self.sp_d[key]:
-            otu_info = self.data.otu_dict[otu_id]
-            if '^physcraper:status' in otu_info:
-                # debug(otu_id)
-                if otu_info['^physcraper:status'].split(' ')[0] not in self.seq_filter:
-                    if otu_info['^physcraper:last_blasted'] == None \
-                            and otu_info['^physcraper:status'] != "original":
-                        seq = self.new_seqs_otu_id[otu_id]
-                        self.filtered_seq[otu_id] = seq
-        return self.filtered_seq
+        debug("select_seq_at raondom")
+        number_needed = self.threshold - count
+        if number_needed < 1:
+            return None
+        else:
+            sample_count = min(number_needed, len(sp_d[taxon_id]))
+            selected_otus = random.sample(sp_d[taxon_id], sample_count)
+        return selected_otus
+
+    # def add_all(self, key):
+    #     """It adds all seq to filtered_seq dict as the number of sequences present is smaller than the threshold value.
+
+    #     It is only used, when sequences selection happens via blasting.
+
+    #     Note: has test, test_add_all.py
+
+    #     :param key: key of self.sp_d (taxon id)
+    #     :return: self.filtered_seq
+    #     """
+    #     debug('add_all')
+    #     for otu_id in self.sp_d[key]:
+    #         otu_info = self.data.otu_dict[otu_id]
+    #         if '^physcraper:status' in otu_info:
+    #             # debug(otu_id)
+    #             if otu_info['^physcraper:status'].split(' ')[0] not in self.seq_filter:
+    #                 if otu_info['^physcraper:last_blasted'] == None \
+    #                         and otu_info['^physcraper:status'] != "original":
+    #                     seq = self.new_seqs_otu_id[otu_id]
+    #                     self.filtered_seq[otu_id] = seq
+    #     return self.filtered_seq
 
 #    def loop_for_write_blast_files(self, tax_id):
         # """This loop is needed to be able to write the local blast files for the filtering step correctly.
