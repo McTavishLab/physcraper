@@ -1,8 +1,7 @@
 import pickle  #
-from physcraper.configobj import ConfigObj
-from physcraper.ids import IdDicts
+from physcraper import PhyscraperScrape, ConfigObj, IdDicts
 from physcraper.opentree_helpers import OtuJsonDict
-from physcraper.filterblast import FilterBlast
+#from physcraper.filterblast import FilterBlast
 import os
 import json
 import sys
@@ -57,7 +56,7 @@ def test_add_local():
         json.dump(otu_json_local, open(otu_jsonfi_local, "w"))
 
     # Now combine the data, the ids, and the configuration into a single physcraper scrape object
-    filteredScrape = FilterBlast(data_obj, ids)
+    filteredScrape = PhyscraperScrape(data_obj, ids)
     filteredScrape.blacklist = blacklist
 
 

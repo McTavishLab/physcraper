@@ -1,7 +1,7 @@
 import sys
 import os
 import pickle  #
-from physcraper import ConfigObj, IdDicts
+from physcraper import ConfigObj, IdDicts, PhyscraperScrape
 from physcraper.filterblast import FilterBlast
 
 
@@ -19,16 +19,12 @@ def test_add_all():
     ids = IdDicts(conf, workdir=data_obj.workdir)
     ids.acc_ncbi_dict = pickle.load(open("tests/data/precooked/tiny_acc_map.p", "rb"))
 
-    filteredScrape = FilterBlast(data_obj, ids)
+    filteredScrape = PHy(data_obj, ids)
     filteredScrape._blasted = 1
     filteredScrape.read_blast_wrapper(blast_dir="tests/data/precooked/fixed/tte_blast_files")
     filteredScrape.sp_dict(downtorank)
-    filteredScrape.make_sp_seq_dict()
     filteredScrape.seq_filter = ['deleted', 'subsequence,', 'not', "removed", "deleted,"]
-    for key in filteredScrape.sp_d:
-        if len(filteredScrape.sp_d[key]) <= treshold:
-            filteredScrape.add_all(key)
-    treshold_undermin = 0
+
     for key in filteredScrape.sp_d:
         for key2 in filteredScrape.sp_d[key]:
             if len(filteredScrape.sp_d[key]) <= treshold:

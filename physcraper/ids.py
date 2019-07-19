@@ -118,7 +118,7 @@ class IdDicts(object):
         elif gb_id in self.acc_tax_seq_dict:
             ncbi_id = self.acc_tax_seq_dict[gb_id]["^ncbi:taxon"]
         else:
-            taxid, taxname, seq = self.get_tax_seq_acc(self, acc=gb_id)
+            taxid, taxname, seq = self.get_tax_seq_acc(gb_id)
             ncbi_id = taxid
         return ncbi_id
 
@@ -127,7 +127,7 @@ class IdDicts(object):
 
  #removed function find_tax_id because it wasn't being used
    
-    def get_tax_seq_acc(self, acc=None):
+    def get_tax_seq_acc(self, acc):
         gb_id = acc
         if len(gb_id.split(".")) == 1:
             debug("accession number {} not recognized".format(gb_id))

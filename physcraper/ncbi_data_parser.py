@@ -44,11 +44,8 @@ def get_tax_info_from_acc(gb_id, data_obj, ids_obj):
   #                  sys.stderr.write("no species name returned for {}\n".format(gb_id))
   #              ncbi_id = ids_obj.get_ncbiid_from_acc(gb_id)
     else:
-        try:
-            ncbi_id = ids_obj.get_ncbiid_from_acc(gb_id)
-            tax_name = ids_obj.ncbiid_to_spn[ncbi_id] 
-        except:
-            pass
+        ncbi_id = ids_obj.get_ncbiid_from_acc(gb_id)
+        tax_name = ids_obj.ncbiid_to_spn.get(ncbi_id)
     if ncbi_id == None:
         sys.stderr.write("Failed to get information for sequence with accession number {}".format(gb_id))
     return ncbi_id, tax_name

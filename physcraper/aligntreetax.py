@@ -414,12 +414,13 @@ class AlignTreeTax(object):
         otu_id = "otuPS{}".format(self.ps_otu)
         self.ps_otu += 1
         ott_id = None
-     #   debug("trying to add an otu with accesion {}".format(gb_id))
+        #debug("trying to add an otu with accesion {}".format(gb_id))
         ncbi_id, tax_name = ncbi_data_parser.get_tax_info_from_acc(gb_id, self, ids_obj)
-        debug("ADD OTU: accession {} ncbi_id {}, taxon_name {}".format(gb_id, ncbi_id, tax_name))
         if ncbi_id == None:
+            debug("DID NOT ADD accession {} ncbi_id {}".format(gb_id, ncbi_id, tax_name))
             return None
         if ncbi_id in ids_obj.ncbi_to_ott.keys():
+            #debug("ADDED OTU: accession {} ncbi_id {}".format(gb_id, ncbi_id, tax_name))
             ott_id = int(ids_obj.ncbi_to_ott[int(ncbi_id)])
         else:
             #debug("{} Ncbi id not found in ott_ncbi dictionaries\n".format(ncbi_id))
@@ -455,6 +456,7 @@ class AlignTreeTax(object):
         assert self.otu_dict[otu_id]["^physcraper:TaxonName"]  # is not None
         if _DEBUG >= 2:
             sys.stderr.write("acc:{} assigned new otu: {}\n".format(gb_id, otu_id))
+        #debug("RETURNED OTU_ID {}".format(otu_id))
         return otu_id
 
     def write_papara_files(self, treefilename="random_resolve.tre", alnfilename="aln_ott.phy"):

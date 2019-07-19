@@ -148,10 +148,6 @@ class PhyscraperScrape(object):
         self._query_seqs_placed = 0
         self._full_tree_est = 0
 
-    def reset_new_seqs_acc(self):
-        """ Needs to be reseted if you want to rerun the filtering to get lower rank taxa added"""
-        self.newseqs_acc = []
-
     def OToL_unmapped_tips(self):
         """Assign names or remove tips from aln and tre that were not mapped during initiation of ATT class.
         """
@@ -623,24 +619,18 @@ class PhyscraperScrape(object):
         :param seq_dict: the tmp_dict generated in add_otu()
         :return: updated seq_dict
         """
-        #debug("new_lab: {}".format(new_otu_label))
+        #debug("new_lab: {} in seq_dict_build".format(new_otu_label))
         if new_otu_label == None: #in case of add_otu failure, doean't edit dict 
-            #debug("otu_id None")
-            sys.stderr.write("otu_id None")
             return seq_dict
         tax_new_seq = self.data.otu_dict[new_otu_label].get('^ncbi:taxon', 1)
-        if tax_new_seq not in self.sp_d:
-            self.sp_d[tax_new_seq] = []
-        self.sp_d[]
-
-        **********************************
         if self.config.blast_loc == "local": #need to check if included in taxon of intrest (mrca)
             if self.ids.ncbi_parser.match_id_to_mrca(tax_new_seq, self.mrca_ncbi):
                 #taxon is within mrca, continue
-                #debug("local: otu is within mrca")
+                #debug("local: otu {} is within mrca".format(new_otu_label))
                 pass
             else:
-                #debug("local: otu is NOT within mrca")
+                #debug("local: otu {} is NOT within mrca".format(new_otu_label))
+                self.data.otu_dict[new_otu_label]['^physcraper:status'] = "Not within requesdted MRCA ncbi:{}".format(self.mrca_ncbi)
                 return seq_dict
         #debug("otu {} has tax_id {}".format(new_otu_label, tax_new_seq))
         new_seq = seq.replace("-", "")
@@ -673,6 +663,7 @@ class PhyscraperScrape(object):
                             sys.stdout.write("seq {} is subsequence of {}, not added\n".format(new_otu_label, otu_lab))
                         self.data.otu_dict[new_otu_label]['^physcraper:status'] = "subsequence, not added"
                         #debug("{} not added, subseq of {}".format(new_otu_label, otu_lab))
+                        #debug("{} was NOT added to seq_dict: {}".format(new_otu_label, reason))
                         return seq_dict
                 else:
                     pass
@@ -702,13 +693,12 @@ class PhyscraperScrape(object):
                         self.data.otu_dict[new_otu_label]['^physcraper:status'] = "new seq added in place of {}".format(otu_lab)
                         seq_dict[new_otu_label] = seq
                         self.data.otu_dict[new_otu_label]['^physcraper:status'] = reason
+                        #debug("{} was added to seq_dict: {}".format(new_otu_label, reason))
                         return seq_dict
-                seq_dict[new_otu_label] = seq
-                self.data.otu_dict[new_otu_label]['^physcraper:status'] = reason
-                #debug("{} was added".format(new_otu_label))
-                return seq_dict
-
-
+            seq_dict[new_otu_label] = seq
+            self.data.otu_dict[new_otu_label]['^physcraper:status'] = reason
+            #debug("{} was added to seq_dict: {}".format(new_otu_label, reason))
+            return seq_dict
 
     def remove_identical_seqs(self):
         """goes through the new seqs pulled down, and removes ones that are
@@ -716,7 +706,8 @@ class PhyscraperScrape(object):
         the longer of two that are other wise identical, and puts them in a dict
         with new name as gi_ott_id.
         """
-        debug("remove identical seqs")
+        #debug("remove identical seqs")
+        #debug("new seqs keys are {}".format(self.new_seqs.keys()))
         if len(self.new_seqs_otu_id) > 0:
             if _DEBUG:
                 sys.stdout.write("running remove identical twice in a row"
@@ -732,6 +723,7 @@ class PhyscraperScrape(object):
         seq_len_min = avg_seqlen * self.config.seq_len_perc
         seq_len_max = avg_seqlen * self.config.maxlen
         all_added_gi = set([self.data.otu_dict[otu].get("^ncbi:accession",'UNK') for otu in self.data.otu_dict])
+        #debug("we already have {}".format(all_added_gi))
         for gb_id, seq in self.new_seqs.items():
             assert gb_id in self.data.gb_dict.keys()
             if seq_len_min < len(seq) < seq_len_max:
@@ -747,95 +739,64 @@ class PhyscraperScrape(object):
         tax_in_aln = set([taxon.label for taxon in self.data.aln])
         for tax in tax_in_aln:
             del tmp_dict[tax]
-        self.new_seqs_otu_id = tmp_dict  # renamed new seq to their otu_ids from GI's, but all info is in self.otu_dict
+        filter_dict = self.filter_seqs(tmp_dict, type='random', threshold = self.threshold)
+        self.new_seqs_otu_id = filter_dict  # renamed new seq to their otu_ids from GI's, but all info is in self.otu_dict
         self.new_seqs = {} #Wipe clean
         debug("len new seqs dict after remove identical{}".format(len(self.new_seqs_otu_id)))
         with open(self.logfile, "a") as log:
             log.write("{} new sequences added from Genbank after removing identical seq, "
                       "of {} before filtering\n".format(len(self.new_seqs_otu_id), len(self.new_seqs)))
         self.data.dump()
+    
+    def filter_seqs(self, tmp_dict, threshold=5, type="random"):
+        selected_otus = set()
+        filtered_dict = {}
+        new_sp_d = self.make_sp_dict(tmp_dict.keys())
+        debug("There are {} taxa in the new taxa".format(len(new_sp_d)))
+        debug("The keys of tmp_dict".format(tmp_dict.keys()))
+        aln_otus = set([taxon.label for taxon in self.data.aln])
+        aln_sp_d = self.make_sp_dict(aln_otus)
+        debug("There are {} taxa in aln".format(len(aln_sp_d)))
+        alltax = set(new_sp_d.keys()).union(aln_sp_d.keys())
+        debug("The total set of taxa counts {}".format(len(alltax)))
+        for tax_id in new_sp_d:
+            debug(" {} new seqs for taxon {}".format(len(new_sp_d[tax_id]), tax_id))
+            tax_otus = []
+            if len(aln_sp_d.get(tax_id, [])) > threshold:
+                pass #already enough
+            else:
+                count = threshold - len(aln_sp_d.get(tax_id,[]))
+                otu_list = new_sp_d[tax_id]
+                if count > len(otu_list):
+                    tax_otus = otu_list
+                else:
+                    if type == 'random':
+                        tax_otus = self.select_seq_at_random(otu_list, count)
+                    if type == 'length':
+                        tax_otus = self.select_seq_by_length(otu_list, tmp_dict, count)
+                    else:
+                        sys.stderr.write("type {} not recognized, please filter by 'length' or 'random'")
+                debug("passing on {} otus for tax id {}".format(len(tax_otus), tax_id))
+                assert isinstance(selected_otus, set), 'why not set?!?!'
+                assert isinstance(tax_otus, list), 'why not list?!?!'
+                selected_otus.update(tax_otus)
+        for otu in tmp_dict:
+            if otu in selected_otus:
+                filtered_dict[otu] = tmp_dict[otu]
+        return filtered_dict
 
 
-   def count_num_seq(self, tax_id):
-        """Counts how many sequences there are for a tax_name, excluding sequences that have not been added
-        during earlier cycles.
 
-        Function is only used in how_many_sp_to_keep().
-
-        :param tax_id: key from self.sp_seq_d
-        :return: dict which contains information of how many seq are already present in aln, how many new seq have been
-                found and if the taxon is a new taxon or if seq are already present
-        """
-        debug("count_num_seq for tax_id {}".format(tax_id))
-        seq_added = 0
-        original = 0
-        new_taxon = True
-        query_count = 0
-        seq_in_aln = 0
-        for otu_id in self.sp_d[tax_id]:
-            item = self.data.otu_dict[otu_id]
-            aln_otus = set([taxon.label for taxon in self.data.aln])
-            if otu_id in aln_otus:
-                seq_in_aln += 1
-                new_taxon = False
-            status = item.get('^physcraper:status')
-            assert status is not None
-            if status.split(' ')[0] not in self.seq_filter:
-#                debug(item['^physcraper:status'])
-                item_split = item['^physcraper:status'].split(' ')[0]
-                if item["^physcraper:status"] == "query" or item_split == "new" or item_split == "added,":
-                    query_count += 1
-                if item["^physcraper:status"] == 'added as representative of taxon':
-                    seq_added += 1
-                    new_taxon = False
-                if item_split == "original":
-                    original += 1
-                    new_taxon = False
-        seq_present = seq_added + original
-        assert seq_in_aln == seq_present
-        # if item_split == "added," or item_split == "original":
-        count_dict = {
-            "seq_present": seq_added + original,
-            "query_count": query_count,
-            "new_taxon": new_taxon,
-        }
-        if new_taxon is False:
-            assert original != 0 or seq_added != 0, ("count_dict `%s` has more seq added than threshold: 0." % count_dict)
-        if new_taxon is True:
-            assert original == 0, ("count_dict `%s` has more original seq than allowed for new taxon." % count_dict)
-            assert seq_added == 0, ("count_dict `%s` has more seq added than allowed for new taxon." % count_dict)
-        # debug([seq_added, original, self.threshold])
-        if original < self.threshold:
-            assert seq_added <= self.threshold, ("count_dict `%s` has more seq added than threshold." % count_dict)
-        elif original > self.threshold:
-            sys.stdout.write("already more originals than requested by threshold...\n")
-        else:
-            assert seq_added + original <= self.threshold, \
-                "seq_added ({}) and original ({}) have more than threshold ({}).".format(seq_added, original, self.threshold)
-        return count_dict
-
-    def make_sp_dict(self, downtorank=None):
-        """Takes the information from the Physcraper otu_dict and makes a dict with species id as key and
-        the corresponding seq information from aln and blast seq, it returns self.sp_d.
-
-        This is generated to make information for the filtering class more easily available. self.sp_d sums up which
-        information are available per taxonomic concept and which have not already been removed during either
-        the remove_identical_seq steps or during a filtering run of an earlier cycle.
-
-        Note: has test, test_sp_d.py
-
-        :param downtorank: string defining the level of taxonomic filtering, e.g. "species", "genus"
-        :return: self.sp_d
-        """
-        #Edited to pass in list of otu_ids rather than set of dictionaries, to make getting squence by id easier in sp_seq_d
+    def make_sp_dict(self, otu_list, downtorank=None):
+        """Mkaes dict of OT_ids by species"""
         self.downtorank = downtorank
         debug("make sp_dict")
-        self.sp_d = {}
-        for otu_id in self.data.otu_dict:
+        sp_d = {}
+        for otu_id in otu_list:
             if self.data.otu_dict[otu_id]['^physcraper:status'].split(' ')[0] not in self.seq_filter:
                 tax_id = self.data.otu_dict[otu_id].get('^ncbi:taxon') 
-                assert tax_id not in set([0, None]) # every OTU must have a taxon_id for filter blast
-                    # we cannot include unmapped taxa in fliter blast.
+                if tax_id == None:
+                    tax_id = "X"
                 if self.downtorank is not None:
                     downtorank_name = None
                     downtorank_id = None
@@ -859,13 +820,13 @@ class PhyscraperScrape(object):
                         downtorank_name = self.ids.ncbi_parser.get_name_from_id(downtorank_id)
                     tax_name = downtorank_name
                     tax_id = downtorank_id
-                if tax_id in self.sp_d:
-                    self.sp_d[tax_id].append(otu_id)
+                if tax_id in sp_d:
+                    sp_d[tax_id].append(otu_id)
                 else:
-                    self.sp_d[tax_id] = [otu_id]
-        return None
+                    sp_d[tax_id] = [otu_id]
+        return sp_d
 
-    def select_seq_by_length(self, taxon_id, count):
+    def select_seq_by_length(self, otu_list, seq_dict, count):
         """This is another mode to filter the sequences, if there are more than the threshold.
 
         This one selects new sequences by length instead of by score values. It is selected by "selectby='length'".
@@ -881,28 +842,27 @@ class PhyscraperScrape(object):
         :return: self.filtered_seq
         """
         debug("select_seq_by_length")
-        number_needed = self.threshold - count
-        if number_needed < 1:
-            return None
-        else:
-            lens = []
-            otu_len_dict = {}
-            for otu in self.sp_d[taxon_id]:
-                otu_len_dict[otu] = len(self.new_seqs_otu_id[otu])
-                lens.append(len(self.new_seqs_otu_id[otu]))
-            lens.sort(reverse=True)
-            cutoff = lens[number_needed]
-            selected_otus = []
-            for otu in otu_len_dict:
-                if otu_len_dict[otu] > cutoff:
-                    selected_otus.append(otu)
-                    i+=1
-                    if len(selected) == number needed:
-                        return selected_otus
-            return selected_otus
+        lens = []
+        otu_len_dict = {}
+        for otu in otu_list:
+            otu_len_dict[otu] = len(seq_dict[otu])
+            lens.append(len(seq_dict[otu]))
+        lens.sort(reverse=True)
+        cutoff = lens[count]
+#        debug("cutoff is {}".format(cutoff))
+#        debug("lengths is {}".format(lens))
+        selected_otus = []
+        for otu in otu_len_dict:
+#            debug("otu {} has len {}".format(otu, otu_len_dict[otu]))
+            if otu_len_dict[otu] >= cutoff:
+#                debug("selected!")
+                selected_otus.append(otu)
+                if len(selected_otus) == count:
+                    return selected_otus
+        return selected_otus
         
 
-    def select_seq_at_random(self, taxon_id, count):
+    def select_seq_at_random(self, otu_list, count):
         """This is another mode to filter the sequences, if there are more than the threshold.
 
         This one selects new sequences by length instead of by score values. It is selected by "selectby='length'".
@@ -917,37 +877,11 @@ class PhyscraperScrape(object):
         :param count: self.count_num_seq(tax_id)["seq_present"]
         :return: self.filtered_seq
         """
-        debug("select_seq_at raondom")
-        number_needed = self.threshold - count
-        if number_needed < 1:
-            return None
-        else:
-            sample_count = min(number_needed, len(sp_d[taxon_id]))
-            selected_otus = random.sample(sp_d[taxon_id], sample_count)
+        debug("select_seq_at random")
+        sample_count = min(count, len(otu_list))
+        selected_otus = random.sample(otu_list, sample_count)
         return selected_otus
 
-    def prune_repeated_taxa(self, selectby='random'):
-        """Uses the sp_seq_d and places the number of sequences according to threshold into the self.filterdseq_dict.
-
-        This is essentially the key function of the Filter-class, it wraps up everything.
-
-        :param selectby: mode of sequence selection, defined in input
-        :return: nothing specific, it is the function, that completes the self.filtered_seq, which contains the filtered
-                sequences that shall be added.
-        """
-        # self.threshold = threshold
-        new_otus_to_keep = []
-        for tax_id in self.sp_d:
-            count_dict = self.count_num_seq(tax_id)
-            seq_present = count_dict["seq_present"]
-            query_count = count_dict["query_count"]
-            new_taxon = count_dict["new_taxon"]
-            #debug(count_dict)
-            # debug(tax_id)
-            if selectby == "length":
-                new_otus_to_keep.append(self.select_seq_by_length(tax_id, seq_present))
-            elif selectby == "random":
-                new_otus_to_keep.append(self.select_seq_at_random(tax_id, seq_present))
 
 
     def dump(self, filename=None, recursion=100000):
@@ -1060,42 +994,7 @@ class PhyscraperScrape(object):
             log.write("Following papara alignment, aln has {} seqs \n".format(len(self.data.aln)))
         self._query_seqs_aligned = 1
 
-    def remove_alien_aln_tre(self):
-        """Sometimes there were alien entries in self.tre and self.aln.
 
-        This function ensures they are properly removed."""
-
-        treed_tax = set()
-        for leaf in self.data.tre.leaf_nodes():
-            treed_tax.add(leaf.taxon)
-        aln_tax = set()
-        for tax, seq in self.data.aln.items():
-            aln_tax.add(tax)
-        prune = treed_tax ^ aln_tax
-        del_tre = []
-        del_aln = []
-        for taxon in prune:
-            assert (taxon in aln_tax) or (taxon in treed_tax)
-            if taxon in aln_tax:
-                # debug(taxon)
-                del_aln.append(taxon)
-            if taxon in treed_tax:
-                del_tre.append(taxon)
-        # debug(del_aln)
-        # debug(del_tre)
-        self.data.aln.remove_sequences(del_aln)
-        self.data.tre.prune_taxa(del_tre)
-        for tax_lab in self.data.aln.taxon_namespace:
-            if tax_lab not in self.data.tre.taxon_namespace:
-                sys.stderr.write("tax {} not in tre. This is an alien name in the data.\n".format(tax_lab))
-                self.data.remove_taxa_aln_tre(tax_lab)
-        for tax_lab in self.data.tre.taxon_namespace:
-            if tax_lab not in self.data.aln.taxon_namespace:
-                sys.stderr.write("tax {} not in aln. This is an alien name in the data.\n".format(tax_lab))
-                self.data.remove_taxa_aln_tre(tax_lab)
-        # this should not need to happen here
-        # self.data.prune_short()
-        # self.data.trim()
 
     def place_query_seqs(self):
         """runs raxml on the tree, and the combined alignment including the new query seqs.

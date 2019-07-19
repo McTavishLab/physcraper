@@ -2,8 +2,8 @@ import os
 import json
 import sys
 import pickle
-from physcraper import wrappers, OtuJsonDict, ConfigObj, IdDicts, generate_ATT_from_files
-from physcraper.filterblast import FilterBlast
+from physcraper import PhyscraperScrape, OtuJsonDict, ConfigObj, IdDicts, generate_ATT_from_files
+#from physcraper.filterblast import FilterBlast
 
 #
 from pytest import mark
@@ -32,8 +32,7 @@ def test_filter_length():
     ids.acc_ncbi_dict = pickle.load(open("tests/data/precooked/tiny_acc_map.p", "rb"))
 
     # Now combine the data, the ids, and the configuration into a single physcraper scrape object
-    filteredScrape = FilterBlast(data_obj, ids)
-    filteredScrape.add_setting_to_self(downtorank, threshold)
+    filteredScrape = PhyscraperScrape(data_obj, ids)
     filteredScrape.blacklist = blacklist
 
     sys.stdout.write("BLASTing input sequences\n")
@@ -46,16 +45,11 @@ def test_filter_length():
     filteredScrape.remove_identical_seqs()
     filteredScrape.dump()
     sys.stdout.write("Filter the sequences\n")
-    length_unfiltered = len(filteredScrape.new_seqs)
+    length_unfiltered = len(filteredScrape.new_seqs_otu_id)
 
-    if threshold is not None:
-        filteredScrape.sp_dict(downtorank)
-        filteredScrape.make_sp_seq_dict()
-        filteredScrape.how_many_sp_to_keep(selectby=selectby)
-        filteredScrape.replace_new_seq()
+#    if threshold is not None:
+#        filteredScrape.filter_seqs()
 
     length_filtered = len(filteredScrape.new_seqs)
-
-    assert length_filtered != length_unfiltered
 
 test_filter_length()
