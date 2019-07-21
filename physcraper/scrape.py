@@ -928,7 +928,7 @@ class PhyscraperScrape(object):
     def write_all_unaligned(self, filename='date'):
         """writes out the query sequence file"""
         debug("write query + aligned seqs")
-        if not self._blast_read:
+        if not self.new_seqs_otu_id:
             self.read_blast_wrapper()
         if filename == 'date':
             self.allseqs_file = "{}_ALL.fasta".format(self.date)
