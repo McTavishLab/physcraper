@@ -2,13 +2,11 @@ import sys
 import os
 import pickle
 import shutil
-from physcraper import ConfigObj, IdDicts,debug
-from physcraper.filterblast import FilterBlast
+from physcraper import ConfigObj, IdDicts, PhyscraperScrape
 from pytest import mark
 
 
 from dendropy import Tree
-from physcraper import filter_by_local_blast
 import json
 
 slow = mark.slow
@@ -47,7 +45,7 @@ def new_test_generate_streamed_aln(Phy_obj):
             Phy_obj.est_full_tree()
             Phy_obj.data.dump("{}/final_ATT_checkpoint.p".format(Phy_obj.workdir))
     Phy_obj.reset_markers()
-    filter_by_local_blast.del_blastfiles(Phy_obj.workdir)  # delete local blast db
+#    filter_by_local_blast.del_blastfiles(Phy_obj.workdir)  # delete local blast db
     Phy_obj.data.dump()
     json.dump(Phy_obj.data.otu_dict, open('{}/otu_dict.json'.format(Phy_obj.workdir), 'wb'))
 
@@ -74,7 +72,7 @@ def test_blacklist():
     ids = IdDicts(conf, workdir=data_obj.workdir)
     ids.acc_ncbi_dict = pickle.load(open("tests/data/precooked/tiny_acc_map.p", "rb"))
 
-    noblackScrape = FilterBlast(data_obj, ids)
+    noblackScrape = PhyscraperScrape(data_obj, ids)
     noblackScrape._blasted = 1
     src = "tests/data/precooked/fixed/tte_blast_files"
     src_files = os.listdir(src)
@@ -99,7 +97,7 @@ def test_blacklist():
     ids = IdDicts(conf, workdir=data_obj.workdir)
     ids.acc_ncbi_dict = pickle.load(open("tests/data/precooked/tiny_acc_map.p", "rb"))
 
-    filteredScrape = FilterBlast(data_obj, ids)
+    filteredScrape = PhyscraperScrape(data_obj, ids)
     filteredScrape.blacklist = blacklist
     filteredScrape._blasted = 1
     if not os.path.exists(os.path.join(absworkdir, "current_blast_run/")):

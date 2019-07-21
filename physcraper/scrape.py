@@ -260,6 +260,7 @@ class PhyscraperScrape(object):
         :return: writes blast queries to file
         """
         delay = self.config.delay
+        today = str(datetime.date.today()).replace("-", "/")
         debug("run_blast_wrapper")
         debug(self.blast_subdir)
         if not os.path.exists(self.blast_subdir):
@@ -275,7 +276,6 @@ class PhyscraperScrape(object):
             if last_blast == None:
                 time_passed = delay + 1
             else:
-                today = str(datetime.date.today()).replace("-", "/")
                 time_passed = abs((datetime.datetime.strptime(today, "%Y/%m/%d") - datetime.datetime.strptime(
                 last_blast, "%Y/%m/%d")).days)
             if time_passed > delay:
@@ -297,7 +297,11 @@ class PhyscraperScrape(object):
                     if self.config.blast_loc == 'local':
                         self.run_local_blast_cmd(query, taxon.label, fn_path)
                     if self.config.blast_loc == 'remote':
-                        equery = "txid{}[orgn] AND {}:{}[mdat]".format(self.mrca_ncbi, last_blast, today)
+                        if last_blast:
+                            equery = "txid{}[orgn] AND {}:{}[mdat]".format(self.mrca_ncbi, last_blast, today)
+                        else:
+                            equery = "txid{}[orgn]".format(self.mrca_ncbi)
+                        debug(equery)
                         self.run_web_blast_query(query, equery, fn_path)
                     self.data.otu_dict[otu_id]['^physcraper:last_blasted'] = today
                 else:
@@ -579,18 +583,17 @@ class PhyscraperScrape(object):
             assert os.path.exists(self.blast_subdir)
             for taxon in self.data.aln:
                 # debug(self.config.blast_loc)
-                fn = None
                 if self.config.blast_loc == "local":
                     file_ending = "txt"
                 else:
                     file_ending = "xml"
-                if self.config.gb_id_filename is True: #TODO what is this doing?
-                    fn = self.data.otu_dict[taxon.label].get('^ncbi:accession', taxon.label) 
-                    if fn is None:
-                        fn = self.data.otu_dict[taxon.label].get('^user:TaxonName', taxon.label)
-                    fn_path = "{}/{}.{}".format(self.blast_subdir, fn, file_ending)
-                else:
-                    fn_path = "{}/{}.{}".format(self.blast_subdir, taxon.label, file_ending)
+#                if self.config.gb_id_filename is True: #TODO what is this doing?
+#                    fn = self.data.otu_dict[taxon.label].get('^ncbi:accession', taxon.label) 
+#                    if fn is None:
+#                        fn = self.data.otu_dict[taxon.label].get('^user:TaxonName', taxon.label)
+#                    fn_path = "{}/{}.{}".format(self.blast_subdir, fn, file_ending)
+#                else:
+                fn_path = "{}/{}.{}".format(self.blast_subdir, taxon.label, file_ending)
                 if _DEBUG:
                     sys.stdout.write("reading {}\n".format(fn_path))
                 if os.path.isfile(fn_path):
@@ -603,7 +606,9 @@ class PhyscraperScrape(object):
 #        debug(len(self.new_seqs))
         with open(self.logfile, "a") as log:
             log.write("{} new sequences added from GenBank after evalue filtering\n".format(len(self.new_seqs)))
-
+        if len(self.new_seqs) == 0:
+            sys.stderr.write("no new squences found in blast. Exiting")
+            sys.exit()
         self._blast_read = 1
 
 
@@ -749,6 +754,7 @@ class PhyscraperScrape(object):
         self.data.dump()
     
     def filter_seqs(self, tmp_dict, threshold=5, type="random"):
+        assert type in ['length','random'], "type {} not recognized, please filter by 'length' or 'random'".format(type)
         selected_otus = set()
         filtered_dict = {}
         new_sp_d = self.make_sp_dict(tmp_dict.keys())
@@ -774,8 +780,6 @@ class PhyscraperScrape(object):
                         tax_otus = self.select_seq_at_random(otu_list, count)
                     if type == 'length':
                         tax_otus = self.select_seq_by_length(otu_list, tmp_dict, count)
-                    else:
-                        sys.stderr.write("type {} not recognized, please filter by 'length' or 'random'")
                 debug("passing on {} otus for tax id {}".format(len(tax_otus), tax_id))
                 assert isinstance(selected_otus, set), 'why not set?!?!'
                 assert isinstance(tax_otus, list), 'why not list?!?!'
@@ -787,9 +791,11 @@ class PhyscraperScrape(object):
 
 
 
-    def make_sp_dict(self, otu_list, downtorank=None):
+    def make_sp_dict(self, otu_list=[], downtorank=None):
         """Mkaes dict of OT_ids by species"""
         self.downtorank = downtorank
+        if otu_list == []:
+            otu_list = self.new_seqs_otu_id.keys()
         debug("make sp_dict")
         sp_d = {}
         for otu_id in otu_list:
@@ -957,7 +963,6 @@ class PhyscraperScrape(object):
         self.data._reconcile()  # I think reconcile is what was needed here...instead of alien hack
         # note: sometimes there are still sp in any of the aln/tre
         # hack for the alien taxa thing
-        self.remove_alien_aln_tre()
         self.data.write_papara_files()
         os.chdir(self.workdir)  # Clean up dir moving
         # with cd(self.workdir):
@@ -1218,7 +1223,7 @@ class PhyscraperScrape(object):
             self.remove_blacklistitem()
         debug(len(self.new_seqs))
         debug(len(self.new_seqs_otu_id))
-        if len(self.new_seqs) == 0 or len(self.new_seqs_otu_id) == 0:
+        if len(self.new_seqs_otu_id) == 0:
             if _VERBOSE:
                 sys.stdout.write("No new sequences found.\n")
             # self.repeat = 0

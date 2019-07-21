@@ -18,6 +18,15 @@ def cd(path):
         os.chdir(CWD)
 
 
+#def generate_from_run(workdir,
+#                      seqaln='physcraper.fas',
+                      # mattype='fasta',
+                      # configfi='config.out',
+                      # treefile='physcraper.tre',
+                      # schema_trf='newick',
+                      # ingroup_mrca = 'mrca.txt'):
+                      
+
 
 
 
@@ -36,3 +45,47 @@ def standardize_label(item):
     item_edit = item_edit.replace("/", "")
     return item_edit
 
+
+
+def concat(genelistdict, workdir_comb, email, num_threads=None, percentage=0.37, user_concat_fn=None, backbone=False):
+    """This is to concatenate different physcraper runs into a single alignment and tree.
+    genelistdict is a dict with gene names as key and the corresponding workdir
+    """
+    license_print()
+
+    if not os.path.exists(path="{}/concat_checkpoint.p".format(workdir_comb)):
+        if not os.path.exists(path="{}/load_single_data.p".format(workdir_comb)):
+            # save_copy_code(workdir_comb)
+            conc = Concat(workdir_comb, email)
+            conc.concatfile = user_concat_fn
+            for item in genelistdict.keys():
+                conc.load_single_genes(genelistdict[item]["workdir"], genelistdict[item]["pickle"], item)
+            conc.combine()
+        else:
+            sys.stdout.write("load single data dump file\n")
+            conc = pickle.load(open("{}/load_single_data.p".format(workdir_comb), "rb"))
+            # conc.dump()
+        conc.sp_seq_counter()
+        conc.get_largest_tre()
+        conc.make_sp_gene_dict()
+        conc.make_alns_dict()
+        conc.concatenate_alns()
+        conc.get_short_seq_from_concat(percentage)
+        conc.remove_short_seq()
+        conc.dump()
+    else:
+        sys.stdout.write("load concat_checkpoint dump file\n")
+        conc = pickle.load(open("{}/concat_checkpoint.p".format(workdir_comb), "rb")) 
+    conc.backbone = backbone
+    conc.make_concat_table()
+    conc.write_partition()
+    conc.write_otu_info()
+    conc.place_new_seqs(num_threads)
+    
+    if backbone is False:
+        conc.calculate_bootstrap(num_threads)
+        conc.write_labelled('RAxML_bestTree.autoMRE_fa')
+    else:
+        conc.est_full_tree(num_threads)
+        conc.write_labelled('RAxML_bestTree.backbone_concat')
+    return conc

@@ -296,8 +296,12 @@ class Parser:
                 debug("current id is: {}, in search for {} in {}".format(current_id, tax_id, mrca_id))
                 return False             
             else: #try parent
-                current_id = int(nodes[nodes["tax_id"] == current_id]["parent_tax_id"].values[0])
-    #            debug("parent id is: {}".format(current_id))
+                try:
+                    current_id = int(nodes[nodes["tax_id"] == current_id]["parent_tax_id"].values[0])
+                except:
+                    sys.stderr.write("no parent found for ncbi:id {}".format(current_id))
+                    return False
+#                debug("parent id is: {}".format(current_id))
 
                 
     def get_name_from_id(self, tax_id):

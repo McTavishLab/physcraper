@@ -1,7 +1,7 @@
 import sys
 import os
-from physcraper import ConfigObj, IdDicts
-from physcraper.filterblast import FilterBlast
+from physcraper import ConfigObj, IdDicts, PhyscraperScrape
+
 
 import pickle#
 
@@ -20,7 +20,7 @@ def test_remove_id_seq():
     ids = IdDicts(conf, workdir=data_obj.workdir)
     ids.acc_ncbi_dict = pickle.load(open("tests/data/precooked/tiny_acc_map.p", "rb"))
 
-    filteredScrape =  FilterBlast(data_obj, ids)
+    filteredScrape =  PhyscraperScrape(data_obj, ids)
     filteredScrape._blasted = 1
 
     #############################

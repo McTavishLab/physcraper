@@ -16,6 +16,8 @@ def test_ncbi_parser():
 
     mrcaid = ncbitax.match_id_to_mrca(taxid, rankidgenus)
 
+    mrca_id2 = ncbitax.match_id_to_mrca(17043521, taxid)
+
     rankid = ncbitax.get_downtorank_id(taxid)
 
     rank = ncbitax.get_rank(taxid)
@@ -24,6 +26,7 @@ def test_ncbi_parser():
 
     assert taxid == 1892268
     assert mrcaid == True
+    assert mrca_id2 == False
     assert rankid == 1892268
     assert rankidgenus == 189210
 

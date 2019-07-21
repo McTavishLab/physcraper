@@ -2,8 +2,8 @@ from __future__ import print_function, absolute_import
 
 import sys
 import os
-from physcraper import ConfigObj, IdDicts
-from physcraper.filterblast import FilterBlast
+from physcraper import ConfigObj, IdDicts, PhyscraperScrape
+
 
 import pickle
 
@@ -25,7 +25,7 @@ def test_sp_seq_d():
     data_obj.workdir = absworkdir
     ids = IdDicts(conf, workdir=data_obj.workdir)
     ids.acc_ncbi_dict = pickle.load(open("tests/data/precooked/tiny_acc_map.p", "rb"))
-    filteredScrape =  FilterBlast(data_obj, ids)
+    filteredScrape =  PhyscraperScrape(data_obj, ids)
     filteredScrape._blasted = 1
     blast_dir = "tests/data/precooked/fixed/tte_blast_files"
     # filteredScrape.acc_list_mrca = pickle.load(open("tests/data/precooked/acc_list_mrca.p", 'rb'))
@@ -35,8 +35,9 @@ def test_sp_seq_d():
     filteredScrape.seq_filter = ['deleted', 'subsequence,', 'not', "removed", "deleted,"]
 
     gi_sp_d = []
-    for key in filteredScrape.sp_d:
-        v = filteredScrape.sp_d[key]  
+    sp_d = filteredScrape.make_sp_dict()
+    for key in sp_d:
+        v = sp_d[key]  
         for v2 in v:
             v2 = filteredScrape.data.otu_dict[v2]
             if '^physcraper:status' in v2:
