@@ -27,7 +27,6 @@ from Bio import Entrez
 # extension functions
 from . import concat  # is the local concat class
 from . import ncbi_data_parser  # is the ncbi data parser class and associated functions
-from . import filter_by_local_blast  # functions for the FilterBlast filtering
 from . import opentree_helpers
 from . import writeinfofiles
 
