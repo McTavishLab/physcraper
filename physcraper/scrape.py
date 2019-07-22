@@ -968,12 +968,11 @@ class PhyscraperScrape(object):
             self.read_blast_wrapper()
         assert aligner in ['muscle', 'papara']
         if aligner == 'papara':
-            self.aln = self.run_papara()
+            self.run_papara()
         if aligner == 'muscle':
-            self.aln = self.run_muscle()
+            self.run_muscle()
         self.data.trim()
         alnfi = self.data.write_aln()
-        debug("align fi is {}".format(alnfi))
         return alnfi
     
     def run_muscle(self, outname = 'muscle_aln.fas'):
@@ -987,8 +986,7 @@ class PhyscraperScrape(object):
                 sys.stdout.write("Muscle done")
         except subprocess.CalledProcessError as grepexc:
             print "error code", grepexc.returncode, grepexc.output
-        aln = DnaCharacterMatrix.get(path=outpath, schema='fasta')
-        return aln
+        self.data.replace_aln(outpath)
 
 
     def run_papara(self, papara_runname="extended"):

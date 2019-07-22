@@ -41,51 +41,33 @@ def test_remove_identical_seqs():
 #TODO find an example where we do get identical sequences and need to discard them
 
     
-    seqset = set()
-    for otu in scraper.new_seqs_otu_id:
-        seq = scraper.new_seqs_otu_id[otu]
-        if seq in seqset:
-            print otu
-        seqset.add(seq)
+#    seqset = set()
+#    for otu in scraper.new_seqs_otu_id:
+#        seq = scraper.new_seqs_otu_id[otu]
+#        if seq in seqset:
+#            print otu
+#        seqset.add(seq)
 
 #check that every new sequence is unique in the new seqs set, and is not a substring of another sequence.
-    for otu in scraper.new_seqs_otu_id:
-        qseq = scraper.new_seqs_otu_id[otu]
-        count = 0
-        for seq in seqset:
-            if qseq in seq:
-                count += 1
-        assert count == 1
+##    for otu in scraper.new_seqs_otu_id:
+ #       qseq = scraper.new_seqs_otu_id[otu]
+ #       count = 0
+ #       for seq in seqset:
+ #           if qseq in seq:
+ #               count += 1
+ #       assert count == 1
 
 
-    for taxon in scraper.data.tre.taxon_namespace:
-        assert(taxon.label in scraper.data.otu_dict)
-        status = scraper.data.otu_dict[taxon.label].get(u'^physcraper:status')
-        assert(status in ('original', 'query'))
-
-#Now that we are pulling full sequences, length cutoff doensn't affect results.
-
-#    # Second test checks that seq len prec is affecting results
-#    data_obj = pickle.load(open("tests/data/precooked/tiny_dataobj.p", 'rb')) #reload bc data object is mutable
-#    data_obj.workdir = absworkdir
-#    scraper2 = PhyscraperScrape(data_obj, ids)
-#    scraper2.ids.otu_rank = {}
-
-#    scraper2.config.gifilename = False
-#    assert(len(scraper2.data.aln) == 5)
-#    # scraper2.gi_list_mrca = pickle.load(open("tests/data/precooked/gi_list_mrca.p", 'rb'))
-#    scraper2.read_blast_wrapper(blast_dir="tests/data/precooked/fixed/tte_blast_files")
-#    scraper2.config.seq_len_perc = 2  # Change seq len percentage from default of 75%
-
-#    assert(len(scraper2.new_seqs) == 40)
-#    assert(len(scraper2.new_seqs_otu_id) == 0)
-
-#    scraper2.remove_identical_seqs()
-    # print(scraper2.data.otu_dict)
-    # print(len(scraper.new_seqs_otu_id), 38)
-    # print(len(scraper2.new_seqs_otu_id), 36)
-#    assert(len(scraper2.new_seqs_otu_id) == 36)
-
-
-  
+##    for taxon in scraper.data.tre.taxon_namespace:
+ #       assert(taxon.label in scraper.data.otu_dict)
+ #       status = scraper.data.otu_dict[taxon.label].get(u'^physcraper:status')
+ #       assert(status in ('original', 'query'))
+    
+    aln_path1 = scraper.data.write_aln()
+    aln_path = scraper.write_all_unaligned('test.fas')
+    scraper.align_query_seqs()
+    scraper.data.replace_aln(aln_path)
+    scraper.data.trim()
+    assert len(scraper.data.aln) == 22
+    
 test_remove_identical_seqs()
