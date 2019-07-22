@@ -468,17 +468,29 @@ class AlignTreeTax(object):
         Is only used within func align_query_seqs.
         """
         #debug('write papara files')
+        self.write_random_resolve_tre(treefilename)
+        self.aln.write(path="{}/{}".format(self.workdir, alnfilename), schema="phylip")
+
+
+    def write_random_resolve_tre(self, treefilename='random_resolve.tre'):
         self.tre.resolve_polytomies()
         self.tre.deroot()
+        treepath= "{}/{}".format(self.workdir, treefilename)
         tmptre = self.tre.as_string(schema="newick",
                                     unquoted_underscores=True,
                                     suppress_rooting=True)
         tmptre = tmptre.replace(":0.0;", ";")  # Papara is diffffffficult about root
         tmptre = tmptre.replace("'", "_")
-        fi = open("{}/{}".format(self.workdir, treefilename), "w")
+        fi = open("{}".format(treepath), "w")
         fi.write(tmptre)
         fi.close()
-        self.aln.write(path="{}/{}".format(self.workdir, alnfilename), schema="phylip")
+        return treepath
+
+    def write_aln(self, alnname="physcraper.fas", alnschema="fasta"):
+        alnpath = "{}/{}".format(self.workdir, alnname)
+        self.aln.write(path=alnpath,
+                       schema=alnschema)
+        return os.path.abspath(alnpath)
 
     def write_files(self, treepath="physcraper.tre", treeschema="newick", alnpath="physcraper.fas", alnschema="fasta"):
         """Outputs both the streaming files, labeled with OTU ids.
@@ -488,7 +500,6 @@ class AlignTreeTax(object):
                        schema=treeschema, unquoted_underscores=True)
         self.aln.write(path="{}/{}".format(self.workdir, alnpath),
                        schema=alnschema)
-
 
 
     def write_labelled(self, label, treepath=None, alnpath=None, norepeats=True, add_gb_id=False):

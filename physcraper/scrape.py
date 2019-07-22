@@ -23,7 +23,7 @@ from physcraper import ncbi_data_parser, filter_by_local_blast
 from physcraper.configobj import ConfigObj
 from physcraper.ids import IdDicts
 from physcraper.aligntreetax import AlignTreeTax
-from physcraper.helpers import cd
+from physcraper.helpers import cd, get_raxml_ex
 
 
 from . import writeinfofiles
@@ -127,6 +127,7 @@ class PhyscraperScrape(object):
         debug("created physcraper ncbi_mrca {},".format(self.mrca_ncbi))
         self.map_taxa_to_ncbi()
         assert self.mrca_ncbi
+        self.write_mrca()
         self.threshold = threshold
 #markers for status
 #holders for new data
@@ -139,7 +140,7 @@ class PhyscraperScrape(object):
                     ottid = self.data.otu_dict[otu]["^ot:ottId"]
                     self.data.otu_dict[otu]["^ncbi:taxon"]=self.ids.ott_to_ncbi.get(ottid,0)
 
-
+    
     # TODO is this the right place for this? MK: According to PEP8, no...
     def reset_markers(self):
         self._blasted = 0
@@ -147,6 +148,12 @@ class PhyscraperScrape(object):
         self._query_seqs_written = 0
         self._query_seqs_placed = 0
         self._full_tree_est = 0
+
+    def write_mrca(self):
+        with open('{}/mrca.txt'.format(self.workdir),"w") as fi:
+            fi.write("ingroup mrca ott_id {}\n".format(self.mrca_ott))
+            fi.write("ingroup mrca NCBI: {}\n".format(self.mrca_ncbi))
+
 
     def OToL_unmapped_tips(self):
         """Assign names or remove tips from aln and tre that were not mapped during initiation of ATT class.
@@ -609,6 +616,7 @@ class PhyscraperScrape(object):
         if len(self.new_seqs) == 0:
             sys.stderr.write("no new squences found in blast. Exiting")
             sys.exit()
+        self.remove_identical_seqs()
         self._blast_read = 1
 
 
@@ -668,7 +676,7 @@ class PhyscraperScrape(object):
                             sys.stdout.write("seq {} is subsequence of {}, not added\n".format(new_otu_label, otu_lab))
                         self.data.otu_dict[new_otu_label]['^physcraper:status'] = "subsequence, not added"
                         #debug("{} not added, subseq of {}".format(new_otu_label, otu_lab))
-                        #debug("{} was NOT added to seq_dict: {}".format(new_otu_label, reason))
+                        debug("{} was NOT added to seq_dict: {}".format(new_otu_label, reason))
                         return seq_dict
                 else:
                     pass
@@ -698,11 +706,11 @@ class PhyscraperScrape(object):
                         self.data.otu_dict[new_otu_label]['^physcraper:status'] = "new seq added in place of {}".format(otu_lab)
                         seq_dict[new_otu_label] = seq
                         self.data.otu_dict[new_otu_label]['^physcraper:status'] = reason
-                        #debug("{} was added to seq_dict: {}".format(new_otu_label, reason))
+                        debug("{} was added to seq_dict: {}".format(new_otu_label, reason))
                         return seq_dict
             seq_dict[new_otu_label] = seq
             self.data.otu_dict[new_otu_label]['^physcraper:status'] = reason
-            #debug("{} was added to seq_dict: {}".format(new_otu_label, reason))
+            debug("{} was added to seq_dict: {}".format(new_otu_label, reason))
             return seq_dict
 
     def remove_identical_seqs(self):
@@ -747,7 +755,7 @@ class PhyscraperScrape(object):
         filter_dict = self.filter_seqs(tmp_dict, type='random', threshold = self.threshold)
         self.new_seqs_otu_id = filter_dict  # renamed new seq to their otu_ids from GI's, but all info is in self.otu_dict
         self.new_seqs = {} #Wipe clean
-        debug("len new seqs dict after remove identical{}".format(len(self.new_seqs_otu_id)))
+        debug("len new seqs otu dict after remove identical{}".format(len(self.new_seqs_otu_id)))
         with open(self.logfile, "a") as log:
             log.write("{} new sequences added from Genbank after removing identical seq, "
                       "of {} before filtering\n".format(len(self.new_seqs_otu_id), len(self.new_seqs)))
@@ -890,7 +898,7 @@ class PhyscraperScrape(object):
 
 
 
-    def dump(self, filename=None, recursion=100000):
+    def pickle_dump(self, filename=None, recursion=100000):
         """writes out class to pickle file.
         We need to increase the recursion depth here, as it currently fails with the standard run.
 
@@ -908,6 +916,11 @@ class PhyscraperScrape(object):
         pickle.dump(self, ofi, pickle.HIGHEST_PROTOCOL)
         sys.setrecursionlimit(current)
 
+    def dump(self):
+        self.data.write_otus('otu_dict.json')
+        with open("{}/{}".format(self.workdir, 'config.json'), "w") as outfile:
+                json.dump(self.config.__dict__, outfile)
+
     def write_query_seqs(self, filename='date'):
         """writes out the query sequence file"""
         debug("write query seq")
@@ -917,13 +930,15 @@ class PhyscraperScrape(object):
             self.newseqs_file = "{}.fasta".format(self.date)
         else:
             self.newseqs_file = filename
-        fi = open("{}/{}".format(self.workdir, self.newseqs_file), "w")
+        fipath = ("{}/{}".format(self.workdir, self.newseqs_file))
         if _VERBOSE:
             sys.stdout.write("writing out sequences\n")
-        for otu_id in self.new_seqs_otu_id.keys():
+        with open(fipath, "w") as fi:
+            for otu_id in self.new_seqs_otu_id.keys():
                 fi.write(">{}\n".format(otu_id))
                 fi.write("{}\n".format(self.new_seqs_otu_id[otu_id]))
         self._query_seqs_written = 1
+        return fipath
 
     def write_all_unaligned(self, filename='date'):
         """writes out the query sequence file"""
@@ -938,16 +953,45 @@ class PhyscraperScrape(object):
         #write out existing
         self.data.aln.write(path=fipath, schema='fasta')
         #append new
-        fi = open(fipath, "a")
         if _VERBOSE:
             sys.stdout.write("writing out ALL sequences\n")
-        for otu_id in self.new_seqs_otu_id.keys():
+        with open(fipath, "a") as fi:
+            for otu_id in self.new_seqs_otu_id.keys():
                 fi.write(">{}\n".format(otu_id))
                 fi.write("{}\n".format(self.new_seqs_otu_id[otu_id]))
         self._query_seqs_written = 1
+        return fipath
 
 
-    def align_query_seqs(self, papara_runname="extended"):
+    def align_query_seqs(self, aligner = 'muscle'):
+        if not self.new_seqs_otu_id:
+            self.read_blast_wrapper()
+        assert aligner in ['muscle', 'papara']
+        if aligner == 'papara':
+            self.aln = self.run_papara()
+        if aligner == 'muscle':
+            self.aln = self.run_muscle()
+        self.data.trim()
+        alnfi = self.data.write_aln()
+        debug("align fi is {}".format(alnfi))
+        return alnfi
+    
+    def run_muscle(self, outname = 'muscle_aln.fas'):
+        finame = self.write_all_unaligned()
+        outpath = "{}/{}".format(self.workdir, outname)
+        try:
+            subprocess.check_call(["muscle",
+                                   "-in", finame,
+                                   "-out", outpath])
+            if _VERBOSE:
+                sys.stdout.write("Muscle done")
+        except subprocess.CalledProcessError as grepexc:
+            print "error code", grepexc.returncode, grepexc.output
+        aln = DnaCharacterMatrix.get(path=outpath, schema='fasta')
+        return aln
+
+
+    def run_papara(self, papara_runname="extended"):
         """runs papara on the tree, the alignment and the new query sequences
 
         :param papara_runname: possible file extension name for papara
@@ -989,7 +1033,7 @@ class PhyscraperScrape(object):
         path = "{}/papara_alignment.{}".format(self.workdir, papara_runname)
         assert os.path.exists(path), "{path} does not exists".format(path=path)
         os.chdir(cwd)
-        self.data.aln = DnaCharacterMatrix.get(path="{}/papara_alignment."
+        aln = DnaCharacterMatrix.get(path="{}/papara_alignment."
                                                     "{}".format(self.workdir, papara_runname), schema="phylip")
         self.data.aln.taxon_namespace.is_mutable = True  # Was too strict...
         if _VERBOSE:
@@ -997,11 +1041,12 @@ class PhyscraperScrape(object):
         lfd = "{}/logfile".format(self.workdir)
         with open(lfd, "a") as log:
             log.write("Following papara alignment, aln has {} seqs \n".format(len(self.data.aln)))
+        return aln
         self._query_seqs_aligned = 1
 
 
 
-    def place_query_seqs(self):
+    def place_query_seqs(self, alignment = None, query = None, tree = "random_resolve.tre"):
         """runs raxml on the tree, and the combined alignment including the new query seqs.
         Just for placement, to use as starting tree."""
         if self.backbone is True:
@@ -1017,89 +1062,71 @@ class PhyscraperScrape(object):
             os.rename("RAxML_labelledTree.PLACE", "RAxML_labelledTreePLACE.tmp")
         if _VERBOSE:
             sys.stdout.write("placing query sequences \n")
+        rac_ex = get_raxml_ex()
         with cd(self.workdir):
             try:
                 debug("try")
-                subprocess.call(["raxmlHPC-PTHREADS",
+                subprocess.call([rax_ex,
                                  "-T", "{}".format(self.config.num_threads),
                                  "-m", "GTRCAT",
                                  "-f", "v",
-                                 "-s", "papara_alignment.extended",
-                                 "-t", "random_resolve.tre",
+                                 "-s", alignment,
+                                 "-t", tree,
                                  "-n", "PLACE"])
                 placetre = Tree.get(path="RAxML_labelledTree.PLACE",
                                     schema="newick",
                                     preserve_underscores=True)
-            except:
-                try:
-                    subprocess.call(["raxmlHPC",
-                                     "-m", "GTRCAT",
-                                     "-f", "v",
-                                     "-s", "papara_alignment.extended",
-                                     "-t", "random_resolve.tre",
-                                     "-n", "PLACE"])
-                    placetre = Tree.get(path="RAxML_labelledTree.PLACE",
-                                        schema="newick",
-                                        preserve_underscores=True)
-                except OSError as e:
+            except OSError as e:
                     if e.errno == os.errno.ENOENT:
                         sys.stderr.write("failed running raxmlHPC. Is it installed?")
                         sys.exit(-6)
                     # handle file not
                     # handle file not found error.
                     else:
-                        # Something else went wrong while trying to run `wget`
                         raise
             placetre.resolve_polytomies()
-            for taxon in placetre.taxon_namespace:
-                if taxon.label.startswith("QUERY"):
-                    taxon.label = taxon.label.replace("QUERY___", "")
             placetre.write(path="place_resolve.tre", schema="newick", unquoted_underscores=True)
         self._query_seqs_placed = 1
 
-    def est_full_tree(self, path="."):
+
+    def est_full_tree(self, alignment = None, startingtree = None, backbone = False):
         """Full raxml run from the placement tree as starting tree.
         The PTHREAD version is the faster one, hopefully people install it. if not it falls back to the normal raxml.
         the backbone options allows to fix the sceleton of the starting tree and just newly estimates the other parts.
         """
-        debug("est full tree")
         cwd = os.getcwd()
+        if alignment == None:
+            alignment = self.align_query_seqs()
+        if startingtree == None:
+            startingtree = os.path.abspath(self.data.write_random_resolve_tre())
+        debug("est full tree")
         os.chdir(self.workdir)
+        rax_ex = get_raxml_ex()
         for filename in glob.glob('{}/RAxML*'.format(self.workdir)):
-            os.rename(filename, "{}/{}_tmp".format(self.workdir, filename.split("/")[-1]))
-        try:
-            num_threads = int(self.config.num_threads)
-            if self.backbone is not True:
-                subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(num_threads), "-m", "GTRCAT",
-                                 "-s", "{}/papara_alignment.extended".format(path),
-                                 "-t", "place_resolve.tre",
-                                 "-p", "1",
-                                 "-n", "{}".format(self.date)])
-            else:
-                subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(num_threads), "-m", "GTRCAT",
-                                 "-s", "{}/papara_alignment.extended".format(path),
-                                 "-r", "backbone.tre",
-                                 "-p", "1",
-                                 "-n", "{}".format(self.date)])
-        except:
-            sys.stderr.write("You do not have the raxmlHPC-PTHREADS installed, will fall down to slow version!")
-
-            if self.backbone is not True:
-                subprocess.call(["raxmlHPC", "-m", "GTRCAT",
-                                 "-s", "{}/papara_alignment.extended".format(path),
-                                 "-t", "place_resolve.tre",
-                                 "-p", "1",
-                                 "-n", "{}".format(self.date)])
-            else:
-                subprocess.call(["raxmlHPC", "-m", "GTRCAT",
-                                 "-s", "{}/papara_alignment.extended".format(path),
-                                 "-r", "backbone.tre",
-                                 "-p", "1",
-                                 "-n", "{}".format(self.date)])
+            os.rename(filename, "{}/{}_prev".format(self.workdir, filename.split("/")[-1]))
+        num_threads = int(self.config.num_threads)
+        label = "{}".format(self.date)
+        if self.backbone:
+            cmd= [rax_ex, "-T", "{}".format(num_threads), "-m", "GTRCAT", "-s", alignment, "-r", "backbone.tre", "-p", "1", "-n", label]
+            
+        else:
+            cmd= [rax_ex, "-T", "{}".format(num_threads), "-m", "GTRCAT", "-s", alignment, "-t", startingtree, "-p", "1", "-n", label]
+        subprocess.call(cmd)
+        if _VERBOSE:
+                sys.stdout.write("running: "+" ".join(cmd)+"\n")
         os.chdir(cwd)
-        self._full_tree_est = 1
+        return label
 
-    def calculate_bootstrap(self):
+#        self.tre = Tree.get(data="RAxML_bestTree.{}".format(label),
+#                            schema="newick",
+#                            preserve_underscores=True,
+#                            taxon_namespace=self.data.aln.taxon_namespace)
+#        self.data._reconcile()
+#        self.data.write_files()
+
+
+                    
+    def calculate_bootstrap(self, alignment = None):
         """Calculates bootstrap and consensus trees.
 
         -p: random seed
@@ -1112,92 +1139,55 @@ class PhyscraperScrape(object):
 
         """
         debug("calculate bootstrap")
-        cwd = os.getcwd()
-        os.chdir(self.workdir)
-        # with cd(self.workdir):
-        # # check if job was started with mpi
-        # # this checks if the whole file was started as mpiexec
-        # env_var = [os.environ.get('PMI_RANK'), os.environ.get('PMI_SIZE'), os.environ.get('OMPI_COMM_WORLD_SIZE')]
-        # mpi = False
-        # for var in env_var:
-        #     if var is not None:
-        #         mpi = True
-        # check if job was started with mpi
-        # this checks if actual several cores and nodes were allocated
-        ntasks = os.environ.get('SLURM_NTASKS_PER_NODE')
-        nnodes = os.environ.get("SLURM_JOB_NUM_NODES")
-        # env_var = int(nnodes) * int(ntasks)
-        mpi = False
-        if nnodes is not None and ntasks is not None:
-            env_var = int(nnodes) * int(ntasks)
-            mpi = True
-        if mpi:
-            debug("run with mpi")
-            subprocess.call(["mpiexec", "-n", "{}".format(env_var), "raxmlHPC-MPI-AVX2",
-                             # "raxmlHPC-PTHREADS", "-T", "{}".format(num_threads),
-                             "-m", "GTRCAT",
-                             "-s", "previous_run/papara_alignment.extended",
-                             "-p", "1", "-f", "a", "-x", "1", "-#", "autoMRE",
-                             "-n", "{}".format(self.date)])
-        else:
-            try:
-                subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(self.config.num_threads),
+        if alignment == None:
+            alignment = "previous_run/papara_alignment.extended"
+        with cd(self.workdir):
+            ntasks = os.environ.get('SLURM_NTASKS_PER_NODE')
+            nnodes = os.environ.get("SLURM_JOB_NUM_NODES")
+            # env_var = int(nnodes) * int(ntasks)
+            mpi = False
+            if nnodes is not None and ntasks is not None:
+                env_var = int(nnodes) * int(ntasks)
+                mpi = True
+            rax_ex = get_raxml_ex()
+            if mpi:
+                debug("run with mpi")
+                subprocess.call(["mpiexec", "-n", "{}".format(env_var), "raxmlHPC-MPI-AVX2",
+                                 # "raxmlHPC-PTHREADS", "-T", "{}".format(num_threads),
                                  "-m", "GTRCAT",
-                                 "-s", "previous_run/papara_alignment.extended",
-                                 "-p", "1", "-b", "1", "-#", "autoMRE",
+                                 "-s", alignment,
+                                 "-p", "1", "-f", "a", "-x", "1", "-#", "autoMRE",
                                  "-n", "{}".format(self.date)])
-            except:
-                subprocess.call(["raxmlHPC",
+            else:
+                subprocess.call([rax_ex, "-T", "{}".format(self.config.num_threads),
                                  "-m", "GTRCAT",
-                                 "-s", "previous_run/papara_alignment.extended",
+                                 "-s", alignment,
                                  "-p", "1", "-b", "1", "-#", "autoMRE",
                                  "-n", "{}".format(self.date)])
 
-        try:
-            subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(self.config.num_threads), "-m", "GTRCAT",
-                             "-s", "previous_run/papara_alignment.extended",
-                             "-p", "1", "-f", "a", "-x", "1", "-#", "autoMRE",
-                             "-n", "all{}".format(self.date)])
+            # try:
+            #     subprocess.call([rax_ex, "-T", "{}".format(self.config.num_threads), "-m", "GTRCAT",
+            #                      "-s", alignment,
+            #                      "-p", "1", "-f", "a", "-x", "1", "-#", "autoMRE",
+            #                      "-n", "all{}".format(self.date)])
 
-            # strict consensus:
-            subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(self.config.num_threads), "-m", "GTRCAT",
-                             "-J", "STRICT",
-                             "-z", "RAxML_bootstrap.all{}".format(self.date),
-                             "-n", "StrictCon{}".format(self.date)])
-            # majority rule:
-            subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(self.config.num_threads), "-m", "GTRCAT",
-                             "-J", "MR",
-                             "-z", "RAxML_bootstrap.all{}".format(self.date),
-                             "-n", "MR_{}".format(self.date)])
-            # extended majority rule:
-            subprocess.call(["raxmlHPC-PTHREADS", "-T", "{}".format(self.config.num_threads), "-m", "GTRCAT",
-                             "-J", "MRE",
-                             "-z", "RAxML_bootstrap.all{}".format(self.date),
-                             "-n", "EMR{}".format(self.date)])
-        except:
-            sys.stderr.write("You do not have the raxmlHPC-PTHREADS installed, will fall down to slow version!")
-            # make bipartition tree
-            # is the -f b command
-            subprocess.call(["raxmlHPC", "-m", "GTRCAT",
-                             "-s", "previous_run/papara_alignment.extended",
-                             "-p", "1", "-f", "a", "-x", "1", "-#", "autoMRE",
-                             "-n", "all{}".format(self.date)])
-            # strict consensus:
-            subprocess.call(["raxmlHPC", "-m", "GTRCAT",
-                             "-J", "STRICT",
-                             "-z", "RAxML_bootstrap.all{}".format(self.date),
-                             "-n", "StrictCon{}".format(self.date)])
-            # majority rule:
-            subprocess.call(["raxmlHPC", "-m", "GTRCAT",
-                             "-J", "MR",
-                             "-z", "RAxML_bootstrap.all{}".format(self.date),
-                             "-n", "MR_{}".format(self.date)])
-            # extended majority rule:
-            subprocess.call(["raxmlHPC", "-m", "GTRCAT",
-                             "-J", "MRE",
-                             "-z", "RAxML_bootstrap.all{}".format(self.date),
-                             "-n", "EMR{}".format(self.date)])
-        os.chdir(cwd)
+            #     # strict consensus:
+            #     subprocess.call([rax_ex,  "-T", "{}".format(self.config.num_threads), "-m", "GTRCAT",
+            #                      "-J", "STRICT",
+            #                      "-z", "RAxML_bootstrap.all{}".format(self.date),
+            #                      "-n", "StrictCon{}".format(self.date)])
+            #     # majority rule:
+            #     subprocess.call([rax_ex, "-T", "{}".format(self.config.num_threads), "-m", "GTRCAT",
+            #                      "-J", "MR",
+            #                      "-z", "RAxML_bootstrap.all{}".format(self.date),
+            #                      "-n", "MR_{}".format(self.date)])
+            #     # extended majority rule:
+            #     subprocess.call([rax_ex, "-T", "{}".format(self.config.num_threads), "-m", "GTRCAT",
+            #                      "-J", "MRE",
+            #                      "-z", "RAxML_bootstrap.all{}".format(self.date),
+            #                      "-n", "EMR{}".format(self.date)])
+
+            
 
     def remove_blacklistitem(self):
         """This removes items from aln, and tree, if the corresponding Genbank identifer were added to the blacklist.
@@ -1216,81 +1206,6 @@ class PhyscraperScrape(object):
         # self.data.prune_short()
         # debug(self.data.tre.as_string(schema='newick'))
 
-    def generate_streamed_alignment(self):
-        """runs the key steps and then replaces the tree and alignment with the expanded ones"""
-        debug("generate streamed aln")
-        if self.blacklist:
-            self.remove_blacklistitem()
-        debug(len(self.new_seqs))
-        debug(len(self.new_seqs_otu_id))
-        if len(self.new_seqs_otu_id) == 0:
-            if _VERBOSE:
-                sys.stdout.write("No new sequences found.\n")
-            # self.repeat = 0
-            self.calculate_final_tree()
-            self.data.dump("{}/final_ATT_checkpoint.p".format(self.workdir))
-        elif len(self.new_seqs) > 0:
-            self.data.write_files()  # should happen before aligning in case of pruning
-            if len(self.new_seqs_otu_id) > 0:  # TODO rename to something more intuitive
-                self.data.check_tre_in_aln()
-                self.write_query_seqs()
-                self.align_query_seqs()
-                self.place_query_seqs()
-                self.data.prune_short()
-                self.data.trim()
-                self.est_full_tree()
-                self.data.tre = Tree.get(path="{}/RAxML_bestTree.{}".format(self.workdir, self.date),
-                                         schema="newick",
-                                         preserve_underscores=True,
-                                         taxon_namespace=self.data.aln.taxon_namespace)
-                self.data.write_files()
-                if os.path.exists("{}/previous_run".format(self.workdir)):
-                    prev_dir = "{}/previous_run{}".format(self.workdir, self.date)
-                    i = 0
-                    while os.path.exists(prev_dir):
-                        i += 1
-                        prev_dir = "{}/previous_run{}".format(self.workdir, self.date) + str(i)
-                    os.rename("{}/previous_run".format(self.workdir), prev_dir)
-                if self.config.gb_id_filename is not True:
-                    os.rename(self.blast_subdir, "{}/previous_run".format(self.workdir))
-                for filename in glob.glob('{}/RAxML*'.format(self.workdir)):
-                    if not os.path.exists("{}/previous_run".format(self.workdir)):
-                        os.makedirs('{}/previous_run/'.format(self.workdir))
-                    if self.config.gb_id_filename is not True:
-                        os.rename(filename, "{}/previous_run/{}".format(self.workdir, filename.split("/")[-1]))
-                    else:
-                        os.rename(filename, "{}/previous_run/{}".format(self.workdir, filename.split("/")[-1]))
-                for filename in glob.glob('{}/papara*'.format(self.workdir)):
-                    os.rename(filename, "{}/previous_run/{}".format(self.workdir, filename.split("/")[-1]))
-                os.rename("{}/{}".format(self.workdir, self.newseqs_file),
-                          "{}/previous_run/newseqs.fasta".format(self.workdir))
-                self.data.write_labelled(label='^physcraper:TaxonName', add_gb_id=True)
-                self.data.write_otus("otu_info", schema='table')
-                self.new_seqs = {}  # Wipe for next run
-                self.new_seqs_otu_id = {}
-                self.repeat = 1
-            else:
-                self.calculate_final_tree()
-                self.data.dump("{}/final_ATT_checkpoint.p".format(self.workdir))
-        #     else:
-        #         if _VERBOSE:
-        #             sys.stdout.write("No new sequences after filtering.\n")
-        #         # self.repeat = 0
-        #         self.calculate_final_tree()
-        #         self.data.dump("{}/final_ATT_checkpoint.p".format(self.workdir))
-
-        # else:
-        #     if _VERBOSE:
-        #         sys.stdout.write("No new sequences found.\n")
-        #     # self.repeat = 0
-        #     self.calculate_final_tree()
-        #     self.data.dump("{}/final_ATT_checkpoint.p".format(self.workdir))
-
-        self.reset_markers()
-
-        filter_by_local_blast.del_blastfiles(self.workdir)  # delete local blast db
-        self.data.dump()
-        json.dump(self.data.otu_dict, open('{}/otu_dict.json'.format(self.workdir), 'wb'))
 
     def calculate_final_tree(self):
         """Calculates the final tree using a trimmed alignment.

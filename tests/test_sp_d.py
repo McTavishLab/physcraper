@@ -27,29 +27,5 @@ def test_sp_d():
     filteredScrape.read_blast_wrapper(blast_dir=blast_dir)
     filteredScrape.remove_identical_seqs()
     filteredScrape.seq_filter = ['deleted', 'subsequence,', 'not', "removed", "deleted,"]
-    gi_data_otu_dict_added = []
-    for v in filteredScrape.data.otu_dict.values():
-        if '^ncbi:gi' in v:
-            if (v['^physcraper:status'].split(' ')[0] not in filteredScrape.seq_filter):
-                gi_data_otu_dict_added.append(v['^ncbi:gi'])
-    gi_sp_d = []
-    sp_d = filteredScrape.make_sp_dict()
-    for key in sp_d:
-        v = sp_d[key]  
-        for v2 in v:
-            v2 = filteredScrape.data.otu_dict[v2]
-            if '^ncbi:gi' in v2:
-                gi_sp_d.append(v2['^ncbi:gi'])
-    user_data_otu_dict = []
-    for v in filteredScrape.data.otu_dict.values():
-        if '^user:TaxonName' in v:
-            user_data_otu_dict.append(v['^user:TaxonName'])
-    user_sp_d = []
-    for v in sp_d.values():
-        for v2 in v:
-            v2 = filteredScrape.data.otu_dict[v2]
-            if '^user:TaxonName' in v2:
-                user_sp_d.append(v2['^user:TaxonName'])
-    assert sorted(gi_data_otu_dict_added) == sorted(gi_sp_d)
-    assert sorted(user_data_otu_dict) == sorted(user_sp_d)
- 
+
+

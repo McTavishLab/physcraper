@@ -1,5 +1,18 @@
 import os
+import sys
+import subprocess
 import contextlib
+
+
+def get_raxml_ex():
+            if subprocess.check_call(["which", "raxmlHPC-PTHREADS"]) == 0:
+                rax_ex = "raxmlHPC-PTHREADS"
+            elif subprocess.check_call(["which", "raxmlHPC"]) == 0:
+                rax_ex = "raxmlHPC"
+            else:
+                sys.stderr.write("Did not find raxml executable. Exiting \n")
+                sys.exit()
+            return rax_ex
 
 
 

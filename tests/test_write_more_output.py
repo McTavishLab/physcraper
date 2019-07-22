@@ -2,9 +2,8 @@ import os
 import sys
 import pickle
 import physcraper
-import physcraper.filter_by_local_blast as local_blast
 import physcraper.wrappers as wrappers
-from physcraper.filterblast import FilterBlast
+from physcraper import PhyscraperScrape
 
 import pytest
 
@@ -23,7 +22,7 @@ def test_write_outputinfo():
     data_obj.workdir = absworkdir
     ids = physcraper.IdDicts(conf, workdir=data_obj.workdir)
     ids.acc_ncbi_dict = pickle.load(open("tests/data/precooked/tiny_acc_map.p", "rb"))
-    filteredScrape = FilterBlast(data_obj, ids)
+    filteredScrape = PhyscraperScrape(data_obj, ids)
     filteredScrape._blasted = 1
     blast_dir = "tests/data/precooked/fixed/tte_blast_files"
     # filteredScrape.acc_list_mrca = pickle.load(open("tests/data/precooked/acc_list_mrca.p", 'rb'))
@@ -32,7 +31,7 @@ def test_write_outputinfo():
     # filteredScrape.sp_dict(downtorank)
     # filteredScrape.make_sp_seq_dict()
 
-    filteredScrape.generate_streamed_alignment()
+    filteredScrape.align_query_seqs()
 
     wrappers.write_out_files(filteredScrape, downtorank)
 
