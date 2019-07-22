@@ -40,6 +40,25 @@ def cd(path):
                       # ingroup_mrca = 'mrca.txt'):
                       
 
+def write_filterblast_db(workdir, seq_name, seq, fn):
+    """Writes local blast db which will be read by run_filter_blast.
+
+    :param workdir: working directory
+    :param seq_name: sequence identifier
+    :param seq: sequence to write
+    :param fn: file name
+    :return: files with sequences written to it in fasta format
+    """
+    """
+    """
+    if not os.path.exists("{}/blast".format(workdir)):
+        os.makedirs("{}/blast/".format(workdir))
+    fnw = "{}/blast/{}_db".format(workdir, fn)
+    fi_o = open(fnw, "a")
+    fi_o.write(">{}\n".format(seq_name))
+    fi_o.write("{}\n".format(str(seq).replace("-", "")))
+    fi_o.close()
+    debug("writing seq {} to blast db {}\n".format(seq_name, fnw))
 
 
 

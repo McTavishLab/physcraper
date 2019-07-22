@@ -16,10 +16,6 @@ from dendropy import Tree, DnaCharacterMatrix, DataSet, datamodel
 
 from Bio.Blast import NCBIXML
 
-from copy import deepcopy
-import physcraper.AWSWWW as AWSWWW
-
-from physcraper import ncbi_data_parser, filter_by_local_blast
 from physcraper.configobj import ConfigObj
 from physcraper.ids import IdDicts
 from physcraper.aligntreetax import AlignTreeTax
@@ -1254,7 +1250,7 @@ class PhyscraperScrape(object):
                 key = gb_id_l[i].replace(">", "")
                 count = count + 1
                 seq = seq_l[i]
-                filter_by_local_blast.write_filterblast_db(self.workdir, key, seq, fn="local_unpubl_seq")
+                physcraper.helpers.write_filterblast_db(self.workdir, key, seq, fn="local_unpubl_seq")
         with cd(os.path.join(self.workdir, "blast")):
             cmd1 = "makeblastdb -in {}_db -dbtype nucl".format("local_unpubl_seq")
             os.system(cmd1)
