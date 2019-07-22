@@ -12,6 +12,8 @@ import contextlib
 import time
 import csv
 
+from copy import deepcopy
+
 from dendropy import Tree, DnaCharacterMatrix, DataSet, datamodel
 
 from Bio.Blast import NCBIXML
@@ -19,10 +21,10 @@ from Bio.Blast import NCBIXML
 from physcraper.configobj import ConfigObj
 from physcraper.ids import IdDicts
 from physcraper.aligntreetax import AlignTreeTax
-from physcraper.helpers import cd, get_raxml_ex
+from physcraper.helpers import cd, get_raxml_ex, write_filterblast_db
 
-
-from . import writeinfofiles
+from physcraper import ncbi_data_parser
+from physcraper import writeinfofiles
 
 _VERBOSE = 1
 _DEBUG = 1
@@ -266,6 +268,7 @@ class PhyscraperScrape(object):
         today = str(datetime.date.today()).replace("-", "/")
         debug("run_blast_wrapper")
         debug(self.blast_subdir)
+        self._blast_read = 0
         if not os.path.exists(self.blast_subdir):
             os.makedirs(self.blast_subdir)
         with open(self.logfile, "a") as log:
@@ -939,13 +942,13 @@ class PhyscraperScrape(object):
     def write_all_unaligned(self, filename='date'):
         """writes out the query sequence file"""
         debug("write query + aligned seqs")
-        if not self.new_seqs_otu_id:
+        if self._blasted == 1 and self._blast_read == 0:
             self.read_blast_wrapper()
         if filename == 'date':
-            self.allseqs_file = "{}_ALL.fasta".format(self.date)
+            finam = "{}_ALL.fasta".format(self.date)
         else:
-            self.allseqs_file = filename
-        fipath =  "{}/{}".format(self.workdir, self.allseqs_file)  
+            finam = filename
+        fipath =  "{}/{}".format(self.workdir, finam)  
         #write out existing
         self.data.aln.write(path=fipath, schema='fasta')
         #append new
@@ -955,13 +958,12 @@ class PhyscraperScrape(object):
             for otu_id in self.new_seqs_otu_id.keys():
                 fi.write(">{}\n".format(otu_id))
                 fi.write("{}\n".format(self.new_seqs_otu_id[otu_id]))
+        fi.close()
         self._query_seqs_written = 1
         return fipath
 
 
     def align_query_seqs(self, aligner = 'muscle'):
-        if not self.new_seqs_otu_id:
-            self.read_blast_wrapper()
         assert aligner in ['muscle', 'papara']
         if aligner == 'papara':
             self.run_papara()
@@ -971,6 +973,16 @@ class PhyscraperScrape(object):
         alnfi = self.data.write_aln()
         return alnfi
     
+    def replace_aln(self, filename, schema = 'fasta'):
+        newaln = DnaCharacterMatrix.get(path=filename, schema=schema)
+        for taxon in newaln:
+            assert taxon.label in self.data.otu_dict
+        self.data.aln = newaln
+        self.new_seqs_otu_id = {}
+        self._blasted = 0
+        self.blast_read = 0
+
+
     def run_muscle(self, outname = 'muscle_aln.fas'):
         finame = self.write_all_unaligned()
         outpath = "{}/{}".format(self.workdir, outname)
@@ -982,7 +994,7 @@ class PhyscraperScrape(object):
                 sys.stdout.write("Muscle done")
         except subprocess.CalledProcessError as grepexc:
             print "error code", grepexc.returncode, grepexc.output
-        self.data.replace_aln(outpath)
+        self.replace_aln(outpath)
 
 
     def run_papara(self, papara_runname="extended"):
@@ -1250,7 +1262,7 @@ class PhyscraperScrape(object):
                 key = gb_id_l[i].replace(">", "")
                 count = count + 1
                 seq = seq_l[i]
-                physcraper.helpers.write_filterblast_db(self.workdir, key, seq, fn="local_unpubl_seq")
+                write_filterblast_db(self.workdir, key, seq, fn="local_unpubl_seq")
         with cd(os.path.join(self.workdir, "blast")):
             cmd1 = "makeblastdb -in {}_db -dbtype nucl".format("local_unpubl_seq")
             os.system(cmd1)

@@ -58,7 +58,6 @@ def write_filterblast_db(workdir, seq_name, seq, fn):
     fi_o.write(">{}\n".format(seq_name))
     fi_o.write("{}\n".format(str(seq).replace("-", "")))
     fi_o.close()
-    debug("writing seq {} to blast db {}\n".format(seq_name, fnw))
 
 
 

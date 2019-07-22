@@ -343,12 +343,6 @@ class AlignTreeTax(object):
                              "start {}, stop {}\n".format(taxon_missingness, start, stop))
         return
 
-    def replace_aln(self, filename, schema = 'fasta'):
-        newaln = DnaCharacterMatrix.get(path=filename, schema=schema)
-        for taxon in newaln:
-            assert taxon.label in self.otu_dict
-        self.aln = newaln
-
 
     def check_tre_in_aln(self):
         """Makes sure that everything which is in tre is also found in aln.

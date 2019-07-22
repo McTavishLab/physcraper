@@ -2,7 +2,8 @@
 """Physcraper module"""
 
 from __future__ import absolute_import
-
+import sys
+import os
 
 from physcraper.configobj import ConfigObj
 from physcraper.ids import IdDicts
