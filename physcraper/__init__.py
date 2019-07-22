@@ -3,33 +3,6 @@
 
 from __future__ import absolute_import
 
-import sys
-import re
-import os
-import subprocess
-import datetime
-import glob
-import json
-import configparser
-import pickle
-import random
-import time
-import csv
-# from mpi4py import MPI
-from past.builtins import xrange
-from builtins import input
-from copy import deepcopy
-from ete2 import NCBITaxa
-
-
-from Bio import Entrez
-
-# extension functions
-from . import concat  # is the local concat class
-from . import ncbi_data_parser  # is the ncbi data parser class and associated functions
-from . import opentree_helpers
-from . import writeinfofiles
-
 
 from physcraper.configobj import ConfigObj
 from physcraper.ids import IdDicts
