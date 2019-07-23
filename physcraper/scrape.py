@@ -25,6 +25,7 @@ from physcraper.helpers import cd, get_raxml_ex, write_filterblast_db
 
 from physcraper import ncbi_data_parser
 from physcraper import writeinfofiles
+from physcraper import AWSWWW
 
 _VERBOSE = 1
 _DEBUG = 1
@@ -581,32 +582,29 @@ class PhyscraperScrape(object):
                 sys.stdout.write("blast dir is {}\n".format(self.blast_subdir))
             if not os.path.exists(self.blast_subdir):
                 os.mkdir(self.blast_subdir)
-        if self.unpublished:
-            self.read_unpublished_blast_query()
-        else:
-            if not self._blasted:
+        if not self._blasted:
                 self.run_blast_wrapper()
-            assert os.path.exists(self.blast_subdir)
-            for taxon in self.data.aln:
+        assert os.path.exists(self.blast_subdir)
+        for taxon in self.data.aln:
                 # debug(self.config.blast_loc)
-                if self.config.blast_loc == "local":
-                    file_ending = "txt"
-                else:
-                    file_ending = "xml"
+            if self.config.blast_loc == "local":
+                file_ending = "txt"
+            else:
+                file_ending = "xml"
 #                if self.config.gb_id_filename is True: #TODO what is this doing?
 #                    fn = self.data.otu_dict[taxon.label].get('^ncbi:accession', taxon.label) 
 #                    if fn is None:
 #                        fn = self.data.otu_dict[taxon.label].get('^user:TaxonName', taxon.label)
 #                    fn_path = "{}/{}.{}".format(self.blast_subdir, fn, file_ending)
 #                else:
-                fn_path = "{}/{}.{}".format(self.blast_subdir, taxon.label, file_ending)
-                if _DEBUG:
-                    sys.stdout.write("reading {}\n".format(fn_path))
-                if os.path.isfile(fn_path):
-                    if self.config.blast_loc == 'local':  # new method to read in txt format
-                        self.read_local_blast_query(fn_path)
-                    else:
-                        self.read_webbased_blast_query(fn_path)
+            fn_path = "{}/{}.{}".format(self.blast_subdir, taxon.label, file_ending)
+            if _DEBUG:
+                sys.stdout.write("reading {}\n".format(fn_path))
+            if os.path.isfile(fn_path):
+                if self.config.blast_loc == 'local':  # new method to read in txt format
+                    self.read_local_blast_query(fn_path)
+                else:
+                    self.read_webbased_blast_query(fn_path)
         self.date = str(datetime.date.today())
 #        debug("len new seqs dict after evalue filter")
 #        debug(len(self.new_seqs))
@@ -964,6 +962,8 @@ class PhyscraperScrape(object):
 
 
     def align_query_seqs(self, aligner = 'muscle'):
+        if not self._blast_read:
+            self.read_blast_wrapper()
         assert aligner in ['muscle', 'papara']
         if aligner == 'papara':
             self.run_papara()
@@ -1102,6 +1102,7 @@ class PhyscraperScrape(object):
         """
         cwd = os.getcwd()
         if alignment == None:
+            debug("call align query seqs from est full tree, self._blast_read is {}".format(self._blast_read))
             alignment = self.align_query_seqs()
         if startingtree == None:
             startingtree = os.path.abspath(self.data.write_random_resolve_tre())
