@@ -59,7 +59,6 @@ def test_blacklist():
     configfi = "tests/data/test.config"
 
     # make one run without blacklist
-    debug("run without blacklist")
     blacklist = None
     noblack = os.path.join(workdir, "noblacklist")
     absworkdir = os.path.abspath(noblack)
@@ -87,7 +86,6 @@ def test_blacklist():
     new_test_generate_streamed_aln(noblackScrape)
 
     # one run with blacklist
-    debug("run with blacklist")
 
     blacklist = ['JX895340.1']
     absworkdir = os.path.abspath(workdir)
