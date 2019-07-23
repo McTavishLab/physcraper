@@ -9,6 +9,7 @@ before_install:
   ### install blast+
   # this fails often with connection errors
   - sudo apt-get install ncbi-blast+
+  - sudo apt-get install muscle
 
 
   #### install papara
