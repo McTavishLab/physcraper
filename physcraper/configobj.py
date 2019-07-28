@@ -43,9 +43,11 @@ def get_user_input():
     x = None
     while not is_valid:
         try:
-            x = input("Please write either 'yes' or 'no': ")
-            if str(x) == "yes" or x == "no":
+            x = raw_input("Please write either 'yes' or 'no': ")
+            if x == 'yes' or x == 'no':
                 is_valid = 1  # set it to 1 to validate input and to terminate the while..not loop
+            else:
+                print("'%s' is not a valid answer." % x)
         except ValueError as e:
             print("'%s' is not a valid answer." % e.args[0].split(": ")[1])
     return x
@@ -212,15 +214,13 @@ class ConfigObj(object):
                           "This is a US government website! You agree to their terms")
                     x = get_user_input()
                     if x == "yes":
-                        os.system("wget 'ftp://ftp.ncbi.nlm.nih.gov/blast/db/nt.*'"
-                                  "{}/".format(self.blastdb))
-                        os.system("wget 'ftp://ftp.ncbi.nlm.nih.gov/blast/db/taxdb.tar.gz'"
-                                  "{}/".format(self.blastdb))
+                        os.system("wget -N 'ftp://ftp.ncbi.nlm.nih.gov/blast/db/nt.*' -O {}".format(self.blastdb))
+                        os.system("wget -N 'ftp://ftp.ncbi.nlm.nih.gov/blast/db/taxdb.tar.g' -O {}".format(self.blastdb))
                         with cd(self.blastdb):
                             os.system("update_blastdb nt")
                             os.system("cat *.tar.gz | tar -xvzf - -i")
                             os.system("gunzip -cd taxdb.tar.gz | (tar xvf - )")
-                            os.system("rm *.tar.gz*")
+#                            os.system("rm *.tar.gz*")
                     elif x == "no":
                         print(
                             "You did not agree to download data from ncbi. Program will default to blast web-queries.")

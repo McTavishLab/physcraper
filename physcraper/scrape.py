@@ -559,10 +559,10 @@ class PhyscraperScrape(object):
                             # if gb_id not in self.gb_not_added:
                             #     self.gb_not_added.append(gb_id)
                             #     writeinfofiles.write_not_added_info(self, gb_id, "threshold not passed")
-                            writeinfofiles.write_not_added_info(self, gb_id, "threshold not passed")
+                            writeinfofiles.write_not_added_info(self, gb_id, "evalue threshold not passed")
                             # needs to be deleted from gb_dict,
                             # maybe we find a better fitting blast query seq and then it might get added
-                            del self.data.gb_dict[gb_id]
+                            #del self.data.gb_dict[gb_id]
         except ValueError:
             sys.stderr.write("Problem reading {}, skipping\n".format(fn_path))
 
@@ -643,7 +643,7 @@ class PhyscraperScrape(object):
                 self.data.otu_dict[new_otu_label]['^physcraper:status'] = "Not within requesdted MRCA ncbi:{}".format(self.mrca_ncbi)
                 return seq_dict
         #debug("otu {} has tax_id {}".format(new_otu_label, tax_new_seq))
-        new_seq = seq.replace("-", "")
+        new_seq = seq.replace("-", "").lower()
         otu_list = deepcopy(seq_dict.keys())
         should_add = True
         reason = 'new'
@@ -657,7 +657,7 @@ class PhyscraperScrape(object):
                 if i % 50 == 0:
                     sys.stdout.write("\n")
             existing_tax_id = self.data.otu_dict[otu_lab].get('^ncbi:taxon', None)
-            inc_seq = seq_dict[otu_lab].replace("-", "")
+            inc_seq = seq_dict[otu_lab].replace("-", "").lower()
             if len(inc_seq) >= len(new_seq):  
                 #debug("seq {} is shorter than {}".format(new_otu_label, otu_lab))
                 if new_seq in inc_seq:# if seq is identical and shorter
@@ -666,14 +666,16 @@ class PhyscraperScrape(object):
                         if _VERBOSE or _DEBUG:
                             sys.stdout.write("seq {} is subsequence of {}, "
                                              "but different species name\n".format(new_otu_label, otu_lab))
-                        status = "new seq added; subsequence of {}, but different taxon".format(otu_lab)
+                        reason = "new seq added; subsequence of {}, but different taxon".format(otu_lab)
+                        #debug("otu {}, tmp status {}".format(new_otu_label, reason))
                         #still should be added, but need to check other samples
                     else:  # subseq of same otu
+                        reason = "seq {} is subsequence or identical to {}, not added\n".format(new_otu_label, otu_lab)
                         if _VERBOSE:
-                            sys.stdout.write("seq {} is subsequence of {}, not added\n".format(new_otu_label, otu_lab))
+                            sys.stdout.write(reason)
                         self.data.otu_dict[new_otu_label]['^physcraper:status'] = "subsequence, not added"
                         #debug("{} not added, subseq of {}".format(new_otu_label, otu_lab))
-                        debug("{} was NOT added to seq_dict: {}".format(new_otu_label, reason))
+                        #debug("{} was NOT added to seq_dict: {}".format(new_otu_label, reason))
                         return seq_dict
                 else:
                     pass
@@ -681,20 +683,20 @@ class PhyscraperScrape(object):
             elif len(new_seq) > len(inc_seq):  
                 #debug("seq is longer")
                 if new_seq.find(inc_seq) != -1:
-                    if self.data.otu_dict[tax_lab].get('^physcraper:status') == "original":
+                    if self.data.otu_dict[otu_lab].get('^physcraper:status') == "original":
                         reason = "seq {} is supersequence of original seq {}, "\
-                                             "both kept in alignment\n".format(label, tax_lab)
+                                             "both kept in alignment\n".format(new_otu_label, otu_lab)
                         if _VERBOSE or _DEBUG:
                             sys.stdout.write(reason)
                     elif existing_tax_id != tax_new_seq:  # different taxa
-                        reason = "seq {} is supersequence of {}, but different taxon\n".format(label, tax_lab)
+                        reason = "seq {} is supersequence of {}, but different taxon\n".format(new_otu_label, otu_lab)
                         if _VERBOSE or _DEBUG:
                             sys.stdout.write(reason)
                         #can still be added
                     else:
                         # new seq s a super sequence, delet old one and add new one. DO NOT KEEP CHECKING
                         del seq_dict[otu_lab]
-                        seq_dict[label] = seq
+                        seq_dict[new_otu_label] = seq
                         self.data.remove_taxa_aln_tre(otu_lab)
                         reason = "seq {} is supersequence of {}, {} added and {} removed\n".format(new_otu_label, otu_lab, new_otu_label, otu_lab)
                         if _VERBOSE or _DEBUG:
@@ -703,12 +705,12 @@ class PhyscraperScrape(object):
                         self.data.otu_dict[new_otu_label]['^physcraper:status'] = "new seq added in place of {}".format(otu_lab)
                         seq_dict[new_otu_label] = seq
                         self.data.otu_dict[new_otu_label]['^physcraper:status'] = reason
-                        debug("{} was added to seq_dict: {}".format(new_otu_label, reason))
+                        #debug("{} was added to seq_dict: {}".format(new_otu_label, reason))
                         return seq_dict
-            seq_dict[new_otu_label] = seq
-            self.data.otu_dict[new_otu_label]['^physcraper:status'] = reason
-            debug("{} was added to seq_dict: {}".format(new_otu_label, reason))
-            return seq_dict
+        seq_dict[new_otu_label] = seq
+        self.data.otu_dict[new_otu_label]['^physcraper:status'] = reason
+        #debug("{} was added to seq_dict: {}".format(new_otu_label, reason))
+        return seq_dict
 
     def remove_identical_seqs(self):
         """goes through the new seqs pulled down, and removes ones that are
@@ -983,6 +985,18 @@ class PhyscraperScrape(object):
         self.blast_read = 0
 
 
+    def replace_tre(self, filename, schema = 'newick'):
+        newtre= Tree.get(path=filename,
+                   schema=schema,
+                   taxon_namespace = self.data.aln.taxon_namespace)
+        aln_tax = [taxon.label for taxon in self.data.aln]
+        for taxon in newtre.leaf_nodes():
+            assert taxon.taxon.label in self.data.otu_dict
+            assert taxon.taxon.label in aln_tax
+        self.data.tre = newtre
+
+
+
     def run_muscle(self, outname = 'muscle_aln.fas'):
         finame = self.write_all_unaligned()
         outpath = "{}/{}".format(self.workdir, outname)
@@ -1095,7 +1109,7 @@ class PhyscraperScrape(object):
         self._query_seqs_placed = 1
 
 
-    def est_full_tree(self, alignment = None, startingtree = None, backbone = False):
+    def est_full_tree(self, alignment = None, startingtree = None, backbone = False, method = "raxml"):
         """Full raxml run from the placement tree as starting tree.
         The PTHREAD version is the faster one, hopefully people install it. if not it falls back to the normal raxml.
         the backbone options allows to fix the sceleton of the starting tree and just newly estimates the other parts.
@@ -1110,7 +1124,7 @@ class PhyscraperScrape(object):
         os.chdir(self.workdir)
         rax_ex = get_raxml_ex()
         for filename in glob.glob('{}/RAxML*'.format(self.workdir)):
-            os.rename(filename, "{}/{}_prev".format(self.workdir, filename.split("/")[-1]))
+            os.rename(filename, "{}/treest_prev".format(self.workdir))
         num_threads = int(self.config.num_threads)
         label = "{}".format(self.date)
         if self.backbone:
@@ -1118,9 +1132,12 @@ class PhyscraperScrape(object):
             
         else:
             cmd= [rax_ex, "-T", "{}".format(num_threads), "-m", "GTRCAT", "-s", alignment, "-t", startingtree, "-p", "1", "-n", label]
-        subprocess.call(cmd)
+        process = subprocess.Popen(cmd)
+        process.wait()
         if _VERBOSE:
                 sys.stdout.write("running: "+" ".join(cmd)+"\n")
+        self.replace_tre("RAxML_bestTree.{}".format(label))
+        self.data.write_labelled('^ot:ottTaxonName')
         os.chdir(cwd)
         return label
 
