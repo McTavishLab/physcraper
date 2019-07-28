@@ -40,5 +40,5 @@ def test_no_mrca():
 
     filteredScrape.read_blast_wrapper(blast_dir=blast_dir)
     filteredScrape.remove_identical_seqs()
-    assert len(filteredScrape.new_seqs_otu_id) == 23
+    assert len(filteredScrape.new_seqs_otu_id) == 22
 
