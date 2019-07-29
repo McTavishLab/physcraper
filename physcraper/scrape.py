@@ -276,6 +276,9 @@ class PhyscraperScrape(object):
             log.write("Blast run {} \n".format(datetime.date.today()))
         for taxon, seq in self.data.aln.items():
             otu_id = taxon.label
+            tmpfile = open("{}/{}.tmp".format(self.workdir, otu_id),"w")
+            tmpfile.write(seq.symbols_as_string())
+            tmpfile.write("\n")
             assert otu_id in self.data.otu_dict
             if _VERBOSE:
                 sys.stdout.write("blasting {}\n".format(otu_id))
@@ -287,15 +290,12 @@ class PhyscraperScrape(object):
                 last_blast, "%Y/%m/%d")).days)
             if time_passed > delay:
                 query = seq.symbols_as_string().replace("-", "").replace("?", "")
+                tmpfile.write(query)
                 if self.config.blast_loc == "local":
                     file_ending = "txt"
                 else:
                     file_ending = "xml"
-                if self.config.gb_id_filename is True:
-                    fn = self.data.otu_dict[taxon.label].get('^ncbi:accession', taxon.label)
-                    fn_path = "{}/{}.{}".format(self.blast_subdir, fn, file_ending)
-                else:
-                    fn_path = "{}/{}.{}".format(self.blast_subdir, taxon.label, file_ending)
+                fn_path = "{}/{}.{}".format(self.blast_subdir, taxon.label, file_ending)
                 # if _DEBUG:
                 #     sys.stdout.write("attempting to write {}\n".format(fn_path))
                 if not os.path.isfile(fn_path):
@@ -309,6 +309,11 @@ class PhyscraperScrape(object):
                         else:
                             equery = "txid{}[orgn]".format(self.mrca_ncbi)
                         debug(equery)
+                        tmpfile.write("\nequery\n")
+                        tmpfile.write(equery)
+                        tmpfile.write("\nquery\n")
+                        tmpfile.write(query)
+                        tmpfile.close()
                         self.run_web_blast_query(query, equery, fn_path)
                     self.data.otu_dict[otu_id]['^physcraper:last_blasted'] = today
                 else:
@@ -460,7 +465,7 @@ class PhyscraperScrape(object):
             if float(query_dict[key]["evalue"]) < float(self.config.e_value_thresh):
                 gb_acc = query_dict[key]["accession"]
                 if len(gb_acc.split(".")) >= 2:
-                    if gb_acc not in self.data.gb_dict:
+                    if gb_acc not in self.new_seqs:
                         self.new_seqs[gb_acc] = query_dict[key]["sseq"]
                         self.data.gb_dict[gb_acc] = query_dict[key]
                 # else:

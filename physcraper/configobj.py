@@ -210,23 +210,8 @@ class ConfigObj(object):
             # this allows to not actually have a local ncbi database downloaded
             if not os.path.isfile("{}/empty_local_db_for_testing.nhr".format(self.blastdb)):
                 if not os.path.isfile("{}/nt.69.nhr".format(self.blastdb)):
-                    print("Do you want to download the blast nt databases from ncbi? Note: "
-                          "This is a US government website! You agree to their terms")
-                    x = get_user_input()
-                    if x == "yes":
-                        os.system("wget -N 'ftp://ftp.ncbi.nlm.nih.gov/blast/db/nt.*' -O {}".format(self.blastdb))
-                        os.system("wget -N 'ftp://ftp.ncbi.nlm.nih.gov/blast/db/taxdb.tar.g' -O {}".format(self.blastdb))
-                        with cd(self.blastdb):
-                            os.system("update_blastdb nt")
-                            os.system("cat *.tar.gz | tar -xvzf - -i")
-                            os.system("gunzip -cd taxdb.tar.gz | (tar xvf - )")
-#                            os.system("rm *.tar.gz*")
-                    elif x == "no":
-                        print(
-                            "You did not agree to download data from ncbi. Program will default to blast web-queries.")
-                        self.blast_loc = "remote"
-                    else:
-                        print("You did not type yes or no!")
+                    print("To run local blast queries, download the blast data basefrom ncbi. See https://www.ncbi.nlm.nih.gov/guide/howto/run-blast-local/")
+                    self.blast_loc = "remote"
                 else:
                     download_date = os.path.getmtime("{}/nt.60.nhr".format(self.blastdb))
                     download_date = datetime.datetime.fromtimestamp(download_date)
