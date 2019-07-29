@@ -16,7 +16,42 @@ def debug(msg):
     if _DEBUG == 1:
         print(msg)
 
+def get_acc_from_blast(query_string):
+    """
+    Get the accession number from a blast query.
+    
+    Get acc is more difficult now, as new seqs not always have gi number, then query changes.
+    
+    :param query_string: string that contains acc and gi from local blast query result
+    :return: gb_acc 
 
+    """
+    if len(query_string.split("|")) >= 3:
+        gb_acc = query_string.split("|")[3]
+    else:
+        gb_acc = query_string.split("|")[0]
+    if len(gb_acc.split(".")) < 2:
+        sys.stderr.write("query string {} does not contain a Genbank accession number.".format(query_string))
+        exit(-15)
+    assert len(gb_acc.split(".")) >= 2, (len(gb_acc.split(".")), gb_acc)
+    return gb_acc
+
+def get_gi_from_blast(query_string):
+    """
+    Get the gi number from a blast query. 
+    Get acc is more difficult now, as new seqs not always have gi number, then query changes.
+
+    If not available return None. 
+
+    :param query_string: string that contains acc and gi from local blast query result
+    :return: gb_id if available
+    """      
+    if len(query_string.split("|")) >= 3:
+        gb_id = query_string.split("|")[1]
+    else:
+        return None
+    assert len(gb_id.split(".")) < 2, (len(gb_id.split(".")), gb_id)
+    assert gb_id.isdigit() is True
 
 def get_tax_info_from_acc(gb_id, data_obj, ids_obj):
     '''takes an accessionumber and returns the ncabi_id and the taxon name'''

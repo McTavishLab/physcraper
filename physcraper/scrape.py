@@ -17,11 +17,14 @@ from copy import deepcopy
 from dendropy import Tree, DnaCharacterMatrix, DataSet, datamodel
 
 from Bio.Blast import NCBIXML
+from Bio.Seq import Seq
+from Bio.Alphabet import generic_dna
 
 from physcraper.configobj import ConfigObj
 from physcraper.ids import IdDicts
 from physcraper.aligntreetax import AlignTreeTax
 from physcraper.helpers import cd, get_raxml_ex, write_filterblast_db
+from physcraper.ncbi_data_parser import get_gi_from_blast, get_acc_from_blast
 
 from physcraper import ncbi_data_parser
 from physcraper import writeinfofiles
@@ -194,18 +197,19 @@ class PhyscraperScrape(object):
         toblast.write(">{}\n".format(taxon_label))
         toblast.write("{}\n".format(query))
         toblast.close()
-        assert os.path.isdir(self.config.blastdb), ("blast dir does not exist: '%s'." % self.config.blastdb)
+        assert os.path.isdir(self.config.blastdb), ("blast dir does not exist: '{}'.".format(self.config.blastdb))
         with cd(self.config.blastdb):
             # this format (6) allows to get the taxonomic information at the same time
             outfmt = " -outfmt '6 sseqid staxids sscinames pident evalue bitscore sseq salltitles sallseqid'"
             # outfmt = " -outfmt 5"  # format for xml file type
             # TODO query via stdin
             blastcmd = "blastn -query " + "{}/tmp.fas".format(abs_blastdir) + \
-                       " -db {}nt -out ".format(self.config.blastdb) + abs_fn + \
+                       " -db {}/nt -out ".format(self.config.blastdb) + abs_fn + \
                        " {} -num_threads {}".format(outfmt, self.config.num_threads) + \
                        " -max_target_seqs {} -max_hsps {}".format(self.config.hitlist_size,
                                                                   self.config.hitlist_size)
             os.system(blastcmd)
+
 
     def local_blast_for_unpublished(self, query, taxon):
         """
@@ -327,156 +331,118 @@ class PhyscraperScrape(object):
                                                                                                     last_blast))
         self._blasted = 1
 
+  
     def read_local_blast_query(self, fn_path):
         """ Implementation to read in results of local blast searches.
 
         :param fn_path: path to file containing the local blast searches
         :return: updated self.new_seqs and self.data.gb_dict dictionaries
         """
-        # debug("read_local_blast_query")
+        debug("read_local_blast_query")
         query_dict = {}
         with open(fn_path, mode="r") as infile:
             for lin in infile:
                 sseqid, staxids, sscinames, pident, evalue, bitscore, sseq, salltitles, sallseqid = lin.strip().split('\t')
-                gi_id = int(sseqid.split("|")[1])
-                gb_acc = sseqid.split("|")[3]
-                sseq = sseq.replace("-", "") #TODO here is where we want to grab the full sequence
+                gb_acc = get_acc_from_blast(sseqid)
+                gi_id = get_gi_from_blast(sseqid)                
+                sseq = sseq.replace("-", "") #TODO here is where we want to grab the full sequence MK: I wrote a batch query for the seqs we are interested. Makes it faster.
                 sscinames = sscinames.replace(" ", "_").replace("/", "_")
                 pident = float(pident)
                 evalue = float(evalue)
                 bitscore = float(bitscore)
                 stitle = salltitles
-                # NOTE: sometimes there are seq which are identical & are combined in the local blast db...
-                # Get all of them! (get redundant seq info)
-                found_taxids = set()
-                found_spn = set()
-                if len(sallseqid.split(";")) > 1:
-                    # get additional info only for seq that pass the eval
-                    if evalue < float(self.config.e_value_thresh):
-                        staxids_l = staxids.split(";")
-                        sscinames_l = sscinames.split(";")
-                        sallseqid_l = sallseqid.split(";")
-                        salltitles_l = salltitles.split("<>")
-                        count = 0
-                        spn_range = 0
-                        stop_while = False
-                        while len(found_taxids) < len(staxids_l):  # as long as i have not found all taxids for the seq
-                            count += 1
-                            if stop_while:
-                                break
-                            if count == 5:
-                                break  # too many tries to find correct number of redundant taxa
-                            elif count == 1:
-                                for i in range(0, len(sallseqid_l)):
-                                    if len(found_taxids) == len(staxids_l):
-                                        break
-                                    gi_id = sallseqid_l[i].split("|")[1]
-                                    gb_acc = sallseqid_l[i].split("|")[3]
-                                    # if gb acc was already read in before stop the for loop
-                                    if gb_acc in query_dict or gb_acc in self.data.gb_dict:
-                                        stop_while = True
-                                        break
-                                    stitle = salltitles_l[i]
-                                    # spn_title are used to figure out if gb_acc is from same tax_id
-                                    # if both var are the same, we do not need to search GB for taxon info
-                                    spn_title_before = salltitles_l[i-1].split(" ")[0:spn_range]
-                                    spn_title = salltitles_l[i].split(" ")[0:spn_range]
-                                    # sometimes if multiple seqs are merged,
-                                    # we lack information about which taxon is which gb_acc...
-                                    # test it here:
-                                    # if we have same number of ids and taxon id go ahead as usual
-                                    #TODO if we grab the full sequence using the accession number, we can also associate it with the correct taxon info 
-                                    if len(sallseqid_l) == len(staxids_l):
-                                        staxids = staxids_l[i]
-                                        sscinames = sscinames_l[i]
-                                    # only one taxon id present, all are from same taxon
-                                    elif len(staxids_l) == 1:
-                                        staxids = staxids_l[0]
-                                        sscinames = sscinames_l[0]
-                                    elif i != 0 and spn_title != spn_title_before:
-                                        read_handle = self.ids.entrez_efetch(gb_acc)
-                                        sscinames =  ncbi_data_parser.get_ncbi_tax_name(read_handle).replace(" ", "_").replace("/", "_")
-                                        staxids =  ncbi_data_parser.get_ncbi_tax_id(read_handle)
-                                        spn_range = len(sscinames.split("_"))
-                                    elif i == 0:  # for first item in redundant data, always get info
-                                        read_handle = self.ids.entrez_efetch(gb_acc)
-                                        sscinames =  ncbi_data_parser.get_ncbi_tax_name(read_handle).replace(" ", "_").replace("/", "_")
-                                        staxids = ncbi_data_parser.get_ncbi_tax_id(read_handle)
-                                        spn_range = len(sscinames.split("_"))
-                                    else:  # if spn_titles were the same, we do not need to add same seq again
-                                        continue
-                                    assert str(staxids) in staxids_l, (staxids, staxids_l)
-                                    # next vars are used to stop loop if all taxids were found
-                                    found_taxids.add(staxids)
-                                    found_spn.add(sscinames)
-                                    if gb_acc not in query_dict and gb_acc not in self.newseqs_acc:
-                                        query_dict[gb_acc] = \
-                                            {'^ncbi:gi': gi_id, 'accession': gb_acc, 'staxids': staxids,
-                                             'sscinames': sscinames, 'pident': pident, 'evalue': evalue,
-                                             'bitscore': bitscore, 'sseq': sseq, 'title': stitle}
-                            # same loop as above, only that it mostly used entrez searches for tax_id
-                            # this is as sometimes the if above does not yield in stop_while == True,
-                            # through different taxa names
-                            elif count >= 1 and stop_while is False:
-                                for i in range(0, len(sallseqid_l)):
-                                    if len(found_taxids) == len(staxids_l):
-                                        break
-                                    gi_id = sallseqid_l[i].split("|")[1]
-                                    gb_acc = sallseqid_l[i].split("|")[3]
-                                    stitle = salltitles_l[i]
-                                    # if gb acc was already read in before stop the for loop
-                                    if gb_acc in query_dict or gb_acc in self.data.gb_dict:
-                                        stop_while = True
-                                        break
-                                    # sometimes if multiple seqs are merged, we lack the information
-                                    # which taxon is which gb_acc...test it here:
-                                    # if we have same number information go ahead as usual
-                                    if len(sallseqid_l) == len(staxids_l):
-                                        staxids = staxids_l[i]
-                                        sscinames = sscinames_l[i]
-                                    elif len(staxids_l) == 1:  # only one taxon id present, all are from same taxon
-                                        staxids = staxids_l[0]
-                                        sscinames = sscinames_l[0]
-                                    else:
-                                        read_handle = self.ids.entrez_efetch(gb_acc)
-                                        sscinames = ncbi_data_parser.get_ncbi_tax_name(read_handle).replace(" ", "_").replace("/", "_")
-                                        staxids = ncbi_data_parser.get_ncbi_tax_id(read_handle)
-                                        spn_range = len(sscinames.split("_"))
-                                    assert str(staxids) in staxids_l, (staxids, staxids_l)
-                                    # next vars are used to stop loop if all taxids were found
-                                    found_taxids.add(staxids)
-                                    found_spn.add(sscinames)
-                                    if gb_acc not in query_dict and gb_acc not in self.newseqs_acc:
-                                        query_dict[gb_acc] = \
-                                             {'^ncbi:gi': gi_id, 'accession': gb_acc, 'staxids': staxids,
-                                              'sscinames': sscinames, 'pident': pident, 'evalue': evalue,
-                                              'bitscore': bitscore, 'sseq': sseq, 'title': stitle}
-                else:
-                    staxids = int(staxids)
-                    self.ids.spn_to_ncbiid[sscinames] = staxids
-                    if gb_acc not in self.ids.acc_ncbi_dict:  # fill up dict with more information.
-                        self.ids.acc_ncbi_dict[gb_acc] = staxids
-                    if gb_acc not in query_dict and gb_acc not in self.newseqs_acc:
-                        query_dict[gb_acc] = {'^ncbi:gi': gi_id, 'accession': gb_acc, 'staxids': staxids,
-                                              'sscinames': sscinames, 'pident': pident, 'evalue': evalue,
-                                              'bitscore': bitscore, 'sseq': sseq, 'title': stitle}
-                
-        for key in query_dict.keys():
-            if float(query_dict[key]["evalue"]) < float(self.config.e_value_thresh):
-                gb_acc = query_dict[key]["accession"]
-                if len(gb_acc.split(".")) >= 2:
-                    if gb_acc not in self.new_seqs:
-                        self.new_seqs[gb_acc] = query_dict[key]["sseq"]
-                        self.data.gb_dict[gb_acc] = query_dict[key]
-                # else:
-                    # debug("was added before")
-            else:
 
-                fn = open("{}/blast_threshold_not_passed.csv".format(self.workdir), "a+")
-                fn.write("blast_threshold_not_passed:\n")
-                fn.write("{}, {}, {}\n".format(query_dict[key]["sscinames"], query_dict[key]["accession"],
-                                               query_dict[key]["evalue"]))
-                fn.close()
+                # get additional info only for seq that pass the eval
+                if evalue < float(self.config.e_value_thresh):
+                    if gb_acc not in self.new_seqs.keys(): # do not do it for gb_ids we already considered
+                        # NOTE: sometimes there are seq which are identical & are combined in the local blast db...
+                        # Get all of them! (they can be of a different taxon ids = get redundant seq info)
+                        if len(sallseqid.split(";")) > 1:
+                            sys.stdout.write("multiple taxa have identical seq to {}".format(sallseqid))
+                        else:  # if there are no non-redundant data
+                            staxids = int(staxids)
+                            self.ids.spn_to_ncbiid[sscinames] = staxids
+                            if gb_acc not in self.ids.acc_ncbi_dict:  # fill up dict with more information.
+                                self.ids.acc_ncbi_dict[gb_acc] = staxids
+                            if gb_acc not in query_dict and gb_acc not in self.newseqs_acc:
+                                query_dict[gb_acc] = {'^ncbi:gi': gi_id, 'accession': gb_acc, 'staxids': staxids,
+                                                      'sscinames': sscinames, 'pident': pident, 'evalue': evalue,
+                                                      'bitscore': bitscore, 'sseq': sseq, 'title': stitle}
+                else:
+                    fn = open("{}/blast_threshold_not_passed.csv".format(self.workdir), "a+")
+                    fn.write("blast_threshold_not_passed: {}, {}, {}\n".format(sscinames, accession, gi_id))
+                    fn.close()
+        # debug("key in query")
+        # add data which was not added before and that passes the evalue threshhold
+        for key in query_dict.keys():
+            gb_acc = query_dict[key]["accession"]
+            if gb_acc not in self.new_seqs.keys():
+                # make dict with queries for full seq batch
+                if len(gb_acc.split(".")) >= 2:  # Do not add sequences that are not in Genbank accession number format, e.g. PDB
+                #     # replace sequence
+                     full_seq = self.get_full_seq(gb_acc, query_dict[key]["sseq"])
+                     query_dict[key]["sseq"] = full_seq  
+                     self.new_seqs[gb_acc] = query_dict[key]["sseq"]
+                     self.data.gb_dict[gb_acc] = query_dict[key]
+
+
+ 
+
+    def get_full_seq(self, gb_acc, blast_seq, local=False):
+        """
+        Get full sequence from gb_acc that was retrieved via blast. 
+
+        Currently only used for local searches, Genbank database sequences are retrieving them in batch mode, which is hopefully faster.
+
+        :param gb_acc: unique sequence identifier (often genbank accession number)
+        :param blast_seq: sequence retrived by blast,
+        :return: full sequence, the whole submitted sequence, not only the part that matched the blast query sequence
+        """
+        # debug("get full seq")
+        # if we did not already try to get full seq:
+
+        if not os.path.exists("{}/tmp".format(self.workdir)):
+            os.mkdir("{}/tmp".format(self.workdir))
+        if not os.path.exists("{}/tmp/full_seq_{}".format(self.workdir, gb_acc)):
+            fn = "{}/tmp/tmp_search.csv".format(self.workdir)
+            fn_open = open(fn, "w+")
+            fn_open.write("{}\n".format(gb_acc.split(".")[0]))
+            fn_open.close()
+            db_path = "{}/nt".format(self.config.blastdb)
+
+            cmd1 = "blastdbcmd -db {}  -entry_batch {} -outfmt %f -out {}/tmp/full_seq_{}.fasta".format(db_path, fn, self.workdir, gb_acc)
+            # debug(cmd1)
+            os.system(cmd1)
+            # read in file to get full seq        
+            fn = "{}/tmp/full_seq_{}.fasta".format(self.workdir, gb_acc)
+            f = open(fn)
+            seq = ""
+            for line in iter(f):
+                line = line.rstrip().lstrip()
+                if line[0]  != ">":
+                    seq += line
+                elif line[0]  == ">":
+                    assert gb_acc in line
+            f.close()
+        # check direction of sequence:
+        orig = Seq(seq, generic_dna)
+        dna_comp = orig.complement()
+        dna_rcomp = orig.reverse_complement()
+        dna_r = orig[::-1]
+        full_seq = str()
+        if blast_seq.replace("-", "") in orig:
+            full_seq = seq
+        elif blast_seq.replace("-", "") in dna_r:
+            full_seq = dna_r
+        elif blast_seq.replace("-", "") in dna_comp:
+            full_seq = dna_comp
+        elif blast_seq.replace("-", "") in dna_rcomp:
+            full_seq = dna_rcomp
+        assert blast_seq.replace("-", "") in full_seq, (blast_seq.replace("-", ""), full_seq, seq, gb_acc)
+        full_seq = str(full_seq)
+        assert type(full_seq) == str, (type(full_seq))
+        return full_seq
+
 
     def read_unpublished_blast_query(self):
         """
@@ -739,7 +705,6 @@ class PhyscraperScrape(object):
         avg_seqlen = sum(self.data.orig_seqlen) / len(self.data.orig_seqlen)  # HMMMMMMMM
         seq_len_min = avg_seqlen * self.config.seq_len_perc
         seq_len_max = avg_seqlen * self.config.maxlen
-        all_added_gi = set([self.data.otu_dict[otu].get("^ncbi:accession",'UNK') for otu in self.data.otu_dict])
         #debug("we already have {}".format(all_added_gi))
         for gb_id, seq in self.new_seqs.items():
             assert gb_id in self.data.gb_dict.keys()
@@ -747,15 +712,14 @@ class PhyscraperScrape(object):
                 if self.blacklist is not None and gb_id in self.blacklist:
                     debug("gb_id {} in blacklist, not added".format(gb_id))
                     pass
-                if gb_id in all_added_gi:
-                    debug("already have {}, not added".format(gb_id))
-                    pass
                 else:
                     otu_id = self.data.add_otu(gb_id, self.ids)
-                    self.seq_dict_build(seq, otu_id, tmp_dict)
-        tax_in_aln = set([taxon.label for taxon in self.data.aln])
-        for tax in tax_in_aln:
-            del tmp_dict[tax]
+                    tmp_dict = self.seq_dict_build(seq, otu_id, tmp_dict)
+            else:
+                debug("len {}:{} was not between {} and {}".format(gb_id, len(seq), seq_len_min, seq_len_max))
+        otu_in_aln = set([taxon.label for taxon in self.data.aln])
+        for otu in otu_in_aln:
+            del tmp_dict[otu]
         filter_dict = self.filter_seqs(tmp_dict, type='random', threshold = self.threshold)
         self.new_seqs_otu_id = filter_dict  # renamed new seq to their otu_ids from GI's, but all info is in self.otu_dict
         self.new_seqs = {} #Wipe clean
@@ -780,7 +744,9 @@ class PhyscraperScrape(object):
         for tax_id in new_sp_d:
             debug(" {} new seqs for taxon {}".format(len(new_sp_d[tax_id]), tax_id))
             tax_otus = []
-            if len(aln_sp_d.get(tax_id, [])) > threshold:
+            current_num = len(aln_sp_d.get(tax_id, []))
+            if current_num > threshold:
+                sys.stdout.write("no sequences added for taxon {}, as {} already in alignmenet".format(tax_id, current_num))
                 pass #already enough
             else:
                 count = threshold - len(aln_sp_d.get(tax_id,[]))
