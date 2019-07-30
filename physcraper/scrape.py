@@ -284,8 +284,6 @@ class PhyscraperScrape(object):
             tmpfile.write(seq.symbols_as_string())
             tmpfile.write("\n")
             assert otu_id in self.data.otu_dict
-            if _VERBOSE:
-                sys.stdout.write("blasting {}\n".format(otu_id))
             last_blast = self.data.otu_dict[otu_id]['^physcraper:last_blasted']
             if last_blast == None:
                 time_passed = delay + 1
@@ -338,11 +336,11 @@ class PhyscraperScrape(object):
         :param fn_path: path to file containing the local blast searches
         :return: updated self.new_seqs and self.data.gb_dict dictionaries
         """
-        debug("read_local_blast_query")
+#        debug("read_local_blast_query")
         query_dict = {}
         with open(fn_path, mode="r") as infile:
             for lin in infile:
-                sseqid, staxids, sscinames, pident, evalue, bitscore, sseq, salltitles, sallseqid = lin.strip().split('\t')
+                sseqid, staxids, sscinames, pident, evalue, bitscore, sseq, stitle, sallseqid = lin.strip().split('\t')
                 gb_acc = get_acc_from_blast(sseqid)
                 gi_id = get_gi_from_blast(sseqid)                
                 sseq = sseq.replace("-", "") #TODO here is where we want to grab the full sequence MK: I wrote a batch query for the seqs we are interested. Makes it faster.
@@ -350,17 +348,17 @@ class PhyscraperScrape(object):
                 pident = float(pident)
                 evalue = float(evalue)
                 bitscore = float(bitscore)
-                stitle = salltitles
-
-                # get additional info only for seq that pass the eval
-                if evalue < float(self.config.e_value_thresh):
-                    if gb_acc not in self.new_seqs.keys(): # do not do it for gb_ids we already considered
-                        # NOTE: sometimes there are seq which are identical & are combined in the local blast db...
-                        # Get all of them! (they can be of a different taxon ids = get redundant seq info)
-                        if len(sallseqid.split(";")) > 1:
-                            sys.stdout.write("multiple taxa have identical seq to {}".format(sallseqid))
-                        else:  # if there are no non-redundant data
-                            staxids = int(staxids)
+                if gb_acc.split('.')>= 2: 
+                    # get additional info only for seq that pass the eval
+                    if evalue < float(self.config.e_value_thresh):
+                        if gb_acc not in self.new_seqs.keys(): # do not do it for gb_ids we already considered
+                            # NOTE: sometimes there are seq which are identical & are combined in the local blast db...
+                            # Get all of them! (they can be of a different taxon ids = get redundant seq info)
+                            if len(staxids.split(';')) > 1:
+                                sys.stdout.write("multiple taxa have identical seq {}, using first taxid\n".format(sallseqid))
+                                staxids = int(staxids.split(';')[0])
+                            else:
+                                staxids = int(staxids)
                             self.ids.spn_to_ncbiid[sscinames] = staxids
                             if gb_acc not in self.ids.acc_ncbi_dict:  # fill up dict with more information.
                                 self.ids.acc_ncbi_dict[gb_acc] = staxids
@@ -368,22 +366,22 @@ class PhyscraperScrape(object):
                                 query_dict[gb_acc] = {'^ncbi:gi': gi_id, 'accession': gb_acc, 'staxids': staxids,
                                                       'sscinames': sscinames, 'pident': pident, 'evalue': evalue,
                                                       'bitscore': bitscore, 'sseq': sseq, 'title': stitle}
+                    else:
+                        fn = open("{}/blast_threshold_not_passed.csv".format(self.workdir), "a+")
+                        fn.write("blast_threshold_not_passed: {}, {}, {}\n".format(sscinames, gb_acc, gi_id))
+                        fn.close()
                 else:
-                    fn = open("{}/blast_threshold_not_passed.csv".format(self.workdir), "a+")
-                    fn.write("blast_threshold_not_passed: {}, {}, {}\n".format(sscinames, accession, gi_id))
-                    fn.close()
+                    sys.stdout.write("skipping acc {}, incorrect format\n".format(gb_acc))
         # debug("key in query")
         # add data which was not added before and that passes the evalue threshhold
         for key in query_dict.keys():
             gb_acc = query_dict[key]["accession"]
             if gb_acc not in self.new_seqs.keys():
                 # make dict with queries for full seq batch
-                if len(gb_acc.split(".")) >= 2:  # Do not add sequences that are not in Genbank accession number format, e.g. PDB
-                #     # replace sequence
-                     full_seq = self.get_full_seq(gb_acc, query_dict[key]["sseq"])
-                     query_dict[key]["sseq"] = full_seq  
-                     self.new_seqs[gb_acc] = query_dict[key]["sseq"]
-                     self.data.gb_dict[gb_acc] = query_dict[key]
+                 full_seq = self.get_full_seq(gb_acc, query_dict[key]["sseq"])
+                 query_dict[key]["sseq"] = full_seq  
+                 self.new_seqs[gb_acc] = query_dict[key]["sseq"]
+                 self.data.gb_dict[gb_acc] = query_dict[key]
 
 
  
@@ -508,8 +506,8 @@ class PhyscraperScrape(object):
                         if float(hsp.expect) < float(self.config.e_value_thresh):
                             gb_id = alignment.title.split("|")[3]  # 1 is for gi
                             if len(gb_id.split(".")) == 1:
-                                debug(gb_id)
-                            if gb_id not in self.data.gb_dict:  # skip ones we already have
+                                 sys.stdout.write("skipping acc {}, incorrect format\n".format(gb_id))
+                            elif gb_id not in self.data.gb_dict:  # skip ones we already have
                                 # gb_id = int(alignment.title.split('|')[1])  # 1 is for gi
                                 # assert type(gb_id) is int
                                 # SHOULD NOT BE NECESSARY....IS WEBBLAST HAS THE TAXON ALREADY LIMITED
@@ -543,7 +541,7 @@ class PhyscraperScrape(object):
         :param blast_dir: path to directory which contains blast files
         :return: fills different dictionaries with information from blast files
         """
-        debug("read_blast_wrapper")
+#        debug("read_blast_wrapper")
         if blast_dir:
             if _VERBOSE:
                 sys.stdout.write("blast dir is {}\n".format(blast_dir))
@@ -708,6 +706,8 @@ class PhyscraperScrape(object):
         #debug("we already have {}".format(all_added_gi))
         for gb_id, seq in self.new_seqs.items():
             assert gb_id in self.data.gb_dict.keys()
+#            debug("gb_id is {}".format(gb_id) )
+            assert seq
             if seq_len_min < len(seq) < seq_len_max:
                 if self.blacklist is not None and gb_id in self.blacklist:
                     debug("gb_id {} in blacklist, not added".format(gb_id))
@@ -723,7 +723,8 @@ class PhyscraperScrape(object):
         filter_dict = self.filter_seqs(tmp_dict, type='random', threshold = self.threshold)
         self.new_seqs_otu_id = filter_dict  # renamed new seq to their otu_ids from GI's, but all info is in self.otu_dict
         self.new_seqs = {} #Wipe clean
-        debug("len new seqs otu dict after remove identical{}".format(len(self.new_seqs_otu_id)))
+#        debug("len new seqs otu dict after remove identical{}".format(len(self.new_seqs_otu_id)))
+        sys.stdout.write("**** Found {} new sequences****".format(len(self.new_seqs_otu_id)))
         with open(self.logfile, "a") as log:
             log.write("{} new sequences added from Genbank after removing identical seq, "
                       "of {} before filtering\n".format(len(self.new_seqs_otu_id), len(self.new_seqs)))
@@ -931,6 +932,7 @@ class PhyscraperScrape(object):
                 fi.write("{}\n".format(self.new_seqs_otu_id[otu_id]))
         fi.close()
         self._query_seqs_written = 1
+        self.data.write_otus(schema='table')
         return fipath
 
 

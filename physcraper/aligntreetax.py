@@ -565,7 +565,7 @@ class AlignTreeTax(object):
         tmp_aln.write(path=alnpath,
                       schema="fasta")
 
-    def write_otus(self, filename, schema="table"):
+    def write_otus(self, filename = "otu_info", schema="table"):
         """Writes out OTU dict as json or table.
 
         :param filename: filename
@@ -574,8 +574,21 @@ class AlignTreeTax(object):
         """
         # TODO: schema is unused!
         assert schema in ["table", "json"]
-        with open("{}/{}".format(self.workdir, filename), "w") as outfile:
-            json.dump(self.otu_dict, outfile)
+        if schema == "json":
+            with open("{}/{}.json".format(self.workdir, filename), "w") as outfile:
+                json.dump(self.otu_dict, outfile)
+        if schema == "table":
+            all_keys =  set()
+            for otu in self.otu_dict:
+                all_keys.update(self.otu_dict[otu].keys())
+            keys = list(all_keys) 
+            header = ["otu_id"] + keys
+            with open("{}/{}.csv".format(self.workdir, filename), "w") as outfile:
+                outfile.write("\t".join(header)+"\n")
+                for otu in self.otu_dict:
+                    vals = [str(self.otu_dict[otu].get(key, "-")) for key in keys]
+                    outfile.write("\t".join([otu]+vals)+"\n")
+
 
     def dump(self, filename=None):
         """writes pickled files from att class"""
