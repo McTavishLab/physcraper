@@ -1,7 +1,7 @@
 import os
 import pickle
 import sys
-from physcraper import FilterBlast, ConfigObj, IdDicts
+from physcraper import ConfigObj, IdDicts, PhyscraperScrape
 
 sys.stdout.write("\ntests remove_taxa_aln_tre\n")
 
@@ -23,7 +23,7 @@ def test_remove_taxa_aln_tre():
     ids = IdDicts(conf, workdir=data_obj.workdir)
     ids.acc_ncbi_dict = pickle.load(open("tests/data/precooked/tiny_acc_map.p", "rb"))
 
-    filteredScrape =  FilterBlast(data_obj, ids)
+    filteredScrape =  PhyscraperScrape(data_obj, ids)
 
     len_aln_before = len(filteredScrape.data.aln.as_string('phylip'))
     len_tre_before = len(filteredScrape.data.tre.as_string(schema="newick"))

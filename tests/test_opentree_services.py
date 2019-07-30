@@ -6,7 +6,7 @@ from physcraper import opentree_helpers
 
 def test_opentree_service():
     spp_name = "homo sapiens"
-    physcraper.get_ott_taxon_info("homo sapiens")
+    opentree_helpers.get_ott_taxon_info("homo sapiens")
     ottids = 515698,590452,643717
     mrca = physcraper.get_mrca_ott(['515698','590452','643717'])
     assert mrca == 1042120
@@ -17,3 +17,7 @@ def test_opentree_service():
     assert opentree_helpers.check_if_ottid_in_synth(878252) == 0
     assert opentree_helpers.check_if_ottid_in_synth(983181) == 1
     opentree_helpers.check_if_ottid_in_synth("10000000000")
+
+
+
+opentree_helpers.get_ott_taxon_info("homo sapiens")

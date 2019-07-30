@@ -2,7 +2,7 @@ from dendropy import Tree, \
       DnaCharacterMatrix, \
       DataSet, \
       datamodel
-from physcraper import wrappers, generate_ATT_from_files, AlignTreeTax, OtuJsonDict, IdDicts, ConfigObj
+from physcraper import generate_ATT_from_files, AlignTreeTax, OtuJsonDict, IdDicts, ConfigObj
 import os
 import json
 

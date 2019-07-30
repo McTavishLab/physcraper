@@ -6,14 +6,12 @@ import os
 import shutil
 import json
 from physcraper import (
-    generate_ATT_from_phylesystem,
     generate_ATT_from_files,
     ConfigObj,
     IdDicts,
     PhyscraperScrape,
     AlignTreeTax,
     OtuJsonDict,
-    FilterBlast,
     debug
 )
 from dendropy import DnaCharacterMatrix
@@ -22,33 +20,6 @@ import physcraper.writeinfofiles as writeinfofiles
 from physcraper.concat import Concat
 
 print("Current Wrapper Version number: 12192018.0")
-
-# TODO: we never do anything with the function nor the file
-# def sync_ncbi(configfi):
-#     conf = ConfigObj(configfi)
-#     subprocess.call(
-#         [
-#             "rsync",
-#             "av",
-#             "ftp.ncbi.nih.gov::pub/taxonomy/gi_taxid_nucl.dmp.gz",
-#             "{}/gi_taxid_nucl.dmp.gz".format(conf.ncbi_dmp),
-#         ]
-#     )
-#     subprocess.call(["gunzip", "{}/gi_taxid_nucl.dmp.gz".format(dir)])
-#
-#
-# # TODO: not used, process_ott.sh does not exist
-# def sync_ott(configfi):
-#     conf = ConfigObj(configfi)
-#     subprocess.call(["process_ott.sh", "".format(conf.ott_ncbi)])
-#
-#
-# # TODO: not used
-# # generates IdDicts physcrapper class
-# def get_ottid(configfi, cwd):
-#     conf = ConfigObj(configfi)
-#     ids = IdDicts(conf, cwd)
-#     return ids
 
 
 def license_print():
@@ -397,11 +368,9 @@ def add_different_rank(seqaln,
         assert filteredScrape.config != conf
         filteredScrape.config = conf
         assert filteredScrape.config == conf
-        assert filteredScrape.config.add_lower_taxa is True, \
-            "you only need to run this function if you want to change the rank of seqs to be added."
-        
+
         # set new ingroup_mrca
-        filteredScrape.data.ott_mrca = ingroup_mrca
+        filteredScrape.data.mrca_ott = ingroup_mrca
         filteredScrape.mrca_ncbi = filteredScrape.ids.ott_to_ncbi[filteredScrape.data.ott_mrca]
         assert filteredScrape.data.ott_mrca == ingroup_mrca
 
@@ -417,8 +386,7 @@ def add_different_rank(seqaln,
         # set new downtorank and numbers:
         filteredScrape.add_setting_to_self(downtorank, threshold)
         filteredScrape.blacklist = blacklist
-        if filteredScrape.config.add_lower_taxa is True:  # used if config file is changed to add lower ranks
-            filteredScrape.reset_new_seqs_acc()
+    
         if add_unpubl_seq is not None:
             filteredScrape.unpublished = True
         if filteredScrape.unpublished is True:  # use unpublished data
@@ -456,7 +424,6 @@ def add_different_rank(seqaln,
             if backbone:
                 filteredScrape.repeat = 0
             # set back to normal - only used to reassess formerly discarded seq in first round
-            filteredScrape.config.add_lower_taxa = False
         while filteredScrape.repeat == 1:
             filteredScrape.data.write_labelled(label="^ot:ottTaxonName", add_gb_id=True)
             filteredScrape.data.write_otus("otu_info", schema="table")
@@ -754,7 +721,3 @@ def write_out_files(obj, downtorank=None):
     """
 
     writeinfofiles.write_otu_info(obj)
-    if isinstance(obj, FilterBlast):
-        writeinfofiles.taxon_sampling(obj, downtorank)
-
-

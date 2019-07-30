@@ -1,4 +1,7 @@
-from physcraper import OtuJsonDict, ConfigObj, IdDicts, FilterBlast
+import pickle  #
+from physcraper import PhyscraperScrape, ConfigObj, IdDicts
+from physcraper.opentree_helpers import OtuJsonDict
+#from physcraper.filterblast import FilterBlast
 import os
 import json
 import sys
@@ -43,10 +46,6 @@ def test_add_local():
     ids = IdDicts(conf, workdir=data_obj.workdir)
     ids.acc_ncbi_dict = pickle.load(open("tests/data/precooked/tiny_acc_map.p", "rb"))
 
-    # Now combine the data, the ids, and the configuration into a single physcraper scrape object
-    filteredScrape = FilterBlast(data_obj, ids)
-    filteredScrape.blacklist = blacklist
-
     if not os.path.exists("{}".format(workdir)):
         os.makedirs("{}".format(workdir))
 
@@ -57,7 +56,7 @@ def test_add_local():
         json.dump(otu_json_local, open(otu_jsonfi_local, "w"))
 
     # Now combine the data, the ids, and the configuration into a single physcraper scrape object
-    filteredScrape = FilterBlast(data_obj, ids)
+    filteredScrape = PhyscraperScrape(data_obj, ids)
     filteredScrape.blacklist = blacklist
 
 
@@ -81,3 +80,6 @@ def test_add_local():
                 break
     assert test == True
 
+
+
+test_add_local()

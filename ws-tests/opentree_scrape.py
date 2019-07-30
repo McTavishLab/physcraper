@@ -32,7 +32,4 @@ assert len(data_obj.aln) == 9
 data_obj.write_files()
 
 scraper = physcraper.PhyscraperScrape(data_obj, ids)
-scraper.run_blast_wrapper()
-scraper.read_blast_wrapper()
-scraper.remove_identical_seqs()
-scraper.generate_streamed_alignment()
+scraper.est_full_tree()

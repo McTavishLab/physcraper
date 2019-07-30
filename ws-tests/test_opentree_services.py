@@ -2,7 +2,7 @@ import physcraper
 from peyotl.sugar import tree_of_life, taxonomy, taxomachine
 
 spp_name = "homo sapiens"
-physcraper.get_ott_taxon_info("homo sapiens")
+physcraper.opentree_helpers.get_ott_taxon_info("homo sapiens")
 
 ottids = 515698,590452,643717
 mrca = physcraper.get_mrca_ott(['515698','590452','643717'])

@@ -1,6 +1,8 @@
 import sys
 import os
-from physcraper import ConfigObj, IdDicts, FilterBlast
+from physcraper import ConfigObj, IdDicts, PhyscraperScrape
+
+
 import pickle#
 
 sys.stdout.write("\ntests remove_identical\n")
@@ -18,7 +20,7 @@ def test_remove_id_seq():
     ids = IdDicts(conf, workdir=data_obj.workdir)
     ids.acc_ncbi_dict = pickle.load(open("tests/data/precooked/tiny_acc_map.p", "rb"))
 
-    filteredScrape =  FilterBlast(data_obj, ids)
+    filteredScrape =  PhyscraperScrape(data_obj, ids)
     filteredScrape._blasted = 1
 
     #############################
@@ -50,7 +52,7 @@ def test_remove_id_seq():
             filteredScrape.data.otu_dict[otu_id]['^ot:ottId'] = ott
             filteredScrape.data.otu_dict[otu_id]['^physcraper:status'] = "query"
             filteredScrape.data.otu_dict[otu_id]['^ot:ottTaxonName'] = "Senecio vulgaris"
-            filteredScrape.data.otu_dict[otu_id]['^physcraper:last_blasted'] = "1800/01/01"
+            filteredScrape.data.otu_dict[otu_id]['^physcraper:last_blasted'] = None
             filteredScrape.del_superseq = set()
             filteredScrape.seq_dict_build(item, otu_id, tmp_dict)
     for tax in old_seqs:

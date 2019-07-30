@@ -9,6 +9,7 @@ before_install:
   ### install blast+
   # this fails often with connection errors
   - sudo apt-get install ncbi-blast+
+  - sudo apt-get install muscle
 
 
   #### install papara
@@ -44,6 +45,7 @@ before_install:
   #- sudo apt install libopenmpi-dev
   - sudo apt install mpich
   - export MPICC=mpiicc
+
 install:
   # install requirements of physcraper
   - pip install --quiet -r requirements.txt

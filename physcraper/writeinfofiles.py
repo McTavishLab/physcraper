@@ -143,7 +143,7 @@ def taxon_sampling(filterblast_obj, downtorank=None):
             writer.writerow([key, spn, value])
 
 
-def write_not_added_info(physcraper_obj, item, reason=None):
+def write_not_added_info(physcraper_obj, gb_id, reason=None):
     """Writes out infos of not added seq based on information provided in reason.
 
     Is not used, as the output file can easily get to 100GB.
@@ -173,13 +173,13 @@ def write_not_added_info(physcraper_obj, item, reason=None):
             writer.writerow(tab_keys)
     with open("{}/info_not_added_seq.csv".format(physcraper_obj.workdir), "a") as output:
         writer = csv.writer(output)
-        rowinfo = [physcraper_obj.data.gb_dict[item]]
-        for key in tab_keys:
-            if key in physcraper_obj.data.gb_dict[item].keys():
-                tofile = str(physcraper_obj.data.gb_dict[item][key]).replace("_", " ")
+        if gb_id in physcraper_obj.data.gb_dict:
+            rowinfo = []
+            for key in tab_keys:
+                tofile = str(physcraper_obj.data.gb_dict[gb_id].get(key,"-")).replace("_", " ")
                 rowinfo.append(tofile)
-            else:
-                rowinfo.append("-")
+        else:
+            rowinfo = [gb_id,'-','-','-','-','-','-']
         rowinfo.append(reason)
         writer.writerow(rowinfo)
 

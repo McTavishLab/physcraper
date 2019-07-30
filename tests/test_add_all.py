@@ -1,12 +1,12 @@
 import sys
 import os
 import pickle  #
-from physcraper import ConfigObj, IdDicts, FilterBlast
+from physcraper import ConfigObj, IdDicts, PhyscraperScrape
 
 
 workdir = "tests/output/add_all"
 configfi = "tests/data/test.config"
-treshold = 2
+threshold = 2
 selectby = "blast"
 downtorank = None
 absworkdir = os.path.abspath(workdir)
@@ -17,24 +17,14 @@ def test_add_all():
     data_obj.workdir = absworkdir
     ids = IdDicts(conf, workdir=data_obj.workdir)
     ids.acc_ncbi_dict = pickle.load(open("tests/data/precooked/tiny_acc_map.p", "rb"))
-
-    filteredScrape = FilterBlast(data_obj, ids)
+   
+    filteredScrape = PhyscraperScrape(data_obj, ids)
     filteredScrape._blasted = 1
+    filteredScrape.threshold = threshold
     filteredScrape.read_blast_wrapper(blast_dir="tests/data/precooked/fixed/tte_blast_files")
-    filteredScrape.sp_dict(downtorank)
-    filteredScrape.make_sp_seq_dict()
     filteredScrape.seq_filter = ['deleted', 'subsequence,', 'not', "removed", "deleted,"]
-    for key in filteredScrape.sp_d:
-        if len(filteredScrape.sp_d[key]) <= treshold:
-            filteredScrape.add_all(key)
-    treshold_undermin = 0
-    for key in filteredScrape.sp_d:
-        for key2 in filteredScrape.sp_d[key]:
-            if len(filteredScrape.sp_d[key]) <= treshold:
-                if '^physcraper:status' in key2:
-                    if key2['^physcraper:status'].split(' ')[0] not in filteredScrape.seq_filter:
-                        if key2['^physcraper:last_blasted'] == '1800/01/01':
-                            treshold_undermin += 1
-    add_all_thresholdmin = filteredScrape.filtered_seq
-    assert treshold_undermin == len(add_all_thresholdmin)
-    
+    filteredScrape.remove_identical_seqs()
+    sp_d = filteredScrape.make_sp_dict(filteredScrape.new_seqs_otu_id)
+    assert len(sp_d) == 7
+    for taxon in sp_d:
+        assert len(sp_d[taxon]) <= threshold
