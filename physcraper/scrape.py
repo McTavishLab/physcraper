@@ -344,7 +344,7 @@ class PhyscraperScrape(object):
                 gb_acc = get_acc_from_blast(sseqid)
                 gi_id = get_gi_from_blast(sseqid)                
                 sseq = sseq.replace("-", "") #TODO here is where we want to grab the full sequence MK: I wrote a batch query for the seqs we are interested. Makes it faster.
-                sscinames = sscinames.replace(" ", "_").replace("/", "_")
+                taxname = sscinames.replace(" ", "_").replace("/", "_")
                 pident = float(pident)
                 evalue = float(evalue)
                 bitscore = float(bitscore)
@@ -354,34 +354,28 @@ class PhyscraperScrape(object):
                         if gb_acc not in self.new_seqs.keys(): # do not do it for gb_ids we already considered
                             # NOTE: sometimes there are seq which are identical & are combined in the local blast db...
                             # Get all of them! (they can be of a different taxon ids = get redundant seq info)
-                            if len(staxids.split(';')) > 1:
-                                sys.stdout.write("multiple taxa have identical seq {}, using first taxid\n".format(sallseqid))
-                                staxids = int(staxids.split(';')[0])
+                            if len(sallseqid.split(';')) > 1:
+                                debug("multiple taxa have identical blast match {}, using {}\n".format(sallseqid, gb_acc))
+                                taxid, taxname, full_seq = self.ids.get_tax_seq_acc(gb_acc)
                             else:
-                                staxids = int(staxids)
-                            self.ids.spn_to_ncbiid[sscinames] = staxids
-                            if gb_acc not in self.ids.acc_ncbi_dict:  # fill up dict with more information.
-                                self.ids.acc_ncbi_dict[gb_acc] = staxids
-                            if gb_acc not in query_dict and gb_acc not in self.newseqs_acc:
-                                query_dict[gb_acc] = {'^ncbi:gi': gi_id, 'accession': gb_acc, 'staxids': staxids,
-                                                      'sscinames': sscinames, 'pident': pident, 'evalue': evalue,
-                                                      'bitscore': bitscore, 'sseq': sseq, 'title': stitle}
+                                taxid = int(staxids)
+                                self.ids.spn_to_ncbiid[sscinames] = staxids
+                                if gb_acc not in self.ids.acc_ncbi_dict:  # fill up dict with more information.
+                                    self.ids.acc_ncbi_dict[gb_acc] = staxids
+                                full_seq = self.get_full_seq(gb_acc, sseq)
+                            query_dict[gb_acc] = {'^ncbi:gi': gi_id, 'accession': gb_acc, 'staxids': staxids,
+                                                          'sscinames': sscinames, 'pident': pident, 'evalue': evalue,
+                                                          'bitscore': bitscore, 'sseq': full_seq, 'title': stitle}
+                            self.data.gb_dict[gb_acc] = query_dict[gb_acc]
+                            self.new_seqs[gb_acc] = query_dict[gb_acc]["sseq"]
+
                     else:
                         fn = open("{}/blast_threshold_not_passed.csv".format(self.workdir), "a+")
                         fn.write("blast_threshold_not_passed: {}, {}, {}\n".format(sscinames, gb_acc, gi_id))
                         fn.close()
                 else:
                     sys.stdout.write("skipping acc {}, incorrect format\n".format(gb_acc))
-        # debug("key in query")
-        # add data which was not added before and that passes the evalue threshhold
-        for key in query_dict.keys():
-            gb_acc = query_dict[key]["accession"]
-            if gb_acc not in self.new_seqs.keys():
-                # make dict with queries for full seq batch
-                 full_seq = self.get_full_seq(gb_acc, query_dict[key]["sseq"])
-                 query_dict[key]["sseq"] = full_seq  
-                 self.new_seqs[gb_acc] = query_dict[key]["sseq"]
-                 self.data.gb_dict[gb_acc] = query_dict[key]
+
 
 
  
@@ -420,7 +414,8 @@ class PhyscraperScrape(object):
                 if line[0]  != ">":
                     seq += line
                 elif line[0]  == ">":
-                    assert gb_acc in line
+                    pass
+#                    assert gb_acc in line, (gb_acc, line)
             f.close()
         # check direction of sequence:
         orig = Seq(seq, generic_dna)
@@ -436,7 +431,8 @@ class PhyscraperScrape(object):
             full_seq = dna_comp
         elif blast_seq.replace("-", "") in dna_rcomp:
             full_seq = dna_rcomp
-        assert blast_seq.replace("-", "") in full_seq, (blast_seq.replace("-", ""), full_seq, seq, gb_acc)
+        if blast_seq.replace("-", "") not in full_seq:
+            taxid, taxname, full_seq = self.ids.get_tax_seq_acc(gb_acc)
         full_seq = str(full_seq)
         assert type(full_seq) == str, (type(full_seq))
         return full_seq
@@ -724,7 +720,7 @@ class PhyscraperScrape(object):
         self.new_seqs_otu_id = filter_dict  # renamed new seq to their otu_ids from GI's, but all info is in self.otu_dict
         self.new_seqs = {} #Wipe clean
 #        debug("len new seqs otu dict after remove identical{}".format(len(self.new_seqs_otu_id)))
-        sys.stdout.write("**** Found {} new sequences****".format(len(self.new_seqs_otu_id)))
+        sys.stdout.write("**** Found {} new sequences****\n".format(len(self.new_seqs_otu_id)))
         with open(self.logfile, "a") as log:
             log.write("{} new sequences added from Genbank after removing identical seq, "
                       "of {} before filtering\n".format(len(self.new_seqs_otu_id), len(self.new_seqs)))
