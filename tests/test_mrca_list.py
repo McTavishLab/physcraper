@@ -2,7 +2,7 @@
 import os
 import json
 import pickle
-from physcraper import wrappers, OtuJsonDict, ConfigObj, IdDicts, PhyscraperScrape
+from physcraper import OtuJsonDict, ConfigObj, IdDicts, PhyscraperScrape
 
 
 from pytest import mark
