@@ -35,10 +35,10 @@ def test_no_mrca():
     filteredScrape = PhyscraperScrape(data_obj, ids, ingroup_mrca)
     filteredScrape.threshold = 5
     assert filteredScrape.mrca_ncbi == 18794
-
+    
     blast_dir = "tests/data/precooked/fixed/tte_blast_files"
-
+    filteredScrape._blasted = 1
     filteredScrape.read_blast_wrapper(blast_dir=blast_dir)
     filteredScrape.remove_identical_seqs()
-    assert len(filteredScrape.new_seqs_otu_id) == 24
+    assert len(filteredScrape.new_seqs_otu_id) == 23
 
