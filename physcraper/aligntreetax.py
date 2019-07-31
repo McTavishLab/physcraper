@@ -505,7 +505,7 @@ class AlignTreeTax(object):
                        schema=alnschema)
 
 
-    def write_labelled(self, label, filename = "labelled", norepeats=True, add_gb_id=False):
+    def write_labelled(self, label, filename = "labelled", direc='workdir', norepeats=True, add_gb_id=False):
         """output tree and alignment with human readable labels
         Jumps through a bunch of hoops to make labels unique.
 
@@ -522,8 +522,10 @@ class AlignTreeTax(object):
         :return: writes out labelled phylogeny and alignment to file
         """
         #debug("write labelled files")
-        treepath = "{}/{}".format(self.workdir, "{}.tre".format(filename))
-        alnpath = "{}/{}".format(self.workdir, '{}.aln'.format(filename))
+        if direc == 'workdir':
+            direc = self.workdir
+        treepath = "{}/{}".format(direc, "{}.tre".format(filename))
+        alnpath = "{}/{}".format(direc, '{}.aln'.format(filename))
         assert label in ['^ot:ottTaxonName', '^user:TaxonName', '^physcraper:TaxonName',
                          "^ot:originalLabel", "^ot:ottId", "^ncbi:taxon"]
         tmp_newick = self.tre.as_string(schema="newick")
