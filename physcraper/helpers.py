@@ -5,15 +5,22 @@ import contextlib
 
 
 def get_raxml_ex():
-            if subprocess.check_call(["which", "raxmlHPC-PTHREADS"]) == 0:
-                rax_ex = "raxmlHPC-PTHREADS"
-            elif subprocess.check_call(["which", "raxmlHPC"]) == 0:
+            if subprocess.check_call(["which", "raxmlHPC"]) == 0:
                 rax_ex = "raxmlHPC"
             else:
                 sys.stderr.write("Did not find raxml executable. Exiting \n")
                 sys.exit()
             return rax_ex
 
+
+def to_string(input):
+    if isinstance(input, str):
+        return input
+    elif isinstance(input, unicode):
+        output = input.encode('ascii','replace')
+        return output
+    else:
+        return None
 
 
 @contextlib.contextmanager

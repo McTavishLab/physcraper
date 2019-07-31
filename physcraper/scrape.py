@@ -630,12 +630,12 @@ class PhyscraperScrape(object):
                     if existing_tax_id != tax_new_seq:  # different taxa
                         if _VERBOSE or _DEBUG:
                             sys.stdout.write("seq {} is subsequence of {}, "
-                                             "but different species name\n".format(new_otu_label, otu_lab))
+                                             "but different species name ".format(new_otu_label, otu_lab))
                         reason = "new seq added; subsequence of {}, but different taxon".format(otu_lab)
                         #debug("otu {}, tmp status {}".format(new_otu_label, reason))
                         #still should be added, but need to check other samples
                     else:  # subseq of same otu
-                        reason = "seq {} is subsequence or identical to {}, not added\n".format(new_otu_label, otu_lab)
+                        reason = "seq {} is subsequence or identical to {}, not added ".format(new_otu_label, otu_lab)
                         if _VERBOSE:
                             sys.stdout.write(reason)
                         self.data.otu_dict[new_otu_label]['^physcraper:status'] = "subsequence, not added"
@@ -650,11 +650,11 @@ class PhyscraperScrape(object):
                 if new_seq.find(inc_seq) != -1:
                     if self.data.otu_dict[otu_lab].get('^physcraper:status') == "original":
                         reason = "seq {} is supersequence of original seq {}, "\
-                                             "both kept in alignment\n".format(new_otu_label, otu_lab)
+                                             "both kept in alignment ".format(new_otu_label, otu_lab)
                         if _VERBOSE or _DEBUG:
                             sys.stdout.write(reason)
                     elif existing_tax_id != tax_new_seq:  # different taxa
-                        reason = "seq {} is supersequence of {}, but different taxon\n".format(new_otu_label, otu_lab)
+                        reason = "seq {} is supersequence of {}, but different taxon ".format(new_otu_label, otu_lab)
                         if _VERBOSE or _DEBUG:
                             sys.stdout.write(reason)
                         #can still be added
@@ -663,11 +663,11 @@ class PhyscraperScrape(object):
                         del seq_dict[otu_lab]
                         seq_dict[new_otu_label] = seq
                         self.data.remove_taxa_aln_tre(otu_lab)
-                        reason = "seq {} is supersequence of {}, {} added and {} removed\n".format(new_otu_label, otu_lab, new_otu_label, otu_lab)
+                        reason = "seq {} is supersequence of {}, {} added and {} removed ".format(new_otu_label, otu_lab, new_otu_label, otu_lab)
                         if _VERBOSE or _DEBUG:
                             sys.stdout.write(reason)
-                        self.data.otu_dict[otu_lab]['^physcraper:status'] = "deleted, {} is supersequence".format(new_otu_label)
-                        self.data.otu_dict[new_otu_label]['^physcraper:status'] = "new seq added in place of {}".format(otu_lab)
+                        self.data.otu_dict[otu_lab]['^physcraper:status'] = "deleted, {} is supersequence ".format(new_otu_label)
+                        self.data.otu_dict[new_otu_label]['^physcraper:status'] = "new seq added in place of {} ".format(otu_lab)
                         seq_dict[new_otu_label] = seq
                         self.data.otu_dict[new_otu_label]['^physcraper:status'] = reason
                         #debug("{} was added to seq_dict: {}".format(new_otu_label, reason))
@@ -1056,7 +1056,6 @@ class PhyscraperScrape(object):
             try:
                 debug("try")
                 subprocess.call([rax_ex,
-                                 "-T", "{}".format(self.config.num_threads),
                                  "-m", "GTRCAT",
                                  "-f", "v",
                                  "-s", alignment,
@@ -1097,10 +1096,10 @@ class PhyscraperScrape(object):
         num_threads = int(self.config.num_threads)
         label = "{}".format(self.date)
         if self.backbone:
-            cmd= [rax_ex, "-T", "{}".format(num_threads), "-m", "GTRCAT", "-s", alignment, "-r", "backbone.tre", "-p", "1", "-n", label]
+            cmd= [rax_ex, "-m", "GTRCAT", "-s", alignment, "-r", "backbone.tre", "-p", "1", "-n", label]
             
         else:
-            cmd= [rax_ex, "-T", "{}".format(num_threads), "-m", "GTRCAT", "-s", alignment, "-t", startingtree, "-p", "1", "-n", label]
+            cmd= [rax_ex, "-m", "GTRCAT", "-s", alignment, "-t", startingtree, "-p", "1", "-n", label]
         process = subprocess.Popen(cmd)
         process.wait()
         if _VERBOSE:

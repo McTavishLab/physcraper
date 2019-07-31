@@ -91,18 +91,21 @@ class IdDicts(object):
         self.acc_ncbi_dict = {}  # filled by ncbi_parser (by subprocess in earlier versions of the code).
         self.spn_to_ncbiid = {}  # spn to ncbi_id, it's only fed by the ncbi_data_parser, but makes it faster
         self.ncbiid_to_spn = {} #TODO when is this generated? MK: well, here. it is filled with information from genbank to speed up translation between ncbi_taxon_ids and names. similar to  acc_ncbi_dict and spn_to_ncbiid.
-
+        tax_folder = os.path.dirname(config_obj.ott_ncbi)
         fi = open(config_obj.ott_ncbi)  # This is in the taxonomy folder of the repo, needs to be updated by devs when OpenTree taxonomy changes.
-        for lin in fi:  # TODO This is insanely memory inefficient, how about using a pandas dataframe?
+        for lin in fi:  
             lii = lin.split(",")
-            self.ott_to_ncbi[int(lii[0])] = int(lii[1]) #TODO EJM if an ottid matches 2 ncbi ids, only 1 appears
-            self.ncbi_to_ott[int(lii[1])] = int(lii[0]) #TODO EJM - ott ids that match two ncbi ids just show up once
+            self.ott_to_ncbi[int(lii[0])] = int(lii[1])
             self.ott_to_name[int(lii[0])] = lii[2].strip()  # todo merge into ott_to_ncbi?
-            assert len(self.ott_to_ncbi) > 0
-            assert len(self.ncbi_to_ott) > 0
-            assert len(self.ott_to_name) > 0
         fi.close()
-        # TODO: pandas solution? requires to rewrite usages of self.ott_to_ncbi, self.ncbi_to_ott, self.ott_to_name
+        fi = open("{}/ncbi_ott".format(tax_folder))
+        for lin in fi:
+            lii = lin.split(",")
+            self.ncbi_to_ott[int(lii[0])] = int(lii[1])
+        fi.close()
+        assert len(self.ott_to_ncbi) > 0
+        assert len(self.ott_to_name) > 0
+        assert len(self.ncbi_to_ott) > 1000
         if config_obj.blast_loc == 'remote':
             self.otu_rank = {}  # used only for web queries - contains taxonomic hierarchy information
         else:  # ncbi parser contains information about spn, tax_id, and ranks
