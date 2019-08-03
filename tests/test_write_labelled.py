@@ -18,7 +18,7 @@ def test_write_labelled():
 	treepath = 'tests/data/tmp/labelled.tre'
 	alnpath = "tests/data/tmp/labelled.fas"
 
-	data_obj.write_labelled(label='^user:TaxonName', filename='labelled', direc='workdir', norepeats = False)
+	data_obj.write_labelled(label='^user:TaxonName', filename='labelled', direc='tests/data/tmp/', norepeats = False)
 
 	a =  os.path.isfile(treepath)
 	b = os.path.isfile(alnpath)
