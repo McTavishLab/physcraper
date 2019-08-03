@@ -57,6 +57,7 @@ def test_run_raxml():
 
 	scraper = PhyscraperScrape(data_obj, ids)
 	blast_dir = "tests/data/precooked/fixed/tte_blast_files"
+	scraper._blasted = 1
 
 	# run needed functions
 	# scraper.run_blast_wrapper()
@@ -124,6 +125,7 @@ def test_internal_mpi():
 
 	scraper = PhyscraperScrape(data_obj, ids)
 	blast_dir = "tests/data/precooked/fixed/tte_blast_files"
+	scraper._blasted = 1
 
 	# run needed functions
 	scraper.read_blast_wrapper(blast_dir=blast_dir)
