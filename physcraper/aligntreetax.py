@@ -82,7 +82,6 @@ def generate_ATT_from_files(seqaln,
 
 
 
-
 class AlignTreeTax(object):
     """wrap up the key parts together, requires OTT_id, and names must already match.
         Hypothetically, all the keys in the  otu_dict should be clean.
@@ -525,7 +524,8 @@ class AlignTreeTax(object):
         if direc == 'workdir':
             direc = self.workdir
         treepath = "{}/{}".format(direc, "{}.tre".format(filename))
-        alnpath = "{}/{}".format(direc, '{}.aln'.format(filename))
+        alnpath = "{}/{}".format(direc, '{}.fas'.format(filename))
+        debug(treepath)
         assert label in ['^ot:ottTaxonName', '^user:TaxonName', '^physcraper:TaxonName',
                          "^ot:originalLabel", "^ot:ottId", "^ncbi:taxon"]
         tmp_newick = self.tre.as_string(schema="newick")
