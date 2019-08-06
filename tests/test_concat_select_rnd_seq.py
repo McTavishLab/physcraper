@@ -1,7 +1,7 @@
 
 from copy import deepcopy
 from physcraper.concat import Concat
-from physcraper import debug
+from physcraper.helpers import debug
 import sys
 
 from pytest import mark

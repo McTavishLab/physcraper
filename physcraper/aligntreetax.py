@@ -16,17 +16,10 @@ import csv
 from dendropy import Tree, DnaCharacterMatrix, DataSet, datamodel
 from physcraper import ncbi_data_parser
 from physcraper.opentree_helpers import get_mrca_ott
-from physcraper.helpers import standardize_label, to_string
+from physcraper.helpers import standardize_label, to_string, debug
 
 _VERBOSE = 1
 _DEBUG = 1
-def debug(msg):
-    """short debugging command
-    """
-    if _DEBUG == 1:
-        print(msg)
-
-
 
 def generate_ATT_from_files(seqaln,
                             mattype,

@@ -6,15 +6,12 @@ parts are altered from https://github.com/zyxue/ncbitax2lin/blob/master/ncbitax2
 import os
 import sys
 import pandas as pd
+from physcraper.helpers import debug
 
 
 
 _DEBUG = 1
-def debug(msg):
-    """short debugging command
-    """
-    if _DEBUG == 1:
-        print(msg)
+
 
 def get_acc_from_blast(query_string):
     """
@@ -142,8 +139,6 @@ def get_ncbi_tax_name(handle):
 
 
 
-
-debug("Current ncbi_parser version number: 11272018.0")
 
 nodes = None
 names = None

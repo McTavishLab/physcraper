@@ -13,15 +13,9 @@ import csv
 
 from physcraper import ncbi_data_parser  # is the ncbi data parser class and associated functions
 
-from physcraper.helpers import cd
+from physcraper.helpers import cd, debug
 
 _DEBUG = 1
-def debug(msg):
-    """short debugging command
-    """
-    if _DEBUG == 1:
-        print(msg)
-
 
 
 def is_number(s):

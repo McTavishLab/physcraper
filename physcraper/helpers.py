@@ -4,6 +4,15 @@ import subprocess
 import contextlib
 
 
+_DEBUG = 1
+def debug(msg):
+    """short debugging command
+    """
+    if _DEBUG == 1:
+        print(msg)
+
+
+
 def get_raxml_ex():
             if subprocess.check_call(["which", "raxmlHPC"]) == 0:
                 rax_ex = "raxmlHPC"

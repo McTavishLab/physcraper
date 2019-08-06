@@ -17,25 +17,3 @@ if sys.version_info < (3,):
 else:
     from urllib.error import HTTPError
 
-_DEBUG = 1
-
-_VERBOSE = 0
-
-_DEBUG = 1
-def debug(msg):
-    """short debugging command
-    """
-    if _DEBUG == 1:
-        print(msg)
-
-
-
-
-
-
-
-# which python physcraper file do I use?
-debug("Current --init-- version number: 12-17-2018.0")
-debug(os.path.realpath(__file__))
-
-
