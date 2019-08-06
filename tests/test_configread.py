@@ -22,5 +22,4 @@ def test_config():
     assert conf.url_base == None
     assert set(conf.__dict__.keys())==set(expected_keys)
 
-
 test_config()

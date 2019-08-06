@@ -1,6 +1,7 @@
 import sys
 import re
 import os
+import io
 import subprocess
 import datetime
 import glob
@@ -15,7 +16,7 @@ import csv
 from dendropy import Tree, DnaCharacterMatrix, DataSet, datamodel
 from physcraper import ncbi_data_parser
 from physcraper.opentree_helpers import get_mrca_ott
-from physcraper.helpers import standardize_label
+from physcraper.helpers import standardize_label, to_string
 
 _VERBOSE = 1
 _DEBUG = 1
@@ -24,7 +25,6 @@ def debug(msg):
     """
     if _DEBUG == 1:
         print(msg)
-
 
 
 
@@ -79,7 +79,6 @@ def generate_ATT_from_files(seqaln,
         mrca_ott = get_mrca_ott(ott_ids)
     return AlignTreeTax(otu_newick, otu_dict, aln, ingroup_mrca=mrca_ott, workdir=workdir,
                         config_obj=config_obj, schema=schema_trf)
-
 
 
 
@@ -420,11 +419,13 @@ class AlignTreeTax(object):
         if ncbi_id == None:
             debug("DID NOT ADD accession {} ncbi_id {}".format(gb_id, ncbi_id, tax_name))
             return None
+        else:
+            ncbi_id = int(ncbi_id)
         if ncbi_id in ids_obj.ncbi_to_ott.keys():
             #debug("ADDED OTU: accession {} ncbi_id {}".format(gb_id, ncbi_id, tax_name))
-            ott_id = int(ids_obj.ncbi_to_ott[int(ncbi_id)])
+            ott_id = int(ids_obj.ncbi_to_ott[ncbi_id])
         else:
-            #debug("{} Ncbi id not found in ott_ncbi dictionaries\n".format(ncbi_id))
+            debug("{} Ncbi id not found in ott_ncbi dictionaries\n".format(ncbi_id))
             ott_id = None
         if ott_id in ids_obj.ott_to_name:
             ott_name = ids_obj.ott_to_name[ott_id]
@@ -503,7 +504,7 @@ class AlignTreeTax(object):
                        schema=alnschema)
 
 
-    def write_labelled(self, label, treepath=None, alnpath=None, norepeats=True, add_gb_id=False):
+    def write_labelled(self, label, filename = "labelled", direc='workdir', norepeats=True, add_gb_id=False):
         """output tree and alignment with human readable labels
         Jumps through a bunch of hoops to make labels unique.
 
@@ -520,10 +521,11 @@ class AlignTreeTax(object):
         :return: writes out labelled phylogeny and alignment to file
         """
         #debug("write labelled files")
-        if treepath is None:
-            treepath = "{}/{}".format(self.workdir, "labelled.tre")
-        if alnpath is None:
-            alnpath = "{}/{}".format(self.workdir, 'labelled.aln')
+        if direc == 'workdir':
+            direc = self.workdir
+        treepath = "{}/{}".format(direc, "{}.tre".format(filename))
+        alnpath = "{}/{}".format(direc, '{}.fas'.format(filename))
+        debug(treepath)
         assert label in ['^ot:ottTaxonName', '^user:TaxonName', '^physcraper:TaxonName',
                          "^ot:originalLabel", "^ot:ottId", "^ncbi:taxon"]
         tmp_newick = self.tre.as_string(schema="newick")
@@ -587,7 +589,7 @@ class AlignTreeTax(object):
                 outfile.write("\t".join(header)+"\n")
                 for otu in self.otu_dict:
                     vals = [str(self.otu_dict[otu].get(key, "-")) for key in keys]
-                    outfile.write("\t".join([otu]+vals)+"\n")
+                    outfile.write("\t".join([to_string(otu)]+vals)+"\n")
 
 
     def dump(self, filename=None):

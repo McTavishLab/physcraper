@@ -28,12 +28,33 @@ def debug(msg):
 
 
 
-
 if sys.version_info < (3,):
     from urllib2 import HTTPError
 #    from urllib2 import ConnectionError
 else:
     from urllib.error import HTTPError
+
+def bulk_tnrs_load(filename, ids_obj = None):
+    otu_dict = {}
+    with open(filename) as data_file:
+        input_dict = json.load(data_file)
+    for name in input_dict["names"]:
+        i = 1
+        otu = "Otu" + name['id']
+        while otu in otu_dict.keys():
+            otu = "{}_{}".format(otu, i)
+            i+=1
+        otu_dict[otu]={"^ot:originalLabel":name["originalLabel"]}
+        if name.get("ottTaxonName"):
+            otu_dict[otu]["^ot:ottTaxonName"] = name["ottTaxonName"]
+        if name.get("ottId"):
+            otu_dict[otu]["^ot:ottId"] = name["ottId"]
+        for source in name.get("taxonomicSources"):
+            taxsrc = source.split(":")
+            otu_dict[otu]["^{}:taxon".format(taxsrc[0])] = source.strip(taxsrc[1])
+    return otu_dict
+
+
 
 
 # ATT is a dumb acronym for Alignment Tree Taxa object
