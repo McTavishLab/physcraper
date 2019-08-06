@@ -21,15 +21,9 @@ else:
 from Bio import Entrez
 
 from physcraper import ncbi_data_parser  # is the ncbi data parser class and associated functions
-
+from physcraper.helpers import debug
 
 _DEBUG = 1
-def debug(msg):
-    """short debugging command
-    """
-    if _DEBUG == 1:
-        print(msg)
-
 
 
 
@@ -107,8 +101,10 @@ class IdDicts(object):
         assert len(self.ott_to_name) > 0
         assert len(self.ncbi_to_ott) > 1000
         if config_obj.blast_loc == 'remote':
+            debug("Config remote {}".format(config_obj.blast_loc))
             self.otu_rank = {}  # used only for web queries - contains taxonomic hierarchy information
         else:  # ncbi parser contains information about spn, tax_id, and ranks
+            debug("Config not remote {}".format(config_obj.blast_loc))
             self.ncbi_parser = ncbi_data_parser.Parser(names_file=self.config.ncbi_parser_names_fn,
                                                        nodes_file=self.config.ncbi_parser_nodes_fn)
         self.acc_tax_seq_dict = {} 
