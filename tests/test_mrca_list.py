@@ -1,31 +1,44 @@
 # package import
 import os
 import json
-from physcraper import wrappers, OtuJsonDict, ConfigObj, IdDicts
+import pickle
+from physcraper import OtuJsonDict, ConfigObj, IdDicts, PhyscraperScrape
 
-# define here your files
-def test_mrca_list():
+
+from pytest import mark
+# you can actually do whatever
+# ruftrum = mark.ruftrum will work and create a "ruftrum" test. 
+
+
+
+
+def test_no_mrca():
     seqaln = "tests/data/tiny_test_example/test.fas"
     mattype = "fasta"
     trfn = "tests/data/tiny_test_example/test.tre"
     schema_trf = "newick"
     id_to_spn = r"tests/data/tiny_test_example/test_nicespl.csv"
-    workdir = "tests/output/impls_mrcalist_local"
+    workdir = "tests/output/test_mrcalist_local"
     configfi = "tests/data/test.config"
     otu_jsonfi = "{}/otu_dict.json".format(workdir)
 
-    ingroup_mrca = [723076, 710505, 187044, 4727685, 4728090, 711399 ]
-
+    ingroup_mrca = None
     # setup the run
     if not os.path.exists("{}".format(workdir)):
         os.makedirs("{}".format(workdir))
 
     conf = ConfigObj(configfi)
-    conf.blast_loc='remote' #saves time over loading names and nodes, and they aren't used here
-    ids = IdDicts(conf, workdir=workdir, mrca=ingroup_mrca)
+    ids = IdDicts(conf, workdir=workdir)
 
     # print(ids.mrca_ott, ids.mrca_ncbi)
+    data_obj = pickle.load(open("tests/data/precooked/tiny_dataobj.p", 'rb'))
+    filteredScrape = PhyscraperScrape(data_obj, ids, ingroup_mrca)
+    filteredScrape.threshold = 5
+    assert filteredScrape.mrca_ncbi == 18794
+    
+    blast_dir = "tests/data/precooked/fixed/tte_blast_files"
+    filteredScrape._blasted = 1
+    filteredScrape.read_blast_wrapper(blast_dir=blast_dir)
+    filteredScrape.remove_identical_seqs()
+    assert len(filteredScrape.new_seqs_otu_id) in [23,17] #Blurghhh, local vs remote searches get diffenrt number of seqs!
 
-    assert len(ids.mrca_ncbi) >= 2
-    assert ids.mrca_ott == ingroup_mrca
-    assert ids.mrca_ott != ids.mrca_ncbi

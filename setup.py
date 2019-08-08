@@ -3,7 +3,7 @@
 from setuptools import setup
 
 setup(name='Physcraper',
-      version='0.0',
+      version='0.1',
       description='Physcraper',
       author='Emily Jane McTavish',
       author_email='ejmctavish@gmail.com',

@@ -9,6 +9,7 @@ before_install:
   ### install blast+
   # this fails often with connection errors
   - sudo apt-get install ncbi-blast+
+  - sudo apt-get install muscle
 
 
   #### install papara
@@ -27,8 +28,9 @@ before_install:
   - conda update -q conda
   - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION
   - source activate test-environment
+  - pip install --force-reinstall numpy==1.14.5
   - conda install -c bioconda raxml
-  # - pip install pytest-cov pytest-xdist
+  - pip install numpy
   - python setup.py install
 
   #### ete fails now, because of conda
@@ -43,6 +45,7 @@ before_install:
   #- sudo apt install libopenmpi-dev
   - sudo apt install mpich
   - export MPICC=mpiicc
+
 install:
   # install requirements of physcraper
   - pip install --quiet -r requirements.txt

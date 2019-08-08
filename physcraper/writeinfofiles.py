@@ -10,6 +10,7 @@ def debug(msg):
     if _DEBUG_MK == 1:
         print(msg)
 
+
 """
 Functions that write out additional sampling information for a PhyScraper run."""
 
@@ -39,9 +40,9 @@ def get_additional_GB_info(physcraper_obj):
             # debug(entry)
             # debug(self.data.otu_dict[entry]['^physcraper:status'].split(' ')[0])
             if physcraper_obj.data.otu_dict[entry]['^physcraper:status'].split(' ')[0] not in physcraper_obj.seq_filter:
-                debug(physcraper_obj.data.otu_dict[entry].keys())
+                # debug(physcraper_obj.data.otu_dict[entry].keys())
                 if '^ncbi:accession' in physcraper_obj.data.otu_dict[entry].keys():
-                    debug("add info")
+                    # debug("add info")
                     gb_id = physcraper_obj.data.otu_dict[entry]['^ncbi:accession']
                     read_handle = physcraper_obj.ids.entrez_efetch(gb_id)
                     ncbi_sp = None
@@ -65,11 +66,13 @@ def get_additional_GB_info(physcraper_obj):
                             country = str(item[u"GBQualifier_value"])
                         if item[u"GBQualifier_name"] == "isolate":
                             isolate = str(item[u"GBQualifier_value"])
-                    authors = read_handle[0]["GBSeq_references"][0][u'GBReference_authors']
-                    journal = read_handle[0]["GBSeq_references"][0][u'GBReference_journal']
-                    publication = read_handle[0]["GBSeq_references"][0][u'GBReference_title']
-                    info = [gb_id, ncbi_sp, authors, journal, publication, voucher, clone, country, isolate]
-                    writer.writerow(info)
+                    # debug(read_handle[0])
+                    if "GBSeq_references" in read_handle[0].keys():
+                        authors = read_handle[0]["GBSeq_references"][0][u'GBReference_authors']
+                        journal = read_handle[0]["GBSeq_references"][0][u'GBReference_journal']
+                        publication = read_handle[0]["GBSeq_references"][0][u'GBReference_title']
+                        info = [gb_id, ncbi_sp, authors, journal, publication, voucher, clone, country, isolate]
+                        writer.writerow(info)
 
 
 def write_otu_info(physcraper_obj):
@@ -135,11 +138,12 @@ def taxon_sampling(filterblast_obj, downtorank=None):
             if filterblast_obj.config.blast_loc == "remote":
                 spn = filterblast_obj.ids.ncbiid_to_spn[key]
             else:
-                spn = filterblast_obj.ids.ncbi_parser.get_name_from_id(key)
+#                spn = filterblast_obj.ids.ncbiid_to_spn[key]
+                spn = filterblast_obj.ids.ncbi_parser.get_name_from_id(key) #TODO this was throwing a pandas error
             writer.writerow([key, spn, value])
 
 
-def write_not_added_info(physcraper_obj, item, reason=None):
+def write_not_added_info(physcraper_obj, gb_id, reason=None):
     """Writes out infos of not added seq based on information provided in reason.
 
     Is not used, as the output file can easily get to 100GB.
@@ -169,15 +173,16 @@ def write_not_added_info(physcraper_obj, item, reason=None):
             writer.writerow(tab_keys)
     with open("{}/info_not_added_seq.csv".format(physcraper_obj.workdir), "a") as output:
         writer = csv.writer(output)
-        rowinfo = [physcraper_obj.data.gb_dict[item]]
-        for key in tab_keys:
-            if key in physcraper_obj.data.gb_dict[item].keys():
-                tofile = str(physcraper_obj.data.gb_dict[item][key]).replace("_", " ")
+        if gb_id in physcraper_obj.data.gb_dict:
+            rowinfo = []
+            for key in tab_keys:
+                tofile = str(physcraper_obj.data.gb_dict[gb_id].get(key,"-")).replace("_", " ")
                 rowinfo.append(tofile)
-            else:
-                rowinfo.append("-")
+        else:
+            rowinfo = [gb_id,'-','-','-','-','-','-']
         rowinfo.append(reason)
         writer.writerow(rowinfo)
+
 
 def write_not_added(ncbi_id, tax_name, gb_id, reason, workdir):
     """Writes out infos of not added seq based on information provided in reason.
@@ -192,9 +197,8 @@ def write_not_added(ncbi_id, tax_name, gb_id, reason, workdir):
     debug("write not added")
     tab_keys = [
         "ncbi_id",
-        "rank_id",
         "tax_name",
-        "gb_id"
+        "gb_id",
         "reason"
     ]
     if not os.path.exists(path="{}/not_added_seq.csv".format(workdir)):

@@ -17,7 +17,7 @@ After the single-gene datasets are updated, the data can be concatenated. Either
 * [PaPaRa](http://sco.h-its.org/exelixis/web/software/papara/index.html) - alignment tool
 * [RAxML](http://sco.h-its.org/exelixis/web/software/raxml/index.html) - tree estimation program
     * Make sure you do `make -f Makefile.PTHREADS.gcc` from within the RAxML folder to enable multi-core calculation
-* [BLAST+](https://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Web&PAGE_TYPE=BlastDocs&DOC_TYPE=Download) - it's needed for filter runs and when using local BLAST databses.
+* [BLAST+](https://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Web&PAGE_TYPE=BlastDocs&DOC_TYPE=Download) - it's needed for filter runs and when using local BLAST databases. Setup and installation information can be found [here](https://www.ncbi.nlm.nih.gov/books/NBK1762/).
 
 
 make sure the programs are accessible from everywhere, thus add them to your PATH using the command line:
@@ -243,7 +243,7 @@ There are some more features that can be changed.
     
     1. run `python scripts/get_ottid.py name_of_your_ingroup`
 
-    2. by going to [Open Tree of Life](https://ot14.opentreeoflife.org/opentree/argus/opentree9.1@ott93302) and type in the name of the lineage and get the OTT ID at the right side of the page. That number needs to be provided analysis file, as following:
+    2. by going to [Open Tree of Life](https://ot14.opentreeoflife.org/opentree/argus/opentree9.1@ott93302) and type in the name of the lineage and get the OTT ID at the right side of the page. 
     
     The identifying number need to be entered here:
     1. in an OToL run: within the function  `standard_run()`/`filter_OTOL()` in your analysis file in the field for `ingroup_mrca`.
@@ -275,3 +275,33 @@ And now you just need to wait...
     
 After the single-gene PhyScraper runs were updated, the data can be combined, see for example `docs/example_scripts/concat_example.py`.
 Either the program randomly decides which sequences to concatenate if there are more sequences available for one loci or the user can specify a file, which sequences shall be concatenated. An example file can be found at `tests/data/concatenation_input.csv`.
+
+#### **6. Navigating the output:**
+
+During a physcraper run, several files are being written out:
+Here is a short introduction to what they are:
+
+ * folder with previous_run: each Physcraper loop writes out the same sets of files, after finishing one loop, they are copied there before a new round is started
+
+ *  all files that end with .p: are pickled files which are needed to rerun the dataset
+ *  replaced_inputaln.fasta: is you input alignment, where '?' have been replaced with '-'
+ *  **not_added_seq.csv**: contains newly found sequences, that passed the e-filter but where not added because of other reasons (not part of the defined mrca or to short)
+ *  aln_ott.phy: used to add the newly found sequences to the alignment
+ *  **physcraper.fas/physcraper.tre**: alignment and tree after updating with otuPS labels, those files can be used to relabel the tipnames, using `scripts/relabel_tree_file.py`
+  *  **labelled.fas/labelled.tre**: same as physcraper.fas/tre but with different label
+ * physcraper_final_notrim/trim/fas/tre: trimmed/untrimmed final dataset
+ *  **taxon_sampling.csv**: list of taxon names and how often they are represented in the data
+ *  **logfile**: short summary of how many sequences where added/filtered during a PhyScraper run
+ *  **otu_seq_info.csv**: table with all sequences that passed evalue, and length filter and where either added or not, because they where filtered during the taxon filtering.
+ * place_resolve.tre: your phylogeny with the new sequences placed onto it
+ * random_resolve.tre: 
+ * otu_dict.json: like otu_seq_info.csv but in json format
+ * **RAxML files**: files produced during a RAxML run
+ * **Genbank_information_added_seq.csv**: file that contains the Genbank information of the newly added sequences
+
+ #### **7. Common error messages:**
+
+  * **HTTP Error 429**: Too Many Requests: you probably have too many runs running and they all try to access ncbi. Within each run there is a pause to not make ncbi angry, but if there are several runs running, the timespan between runs can get to low and then ncbi restricts you from accessing the information. Re-start and it should work.
+  * **KeyError: u'taxon'**: you probably forgot to activate your virtual environment.
+
+    

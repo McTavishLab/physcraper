@@ -1,7 +1,8 @@
 import pickle
 import sys
 import os
-from physcraper import ConfigObj, PhyscraperScrape, IdDicts, cd
+from physcraper import ConfigObj, PhyscraperScrape, IdDicts
+from physcraper.helpers import cd
 
 import requests
 import signal
@@ -56,22 +57,20 @@ def test_run_raxml():
 
 	scraper = PhyscraperScrape(data_obj, ids)
 	blast_dir = "tests/data/precooked/fixed/tte_blast_files"
+	scraper._blasted = 1
 
 	# run needed functions
 	# scraper.run_blast_wrapper()
 	scraper.read_blast_wrapper(blast_dir=blast_dir)
-	scraper.remove_identical_seqs()
 
-	scraper.data.write_papara_files()
-	scraper.align_query_seqs()
-	scraper.place_query_seqs()
+#	scraper.align_query_seqs()
+	
+#	scraper.place_query_seqs()
+
 	scraper.est_full_tree()
 	# scraper.generate_streamed_alignment()
 	assert os.path.exists("{}/RAxML_bestTree.{}".format(scraper.workdir, scraper.date))
 	# scraper.generate_streamed_alignment()
-	if not os.path.exists("{}/previous_run".format(scraper.workdir)):
-		os.mkdir("{}/previous_run".format(scraper.workdir))
-	os.system("mv {}/papara_alignment.extended  {}/previous_run/papara_alignment.extended".format(scraper.workdir, scraper.workdir))
 
 	# if os.path.exists("{}/RAxML_bootstrap.all{}".format(scraper.workdir, scraper.date)):
 	# 	fn = "{}/RAxML_bootstrap.all{}".format(scraper.workdir, scraper.date)
@@ -92,6 +91,7 @@ def test_run_raxml():
 	# # scraper.calculate_boostrap()    
 	# assert os.path.exists("{}/RAxML_bootstrap.all{}".format(scraper.workdir, scraper.date))
 
+test_run_raxml()
 
 @mark.xfail
 def test_mpi():    
@@ -125,6 +125,7 @@ def test_internal_mpi():
 
 	scraper = PhyscraperScrape(data_obj, ids)
 	blast_dir = "tests/data/precooked/fixed/tte_blast_files"
+	scraper._blasted = 1
 
 	# run needed functions
 	scraper.read_blast_wrapper(blast_dir=blast_dir)

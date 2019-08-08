@@ -30,13 +30,6 @@ print "3. {}".format(ids.config.email)
 data_obj.prune_short()
 assert len(data_obj.aln) == 9
 data_obj.write_files()
-try:
-    scraper = physcraper.PhyscraperScrape(data_obj, ids)
-    scraper.run_blast_wrapper()
-    scraper.read_blast_wrapper()
-    scraper.remove_identical_seqs()
-    scraper.generate_streamed_alignment()
-    sys.stdout.write("\nTest opentree_scrape.py (round 1) passed\n")
-except:
-    sys.stdout.write("\nTest opentree_scrape.py (round 1) FAILED'\n")
-    
+
+scraper = physcraper.PhyscraperScrape(data_obj, ids)
+scraper.est_full_tree()

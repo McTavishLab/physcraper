@@ -21,6 +21,8 @@ from Bio._py3k import urlencode as _urlencode
 from Bio._py3k import Request as _Request
 
 import sys
+from physcraper.helpers import debug
+
 
 NCBI_BLAST_URL = "https://blast.ncbi.nlm.nih.gov/Blast.cgi"
 
@@ -133,8 +135,8 @@ def qblast(program, database, sequence, url_base=NCBI_BLAST_URL,
     request = _Request(url_base,
                        message,
                        {"User-Agent": "BiopythonClient"})
+#    debug("{}, {}".format(url_base, message))
     handle = _urlopen(request)
-
     # Format the "Get" command, which gets the formatted results from qblast
     # Parameters taken from http://www.ncbi.nlm.nih.gov/BLAST/Doc/node6.html on 9 July 2007
     rid, rtoe = _parse_qblast_ref_page(handle)

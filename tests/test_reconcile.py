@@ -4,7 +4,7 @@ from dendropy import Tree, \
       DnaCharacterMatrix, \
       DataSet, \
       datamodel
-from physcraper import wrappers, ConfigObj, generate_ATT_from_files, AlignTreeTax, OtuJsonDict
+from physcraper import ConfigObj, generate_ATT_from_files, AlignTreeTax, OtuJsonDict
 
 
 def test_reconcile():
