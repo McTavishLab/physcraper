@@ -242,7 +242,7 @@ class PhyscraperScrape(object):
         :return: runs web blast query and writes it to file
         """
         if self.config.url_base:
-            debug("blasting {} using {}".format(self.config.url_base))
+            debug("blasting {} using {}".format(fn_path, self.config.url_base))
             result_handle = AWSWWW.qblast("blastn",
                                           "nt",
                                           query,
