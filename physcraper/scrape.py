@@ -280,9 +280,9 @@ class PhyscraperScrape(object):
             log.write("Blast run {} \n".format(datetime.date.today()))
         for taxon, seq in self.data.aln.items():
             otu_id = taxon.label
-            tmpfile = open("{}/{}.tmp".format(self.workdir, otu_id),"w")
-            tmpfile.write(seq.symbols_as_string())
-            tmpfile.write("\n")
+#            tmpfile = open("{}/{}.tmp".format(self.workdir, otu_id),"w")
+#            tmpfile.write(seq.symbols_as_string())
+#            tmpfile.write("\n")
             assert otu_id in self.data.otu_dict
             last_blast = self.data.otu_dict[otu_id]['^physcraper:last_blasted']
             if last_blast == None:
