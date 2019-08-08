@@ -15,7 +15,7 @@ from physcraper import ncbi_data_parser  # is the ncbi data parser class and ass
 
 from physcraper.helpers import cd, debug
 
-_DEBUG = 1
+_DEBUG = 0
 
 
 def is_number(s):
@@ -93,8 +93,8 @@ class ConfigObj(object):
     """
 
     def __init__(self, configfi, interactive=None):
-        debug(configfi)
-        debug(os.path.isfile(configfi))
+       # debug(configfi)
+        assert os.path.isfile(configfi)
         if _DEBUG:
             sys.stdout.write("Building config object\n")
         assert os.path.isfile(configfi), "file `%s` does not exists" % configfi
@@ -132,19 +132,19 @@ class ConfigObj(object):
             if self.blast_loc == "local":
                 sys.stdout.write("local blast db {}\n".format(self.blastdb))
         self.num_threads = config["blast"].get("num_threads")
-        print("slurm threads")
-        print(os.environ.get('SLURM_JOB_CPUS_PER_NODE'))
+       # print("slurm threads")
+       # print(os.environ.get('SLURM_JOB_CPUS_PER_NODE'))
         if os.environ.get('SLURM_JOB_CPUS_PER_NODE'):
             self.num_threads = int(os.environ.get('SLURM_JOB_CPUS_PER_NODE'))
 
-        debug(self.num_threads)
+      #  debug(self.num_threads)
         self.gb_id_filename = config["blast"].get("gb_id_filename", False)
         if self.gb_id_filename is not False:
             if self.gb_id_filename == "True" or self.gb_id_filename == "true":
                 self.gb_id_filename = True
             else:
                 self.gb_id_filename = False
-        debug("shared blast folder? {}".format(self.gb_id_filename))
+     #   debug("shared blast folder? {}".format(self.gb_id_filename))
         self.delay = int(config["blast"]["delay"])
         assert is_number(self.delay), (
                 "value `%s`is not a number" % self.delay
@@ -193,7 +193,7 @@ class ConfigObj(object):
         if interactive is True:
             self._download_ncbi_parser()
             self._download_localblastdb()
-        debug("check db file status?: {}".format(interactive))
+#        debug("check db file status?: {}".format(interactive))
 
     def _download_localblastdb(self):
         """Check if files are present and if they are uptodate.
@@ -239,9 +239,9 @@ class ConfigObj(object):
                 x = get_user_input()
                 if x == "yes":
                     os.system("wget 'ftp://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdump.tar.gz' -P ./tests/data/")
-                    os.system("gunzip -f -cd ./tests/data/taxdump.tar.gz | (tar xvf - names.dmp nodes.dmp)")
-                    os.system("mv nodes.dmp ./tests/data/")
-                    os.system("mv names.dmp ./tests/data/")
+                    os.system("gunzip -f -cd ./taxonomy/taxdump.tar.gz | (tar xvf - names.dmp nodes.dmp)")
+                    os.system("mv nodes.dmp ./taxonomy")
+                    os.system("mv names.dmp ./taxonomy/")
                     os.system("rm taxdump.tar.gz")
                 elif x == "no":
                     print("You did not agree to download data from ncbi. Program will default to blast web-queries.")
@@ -259,10 +259,10 @@ class ConfigObj(object):
                           "You agree to their terms")
                     x = get_user_input()
                     if x == "yes":
-                        os.system("wget 'ftp://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdump.tar.gz' -P ./tests/data/")
+                        os.system("wget 'ftp://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdump.tar.gz' -P ./taxonomy/")
                         os.system("gunzip -f -cd ./tests/data/taxdump.tar.gz | (tar xvf - names.dmp nodes.dmp)")
-                        os.system("mv nodes.dmp ./tests/data/")
-                        os.system("mv names.dmp ./tests/data/")
+                        os.system("mv nodes.dmp ./taxonomy/")
+                        os.system("mv names.dmp ./taxonomy/")
                     elif x == "no":
                         print("You did not agree to update data from ncbi. Old database files will be used.")
                     else:

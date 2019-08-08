@@ -135,7 +135,7 @@ def qblast(program, database, sequence, url_base=NCBI_BLAST_URL,
     request = _Request(url_base,
                        message,
                        {"User-Agent": "BiopythonClient"})
-    debug("{}, {}".format(url_base, message))
+#    debug("{}, {}".format(url_base, message))
     handle = _urlopen(request)
     # Format the "Get" command, which gets the formatted results from qblast
     # Parameters taken from http://www.ncbi.nlm.nih.gov/BLAST/Doc/node6.html on 9 July 2007

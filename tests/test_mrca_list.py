@@ -40,5 +40,5 @@ def test_no_mrca():
     filteredScrape._blasted = 1
     filteredScrape.read_blast_wrapper(blast_dir=blast_dir)
     filteredScrape.remove_identical_seqs()
-    assert len(filteredScrape.new_seqs_otu_id) == 23
+    assert len(filteredScrape.new_seqs_otu_id) in [23,17] #Blurghhh, local vs remote searches get diffenrt number of seqs!
 

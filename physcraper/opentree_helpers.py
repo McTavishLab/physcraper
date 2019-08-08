@@ -3,9 +3,8 @@ import json
 import sys
 import os
 import physcraper
-from peyotl.sugar import tree_of_life, taxomachine
 from peyotl.api.phylesystem_api import PhylesystemAPI, APIWrapper
-from peyotl.sugar import tree_of_life, taxomachine
+from peyotl.sugar import tree_of_life, taxomachine, treemachine, oti
 from peyotl.nexson_syntax import (
     extract_tree,
     get_subtree_otus,
@@ -13,9 +12,13 @@ from peyotl.nexson_syntax import (
     PhyloSchema
 )
 
+
+
 from dendropy import Tree, DnaCharacterMatrix, DataSet, datamodel
 
-from physcraper.helpers import cd, standardize_label
+from physcraper.helpers import cd, standardize_label, to_string
+
+
 
 
 _VERBOSE = 1
@@ -33,6 +36,10 @@ if sys.version_info < (3,):
 #    from urllib2 import ConnectionError
 else:
     from urllib.error import HTTPError
+
+phylesystemref = "McTavish EJ, Hinchliff CE, Allman JF, Brown JW, Cranston KA, Holder MT,  Phylesystem: a gitbased data store for community curated phylogenetic estimates. Bioinformatics. 2015 31 2794-800. doi: 10.1093/bioinformatics/btv276\n"
+synthref = "Redelings BD, Holder MT. A supertree pipeline for summarizing phylogenetic and taxonomic information for millions of species. PeerJ. 2017;5:e3058. https://doi.org/10.7717/peerj.3058 \n"
+
 
 def bulk_tnrs_load(filename, ids_obj = None):
     otu_dict = {}
@@ -53,6 +60,23 @@ def bulk_tnrs_load(filename, ids_obj = None):
             taxsrc = source.split(":")
             otu_dict[otu]["^{}:taxon".format(taxsrc[0])] = source.strip(taxsrc[1])
     return otu_dict
+
+
+def get_tree_from_synth(ott_ids):
+    resp = treemachine.get_synth_tree_pruned(ott_ids=ott_ids)
+    sys.stdout.write('Citations for inputs to synthetic tree inference, please cite if using this tree\n')
+    sys.stdout.write('-----------------------------------------------------------------------------------\n')
+    cites = 'Citations for Synthetic tree'
+    for study in resp['supporting_studies']:
+        study = study.split('@')[0]
+        query = {"ot:studyId":study}
+        new_cite = oti.find_studies(query_dict = query, verbose=True)
+        #print new_cite[0].keys()
+        cites = cites + '\n' + to_string(new_cite[0]['ot:studyPublicationReference'])
+    cites = cites + '\n' +phylesystemref + synthref
+    sys.stdout.write(cites)
+    sys.stdout.write('-----------------------------------------------------------------------------------\n')
+    return resp['newick']
 
 
 

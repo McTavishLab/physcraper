@@ -8,15 +8,19 @@ from opentree_helpers import bulk_tnrs_load
 
 
 
+
 class TreeTax(object):
     """wrap up the key parts together, requires OTT_id, and names must already match.
 
     """
-    def __init__(self, treefile, otu_json,
+    def __init__(self, otu_json, treefrom = 'synth', 
                  schema='newick', taxon_namespace=None):
-        self.tre = Tree.get(path=treefile,
-                            schema=schema,
-                            preserve_underscores=True)
+        if treefrom == 'synth':
+            pass
+        elif os.path.exists(treefrom):
+            self.tre = Tree.get(path=treefrom,
+                                schema=schema,
+                                preserve_underscores=True)
         if isinstance(otu_json, dict):
             self.otu_dict = otu_dict
         elif isinstance(otu_json, str):
