@@ -1,0 +1,15 @@
+INSTALL
+
+
+Currently requires python2.7.
+Work is in progess on cleaning up the requirements, and making physcraper python3 ready.
+
+
+Recommended install procedure is using a virtual env.
+
+    virtualenv --python=/usr/bin/python2.7 venv-physcraper
+    source venv-physcraper/bin/activate
+    ## This force reinstalling numpy first is key
+    pip install --force-reinstall numpy==1.14.5
+    pip install -r requiremenets.txt
+    python setup.py install

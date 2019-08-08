@@ -23,8 +23,9 @@ pandas==0.23.4
 pytest
 m2r; python_version > '2.7.13'
 recommonmark
+
 #past
 future
 pytest-xdist
 pytest-cov
-mpi4py
+#mpi4py
