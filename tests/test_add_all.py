@@ -25,6 +25,6 @@ def test_add_all():
     filteredScrape.seq_filter = ['deleted', 'subsequence,', 'not', "removed", "deleted,"]
     filteredScrape.remove_identical_seqs()
     sp_d = filteredScrape.make_sp_dict(filteredScrape.new_seqs_otu_id)
-    assert len(sp_d) == 7
+    assert len(sp_d) == 5
     for taxon in sp_d:
         assert len(sp_d[taxon]) <= threshold
