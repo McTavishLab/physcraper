@@ -8,6 +8,14 @@ Work is in progess on cleaning up the requirements, and making physcraper python
 Recommended install procedure is using a virtual env.
 
     virtualenv --python=/usr/bin/python2.7 venv-physcraper
+
+If that fails, you may have to use:
+
+    python2.7  -m pip install virtualenv
+    python2.7  -m virtualenv venv-physcraper
+
+Once you have a venv-physcraper directory, you can run:
+
     source venv-physcraper/bin/activate
     ## This force reinstalling numpy first is key
     pip install --force-reinstall numpy==1.14.5
