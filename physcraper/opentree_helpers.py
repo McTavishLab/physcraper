@@ -59,10 +59,13 @@ def bulk_tnrs_load(filename, ids_obj = None):
         for source in name.get("taxonomicSources"):
             taxsrc = source.split(":")
             otu_dict[otu]["^{}:taxon".format(taxsrc[0])] = source.strip(taxsrc[1])
+    for otu in otu_dict:
+        otu_dict[otu]["^physcraper:status"] = "original"
+        otu_dict[otu]["^physcraper:last_blasted"] = None
     return otu_dict
 
 
-def get_tree_from_synth(ott_ids, label_format="name", citation="cites.txt",):
+def get_tree_from_synth(ott_ids, label_format="name", citation="cites.txt"):
     assert label_format in ['id', 'name', 'name_and_id']
     resp = treemachine.get_synth_tree_pruned(ott_ids=ott_ids, label_format=label_format)
     cites = ''
@@ -84,6 +87,17 @@ def get_tree_from_synth(ott_ids, label_format="name", citation="cites.txt",):
     tre.suppress_unifurcations()
     return tre
 
+
+def get_tree_from_study(study_id, tree_id, label_format="name", citation="cites.txt"):
+    assert label_format in ['id', 'name', 'name_and_id']
+    api_wrapper = APIWrapper()
+    resp = api_wrapper.study.get(study_id, tree=tree_id, format='newick', exact=True)
+    query = {"ot:studyId":study_id}
+    new_cite = oti.find_studies(query_dict = query, verbose=True)
+    cites = to_string(new_cite[0]['ot:studyPublicationReference']) + new_cite[0]['ot:studyPublication']
+    tre = Tree.get(data=resp,
+                   schema="newick")
+    return tre, cites
 
 
 

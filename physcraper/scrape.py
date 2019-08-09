@@ -284,7 +284,7 @@ class PhyscraperScrape(object):
 #            tmpfile.write(seq.symbols_as_string())
 #            tmpfile.write("\n")
             assert otu_id in self.data.otu_dict
-            last_blast = self.data.otu_dict[otu_id]['^physcraper:last_blasted']
+            last_blast = self.data.otu_dict[otu_id].get('^physcraper:last_blasted')
             if last_blast == None:
                 time_passed = delay + 1
             else:

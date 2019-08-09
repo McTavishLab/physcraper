@@ -22,10 +22,14 @@ def test_tree_taxon():
     assert filecmp.cmp(treeout, expected_tree)
     os.remove(treeout)
 
-def test_get_tree():
+def test_get_synth_tree():
     ott_ids = set([exp_otu_dict[otu].get("^ot:ottId") for otu in exp_otu_dict])
     ott_ids = list(ott_ids)
     resp = opentree_helpers.get_tree_from_synth(ott_ids=ott_ids)
     print resp
 
-test_get_tree()
+
+def test_get_phyle_tree():
+    tr = opentree_helpers.get_tree_from_study(study_id='pg_1144', tree_id='tree2324', label_format="name")
+
+
