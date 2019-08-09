@@ -62,21 +62,27 @@ def bulk_tnrs_load(filename, ids_obj = None):
     return otu_dict
 
 
-def get_tree_from_synth(ott_ids):
-    resp = treemachine.get_synth_tree_pruned(ott_ids=ott_ids)
-    sys.stdout.write('Citations for inputs to synthetic tree inference, please cite if using this tree\n')
-    sys.stdout.write('-----------------------------------------------------------------------------------\n')
-    cites = 'Citations for Synthetic tree'
+def get_tree_from_synth(ott_ids, label_format="name", citation="cites.txt",):
+    assert label_format in ['id', 'name', 'name_and_id']
+    resp = treemachine.get_synth_tree_pruned(ott_ids=ott_ids, label_format=label_format)
+    cites = ''
+    sys.stdout.write("gathering citations")
     for study in resp['supporting_studies']:
+        sys.stdout.write('.')
         study = study.split('@')[0]
         query = {"ot:studyId":study}
         new_cite = oti.find_studies(query_dict = query, verbose=True)
         #print new_cite[0].keys()
         cites = cites + '\n' + to_string(new_cite[0]['ot:studyPublicationReference'])
-    cites = cites + '\n' +phylesystemref + synthref
-    sys.stdout.write(cites)
-    sys.stdout.write('-----------------------------------------------------------------------------------\n')
-    return resp['newick']
+  #  cites = cites + '\n' +phylesystemref + synthref
+    with open(citation,'w') as citfile:
+        citfile.write(cites)
+    sys.stdout.write("citations printed to {}\n".format(citation))
+    tre = Tree.get(data=resp['newick'],
+                   schema="newick",
+                   suppress_internal_node_taxa=True)
+    tre.suppress_unifurcations()
+    return tre
 
 
 

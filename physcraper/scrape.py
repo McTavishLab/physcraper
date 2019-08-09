@@ -31,7 +31,7 @@ from physcraper import writeinfofiles
 from physcraper import AWSWWW
 
 _VERBOSE = 1
-_DEBUG = 1
+_DEBUG = 0
 def debug(msg):
     """short debugging command
     """
@@ -292,7 +292,7 @@ class PhyscraperScrape(object):
                 last_blast, "%Y/%m/%d")).days)
             if time_passed > delay:
                 query = seq.symbols_as_string().replace("-", "").replace("?", "")
-                tmpfile.write(query)
+               # tmpfile.write(query)
                 if self.config.blast_loc == "local":
                     file_ending = "txt"
                 else:
@@ -311,11 +311,11 @@ class PhyscraperScrape(object):
                         else:
                             equery = "txid{}[orgn]".format(self.mrca_ncbi)
                         debug(equery)
-                        tmpfile.write("\nequery\n")
-                        tmpfile.write(equery)
-                        tmpfile.write("\nquery\n")
-                        tmpfile.write(query)
-                        tmpfile.close()
+               #         tmpfile.write("\nequery\n")
+               #         tmpfile.write(equery)
+               #         tmpfile.write("\nquery\n")
+               #         tmpfile.write(query)
+               #         tmpfile.close()
                         self.run_web_blast_query(query, equery, fn_path)
                     self.data.otu_dict[otu_id]['^physcraper:last_blasted'] = today
                 else:
