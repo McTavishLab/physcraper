@@ -73,7 +73,7 @@ def get_tree_from_synth(ott_ids, label_format="name", citation="cites.txt",):
         query = {"ot:studyId":study}
         new_cite = oti.find_studies(query_dict = query, verbose=True)
         #print new_cite[0].keys()
-        cites = cites + '\n' + to_string(new_cite[0]['ot:studyPublicationReference']) + ew_cite[0]['ot:studyPublication']
+        cites = cites + '\n' + to_string(new_cite[0]['ot:studyPublicationReference']) + new_cite[0]['ot:studyPublication']
   #  cites = cites + '\n' +phylesystemref + synthref
     with open(citation,'w') as citfile:
         citfile.write(cites)
