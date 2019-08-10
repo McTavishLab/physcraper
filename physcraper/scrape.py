@@ -374,7 +374,8 @@ class PhyscraperScrape(object):
                         fn.write("blast_threshold_not_passed: {}, {}, {}\n".format(sscinames, gb_acc, gi_id))
                         fn.close()
                 else:
-                    sys.stdout.write("skipping acc {}, incorrect format\n".format(gb_acc))
+                    pass
+                    #sys.stdout.write("skipping acc {}, unexpected format\n".format(gb_acc))
 
 
 
@@ -652,18 +653,18 @@ class PhyscraperScrape(object):
                         reason = "seq {} is supersequence of original seq {}, "\
                                              "both kept in alignment ".format(new_otu_label, otu_lab)
                         if _VERBOSE or _DEBUG:
-                            sys.stdout.write(reason)
+                            sys.stdout.write("\n" + reason)
                     elif existing_tax_id != tax_new_seq:  # different taxa
                         reason = "seq {} is supersequence of {}, but different taxon ".format(new_otu_label, otu_lab)
                         if _VERBOSE or _DEBUG:
-                            sys.stdout.write(reason)
+                            sys.stdout.write("\n" + reason)
                         #can still be added
                     else:
                         # new seq s a super sequence, delet old one and add new one. DO NOT KEEP CHECKING
                         del seq_dict[otu_lab]
                         seq_dict[new_otu_label] = seq
                         self.data.remove_taxa_aln_tre(otu_lab)
-                        reason = "seq {} is supersequence of {}, {} added and {} removed ".format(new_otu_label, otu_lab, new_otu_label, otu_lab)
+                        reason = "\nseq {} is supersequence of {}, {} added and {} removed ".format(new_otu_label, otu_lab, new_otu_label, otu_lab)
                         if _VERBOSE or _DEBUG:
                             sys.stdout.write(reason)
                         self.data.otu_dict[otu_lab]['^physcraper:status'] = "deleted, {} is supersequence ".format(new_otu_label)
@@ -737,13 +738,13 @@ class PhyscraperScrape(object):
         aln_sp_d = self.make_sp_dict(aln_otus)
         debug("There are {} taxa in aln".format(len(aln_sp_d)))
         alltax = set(new_sp_d.keys()).union(aln_sp_d.keys())
-        debug("The total set of taxa counts {}".format(len(alltax)))
+        sys.stdout.write("{} taxa in orginal alignment; {} taxa in updated alignemnt {}, keeping max {} seq per taxon".format(len(aln_sp_d), len(alltax)), threshold)
         for tax_id in new_sp_d:
             debug(" {} new seqs for taxon {}".format(len(new_sp_d[tax_id]), tax_id))
             tax_otus = []
             current_num = len(aln_sp_d.get(tax_id, []))
             if current_num > threshold:
-                sys.stdout.write("no sequences added for taxon {}, as {} already in alignmenet".format(tax_id, current_num))
+#                sys.stdout.write("no sequences added for taxon {}, as {} already in alignmenet".format(tax_id, current_num))
                 pass #already enough
             else:
                 count = threshold - len(aln_sp_d.get(tax_id,[]))

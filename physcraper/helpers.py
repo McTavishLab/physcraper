@@ -4,7 +4,7 @@ import subprocess
 import contextlib
 
 
-_DEBUG = 1
+_DEBUG = 0
 def debug(msg):
     """short debugging command
     """
