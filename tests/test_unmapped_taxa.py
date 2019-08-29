@@ -5,7 +5,7 @@ import os
 from dendropy import DnaCharacterMatrix
 
 #Use OpenTree phylesystem identifiers to get study and tree
-study_id = "pg_873"
+study_id = "ot_350"
 tree_id = "tree1679"
 seqaln = "tests/data/minitest.fas"
 mattype = "fasta"
