@@ -4,6 +4,7 @@ venv*/
 *.pyo
 *.aux
 *.log
+*.p
 build/
 Physcraper.egg-info/*
 tests/output/*
