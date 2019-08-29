@@ -15,8 +15,9 @@ Please contact ejmctavish, gmail if you need any help!
 
 see also [here](./How_to_start.md)
 
-##### Dependencies (need to be in path): 
+##### Optional dependencies (need to be in path): 
 
+- Muscle 
 - PaPaRa http://sco.h-its.org/exelixis/web/software/papara/index.html 
 - RAxML http://sco.h-its.org/exelixis/web/software/raxml/index.html 
 - BLAST+ https://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Web&PAGE_TYPE=BlastDocs&DOC_TYPE=Download
@@ -59,3 +60,39 @@ The Documentation about the different classes can be found [here](https://physcr
 ### Tests
 
 There are some tests [here](./test/) and [here](./ws-test/), which test the major functionality of the code. If you want to test if the code works on your machine, please run `python tests/testfilesetup.py` and then `sh tests/run_test.sh`,  `sh ws-tests/run_ws-tests.sh`.
+
+
+### Notes to self
+
+rsync -av ftp.ncbi.nih.gov::pub/taxonomy/gi_taxid_nucl.dmp.gz gi_taxid_nucl.dmp.gz
+gunzip /home/ejmctavish/ncbi/gi_taxid_nucl.dmp.gz
+
+wget http://purl.org/opentree/ott/ott2.9/ott2.9.tgz 
+
+tar -zxvf ott2.9.tgz 
+
+
+wget files.opentreeoflife.org/ott/ott3.0/ott3.0.tgz
+tar -xzvf ott3.0.tgz
+
+grep ncbi: ../ott3.0/taxonomy.tsv | sed -E -e "s/([0-9]+).+?\|.+?\|(.+?)\|.+?\|.*ncbi:([0-9]+).*/\\1,\\3,\\2/" > ott_ncbi
+
+OR
+
+grep ncbi: ott3.0/taxonomy.tsv | sed -r -e "s/([0-9]+).+?\|.+?\|(.+?)\|.+?\|.*ncbi:([0-9]+).*/\\1,\\3,\\2/" > physcraper/taxonomy/ott_ncbi
+
+RSYNC_COMMAND=$(s.system("rsync -av ftp.ncbi.nih.gov::pub/taxonomy/gi_taxid_nucl.dmp.gz {}.gz".format(self.config.ncbi_dmp))
+os.system("tar -xzvf {}.gz".format(self.config.ncbi_dmp)))
+
+    if [ $? -eq 0 ]; then
+        # Success do some more work!
+
+        if [ -n "${RSYNC_COMMAND}" ]; then
+            # Stuff to run, because rsync has changes
+        else
+            # No changes were made by rsync
+        fi
+    else
+        # Something went wrong!
+        exit 1
+    fi
