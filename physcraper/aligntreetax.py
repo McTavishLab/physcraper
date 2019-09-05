@@ -1,17 +1,8 @@
 import sys
 import re
 import os
-import io
-import subprocess
-import datetime
-import glob
 import json
-import configparser
 import pickle
-import random
-import contextlib
-import time
-import csv
 
 from dendropy import Tree, DnaCharacterMatrix, DataSet, datamodel
 from physcraper import ncbi_data_parser

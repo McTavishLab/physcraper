@@ -1,15 +1,7 @@
 import sys
-import re
 import os
-import subprocess
 import datetime
-import glob
-import json
 import configparser
-import pickle
-import random
-import time
-import csv
 
 from physcraper import ncbi_data_parser  # is the ncbi data parser class and associated functions
 
@@ -181,7 +173,7 @@ class ConfigObj(object):
                 "file `%s` does not exists" % self.ott_ncbi
         )
         # rewrites relative path to absolute path so that it behaves when changing dirs
-        self.id_pickle = os.path.abspath(config["taxonomy"]["id_pickle"])
+        self.id_pickle = os.path.abspath(config["taxonomy"]["id_pickle"]) #TODO wtf?
         
         ####
         # check database status
