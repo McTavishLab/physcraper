@@ -3,6 +3,11 @@ import sys
 import subprocess
 import contextlib
 
+if sys.version_info[0] < 3:
+    str_type = unicode
+else:
+    str_type = bytes 
+
 
 _DEBUG = 0
 def debug(msg):
@@ -25,11 +30,11 @@ def get_raxml_ex():
 def to_string(input):
     if isinstance(input, str):
         return input
-    elif isinstance(input, unicode):
-        output = input.encode('ascii','replace')
+    elif isinstance(input, str_type):
+        output = input.decode('ascii','replace')
         return output
     else:
-        return None
+        return input
 
 
 @contextlib.contextmanager

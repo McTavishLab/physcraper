@@ -12,7 +12,10 @@ from peyotl.nexson_syntax import (
 )
 import dendropy
 
-configfi = "aws.config"
+from physcraper import helpers
+
+
+configfi = "tests/data/test.config"
 study_id = "ot_350"
 tree_id = "Tr53297"
 workdir ="scrape_ot_350"
@@ -37,24 +40,24 @@ tre = dendropy.Tree.get(data=newick,
 
 
 #Pull down an alignment from treebase.
-dataset = physcraper.opentree_helpers.get_dataset_from_treebase(study_id,
-                                                                phylesystem_loc='api')
+#dataset = physcraper.opentree_helpers.get_dataset_from_treebase(study_id,
+#                                                                phylesystem_loc='api')
 
-aln = None
+#aln = None
 ##order of data matrices is arbitratry, so we choose one that matches the tree length
-for mat in dataset.char_matrices:
-    if len(mat) == len(tre.taxon_namespace):
-        aln = mat
+#for mat in dataset.char_matrices:
+#    if len(mat) == len(tre.taxon_namespace):
+#        aln = mat
 
 # If we didn't find an alignement that is an exact match, try the 1st one
-if not aln:
-  aln = dataset.char_matrices[0]
+#if not aln:
+#  aln = dataset.char_matrices[0]
 
 #Write it out to file, os we have the 'before' alignment
-aln.write(path="{}{}.aln".format(study_id, tree_id), schema="nexus")
+#aln.write(path="{}{}.aln".format(study_id, tree_id), schema="nexus")
 
 # If we are using an alinment we already wrote  to file earlier we can use this
-#aln = dendropy.DnaCharacterMatrix.get(file=open("{}{}.aln".format(study_id, tree_id)), schema="nexus", taxon_namespace=tre.taxon_namespace)
+aln = dendropy.DnaCharacterMatrix.get(file=open("{}{}.aln".format(study_id, tree_id)), schema="nexus", taxon_namespace=tre.taxon_namespace)
 
 tre.write(path="{}{}.tre".format(study_id, tree_id), schema="nexus")
 

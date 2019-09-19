@@ -185,6 +185,7 @@ class AlignTreeTax(object):
         if missing:
             errmf = 'NAME RECONCILIATION Some of the taxa in the tree are not in the alignment or vice versa' \
                     ' and will be pruned. Missing "{}"\n'
+            missing = [to_string(tax) for tax in missing]
             errm = errmf.format('", "'.join(missing))
             sys.stderr.write(errm)
         del_aln = []
