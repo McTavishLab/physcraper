@@ -94,10 +94,9 @@ class ConfigObj(object):
 
     def __init__(self, configfi, interactive=None):
        # debug(configfi)
-        assert os.path.isfile(configfi)
         if _DEBUG:
             sys.stdout.write("Building config object\n")
-        assert os.path.isfile(configfi), "file `%s` does not exists" % configfi
+        assert os.path.isfile(configfi), "file `%s` does not exist" % configfi
         config = configparser.ConfigParser()
         config.read_file(open(configfi))
         
