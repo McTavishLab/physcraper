@@ -46,24 +46,42 @@ make sure the programs are accessible from everywhere, thus add them to your PAT
 
   Now, generate the virtual python environment with:
 
-  `virtualenv -p python2 name_of_your_virtual_env`  # currently it only runs on python 2.7, you may need to just say `python` instead of `python2`, depending on your system
+  `virtualenv -p python2 name_of_your_virtual_env`  # currently it only runs on python 2.7, so you may need to just say `python` instead of `python2`, depending on your system.
+  LLSR: The previous does not work for me :(
 
-  We will do this:
+  We will call it `venv-physcraper`:
 
   `virtualenv --python=/usr/bin/python2.7 venv-physcraper`
 
-  To use the virtual machine you need to activate it before doing anything else. This needs to be done before you start installing software in your virtual maschine or before running physcraper.
+  If that fails, you may have to use the following two:
 
-  `source NameOfYourENV/bin/activate`
+      `python2.7  -m pip install virtualenv`
+      `python2.7  -m virtualenv venv-physcraper`
 
-  and to deactivate it: `deactivate`
+
+  To actually use the virtual machine once generated, you need to activate it before doing anything else, by doing:
+
+  `source name_of_your_virtual_env/bin/activate`
+
+  In our case, we did:
+
+  `source venv-physcraper/bin/activate`
+
+  If you have finished running physcraper and you want to deactivate your environment, simply type: `deactivate`
 
 #### 3. install python requirements and dependencies:
 
-run from within the physcraper main folder:
+First, force reinstalling numpy package in a previous version:
 
-* `python setup.py install` This process is really fast.
-* `pip install -r requirements.txt` This was fast too, but it errorred for me.
+ `pip install --force-reinstall numpy==1.14.5`
+
+The following needs to run from within the physcraper main folder, so make sure you are in that directory:
+
+  `cd physcraper`
+
+Now, type:
+  - `python setup.py install` This process is really fast (less than 1 min).
+  - `pip install -r requirements.txt` This takes 3-5 min.
 
 #### 4. install a local instance of the BLAST database:
 
@@ -75,18 +93,17 @@ Depending on the size of your tree to be updated, there are things to consider.
   * **Amazon cloud service**: If you do not have a fast computer, there are options to pay for a pre-installed cloud service using [amazon](https://aws.amazon.com/marketplace/pp/B00N44P7L6/ref=mkt_wir_ncbi_blast).
   * **local blast database**: This is the __recommended method__, as it is the fastest and does not heavily depend on good internet connection. Especially, if the trees are bigger and/or you have a relatively fast computer, this might be the best option. Ncbi regularly publishes the databases, that can easily be downloaded and initiated. -->
 
-  * **Install a local Blast database:**
+  * **Install a local NCBI BLAST database:**
 
       General information about the BLAST database can be found here: ftp://ftp.ncbi.nlm.nih.gov/blast/documents/blastdb.html.
 
-      We are currently working on implementing a version that uses the online blast searches, but this is not yet working reliable.
+      We are currently working on implementing a version that uses the online blast searches, but this is not yet working reliably.
 
-      In Linux to install the BLAST database do the following (for Windows and MAC please use google to figure it out, there should be plenty of information):
+      UNIX: to install the NCBI BLAST+ database follow these simple tests.
 
       * `open a terminal`
       * `cd /to/the/folder/of/your/future/blastdb`
-      * LINUX: `sudo apt-get install ncbi-blast+` # if not already installed earlier.
-
+      * `sudo apt-get install ncbi-blast+`
       * `wget 'ftp://ftp.ncbi.nlm.nih.gov/blast/db/nt.*'`  # this downloads all nt-compressed files
       * `update_blastdb nt`
       * `cat *.tar.gz | tar -xvzf - -i`  # macOS `tar` does not support the `-i` flag,  you need to use homebrew to `brew install gnu-tar` and replace the `tar` command by `gtar`
@@ -100,9 +117,13 @@ Depending on the size of your tree to be updated, there are things to consider.
        -->
        If you want to update the databases earlier go back to step 1.
 
+       MAC: please refer to these [up to date instructions](https://www.blaststation.com/intl/members/en/howtoblastmac.html)
+
+       WINDOWS: Not sure yet.
+
   *  **Install the taxonomy database:**
 
-      install ncbi taxonomy database to retrieve taxon information from BLAST searches into the same directory as your blastdb from the step before.
+      Install ncbi taxonomy database to retrieve taxon information from BLAST searches into the same directory as your blastdb from the step before.
 
         * `cd /to/the/folder/of/your/blastdb`
         * `wget 'ftp://ftp.ncbi.nlm.nih.gov/blast/db/taxdb.tar.gz'` # Download the taxdb archive
