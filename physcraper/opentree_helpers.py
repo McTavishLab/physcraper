@@ -11,7 +11,7 @@ from peyotl.nexson_syntax import (
     extract_otu_nexson,
     PhyloSchema
 )
-
+from peyotl.api import APIWrapper
 
 
 from dendropy import Tree, DnaCharacterMatrix, DataSet, datamodel
@@ -39,6 +39,30 @@ else:
 
 phylesystemref = "McTavish EJ, Hinchliff CE, Allman JF, Brown JW, Cranston KA, Holder MT,  Phylesystem: a gitbased data store for community curated phylogenetic estimates. Bioinformatics. 2015 31 2794-800. doi: 10.1093/bioinformatics/btv276\n"
 synthref = "Redelings BD, Holder MT. A supertree pipeline for summarizing phylogenetic and taxonomic information for millions of species. PeerJ. 2017;5:e3058. https://doi.org/10.7717/peerj.3058 \n"
+
+def get_ottids_from_gbifids(gbif_ids):
+    """Returns a dictionary mapping gbif_ids to ott_ids. 
+    ott_id is set to 'None' if the gbif id is not found in the Open Tree Txanomy
+    """
+    if isinstance(gbif_ids, int) or isinstance(gbif_ids, str):
+        gbif_ids = [gbif_ids]
+    assert isinstance(gbif_ids, list)
+    url = 'https://api.opentreeoflife.org/v3/taxonomy/taxon_info'
+    headers = {'content-type':'application/json'}
+    id_match = {}
+    for tax in gbif_ids:
+        tax = int(tax)
+        payload = json.dumps(dict(source_id='gbif:{}'.format(tax)))
+        res = requests.post(url, data=payload, headers=headers)
+        if res.status_code == 200:
+            ott_id = int(res.json()['ott_id'])
+            id_match[tax] = ott_id
+        elif res.status_code == 400:
+            id_match[tax] = None
+        else:
+            sys.stderr.write("error getting ott_id for gbif id {}, {}, {}".format(tax,res.status_code, res.reason))
+    return id_match
+
 
 
 def bulk_tnrs_load(filename, ids_obj = None):
