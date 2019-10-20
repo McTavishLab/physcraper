@@ -20,12 +20,9 @@ def test_opentree_service():
 
 def test_ottids_from_gbifids():
     gbif_id = 2440447
-    match = opentree_helpers.get_ottids_from_gbifids(gbif_id)
-    assert len(match) == 1
-    assert match[2440447] == 124230
-    gbif_ids = ['1428475', '2440447', '2235372', '66666']
-    matches = opentree_helpers.get_ottids_from_gbifids(gbif_ids)
-    assert len(matches) == 4
-    assert matches[2440447] == 124230
-    assert matches[66666] == None
+    match = opentree_helpers.get_ottid_from_gbifid(gbif_id)
+    assert match == 124230
+    gbif_id2 = '66666'
+    match2 = opentree_helpers.get_ottid_from_gbifid(gbif_id2)
+    assert match2 == None
 
