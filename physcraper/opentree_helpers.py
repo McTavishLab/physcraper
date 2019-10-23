@@ -87,7 +87,15 @@ def bulk_tnrs_load(filename, ids_obj = None):
 
 def get_tree_from_synth(ott_ids, label_format="name", citation="cites.txt"):
     assert label_format in ['id', 'name', 'name_and_id']
-    resp = treemachine.get_synth_tree_pruned(ott_ids=ott_ids, label_format=label_format)
+    url = 'https://api.opentreeoflife.org/v3/tree_of_life/induced_subtree'
+    headers = {'content-type':'application/json'}
+    payload = json.dumps(dict(ott_ids=ott_ids, label_format = label_format))
+    res = requests.post(url, data=payload, headers=headers)
+    if res.status_code == 200:
+        pass
+    else:
+        sys.stderr.write("error getting synth tree, {}, {}, {}\n".format(res.status_code, res.reason, res.json()['message']))
+        return None
     cites = ''
     sys.stdout.write("gathering citations")
     for study in resp['supporting_studies']:
@@ -96,12 +104,12 @@ def get_tree_from_synth(ott_ids, label_format="name", citation="cites.txt"):
         query = {"ot:studyId":study}
         new_cite = oti.find_studies(query_dict = query, verbose=True)
         #print new_cite[0].keys()
-        cites = cites + '\n' + to_string(new_cite[0]['ot:studyPublicationReference']) + new_cite[0]['ot:studyPublication']
+        cites = cites + '\n' + to_string(new_cite[0]['ot:studyPublicationReference']) + '\n' + new_cite[0]['ot:studyPublication']
   #  cites = cites + '\n' +phylesystemref + synthref
     with open(citation,'w') as citfile:
         citfile.write(cites)
     sys.stdout.write("citations printed to {}\n".format(citation))
-    tre = Tree.get(data=resp['newick'],
+    tre = Tree.get(data=res.json()['newick'],
                    schema="newick",
                    suppress_internal_node_taxa=True)
     tre.suppress_unifurcations()
@@ -351,12 +359,12 @@ def get_ott_taxon_info(spp_name):
     try:
         res = taxomachine.TNRS(spp_name)["results"][0]
     except IndexError:
-        sys.stderr.write("match to taxon {} not found in open tree taxonomy".format(spp_name))
-        return 0
+        sys.stderr.write("match to taxon {} not found in open tree taxonomy\n".format(spp_name))
+        return None, None, None
     if res['matches'][0]['is_approximate_match'] == 1:
         sys.stderr.write("""exact match to taxon {} not found in open tree taxonomy.
-                          Check spelling. Maybe {}?""".format(spp_name, res['matches'][0][u'ot:ottTaxonName']))
-        return 0
+                          Check spelling. Maybe {}?\n""".format(spp_name, res['matches'][0][u'ot:ottTaxonName']))
+        return None, None, None
     if res["matches"][0]["is_approximate_match"] == 0:
         ottid = res["matches"][0]["taxon"][u"ott_id"]
         ottname = res["matches"][0]["taxon"][u"unique_name"]
@@ -367,7 +375,7 @@ def get_ott_taxon_info(spp_name):
         return ottid, ottname, ncbi_id
     else:
         sys.stderr.write("match to taxon {} not found in open tree taxonomy".format(spp_name))
-        return 0
+        return None, None, None
 
 def check_if_ottid_in_synth(ottid):
     url = 'https://api.opentreeoflife.org/v3/tree_of_life/node_info'
