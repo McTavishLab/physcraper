@@ -98,7 +98,7 @@ def get_tree_from_synth(ott_ids, label_format="name", citation="cites.txt"):
         return None
     cites = ''
     sys.stdout.write("gathering citations")
-    for study in resp['supporting_studies']:
+    for study in res.json()['supporting_studies']:
         sys.stdout.write('.')
         study = study.split('@')[0]
         query = {"ot:studyId":study}
