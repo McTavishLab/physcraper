@@ -1,7 +1,7 @@
 INSTALL
 
 
-Currently requires python2.7.
+`Physcraper` currently requires python2.7.
 Work is in progess on cleaning up the requirements, and making physcraper python3 ready.
 
 
@@ -28,13 +28,10 @@ Dependencies:
     Currently complete phylogenetic updating requires
     raxmlHPC and muscle to be installed and in the path.
 
-    Check if they are installed using 
+    Check if they are installed using
 
     which muscle
     which raxmlHPC
 
-    You can generate updated alignments to analyze using other phylogenetic software by creating a Scrape object and 
+    You can generate updated alignments to analyze using other phylogenetic software by creating a Scrape object and
     running scrape.align__query_seqs()
-
-
-
