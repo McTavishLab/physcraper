@@ -76,7 +76,7 @@ def bulk_tnrs_load(filename, ids_obj = None):
         if name.get("ottId"):
             otu_dict[otu]["^ot:ottId"] = name["ottId"]
         for source in name.get("taxonomicSources", []):
-            debug(source)
+            #debug(source)
             if source:
                 taxsrc = source.split(":")
                 assert len(taxsrc) == 2, taxsrc
@@ -103,8 +103,11 @@ def get_tree_from_synth(ott_ids, label_format="name", citation="cites.txt"):
     for study in res.json()['supporting_studies']:
         sys.stdout.write('.')
         study = study.split('@')[0]
-        query = {"ot:studyId":study}
-        new_cite = oti.find_studies(query_dict = query, verbose=True)
+        index_url = 'https://api.opentreeoflife.org/v3/studies/find_studies'
+        payload = json.dumps({"property":"ot:studyId","value":study,"verbose":"true"})
+        res_cites = requests.post(index_url, data=payload, headers=headers)
+        new_cite = res_cites.json()['matched_studies']
+        debug(new_cite)
         #print new_cite[0].keys()
         cites = cites + '\n' + to_string(new_cite[0]['ot:studyPublicationReference']) + '\n' + new_cite[0]['ot:studyPublication']
   #  cites = cites + '\n' +phylesystemref + synthref
