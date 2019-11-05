@@ -76,8 +76,10 @@ def bulk_tnrs_load(filename, ids_obj = None):
         if name.get("ottId"):
             otu_dict[otu]["^ot:ottId"] = name["ottId"]
         for source in name.get("taxonomicSources", []):
+            debug(source)
             if source:
                 taxsrc = source.split(":")
+                assert len(taxsrc) == 2, taxsrc
                 otu_dict[otu]["^{}:taxon".format(taxsrc[0])] = taxsrc[1]
     for otu in otu_dict:
         otu_dict[otu]["^physcraper:status"] = "original"
