@@ -87,6 +87,8 @@ def bulk_tnrs_load(filename, ids_obj = None):
     return otu_dict
 
 
+#def get_cite_for_study(study_id):
+
 def get_tree_from_synth(ott_ids, label_format="name", citation="cites.txt"):
     assert label_format in ['id', 'name', 'name_and_id']
     url = 'https://api.opentreeoflife.org/v3/tree_of_life/induced_subtree'
@@ -101,6 +103,8 @@ def get_tree_from_synth(ott_ids, label_format="name", citation="cites.txt"):
     cites = ''
     sys.stdout.write("gathering citations")
     for study in res.json()['supporting_studies']:
+        ## Luna - change this so that get citation info for study is its own function
+        ## e.g. new_cite = get_cite_for_study_id(study)
         sys.stdout.write('.')
         study = study.split('@')[0]
         index_url = 'https://api.opentreeoflife.org/v3/studies/find_studies'
