@@ -14,7 +14,7 @@ If that fails, you may have to use:
     python2.7  -m pip install virtualenv
     python2.7  -m virtualenv venv-physcraper
 
-Once you have a venv-physcraper directory, you can run:
+Once you have a venv-physcraper directory, you can activate it with:
 
     source venv-physcraper/bin/activate
     ## This force reinstalling numpy first is key
