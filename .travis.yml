@@ -4,10 +4,10 @@ python:
 # command to install dependencies
 
   
- before_install:
+before_install:
   - sudo apt-get update
   
- install:
+install:
   ### install blast+
   # this fails often with connection errors
   #- sudo apt-get install ncbi-blast+
