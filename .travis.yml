@@ -28,10 +28,8 @@ before_install:
   - conda update -q conda
   - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION
   - source activate test-environment
-  - pip install --force-reinstall numpy==1.14.5
-  - conda install -c bioconda raxml
-  - pip install numpy
-  - python setup.py install
+  - conda install -c raxml
+
 
   #### ete fails now, because of conda
   - conda install -c etetoolkit ete2
@@ -48,9 +46,10 @@ before_install:
 
 install:
   # install requirements of physcraper
-  - pip install --quiet -r requirements.txt
-  - pip install --quiet . 
-
+  - pip install --force-reinstall numpy==1.14.5
+  - cd physcraper
+  - pip install -r requirements.txt
+  - python setup.py install
 
 # command to run tests
 script:
