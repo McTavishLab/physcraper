@@ -28,7 +28,7 @@ before_install:
   - conda update -q conda
   - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION
   - source activate test-environment
-  - conda install -c raxml
+  - conda install -c bioconda raxml 
 
 
   #### ete fails now, because of conda
