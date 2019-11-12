@@ -13,7 +13,6 @@ install:
   - pip install --force-reinstall numpy==1.14.5
   - pip install -r requirements.txt
   - python setup.py install
-  - echo 'no' | python tests/testfilesetup.py
   
   
   ### install blast+
