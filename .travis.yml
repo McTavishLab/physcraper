@@ -6,6 +6,17 @@ python:
 before_install:
   - sudo apt-get update
 
+
+install:
+  # install requirements of physcraper
+  - pwd
+  - ls
+  - pip install --force-reinstall numpy==1.14.5
+  - cd physcraper
+  - pip install -r requirements.txt
+  - python setup.py install
+  
+  
   ### install blast+
   # this fails often with connection errors
   - sudo apt-get install ncbi-blast+
@@ -43,14 +54,7 @@ before_install:
   #- sudo apt install libopenmpi-dev
   - sudo apt install mpich
   - export MPICC=mpiicc
-
-install:
-  # install requirements of physcraper
-  - pip install --force-reinstall numpy==1.14.5
-  - cd physcraper
-  - pip install -r requirements.txt
-  - python setup.py install
-
+  
 # command to run tests
 script:
   - wget 'https://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdump.tar.gz'
