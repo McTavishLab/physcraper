@@ -32,9 +32,10 @@ def test_no_mrca():
 
     # print(ids.mrca_ott, ids.mrca_ncbi)
     data_obj = pickle.load(open("tests/data/precooked/tiny_dataobj.p", 'rb'))
+    
     filteredScrape = PhyscraperScrape(data_obj, ids, ingroup_mrca)
     filteredScrape.threshold = 5
-    assert filteredScrape.mrca_ncbi == 18794
+    assert filteredScrape.mrca_ncbi == 795077
     
     blast_dir = "tests/data/precooked/fixed/tte_blast_files"
     filteredScrape._blasted = 1
@@ -42,3 +43,7 @@ def test_no_mrca():
     filteredScrape.remove_identical_seqs()
     assert len(filteredScrape.new_seqs_otu_id) in [23,17] #Blurghhh, local vs remote searches get diffenrt number of seqs!
 
+
+
+if __name__ == "__main__":
+    test_no_mrca()

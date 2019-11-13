@@ -4,7 +4,21 @@ coverage
 DendroPy
 DateTime
 -e git+https://github.com/OpenTreeOfLife/peyotl@api_v3#egg=peyotl
-pandas
-pytest-xdist
+
+requests
+sh
+urllib3>=1.23
+wsgiref
+
+numpy
+pytest
 pytest-cov
-urllib3
+pytest-xdist
+
+m2r; python_version > '2.7.13'
+recommonmark
+
+#past
+future
+
+
