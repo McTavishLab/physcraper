@@ -3,7 +3,7 @@
 [![Build Status](https://travis-ci.org/McTavishLab/physcraper.svg?branch=dev)](https://travis-ci.org/McTavishLab/physcraper)[![Documentation](https://readthedocs.org/projects/physcraper/badge/?version=latest&style=flat)](https://physcraper.readthedocs.io/en/latest/)[![codecov](https://codecov.io/gh/McTavishLab/physcraper/branch/dev/graph/badge.svg)](https://codecov.io/gh/McTavishLab/physcraper)
 
 Continual gene tree updating. 
-Uses a tree from Open tree of Life (or your own tree) and an alignment to search for and adds homologous sequences to phylogenetic inference. 
+Use a tree (from the litteraturem, a synthetic tree from Open Tree of Life, or your own tree) and an alignment of any size(?) to search for and add homologous sequences for phylogenetic inference. 
 
 ![](https://cdn.rawgit.com/snacktavish/physcraper/master/docs/physcraper.svg)
 
@@ -11,27 +11,15 @@ Uses a tree from Open tree of Life (or your own tree) and an alignment to search
 The tool is under current development in the McTavish Lab.
 Please contact ejmctavish, gmail if you need any help!
 
+- [Installation](mds/INSTALL.md)
+- [Run it](mds/running.md)
+- [Examples]()
+- [Documentation]
+- [Tests]
+
 ### Requirements
 
 see also [here](./How_to_start.md)
-
-##### Optional dependencies (need to be in path): 
-
-- Muscle 
-- PaPaRa http://sco.h-its.org/exelixis/web/software/papara/index.html 
-- RAxML http://sco.h-its.org/exelixis/web/software/raxml/index.html 
-- BLAST+ https://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Web&PAGE_TYPE=BlastDocs&DOC_TYPE=Download
-
-##### Python packages: 
-These will all be installed if you install physcraper using 
-    python setup.py install
-
-(but note, if you are using virtualenv there are some weird interactions with setuptools and python 2.7.6)
-
-- Dendropy https://pythonhosted.org/DendroPy/ 
-- Peyotl https://github.com/OpenTreeOfLife/peyotl (currently needs to be on physcraper branch)
-- Biopython http://biopython.org/wiki/Download
-- ConfigParser 
 
 ##### Databases
 

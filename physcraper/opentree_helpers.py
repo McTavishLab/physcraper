@@ -76,8 +76,10 @@ def bulk_tnrs_load(filename, ids_obj = None):
         if name.get("ottId"):
             otu_dict[otu]["^ot:ottId"] = name["ottId"]
         for source in name.get("taxonomicSources", []):
+            #debug(source)
             if source:
                 taxsrc = source.split(":")
+                assert len(taxsrc) == 2, taxsrc
                 otu_dict[otu]["^{}:taxon".format(taxsrc[0])] = taxsrc[1]
     for otu in otu_dict:
         otu_dict[otu]["^physcraper:status"] = "original"
@@ -85,6 +87,36 @@ def bulk_tnrs_load(filename, ids_obj = None):
     return otu_dict
 
 
+
+#def get_cite_for_study(study_id):
+# to complement the function we should do also def get_ott_id_data(ott_id):
+  
+# following function assumes that study_id is an object from 
+# url = 'https://api.opentreeoflife.org/v3/tree_of_life/induced_subtree'
+# headers = {'content-type':'application/json'}
+# payload = json.dumps(dict(ott_ids=ott_ids, label_format = label_format))
+# res = requests.post(url, data=payload, headers=headers)
+
+def get_citations_from_json(synth_response, citations_file):
+    assert isinstance(citations_file, str) 
+    f = open(citations_file,"w+")
+    sys.stdout.write("Gathering citations ...")
+    assert 'supporting_studies' in synth_response.keys(), synth_response.keys()
+    for study in synth_response['supporting_studies']:
+        study = study.split('@')[0]
+        index_url = 'https://api.opentreeoflife.org/v3/studies/find_studies'
+        headers = {'content-type':'application/json'}
+        payload = json.dumps({"property":"ot:studyId","value":study,"verbose":"true"})
+        res_cites = requests.post(index_url, data=payload, headers=headers)
+        new_cite = res_cites.json()['matched_studies']
+        debug(new_cite)
+        f.write(to_string(new_cite[0]['ot:studyPublicationReference']) + '\n' + new_cite[0]['ot:studyPublication'] + '\n')
+    f.close()
+    sys.stdout.write("Citations printed to {}\n".format(citations_file))
+ 
+# another way to do it is calling each id
+# get_citation_for_study(study_id)
+# use append
 def get_tree_from_synth(ott_ids, label_format="name", citation="cites.txt"):
     assert label_format in ['id', 'name', 'name_and_id']
     url = 'https://api.opentreeoflife.org/v3/tree_of_life/induced_subtree'
@@ -96,23 +128,12 @@ def get_tree_from_synth(ott_ids, label_format="name", citation="cites.txt"):
     else:
         sys.stderr.write("error getting synth tree, {}, {}, {}\n".format(res.status_code, res.reason, res.json()['message']))
         return None
-    cites = ''
-    sys.stdout.write("gathering citations")
-    for study in res.json()['supporting_studies']:
-        sys.stdout.write('.')
-        study = study.split('@')[0]
-        query = {"ot:studyId":study}
-        new_cite = oti.find_studies(query_dict = query, verbose=True)
-        #print new_cite[0].keys()
-        if new_cite:
-            cites = cites + '\n' + to_string(new_cite[0]['ot:studyPublicationReference']) + '\n' + new_cite[0]['ot:studyPublication']
-  #  cites = cites + '\n' +phylesystemref + synthref
-    with open(citation,'w') as citfile:
-        citfile.write(cites)
-    sys.stdout.write("citations printed to {}\n".format(citation))
-    tre = Tree.get(data=res.json()['newick'],
+    synth_json = res.json()
+    tre = Tree.get(data=synth_json['newick'],
                    schema="newick",
                    suppress_internal_node_taxa=True)
+    assert 'supporting_studies' in synth_json.keys(), synth_json.keys()
+    get_citations_from_json(synth_json, citation)
     tre.suppress_unifurcations()
     return tre
 
