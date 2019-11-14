@@ -178,18 +178,22 @@ def generate_ATT_from_phylesystem(aln,
             "your alignment `%s` ist not of type DnaCharacterMatrix" % aln
     for tax in aln.taxon_namespace:
         tax.label = tax.label.replace(" ", "_")  # Forcing all spaces to underscore
-    nexson = get_nexson(study_id, phylesystem_loc)
-    newick = extract_tree(nexson,
-                          tree_id,
-                          PhyloSchema('newick',
+    try:
+        nexson = get_nexson(study_id, phylesystem_loc)
+        newick = extract_tree(nexson,
+                              tree_id,
+                              PhyloSchema('newick',
                                       output_nexml2json='1.2.1',
                                       content="tree",
                                       tip_label="ot:originalLabel"))
-    newick = newick.replace(" ", "_")  # UGH Very heavy handed, need to make sure happens on alignment side as well.
-    tre = Tree.get(data=newick,
+        newick = newick.replace(" ", "_")  # UGH Very heavy handed, need to make sure happens on alignment side as well.
+        tre = Tree.get(data=newick,
                    schema="newick",
                    preserve_underscores=True,
                    taxon_namespace=aln.taxon_namespace)
+    except:
+        sys.stderr.write("failure getting tree {} from study {} from phylesystem".format(tree_id, study_id))
+        sys.exit()
     # this gets the taxa that are in the subtree with all of their info - ott_id, original name,
     otus = get_subtree_otus(nexson, tree_id=tree_id)
     otu_dict = {}

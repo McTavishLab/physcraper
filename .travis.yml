@@ -1,23 +1,25 @@
 language: python
 python:
-  - "2.7"
+  - "2.7.15"
 # command to install dependencies
 
+  
 before_install:
   - sudo apt-get update
-
+  
+install:
   ### install blast+
   # this fails often with connection errors
-  - sudo apt-get install ncbi-blast+
+  #- sudo apt-get install ncbi-blast+
   - sudo apt-get install muscle
 
 
   #### install papara
-  - wget 'https://sco.h-its.org/exelixis/resource/download/software/papara_nt-2.5-static_x86_64.tar.gz'
-  - gunzip  -cd papara_nt-2.5-static_x86_64.tar.gz | (tar xvf - )
-  - mv papara_static_x86_64 papara
-  - export PATH="$PATH:$(pwd)"
-  - papara
+  #- wget 'https://sco.h-its.org/exelixis/resource/download/software/papara_nt-2.5-static_x86_64.tar.gz'
+  #- gunzip  -cd papara_nt-2.5-static_x86_64.tar.gz | (tar xvf - )
+  #- mv papara_static_x86_64 papara
+  #- export PATH="$PATH:$(pwd)"
+  #- papara
 
   ##### to use RAXML we need conda
   - wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
@@ -28,38 +30,41 @@ before_install:
   - conda update -q conda
   - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION
   - source activate test-environment
-  - pip install --force-reinstall numpy==1.14.5
-  - conda install -c bioconda raxml
-  - pip install numpy
-  - python setup.py install
+  - conda install -c bioconda raxml 
+
 
   #### ete fails now, because of conda
-  - conda install -c etetoolkit ete2
-  - export PATH=~/anaconda_ete/bin:$PATH
+ # - conda install -c etetoolkit ete2
+ # - export PATH=~/anaconda_ete/bin:$PATH
 
   #### check build documentation with sphinx
-  - pip install sphinx
-  - make -C docs
+ # - pip install sphinx
+ # - make -C docs
 
   #### needed for mpi4py which is in requirements
   #- sudo apt install libopenmpi-dev
-  - sudo apt install mpich
-  - export MPICC=mpiicc
-
-install:
-  # install requirements of physcraper
-  - pip install --quiet -r requirements.txt
-  - pip install --quiet . 
-
-
+  #- sudo apt install mpich
+  #- export MPICC=mpiicc
+  
 # command to run tests
-script:
+
   - wget 'https://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdump.tar.gz'
   - gunzip  -cd taxdump.tar.gz | (tar xvf - names.dmp nodes.dmp)
   - mv *.dmp taxonomy/
-  - echo 'no' | python tests/testfilesetup.py
+
+
+  - export PYTHONPATH=$PYTHONPATH:$(pwd)
+  # install requirements of physcraper
+  - /home/travis/virtualenv/python2.7.15/bin/pip install --force-reinstall numpy==1.14.5
+  - /home/travis/virtualenv/python2.7.15/bin/pip install -r requirements.txt
+  - /home/travis/virtualenv/python2.7.15/bin/pip install configparser
+  - /home/travis/virtualenv/python2.7.15/bin/python setup.py install
+  
+script:  
+  - echo 'no' | /home/travis/virtualenv/python2.7.15/bin/python tests/testfilesetup.py
   #- py.test tests/ --setup-only
-  - sh tests/run_tests.sh
+  #- sh tests/run_tests.sh
+  - /home/travis/virtualenv/python2.7.15/bin/pytest tests
 
 after_success:
   - curl -s https://codecov.io/bash | bash
