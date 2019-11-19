@@ -77,4 +77,4 @@ These will all be installed if you install physcraper using `python setup.py ins
 
 [Previous: Back home](../README.md)
 
-[Next: Running  `physcraper`]mds/(running.md) 
+[Next: Running  `physcraper`](mds/running.md) 
