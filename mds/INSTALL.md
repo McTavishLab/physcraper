@@ -3,54 +3,66 @@
 
 # Installing `physcraper`
 
+## Preinstallation requirements
 
-`physcraper` currently requires python2.7.
+- `physcraper` currently requires python2.7.
 Work is in progess on cleaning up the requirements to make it python3 ready.
+- git
 
-## Create a python virtual environment
-Recommended install procedure is using a virtual environment (are there any other ways?)
+## Download physcraper 
 
 ```
-    virtualenv --python=/usr/bin/python2.7 venv-physcraper
+git clone git@github.com:McTavishLab/physcraper.git
+```
+
+## Create a python virtual environment
+
+Recommended install procedure is using a virtual environment (are there any other ways?). From your terminal do:
+
+```
+cd replace-this-by-your-own-path/physcraper
+virtualenv --python=/usr/bin/python2.7 venv-physcraper
 ```
 
 If that fails, you may have to use:
 
 ```
-    python2.7  -m pip install virtualenv
-    python2.7  -m virtualenv venv-physcraper
+python2.7  -m pip install virtualenv
+python2.7  -m virtualenv venv-physcraper
 ```
 
 ## Activate the installed virtual environment
 Once you have a venv-physcraper directory, **_activate_** it with:
 
 ```
-    source venv-physcraper/bin/activate
-    ## This forces reinstalling numpy first is key
-    pip install --force-reinstall numpy==1.14.5
-    cd physcraper
-    pip install -r requirements.txt
-    python setup.py install
+source venv-physcraper/bin/activate
+```
+
+Force numpy library installation. _**This is key**_:
+
+```
+pip install --force-reinstall numpy==1.14.5
+pip install -r requirements.txt
+python setup.py install
 ```
 
 Dependencies:
 
-    Currently complete phylogenetic updating requires
-    raxmlHPC and muscle to be installed and in the path.
+Currently complete phylogenetic updating WITH `physcraper` requires
+[raxmlHPC](http://sco.h-its.org/exelixis/web/software/raxml/index.html) and [MUSCLE](install-muscle.md) to be installed and in the path.
 
-    Check if they are installed using
+You can check if they are already installed with:
 
-    which muscle
-    which raxmlHPC
+```
+which muscle
+which raxmlHPC
+```
 
-    You can generate updated alignments to analyze using other phylogenetic software by creating a Scrape object and
-    running scrape.align__query_seqs()
+You can generate updated alignments using other phylogenetic software by creating a Scrape object and running `scrape.align__query_seqs()`
 
 ##### Optional dependencies (need to be in path): 
 
-- Muscle 
 - PaPaRa http://sco.h-its.org/exelixis/web/software/papara/index.html 
-- RAxML http://sco.h-its.org/exelixis/web/software/raxml/index.html 
 - BLAST+ https://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Web&PAGE_TYPE=BlastDocs&DOC_TYPE=Download
 
 ##### Python packages: 
