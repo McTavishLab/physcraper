@@ -9,7 +9,10 @@
 Work is in progess on cleaning up the requirements to make it python3 ready.
 - git
 
-## Download physcraper 
+More on [here](../cruft/How_to_start.md)
+
+
+## Download `physcraper` 
 
 ```
 git clone git@github.com:McTavishLab/physcraper.git
@@ -46,7 +49,7 @@ pip install -r requirements.txt
 python setup.py install
 ```
 
-Dependencies:
+## Dependencies
 
 Currently complete phylogenetic updating WITH `physcraper` requires
 [raxmlHPC](http://sco.h-its.org/exelixis/web/software/raxml/index.html) and [MUSCLE](install-muscle.md) to be installed and in the path.
@@ -60,12 +63,12 @@ which raxmlHPC
 
 You can generate updated alignments using other phylogenetic software by creating a Scrape object and running `scrape.align__query_seqs()`
 
-##### Optional dependencies (need to be in path): 
+#### Optional dependencies (need to be in path): 
 
 - PaPaRa http://sco.h-its.org/exelixis/web/software/papara/index.html 
 - BLAST+ https://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Web&PAGE_TYPE=BlastDocs&DOC_TYPE=Download
 
-##### Python packages: 
+#### Python packages: 
 These will all be installed if you install physcraper using `python setup.py install`
 
 (but note, if you are using virtualenv there are some weird interactions with setuptools and python 2.7.6)
@@ -74,6 +77,10 @@ These will all be installed if you install physcraper using `python setup.py ins
 - Peyotl https://github.com/OpenTreeOfLife/peyotl (currently needs to be on physcraper branch)
 - Biopython http://biopython.org/wiki/Download
 - ConfigParser 
+
+## Databases
+
+The tool uses several databases, which can automatically be downloaded and updated from the National Center for Biotechnology Information ([NCBI](https://www.ncbi.nlm.nih.gov/)). If 'the tool `physcraper` wants to access the NCBI database, you will be prompted to input _**yes**_ or _**no**_.
 
 [Previous: Back home](../README.md)
 
