@@ -1,4 +1,4 @@
-<img align="left" width="200" src="https://cdn.rawgit.com/snacktavish/physcraper/master/docs/physcraper.svg">
+<img align="left" width="250" src="https://cdn.rawgit.com/snacktavish/physcraper/master/docs/physcraper.svg">
 
 # physcraper
 
