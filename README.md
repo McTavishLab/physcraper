@@ -4,7 +4,10 @@
 
 [![Build Status](https://travis-ci.org/McTavishLab/physcraper.svg?branch=dev)](https://travis-ci.org/McTavishLab/physcraper)[![Documentation](https://readthedocs.org/projects/physcraper/badge/?version=latest&style=flat)](https://physcraper.readthedocs.io/en/latest/)[![codecov](https://codecov.io/gh/McTavishLab/physcraper/branch/dev/graph/badge.svg)](https://codecov.io/gh/McTavishLab/physcraper)
 
----
+
+<p></p>
+
+<p></p>
 
 ### Continual gene tree updating!
 
@@ -16,14 +19,14 @@ Please contact ejmctavish@gmail if you need any help or have feedback.
 
 Users:
 
-- [Installation](mds/INSTALL.md)
-- [Run](mds/running.md)
-- [More examples](mds/examples.md)
+  - [Installation](mds/INSTALL.md)
+  - [Run](mds/running.md)
+  - [More examples](mds/examples.md)
 
 Developers:
 
-- [Documentation](https://physcraper.readthedocs.io/en/latest/)
-- [Tests](mds/testing.md)
+  - [Documentation](https://physcraper.readthedocs.io/en/latest/)
+  - [Tests](mds/testing.md)
 
 
 
