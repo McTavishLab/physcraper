@@ -20,3 +20,4 @@ cit*xt
 *.ipynb
 src/
 dist/
+.DS_Store

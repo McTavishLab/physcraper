@@ -1,12 +1,12 @@
 # Testing `physcraper` code
 
-Code that tests the major functionalities of `physcraper` are in the folders [test](../tests/) and [ws-test](../ws-tests/). 
+Code testing the major functionalities of `physcraper` can be found in [test](../tests/) and [ws-tests](../ws-tests/).
 
 To run these tests locally (in your own computer), do
 
 ```
 python tests/testfilesetup.py
-``` 
+```
 
 and then
 

@@ -5,14 +5,16 @@
 
 ## Preinstallation requirements
 
-- `physcraper` currently requires python2.7.
-Work is in progess on cleaning up the requirements to make it python3 ready.
-- git
+- `physcraper` currently requires [python2.7](https://www.python.org/download/releases/2.7/).
 
-More on [here](../cruft/How_to_start.md)
+Work in progess to clean up the requirements to make it python3 ready.
+
+- [git](https://carpentries.github.io/workshop-template/#git)
+
+Find more info [here](../cruft/How_to_start.md)
 
 
-## Download `physcraper` 
+## Download `physcraper`
 
 ```
 git clone git@github.com:McTavishLab/physcraper.git
@@ -63,20 +65,20 @@ which raxmlHPC
 
 You can generate updated alignments using other phylogenetic software by creating a Scrape object and running `scrape.align__query_seqs()`
 
-#### Optional dependencies (need to be in path): 
+#### Optional dependencies (need to be in path):
 
-- PaPaRa http://sco.h-its.org/exelixis/web/software/papara/index.html 
+- PaPaRa http://sco.h-its.org/exelixis/web/software/papara/index.html
 - BLAST+ https://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Web&PAGE_TYPE=BlastDocs&DOC_TYPE=Download
 
-#### Python packages: 
+#### Python packages:
 These will all be installed if you install physcraper using `python setup.py install`
 
 (but note, if you are using virtualenv there are some weird interactions with setuptools and python 2.7.6)
 
-- Dendropy https://pythonhosted.org/DendroPy/ 
+- Dendropy https://pythonhosted.org/DendroPy/
 - Peyotl https://github.com/OpenTreeOfLife/peyotl (currently needs to be on physcraper branch)
 - Biopython http://biopython.org/wiki/Download
-- ConfigParser 
+- ConfigParser
 
 ## Databases
 
@@ -84,4 +86,4 @@ The tool uses several databases, which can automatically be downloaded and updat
 
 [Previous: Back home](../README.md)
 
-[Next: Running  `physcraper`](running.md) 
+[Next: Running  `physcraper`](running.md)
