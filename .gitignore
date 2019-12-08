@@ -21,3 +21,5 @@ cit*xt
 src/
 dist/
 .DS_Store
+ott3.1*
+*.tsv

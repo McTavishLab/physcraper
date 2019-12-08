@@ -41,7 +41,7 @@ phylesystemref = "McTavish EJ, Hinchliff CE, Allman JF, Brown JW, Cranston KA, H
 synthref = "Redelings BD, Holder MT. A supertree pipeline for summarizing phylogenetic and taxonomic information for millions of species. PeerJ. 2017;5:e3058. https://doi.org/10.7717/peerj.3058 \n"
 
 def get_ottid_from_gbifid(gbif_id):
-    """Returns a dictionary mapping gbif_ids to ott_ids. 
+    """Returns a dictionary mapping gbif_ids to ott_ids.
     ott_id is set to 'None' if the gbif id is not found in the Open Tree Txanomy
     """
     url = 'https://api.opentreeoflife.org/v3/taxonomy/taxon_info'
@@ -90,15 +90,15 @@ def bulk_tnrs_load(filename, ids_obj = None):
 
 #def get_cite_for_study(study_id):
 # to complement the function we should do also def get_ott_id_data(ott_id):
-  
-# following function assumes that study_id is an object from 
+
+# following function assumes that study_id is an object from
 # url = 'https://api.opentreeoflife.org/v3/tree_of_life/induced_subtree'
 # headers = {'content-type':'application/json'}
 # payload = json.dumps(dict(ott_ids=ott_ids, label_format = label_format))
 # res = requests.post(url, data=payload, headers=headers)
 
 def get_citations_from_json(synth_response, citations_file):
-    assert isinstance(citations_file, str) 
+    assert isinstance(citations_file, str)
     f = open(citations_file,"w+")
     sys.stdout.write("Gathering citations ...")
     assert 'supporting_studies' in synth_response.keys(), synth_response.keys()
@@ -113,11 +113,12 @@ def get_citations_from_json(synth_response, citations_file):
         f.write(to_string(new_cite[0]['ot:studyPublicationReference']) + '\n' + new_cite[0]['ot:studyPublication'] + '\n')
     f.close()
     sys.stdout.write("Citations printed to {}\n".format(citations_file))
- 
+
 # another way to do it is calling each id
 # get_citation_for_study(study_id)
 # use append
 def get_tree_from_synth(ott_ids, label_format="name", citation="cites.txt"):
+    sys.stdout.write("Retrieving synthetic tree ...")
     assert label_format in ['id', 'name', 'name_and_id']
     url = 'https://api.opentreeoflife.org/v3/tree_of_life/induced_subtree'
     headers = {'content-type':'application/json'}
@@ -129,6 +130,7 @@ def get_tree_from_synth(ott_ids, label_format="name", citation="cites.txt"):
         sys.stderr.write("error getting synth tree, {}, {}, {}\n".format(res.status_code, res.reason, res.json()['message']))
         return None
     synth_json = res.json()
+    # debug(synth_json)
     tre = Tree.get(data=synth_json['newick'],
                    schema="newick",
                    suppress_internal_node_taxa=True)
@@ -207,7 +209,7 @@ def generate_ATT_from_phylesystem(aln,
         orig_lab_to_otu[orig] = otu_id
         treed_taxa[orig] = otu_dict[otu_id].get(u"^ot:ottId")
     for tax in aln.taxon_namespace:
-        if tax .label in otu_dict:
+        if tax.label in otu_dict:
             sys.stdout.write("{} aligned\n".format(tax.label))
         else:
             try:
