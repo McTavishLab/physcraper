@@ -109,8 +109,10 @@ def get_citations_from_json(synth_response, citations_file):
         payload = json.dumps({"property":"ot:studyId","value":study,"verbose":"true"})
         res_cites = requests.post(index_url, data=payload, headers=headers)
         new_cite = res_cites.json()['matched_studies']
-        debug(new_cite)
-        f.write(to_string(new_cite[0]['ot:studyPublicationReference']) + '\n' + new_cite[0]['ot:studyPublication'] + '\n')
+#        debug(new_cite)
+        sys.stdout.write('.')
+        if new_cite:
+            f.write(to_string(new_cite[0].get('ot:studyPublicationReference', '')) + '\n' + new_cite[0].get('ot:studyPublication', '') + '\n')
     f.close()
     sys.stdout.write("Citations printed to {}\n".format(citations_file))
  
