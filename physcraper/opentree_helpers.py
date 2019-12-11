@@ -129,17 +129,18 @@ def get_tree_from_synth(ott_ids, label_format="name", citation="cites.txt"):
         res = requests.post(url, data=payload, headers=headers)
         if res.status_code == 200:
             pass_number += 2
-            pass
+            break
         else:
-            bad_ids = res.json()['unknown'].keys()
             pass_number += 1
-            ott_ids = set(ott_ids)
-            for bad_ott_id in bad_ids:
-                num = bad_ott_id.strip("ott")
-                ott_ids.remove(num)
-            ott_ids = list(ott_ids)
+            if 'unknown' in res.json(): 
+                bad_ids = res.json()['unknown'].keys()
+                ott_ids = set(ott_ids)
+                for bad_ott_id in bad_ids:
+                    num = bad_ott_id.strip("ott")
+                    ott_ids.remove(num)
+                ott_ids = list(ott_ids)
         if pass_number == 2:
-            sys.stderr.write("error getting synth tree, {}, {}, {}, (full error ottids hidden)\n".format(res.status_code, res.reason, res.json()['message']))
+            sys.stderr.write("error getting synth tree, {}, {}, {}, (full error ottids hidden)\n".format(res.status_code, res.reason, res.json().get('message'), res.json()))
             return None
     synth_json = res.json()
     tre = Tree.get(data=synth_json['newick'],
