@@ -109,8 +109,10 @@ def get_citations_from_json(synth_response, citations_file):
         payload = json.dumps({"property":"ot:studyId","value":study,"verbose":"true"})
         res_cites = requests.post(index_url, data=payload, headers=headers)
         new_cite = res_cites.json()['matched_studies']
-        debug(new_cite)
-        f.write(to_string(new_cite[0]['ot:studyPublicationReference']) + '\n' + new_cite[0]['ot:studyPublication'] + '\n')
+#        debug(new_cite)
+        sys.stdout.write('.')
+        if new_cite:
+            f.write(to_string(new_cite[0].get('ot:studyPublicationReference', '')) + '\n' + new_cite[0].get('ot:studyPublication', '') + '\n')
     f.close()
     sys.stdout.write("Citations printed to {}\n".format(citations_file))
  
@@ -119,15 +121,27 @@ def get_citations_from_json(synth_response, citations_file):
 # use append
 def get_tree_from_synth(ott_ids, label_format="name", citation="cites.txt"):
     assert label_format in ['id', 'name', 'name_and_id']
-    url = 'https://api.opentreeoflife.org/v3/tree_of_life/induced_subtree'
-    headers = {'content-type':'application/json'}
-    payload = json.dumps(dict(ott_ids=ott_ids, label_format = label_format))
-    res = requests.post(url, data=payload, headers=headers)
-    if res.status_code == 200:
-        pass
-    else:
-        sys.stderr.write("error getting synth tree, {}, {}, {}\n".format(res.status_code, res.reason, res.json()['message']))
-        return None
+    pass_number = 0
+    while pass_number <= 1:
+        url = 'https://api.opentreeoflife.org/v3/tree_of_life/induced_subtree'
+        headers = {'content-type':'application/json'}
+        payload = json.dumps(dict(ott_ids=ott_ids, label_format = label_format))
+        res = requests.post(url, data=payload, headers=headers)
+        if res.status_code == 200:
+            pass_number += 2
+            break
+        else:
+            pass_number += 1
+            if 'unknown' in res.json(): 
+                bad_ids = res.json()['unknown'].keys()
+                ott_ids = set(ott_ids)
+                for bad_ott_id in bad_ids:
+                    num = bad_ott_id.strip("ott")
+                    ott_ids.remove(num)
+                ott_ids = list(ott_ids)
+        if pass_number == 2:
+            sys.stderr.write("error getting synth tree, {}, {}, {}, (full error ottids hidden)\n".format(res.status_code, res.reason, res.json().get('message'), res.json()))
+            return None
     synth_json = res.json()
     tre = Tree.get(data=synth_json['newick'],
                    schema="newick",
