@@ -2,7 +2,7 @@
 
 # physcraper
 
-[![Build Status](https://travis-ci.org/McTavishLab/physcraper.svg?branch=dev)](https://travis-ci.org/McTavishLab/physcraper)[![Documentation](https://readthedocs.org/projects/physcraper/badge/?version=latest&style=flat)](https://physcraper.readthedocs.io/en/latest/)[![codecov](https://codecov.io/gh/McTavishLab/physcraper/branch/dev/graph/badge.svg)](https://codecov.io/gh/McTavishLab/physcraper)
+[![Build Status](https://travis-ci.org/McTavishLab/physcraper.svg?branch=master)](https://travis-ci.org/McTavishLab/physcraper)[![Documentation](https://readthedocs.org/projects/physcraper/badge/?version=latest&style=flat)](https://physcraper.readthedocs.io/en/latest/)[![codecov](https://codecov.io/gh/McTavishLab/physcraper/branch/dev/graph/badge.svg)](https://codecov.io/gh/McTavishLab/physcraper)
 
 
 <p></p>
