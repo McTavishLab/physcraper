@@ -12,7 +12,7 @@ from peyotl.nexson_syntax import (
 )
 import dendropy
 
-configfi = "aws.config"
+configfi = "tests/data/ncbiblast.config"
 study_id = "ot_350"
 tree_id = "Tr53297"
 workdir ="scrape_ot_350"
