@@ -1,0 +1,54 @@
+#NEXUS
+
+BEGIN TAXA;
+    DIMENSIONS NTAX=42;
+    TAXLABELS
+        Saccharomyces_cerevisiae_Z73326
+        Chaetosphaeria_tropicalis_AF466080
+        Chaetosphaeria_innumera_AY017375
+        Chloridium_lignicola_AF178544
+        Chaetosphaeria_capitata_AF466061
+        Umbrinosphaeria_caesariata_AF261069
+        Chaetosphaeria_conirostris_AF466066
+        Chaetosphaeria_fuegiana_EF063574
+        Chaetosphaeria_callimorpha_AF466062
+        Chaetosphaeria_preussii_AF178561
+        Chaetosphaeria_luquillensis_AF466074
+        Melanopsammella_gonytrichii_AF466085
+        Melanopsammella_vermicularioides_AF466087
+        Melanochaeta_hemipsila_AY346292
+        Melanochaeta_aotearoae_AF466082
+        Pyrigemmula_aurantiaca_HM241692
+        Lecythothecium_duriligni_AF261071
+        Ellisembia_brachypus_DQ408563
+        Brunneodinemasporium_brasiliense_CBS_112007
+        Pseudolachnea_fraxini_CBS_113701
+        Dendrophoma_cytisporoides_CBS_223.95
+        Codinaeopsis_gonytrichoides_AF178556
+        Zignoella_pulviscula_AF466091
+        Chaetosphaeria_ciliata_GU180637
+        Zignoella_pulviscula_AF466090
+        Chaetosphaeria_ovoidea_AF064641
+        Striatosphaeria_codinaeophora_AF466088
+        Dinemasporium_americana_CBS_127127
+        Dinemasporium_morbidum_CBS_995.97
+        Dinemasporium_morbidum_CBS_129.66
+        Dinemasporium_polygonum_CBS_516.95
+        Dinemasporium_pseudoindicum_CBS_127402
+        Dinemasporium_strigosum_CPC_18898
+        Dinemasporium_strigosum_CBS_520.78
+        Dinemasporium_pseudostrigosum_CBS_717.85
+        Dinemasporium_strigosum_CBS_828.84
+        Dinemasporium_pseudostrigosum_CBS_825.91
+        Dinemasporium_decipiens_CBS_592.73
+        Tainosphaeria_crassiparies_AF466089
+        Rattania_setulifera_HM171322
+        Thozetella_nivea_EU825200
+        Infundibulomyces_cupulata_EF113979
+  ;
+END;
+
+BEGIN TREES;
+    TREE 1 = (Saccharomyces_cerevisiae_Z73326,(((((((((Chaetosphaeria_tropicalis_AF466080,(Chaetosphaeria_innumera_AY017375,Chloridium_lignicola_AF178544)),((Chaetosphaeria_capitata_AF466061,Umbrinosphaeria_caesariata_AF261069),Chaetosphaeria_conirostris_AF466066)),((Chaetosphaeria_fuegiana_EF063574,Chaetosphaeria_callimorpha_AF466062),Chaetosphaeria_preussii_AF178561)),Chaetosphaeria_luquillensis_AF466074),(((Melanopsammella_gonytrichii_AF466085,Melanopsammella_vermicularioides_AF466087),(Melanochaeta_hemipsila_AY346292,Melanochaeta_aotearoae_AF466082)),((Pyrigemmula_aurantiaca_HM241692,Lecythothecium_duriligni_AF261071),Ellisembia_brachypus_DQ408563))),((Brunneodinemasporium_brasiliense_CBS_112007,(Pseudolachnea_fraxini_CBS_113701,(Dendrophoma_cytisporoides_CBS_223.95,(Codinaeopsis_gonytrichoides_AF178556,(((Zignoella_pulviscula_AF466091,Chaetosphaeria_ciliata_GU180637),Zignoella_pulviscula_AF466090),Chaetosphaeria_ovoidea_AF064641))))),Striatosphaeria_codinaeophora_AF466088)),(((((((Dinemasporium_americana_CBS_127127,((Dinemasporium_morbidum_CBS_995.97,Dinemasporium_morbidum_CBS_129.66),Dinemasporium_polygonum_CBS_516.95)),Dinemasporium_pseudoindicum_CBS_127402),Dinemasporium_strigosum_CPC_18898,Dinemasporium_strigosum_CBS_520.78,Dinemasporium_pseudostrigosum_CBS_717.85,Dinemasporium_strigosum_CBS_828.84),Dinemasporium_pseudostrigosum_CBS_825.91),Dinemasporium_decipiens_CBS_592.73),Tainosphaeria_crassiparies_AF466089),Rattania_setulifera_HM171322)),Thozetella_nivea_EU825200),Infundibulomyces_cupulata_EF113979));
+END;
+
