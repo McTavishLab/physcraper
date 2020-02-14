@@ -82,4 +82,4 @@ scraper = physcraper.PhyscraperScrape(data_obj, ids)
 
 #scraper.read_blast_wrapper()
 scraper.est_full_tree()
-scraper.data.write_labelled()
+scraper.data.write_labelled(label='^ot:ottTaxonName')
