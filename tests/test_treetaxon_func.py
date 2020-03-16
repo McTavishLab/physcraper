@@ -1,7 +1,7 @@
 import os
 import filecmp
 from physcraper import opentree_helpers
-from physcraper.treetaxon import TreeTax
+from physcraper import TreeTax
 
 
 json_file = "tests/data/treetaxon/main.json"
@@ -28,8 +28,6 @@ def test_get_synth_tree():
     resp = opentree_helpers.get_tree_from_synth(ott_ids=ott_ids)
     print resp
 
-
 def test_get_phyle_tree():
     tr = opentree_helpers.get_tree_from_study(study_id='pg_1144', tree_id='tree2324', label_format="name")
-
 

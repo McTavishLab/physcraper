@@ -1,5 +1,5 @@
 How to start
 ============
 
-.. mdinclude:: ../../How_to_start.md
+.. mdinclude:: ../../cruft/How_to_start.md
 

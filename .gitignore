@@ -5,6 +5,7 @@ venv*/
 *.aux
 *.log
 *.p
+*.tre
 build/
 Physcraper.egg-info/*
 tests/output/*
@@ -12,3 +13,13 @@ tests/data/precooked/*
 docs/example_scripts/output/*
 tests/data/tmp/*
 tests/debugging/*
+.Rproj.user
+*Rproj
+*Rhistory
+cit*xt
+*.ipynb
+src/
+dist/
+.DS_Store
+ott3.1*
+*.tsv

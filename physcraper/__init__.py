@@ -11,6 +11,7 @@ from physcraper.aligntreetax import AlignTreeTax
 from physcraper.scrape import PhyscraperScrape
 from physcraper.opentree_helpers import generate_ATT_from_phylesystem, OtuJsonDict, get_mrca_ott
 from physcraper.aligntreetax import generate_ATT_from_files
+from physcraper.treetaxon import TreeTax
 
 if sys.version_info < (3,):
     from urllib2 import HTTPError
