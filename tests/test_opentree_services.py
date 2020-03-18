@@ -1,5 +1,5 @@
 import physcraper
-from peyotl.sugar import tree_of_life, taxonomy, taxomachine
+from opentree import OT
 from pytest import mark
 import pytest
 from physcraper import opentree_helpers
@@ -10,7 +10,7 @@ def test_opentree_service():
     ottids = 515698,590452,643717
     mrca = physcraper.get_mrca_ott(['515698','590452','643717'])
     assert mrca == 1042120
-    resp = tree_of_life.mrca(ott_ids=['515698'], wrap_response=False)
+    resp = OT.synth_mrca(ott_ids=['515698']).response_dict
     assert resp['mrca']['taxon']['unique_name'] == 'Barnadesia'
     assert opentree_helpers.check_if_ottid_in_synth(1) == 0
     assert opentree_helpers.check_if_ottid_in_synth(878252) == 0

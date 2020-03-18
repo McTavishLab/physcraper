@@ -3,7 +3,7 @@ import re
 import json
 import os
 from dendropy import Tree
-from opentree_helpers import bulk_tnrs_load
+#from opentree_helpers import bulk_tnrs_load
 
 
 

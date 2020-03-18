@@ -5,6 +5,8 @@ DendroPy
 DateTime
 -e git+https://github.com/OpenTreeOfLife/peyotl@api_v3#egg=peyotl
 
+opentree
+
 requests
 sh
 urllib3>=1.23

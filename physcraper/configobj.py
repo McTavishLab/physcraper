@@ -29,11 +29,12 @@ def get_user_input():
     x = None
     while not is_valid:
         try:
-            x = raw_input("Please write either 'yes' or 'no': ")
+            x = input("Please write either 'yes' or 'no': ")
             if x == 'yes' or x == 'no':
                 is_valid = 1  # set it to 1 to validate input and to terminate the while..not loop
             else:
-                print("'%s' is not a valid answer." % x)
+                is_valid = 1 
+                x = 'no'
         except ValueError as e:
             print("'%s' is not a valid answer." % e.args[0].split(": ")[1])
     return x

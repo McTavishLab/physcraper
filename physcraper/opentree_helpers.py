@@ -3,16 +3,9 @@ import json
 import sys
 import os
 import physcraper
-from peyotl.api.phylesystem_api import PhylesystemAPI, APIWrapper
-from peyotl.sugar import tree_of_life, taxomachine, treemachine, oti
-from peyotl.nexson_syntax import (
-    extract_tree,
-    get_subtree_otus,
-    extract_otu_nexson,
-    PhyloSchema
-)
-from peyotl.api import APIWrapper
 
+
+from opentree import OT
 
 from dendropy import Tree, DnaCharacterMatrix, DataSet, datamodel
 
@@ -119,39 +112,14 @@ def get_citations_from_json(synth_response, citations_file):
 # another way to do it is calling each id
 # get_citation_for_study(study_id)
 # use append
+
+from opentree import OT
+
 def get_tree_from_synth(ott_ids, label_format="name", citation="cites.txt"):
-    sys.stdout.write("Retrieving synthetic tree ...")
-    assert label_format in ['id', 'name', 'name_and_id']
-    pass_number = 0
-    while pass_number <= 1:
-        url = 'https://api.opentreeoflife.org/v3/tree_of_life/induced_subtree'
-        headers = {'content-type':'application/json'}
-        payload = json.dumps(dict(ott_ids=ott_ids, label_format = label_format))
-        res = requests.post(url, data=payload, headers=headers)
-        if res.status_code == 200:
-            pass_number += 2
-            break
-        else:
-            pass_number += 1
-            if 'unknown' in res.json(): 
-                bad_ids = res.json()['unknown'].keys()
-                ott_ids = set(ott_ids)
-                for bad_ott_id in bad_ids:
-                    num = bad_ott_id.strip("ott")
-                    ott_ids.remove(num)
-                ott_ids = list(ott_ids)
-        if pass_number == 2:
-            sys.stderr.write("error getting synth tree, {}, {}, {}, (full error ottids hidden)\n".format(res.status_code, res.reason, res.json().get('message'), res.json()))
-            return None
-    synth_json = res.json()
-    # debug(synth_json)
-    tre = Tree.get(data=synth_json['newick'],
+    synth_json = OT.synth_induced_tree(ott_ids = ott_ids, label_format="label_format")
+    tre = Tree.get(data=synth_json[response],
                    schema="newick",
                    suppress_internal_node_taxa=True)
-    assert 'supporting_studies' in synth_json.keys(), synth_json.keys()
-    get_citations_from_json(synth_json, citation)
-    tre.suppress_unifurcations()
-    return tre
 
 
 def get_tree_from_study(study_id, tree_id, label_format="name", citation="cites.txt"):
@@ -359,21 +327,7 @@ def get_mrca_ott(ott_ids):
     :return: OToL identifier of most recent common ancestor or ott_ids
     """
     debug("get_mrca_ott")
-    if None in ott_ids:
-        ott_ids.remove(None)
-    synth_tree_ott_ids = []
-    ott_ids_not_in_synth = []
-    for ott in ott_ids:
-        r = check_if_ottid_in_synth(ott)
-        if r == 1:
-            synth_tree_ott_ids.append(ott)
-        else:
-            ott_ids_not_in_synth.append(ott)
-    if len(synth_tree_ott_ids) == 0:
-        sys.stderr.write('No sampled taxa were found in the current synthetic tree. '
-                         'Please find and input and appropriate OTT id as ingroup mrca in generate_ATT_from_files')
-        sys.exit(-3)
-    mrca_node = tree_of_life.mrca(ott_ids=synth_tree_ott_ids, wrap_response=False)  # need to fix wrap eventually
+    mrca_node = OT.synth_mrca(ott_ids = ott_ids).response_dict
     if u'nearest_taxon' in mrca_node.keys():
         tax_id = mrca_node[u'nearest_taxon'].get(u'ott_id')
         if _VERBOSE:
@@ -383,7 +337,6 @@ def get_mrca_ott(ott_ids):
         if _VERBOSE:
             sys.stdout.write('(v3) MRCA of sampled taxa is {}\n'.format(mrca_node['mrca'][u'taxon'][u'name']))
     else:
-        # debug(mrca_node.keys())
         sys.stderr.write('(v3) MRCA of sampled taxa not found. Please find and input an '
                          'appropriate OTT id as ingroup mrca in generate_ATT_from_files')
         sys.exit(-4)
@@ -399,7 +352,8 @@ def get_ott_taxon_info(spp_name):
     #This is only used to write out the opentree info file. Could use NCBI id's instead of name, and likely be quicker.
     # debug(spp_name)
     try:
-        res = taxomachine.TNRS(spp_name)["results"][0]
+        call = OT.tnrs_match([spp_name], do_approximate_matching=True)
+        res = call.response_dict['results'][0]
     except IndexError:
         sys.stderr.write("match to taxon {} not found in open tree taxonomy\n".format(spp_name))
         return None, None, None

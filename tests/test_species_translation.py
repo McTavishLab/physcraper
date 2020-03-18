@@ -2,8 +2,7 @@ import sys
 
 from physcraper import  OtuJsonDict, ConfigObj, IdDicts
 from physcraper.opentree_helpers import get_mrca_ott, get_ott_taxon_info
-from peyotl.sugar import taxomachine, tree_of_life
-
+from opentree import OT
 
 def test_species_translation():
 	spn = "Mephitis mephitis"
@@ -11,8 +10,7 @@ def test_species_translation():
 	if info:
 	    ottid, ottname, ncbi_id = info
 	assert ottid == 231602
-
-	tree_of_life.mrca(ott_ids=[ottid], wrap_response=False)
+	resp= syth_mrca(ott_ids=[ottid])
 
 
 	ott_ids = [770315, 158484]

@@ -343,7 +343,7 @@ class PhyscraperScrape(object):
                 pident = float(pident)
                 evalue = float(evalue)
                 bitscore = float(bitscore)
-                if gb_acc.split('.')>= 2: 
+                if len(gb_acc.split('.')) > 1: 
                     # get additional info only for seq that pass the eval
                     if evalue < float(self.config.e_value_thresh):
                         if gb_acc not in self.new_seqs.keys(): # do not do it for gb_ids we already considered
@@ -605,7 +605,7 @@ class PhyscraperScrape(object):
                 return seq_dict
         #debug("otu {} has tax_id {}".format(new_otu_label, tax_new_seq))
         new_seq = seq.replace("-", "").lower()
-        otu_list = deepcopy(seq_dict.keys())
+        otu_list = seq_dict.keys()
         should_add = True
         reason = 'new'
         i = 0

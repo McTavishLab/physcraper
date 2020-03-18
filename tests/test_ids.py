@@ -6,6 +6,7 @@ workdir="tests/data/tmp/owndata"
 
 def test_id_dicts():
     conf = ConfigObj(configfi, interactive=True)
+    conf.blastloc="remote"
     ids = IdDicts(conf, workdir=workdir)
     selection  = random.sample(ids.ott_to_ncbi.keys(), 10)
     for ott_id in selection:
