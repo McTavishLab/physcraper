@@ -6,9 +6,8 @@ from dendropy import DnaCharacterMatrix
 
 
 def test_generate_ATT_from_phylesystem():
-    seqaln = "tests/data/input.fas"
-    study_id = "pg_873"
-    tree_id = "tree1679"
+    study_id = "ot_350"
+    tree_id = "Tr53296"
     seqaln = "tests/data/minitest.fas"
     mattype = "fasta"
     workdir = "tests/output/opentree"

@@ -5,7 +5,7 @@ import os
 import physcraper
 
 
-from opentree import OT
+from opentree import OT, object_conversion, nexson_helpers
 
 from dendropy import Tree, DnaCharacterMatrix, DataSet, datamodel
 
@@ -113,7 +113,7 @@ def get_citations_from_json(synth_response, citations_file):
 # get_citation_for_study(study_id)
 # use append
 
-from opentree import OT
+
 
 def get_tree_from_synth(ott_ids, label_format="name", citation="cites.txt"):
     synth_json = OT.synth_induced_tree(ott_ids = ott_ids, label_format="label_format")
@@ -163,28 +163,22 @@ def generate_ATT_from_phylesystem(aln,
     for tax in aln.taxon_namespace:
         tax.label = tax.label.replace(" ", "_")  # Forcing all spaces to underscore
     try:
-        nexson = get_nexson(study_id, phylesystem_loc)
-        newick = extract_tree(nexson,
-                              tree_id,
-                              PhyloSchema('newick',
-                                      output_nexml2json='1.2.1',
-                                      content="tree",
-                                      tip_label="ot:originalLabel"))
-        newick = newick.replace(" ", "_")  # UGH Very heavy handed, need to make sure happens on alignment side as well.
-        tre = Tree.get(data=newick,
-                   schema="newick",
-                   preserve_underscores=True,
-                   taxon_namespace=aln.taxon_namespace)
+        study = OT.get_study(study_id)
+        study_nexson = study.response_dict['data']
+        DC = object_conversion.DendropyConvert()
+        tree_obj = DC.tree_from_nexson(study_nexson, tree_id)
     except:
         sys.stderr.write("failure getting tree {} from study {} from phylesystem".format(tree_id, study_id))
         sys.exit()
     # this gets the taxa that are in the subtree with all of their info - ott_id, original name,
-    otus = get_subtree_otus(nexson, tree_id=tree_id)
-    otu_dict = {}
+    otu_dict = {tn.otu:{} for tn in tree_obj.taxon_namespace}
     orig_lab_to_otu = {}
     treed_taxa = {}
-    for otu_id in otus:
-        otu_dict[otu_id] = extract_otu_nexson(nexson, otu_id)[otu_id]
+    for tn in tree_obj.taxon_namespace:
+        otu_id = tn.otu
+        otu_dict[otu_id]["^ot:ottId"] = tn.ott_id
+        otu_dict[otu_id]["^ot:ottTaxonName"] = tn.ott_taxon_name
+        otu_dict[otu_id]["^ot:originalLabel"] = tn.original_label
         otu_dict[otu_id]["^physcraper:status"] = "original"
         otu_dict[otu_id]["^physcraper:last_blasted"] = None
         orig = otu_dict[otu_id].get(u"^ot:originalLabel").replace(" ", "_")
@@ -200,8 +194,8 @@ def generate_ATT_from_phylesystem(aln,
                 sys.stderr.write("{} doesn't have an otu id. It is being removed from the alignment. "
                                  "This may indicate a mismatch between tree and alignment\n".format(tax.label))
     # need to prune tree to seqs and seqs to tree...
-    otu_newick = tre.as_string(schema="newick")
-    ott_ids = get_subtree_otus(nexson,
+    otu_newick = tree_obj.as_string(schema="newick")
+    ott_ids = nexson_helpers.get_subtree_otus(study_nexson,
                                tree_id=tree_id,
                                subtree_id="ingroup",
                                return_format="ottid")
