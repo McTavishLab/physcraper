@@ -3,7 +3,7 @@ import re
 import json
 import os
 from dendropy import Tree
-#from opentree_helpers import bulk_tnrs_load
+from physcraper.opentree_helpers import bulk_tnrs_load
 
 
 
@@ -27,7 +27,7 @@ class TreeTax(object):
             assert os.path.exists(otu_json)
             with open(otu_json) as data_file:
                 input_dict = json.load(data_file)
-                if input_dict.keys() == [u'mappingHints', u'names', u'metadata']:
+                if input_dict.keys() == set(['mappingHints', 'names', 'metadata']):
                     self.otu_dict = bulk_tnrs_load(otu_json)
                 else:
                     self.otu_dict = input_dict
@@ -50,6 +50,9 @@ class TreeTax(object):
                     newname = tax.label[2:]
                     newname = newname[:-1]
                 for otu in self.otu_dict:
+                    print('reconcile')
+                    print(otu)
+                    print(self.otu_dict[otu])
                     original = self.otu_dict[otu].get("^ot:originalLabel")
                     if original == tax.label or original == newname:
                         tax.label = otu

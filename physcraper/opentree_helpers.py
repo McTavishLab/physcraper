@@ -4,7 +4,6 @@ import sys
 import os
 import physcraper
 
-
 from opentree import OT, object_conversion, nexson_helpers
 
 from dendropy import Tree, DnaCharacterMatrix, DataSet, datamodel
@@ -116,22 +115,21 @@ def get_citations_from_json(synth_response, citations_file):
 
 
 def get_tree_from_synth(ott_ids, label_format="name", citation="cites.txt"):
-    synth_json = OT.synth_induced_tree(ott_ids = ott_ids, label_format="label_format")
-    tre = Tree.get(data=synth_json[response],
-                   schema="newick",
-                   suppress_internal_node_taxa=True)
+    synth_json = OT.synth_induced_tree(ott_ids = ott_ids, label_format=label_format)
+    get_citations_from_json(synth_json.response_dict, citation)
+    return synth_json.tree
+
+
 
 
 def get_tree_from_study(study_id, tree_id, label_format="name", citation="cites.txt"):
-    assert label_format in ['id', 'name', 'name_and_id']
-    api_wrapper = APIWrapper()
-    resp = api_wrapper.study.get(study_id, tree=tree_id, format='newick', exact=True)
-    query = {"ot:studyId":study_id}
-    new_cite = oti.find_studies(query_dict = query, verbose=True)
-    cites = to_string(new_cite[0]['ot:studyPublicationReference']) + new_cite[0]['ot:studyPublication']
-    tre = Tree.get(data=resp,
-                   schema="newick")
-    return tre, cites
+    assert label_format in ['id', 'name']
+    study = OT.get_study(study_id)
+    study_nexson = study.response_dict['data']
+    DC = object_conversion.DendropyConvert()
+    tree_obj = DC.tree_from_nexson(study_nexson, tree_id, label_format)
+    cites = study_nexson['nexml']['^ot:studyPublicationReference']
+    return tree_obj, cites
 
 
 
@@ -167,7 +165,6 @@ def generate_ATT_from_phylesystem(aln,
         study_nexson = study.response_dict['data']
         DC = object_conversion.DendropyConvert()
         tree_obj = DC.tree_from_nexson(study_nexson, tree_id)
-        print(tree_obj.as_ascii_plot())
     except:
         sys.stderr.write("failure getting tree {} from study {} from phylesystem".format(tree_id, study_id))
         sys.exit()
