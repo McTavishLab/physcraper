@@ -167,6 +167,7 @@ def generate_ATT_from_phylesystem(aln,
         study_nexson = study.response_dict['data']
         DC = object_conversion.DendropyConvert()
         tree_obj = DC.tree_from_nexson(study_nexson, tree_id)
+        print(tree_obj.as_ascii_plot())
     except:
         sys.stderr.write("failure getting tree {} from study {} from phylesystem".format(tree_id, study_id))
         sys.exit()
@@ -176,6 +177,7 @@ def generate_ATT_from_phylesystem(aln,
     treed_taxa = {}
     for tn in tree_obj.taxon_namespace:
         otu_id = tn.otu
+        tn.label = otu_id
         otu_dict[otu_id]["^ot:ottId"] = tn.ott_id
         otu_dict[otu_id]["^ot:ottTaxonName"] = tn.ott_taxon_name
         otu_dict[otu_id]["^ot:originalLabel"] = tn.original_label
@@ -184,21 +186,23 @@ def generate_ATT_from_phylesystem(aln,
         orig = otu_dict[otu_id].get(u"^ot:originalLabel").replace(" ", "_")
         orig_lab_to_otu[orig] = otu_id
         treed_taxa[orig] = otu_dict[otu_id].get(u"^ot:ottId")
+    aln_taxa = set()
     for tax in aln.taxon_namespace:
         if tax.label in otu_dict:
             sys.stdout.write("{} aligned\n".format(tax.label))
         else:
             try:
-                tax.label = orig_lab_to_otu[tax.label].encode("ascii")
+                tax.label = orig_lab_to_otu[tax.label]
             except KeyError:
                 sys.stderr.write("{} doesn't have an otu id. It is being removed from the alignment. "
                                  "This may indicate a mismatch between tree and alignment\n".format(tax.label))
+        aln_taxa.add(tax.label)
     # need to prune tree to seqs and seqs to tree...
     otu_newick = tree_obj.as_string(schema="newick")
     ott_ids = nexson_helpers.get_subtree_otus(study_nexson,
-                               tree_id=tree_id,
-                               subtree_id="ingroup",
-                               return_format="ottid")
+                                              tree_id=tree_id,
+                                              subtree_id="ingroup",
+                                              return_format="ottid")
     if ingroup_mrca:
         if type(ingroup_mrca) == list:
             ott_ids = set(ingroup_mrca)
