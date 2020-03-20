@@ -14,8 +14,6 @@ def test_generate_ATT_from_phylesystem():
     configfi = "tests/data/remotencbi.config"
 
 
-    sys.stdout.write("\nTesting 'generate_ATT_from_files (fromfile.py)'\n")
-
     conf = physcraper.ConfigObj(configfi, interactive=False)
     aln = DnaCharacterMatrix.get(path=seqaln, schema=mattype)
 
@@ -26,6 +24,10 @@ def test_generate_ATT_from_phylesystem():
                                                     tree_id=tree_id)
 
     data_obj == True
+    assert len(data_obj.tre.leaf_nodes())==16
+
+test_generate_ATT_from_phylesystem()
+
 
 @pytest.mark.xfail
 def test_generate_ATT_from_phylesystem_fail():

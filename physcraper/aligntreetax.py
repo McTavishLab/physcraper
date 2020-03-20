@@ -185,7 +185,7 @@ class AlignTreeTax(object):
         if missing:
             errmf = 'NAME RECONCILIATION Some of the taxa in the tree are not in the alignment or vice versa' \
                     ' and will be pruned. Missing "{}"\n'
-            missing = [to_string(tax) for tax in missing]
+            missing = [self.otu_dict[tax]['^ot:originalLabel'] for tax in missing]
             errm = errmf.format('", "'.join(missing))
             sys.stderr.write(errm)
         del_aln = []
@@ -210,7 +210,7 @@ class AlignTreeTax(object):
                     self.otu_dict[otu]['^physcraper:status'] = "deleted in reconciliation"
                     found = 1
             if found == 0:
-                sys.stderr.write("lost taxon {} in reconcilliation \n".format(tax.label))
+                sys.stderr.write("lost taxon {} in reconcilliation\n".format(self.otu_dict[tax.label]['^ot:originalLabel']))
             self.aln.taxon_namespace.remove_taxon(tax)
         assert self.aln.taxon_namespace == self.tre.taxon_namespace
 
