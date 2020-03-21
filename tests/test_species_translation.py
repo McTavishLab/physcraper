@@ -10,7 +10,7 @@ def test_species_translation():
 	if info:
 	    ottid, ottname, ncbi_id = info
 	assert ottid == 231602
-	resp= syth_mrca(ott_ids=[ottid])
+	resp= get_mrca_ott(ott_ids=[ottid])
 
 
 	ott_ids = [770315, 158484]

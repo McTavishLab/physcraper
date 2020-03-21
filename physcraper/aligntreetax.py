@@ -153,6 +153,12 @@ class AlignTreeTax(object):
         assert (self.tre.taxon_namespace is self.aln.taxon_namespace), "tre and aln taxon_namespace are not identical"
         assert isinstance(otu_dict, dict), ("otu_dict '%s' is not of type dict" % otu_dict)
         self.otu_dict = otu_dict
+        for tax in self.aln.taxon_namespace:
+            if tax.label not in otu_dict:
+                otu_dict[tax.label] = {'^ot:originalLabel':tax.label,
+                                        "^physcraper:status":"original",
+                                        "^physcraper:last_blasted":None
+                                        }
         self.config = config_obj
         self.ps_otu = 1  # iterator for new otu IDs
         self._reconcile()
@@ -185,7 +191,7 @@ class AlignTreeTax(object):
         if missing:
             errmf = 'NAME RECONCILIATION Some of the taxa in the tree are not in the alignment or vice versa' \
                     ' and will be pruned. Missing "{}"\n'
-            missing = [self.otu_dict[tax]['^ot:originalLabel'] for tax in missing]
+            missing = [self.otu_dict[tax].get('^ot:originalLabel', tax) for tax in missing]
             errm = errmf.format('", "'.join(missing))
             sys.stderr.write(errm)
         del_aln = []
@@ -258,7 +264,7 @@ class AlignTreeTax(object):
         aln_ids = set()
         for tax, seq in self.aln.items():
             aln_ids.add(tax.label)
-            if len(seq.symbols_as_string().translate(None, "-?")) <= seq_len_cutoff:
+            if len(seq.symbols_as_string().replace("-", "").replace("?","")) <= seq_len_cutoff:
                 prune.append(tax)
         treed_taxa = set()
         for leaf in self.tre.leaf_nodes():
