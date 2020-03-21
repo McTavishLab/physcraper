@@ -3,14 +3,14 @@ configparser
 coverage
 DendroPy
 DateTime
--e git+https://github.com/OpenTreeOfLife/peyotl@api_v3#egg=peyotl
+-e git+https://github.com/OpenTreeOfLife/python-opentree@physcraper#egg=opentree
 
 opentree
+pandas
 
 requests
 sh
 urllib3>=1.23
-wsgiref
 
 numpy
 pytest
