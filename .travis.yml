@@ -1,6 +1,6 @@
 language: python
 python:
-  - "3"
+  - "3.7"
 # command to install dependencies
 
   
@@ -33,18 +33,6 @@ install:
   - conda install -c bioconda raxml 
 
 
-  #### ete fails now, because of conda
- # - conda install -c etetoolkit ete2
- # - export PATH=~/anaconda_ete/bin:$PATH
-
-  #### check build documentation with sphinx
- # - pip install sphinx
- # - make -C docs
-
-  #### needed for mpi4py which is in requirements
-  #- sudo apt install libopenmpi-dev
-  #- sudo apt install mpich
-  #- export MPICC=mpiicc
   
 # command to run tests
 
