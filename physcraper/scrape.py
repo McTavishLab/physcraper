@@ -552,12 +552,6 @@ class PhyscraperScrape(object):
                 file_ending = "txt"
             else:
                 file_ending = "xml"
-#                if self.config.gb_id_filename is True: #TODO what is this doing?
-#                    fn = self.data.otu_dict[taxon.label].get('^ncbi:accession', taxon.label) 
-#                    if fn is None:
-#                        fn = self.data.otu_dict[taxon.label].get('^user:TaxonName', taxon.label)
-#                    fn_path = "{}/{}.{}".format(self.blast_subdir, fn, file_ending)
-#                else:
             fn_path = "{}/{}.{}".format(self.blast_subdir, taxon.label, file_ending)
             if _DEBUG:
                 sys.stdout.write("reading {}\n".format(fn_path))

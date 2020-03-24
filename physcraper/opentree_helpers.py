@@ -122,8 +122,8 @@ def get_tree_from_synth(ott_ids, label_format="name", citation="cites.txt"):
 
 
 
-def get_tree_from_study(study_id, tree_id, label_format="name", citation="cites.txt"):
-    assert label_format in ['id', 'name']
+def get_tree_from_study(study_id, tree_id, label_format="ot:originallabel"):
+    assert label_format in ['id', 'name', "ot:originallabel", "ot:ottid", "ot:otttaxonname"]
     study = OT.get_study(study_id)
     study_nexson = study.response_dict['data']
     DC = object_conversion.DendropyConvert()
@@ -216,11 +216,12 @@ def generate_ATT_from_phylesystem(aln,
 
 
 
-def get_dataset_from_treebase(study_id, phylesystem_loc="api"):
+def get_dataset_from_treebase(study_id):
     """Function is used to get the aln from treebase, for a tree that OpenTree has the mapped tree.
     """
     try:
-        nexson = get_nexson(study_id, phylesystem_loc)
+        study = OT.get_study(study_id)
+        nexson = study.response_dict['data']
     except HTTPError as err:
         sys.stderr.write(err)
         sys.stderr.write("couldn't find study id {} in phylesystem location {}\n".format(study_id, phylesystem_loc))
@@ -304,10 +305,10 @@ def OtuJsonDict(id_to_spn, id_dict):
 
 
 #####################################
-def get_nexson(study_id, phylesystem_loc):
+def get_nexson(study_id):
     """Grabs nexson from phylesystem"""
-    phy = PhylesystemAPI(get_from=phylesystem_loc)
-    nexson = phy.get_study(study_id)["data"]
+    study = OT.get_study(study_id)
+    nexson = study.response_dict['data']
     return nexson
 
 
