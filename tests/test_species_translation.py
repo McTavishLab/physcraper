@@ -19,17 +19,8 @@ def test_species_translation():
 
 
 def test_compare_json():
-	expected_json = {'otuSdoronicum':
-						 {'^ncbi:taxon': u'462523', '^ot:ottTaxonName': u'Senecio doronicum', '^ncbi:TaxonName': 'Senecio doronicum', '^physcraper:TaxonName': 'Senecio doronicum', '^physcraper:status': 'original', '^ot:ottId': 318436, '^user:TaxonName': 'Senecio_doronicum', '^ot:originalLabel': 'S_doronicum', '^physcraper:last_blasted': None}, 
-					'otuSlagascanus': 
-						{'^ncbi:taxon': u'1268580', '^ot:ottTaxonName': u'Senecio lagascanus', '^ncbi:TaxonName': 'Senecio lagascanus', '^physcraper:TaxonName': 'Senecio lagascanus', '^physcraper:status': 'original', '^ot:ottId': 640718, '^user:TaxonName': 'Senecio_lagascanus', '^ot:originalLabel': 'S_lagascanus', '^physcraper:last_blasted': None}, 
-					'otu2029doronicum': 
-						{'^ncbi:taxon': u'462523', '^ot:ottTaxonName': u'Senecio doronicum', '^ncbi:TaxonName': 'Senecio doronicum', '^physcraper:TaxonName': 'Senecio doronicum', '^physcraper:status': 'original', '^ot:ottId': 318436, '^user:TaxonName': 'Senecio_doronicum', '^ot:originalLabel': '2029_doronicum', '^physcraper:last_blasted': None}, 
-					'otuSlopezii': 
-						{'^ncbi:taxon': u'1268581', '^ot:ottTaxonName': u'Senecio lopezii', '^ncbi:TaxonName': 'Senecio lopezii', '^physcraper:TaxonName': 'Senecio lopezii', '^physcraper:status': 'original', '^ot:ottId': 688688, '^user:TaxonName': 'Senecio_lopezii', '^ot:originalLabel': 'S_lopezii', '^physcraper:last_blasted': None}, 
-					'otuSscopolii': 
-						{'^ncbi:taxon': u'1268589', '^ot:ottTaxonName': u'Senecio scopolii', '^ncbi:TaxonName': 'Senecio scopolii', '^physcraper:TaxonName': 'Senecio scopolii', '^physcraper:status': 'original', '^ot:ottId': 688671, '^user:TaxonName': 'Senecio_scopolii', '^ot:originalLabel': 'S_scopolii', '^physcraper:last_blasted': None}
-					}
+	expected_json = {'2029_doronicum': {'^ncbi:taxon': '462523', '^ot:ottTaxonName': 'Senecio doronicum', '^ot:ottId': 318436, '^ot:originalLabel': '2029_doronicum', '^user:TaxonName': 'Senecio_doronicum', '^physcraper:status': 'original', '^physcraper:last_blasted': None, '^physcraper:TaxonName': 'Senecio doronicum', '^ncbi:TaxonName': 'Senecio doronicum'}, 'S_doronicum': {'^ncbi:taxon': '462523', '^ot:ottTaxonName': 'Senecio doronicum', '^ot:ottId': 318436, '^ot:originalLabel': 'S_doronicum', '^user:TaxonName': 'Senecio_doronicum', '^physcraper:status': 'original', '^physcraper:last_blasted': None, '^physcraper:TaxonName': 'Senecio doronicum', '^ncbi:TaxonName': 'Senecio doronicum'}, 'S_lagascanus': {'^ncbi:taxon': '1268580', '^ot:ottTaxonName': 'Senecio lagascanus', '^ot:ottId': 640718, '^ot:originalLabel': 'S_lagascanus', '^user:TaxonName': 'Senecio_lagascanus', '^physcraper:status': 'original', '^physcraper:last_blasted': None, '^physcraper:TaxonName': 'Senecio lagascanus', '^ncbi:TaxonName': 'Senecio lagascanus'}, 'S_lopezii': {'^ncbi:taxon': '1268581', '^ot:ottTaxonName': 'Senecio lopezii', '^ot:ottId': 688688, '^ot:originalLabel': 'S_lopezii', '^user:TaxonName': 'Senecio_lopezii', '^physcraper:status': 'original', '^physcraper:last_blasted': None, '^physcraper:TaxonName': 'Senecio lopezii', '^ncbi:TaxonName': 'Senecio lopezii'}, 'S_scopolii': {'^ncbi:taxon': '1268589', '^ot:ottTaxonName': 'Senecio scopolii', '^ot:ottId': 688671, '^ot:originalLabel': 'S_scopolii', '^user:TaxonName': 'Senecio_scopolii', '^physcraper:status': 'original', '^physcraper:last_blasted': None, '^physcraper:TaxonName': 'Senecio scopolii', '^ncbi:TaxonName': 'Senecio scopolii'}}
+
 
 
 	workdir="tests/output/tmp"
