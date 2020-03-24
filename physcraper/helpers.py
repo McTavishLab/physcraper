@@ -90,11 +90,7 @@ def standardize_label(item):
     :param item: original tip name
     :return: tip name in unicode
     """
-    item_edit = item.replace("-", "")
-    item_edit = item_edit.replace(" ", "")
-    item_edit = item_edit.replace("_", "")
-    item_edit = item_edit.replace("'", "")
-    item_edit = item_edit.replace("/", "")
+    item_edit = item.replace(" ", "_")
     return item_edit
 
 

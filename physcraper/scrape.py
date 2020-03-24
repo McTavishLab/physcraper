@@ -714,7 +714,7 @@ class PhyscraperScrape(object):
         with open(self.logfile, "a") as log:
             log.write("{} new sequences added from Genbank after removing identical seq, "
                       "of {} before filtering\n".format(len(self.new_seqs_otu_id), len(self.new_seqs)))
-        self.data.dump()
+#        self.data.dump()
     
     def filter_seqs(self, tmp_dict, threshold=5, type="random"):
         assert type in ['length','random'], "type {} not recognized, please filter by 'length' or 'random'".format(type)
@@ -855,23 +855,23 @@ class PhyscraperScrape(object):
 
 
 
-    def pickle_dump(self, filename=None, recursion=100000):
-        """writes out class to pickle file.
-        We need to increase the recursion depth here, as it currently fails with the standard run.
-
-        :param filename: optional filename
-        :param recursion: pickle often failed with recursion depth, that's why it's increased here
-        :return: writes out file
-        """
-        current = sys.getrecursionlimit()
-        sys.setrecursionlimit(recursion)
-
-        if filename:
-            ofi = open(filename, "wb")
-        else:
-            ofi = open("{}/scrape_checkpoint.p".format(self.workdir), "wb")
-        pickle.dump(self, ofi, pickle.HIGHEST_PROTOCOL)
-        sys.setrecursionlimit(current)
+#    def pickle_dump(self, filename=None, recursion=100000):
+#        """writes out class to pickle file.
+#        We need to increase the recursion depth here, as it currently fails with the standard run.
+#
+#        :param filename: optional filename
+#        :param recursion: pickle often failed with recursion depth, that's why it's increased here
+#        :return: writes out file
+#        """
+#        current = sys.getrecursionlimit()
+#        sys.setrecursionlimit(recursion)#
+#
+#        if filename:
+#            ofi = open(filename, "wb")
+#        else:
+#            ofi = open("{}/scrape_checkpoint.p".format(self.workdir), "wb")
+#        pickle.dump(self, ofi, pickle.HIGHEST_PROTOCOL)
+#        sys.setrecursionlimit(current)
 
     def dump(self):
         self.data.write_otus('otu_dict.json')
@@ -947,10 +947,11 @@ class PhyscraperScrape(object):
     def replace_tre(self, filename, schema = 'newick'):
         newtre= Tree.get(path=filename,
                    schema=schema,
+                   preserve_underscores=True,
                    taxon_namespace = self.data.aln.taxon_namespace)
         aln_tax = [taxon.label for taxon in self.data.aln]
         for taxon in newtre.leaf_nodes():
-            assert taxon.taxon.label in self.data.otu_dict
+            assert taxon.taxon.label in self.data.otu_dict, taxon.taxon.label
             assert taxon.taxon.label in aln_tax
         self.data.tre = newtre
 

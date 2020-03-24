@@ -264,7 +264,7 @@ def OtuJsonDict(id_to_spn, id_dict):
             tipname, species = lin.strip().split(",")
             clean_lab = standardize_label(tipname)
             assert clean_lab not in sp_info_dict, ("standardized label ('{}') of `{}` already exists".format(clean_lab, tipname))
-            otu_id = "otu{}".format(clean_lab)
+            otu_id = clean_lab
             spn = species.replace("_", " ")
             info = get_ott_taxon_info(spn)
             if info:
@@ -285,7 +285,6 @@ def OtuJsonDict(id_to_spn, id_dict):
                 ncbi_spn = id_dict.ott_to_ncbi[ottid]
             sp_info_dict[otu_id] = {
                 "^ncbi:taxon": ncbiid,
-
                 "^ot:ottTaxonName": ottname,
                 "^ot:ottId": ottid,
                 "^ot:originalLabel": tipname,
