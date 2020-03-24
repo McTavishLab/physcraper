@@ -49,6 +49,10 @@ data_obj_base = generate_ATT_from_files(seqaln=seqaln,
                              ingroup_mrca=mrca)
 
 
+def check_otu_dict():
+    assert(data_obj_base.otu_dict.keys()) == set(['2029_doronicum', 'S_doronicum', 'S_lagascanus', 'S_lopezii', 'S_scopolii'])
+
+
 
 def test_add_all():
     threshold = 2
