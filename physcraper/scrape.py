@@ -795,6 +795,8 @@ class PhyscraperScrape(object):
                     sp_d[tax_id].append(otu_id)
                 else:
                     sp_d[tax_id] = [otu_id]
+            else:
+                sys.stdout.write("Removing {},{}".format(otu_id,self.data.otu_dict[otu_id]['^physcraper:status']))
         return sp_d
 
     def select_seq_by_length(self, otu_list, seq_dict, count):
