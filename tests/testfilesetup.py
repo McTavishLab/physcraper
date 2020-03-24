@@ -21,7 +21,8 @@ otu_jsonfi = "{}/otu_dict.json".format(workdir)
 if not os.path.exists("{}".format(workdir)):
 	os.makedirs("{}".format(workdir))
 
-conf = ConfigObj(configfi, interactive=True)
+conf = ConfigObj(configfi, interactive=False)
+
 ids = IdDicts(conf, workdir=workdir)
 
 otu_json = OtuJsonDict(id_to_spn, ids)
@@ -43,8 +44,9 @@ data_obj = generate_ATT_from_files(seqaln=seqaln,
                              otu_json=otu_jsonfi,
                              ingroup_mrca=mrca)
 
+
 data_obj.prune_short()
-data_obj.dump(filename = "tests/data/precooked/tiny_dataobj.p")
+
 
 scraper =  PhyscraperScrape(data_obj, ids)
 

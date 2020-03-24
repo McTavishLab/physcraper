@@ -4,15 +4,11 @@ import pickle
 import sys
 import os
 import json
-from peyotl.nexson_syntax import (
-    extract_tree,
-    get_subtree_otus,
-    extract_otu_nexson,
-    PhyloSchema,
-)
+
 import dendropy
 
 from physcraper import helpers
+from physcraper.opentree_helpers import get_tree_from_study
 
 
 configfi = "docs/examples/example.config"
@@ -26,17 +22,8 @@ conf = physcraper.ConfigObj(configfi)
 
 
 #Get an existing tree from the Open Tree of life, and convert it to newick format
-nexson = physcraper.opentree_helpers.get_nexson(study_id, 'api')
-newick = extract_tree(nexson,
-                      tree_id,
-                      PhyloSchema('newick',
-                                   output_nexml2json='1.2.1',
-                                   content="tree",
-                                   tip_label="ot:originalLabel"))
-
-tre = dendropy.Tree.get(data=newick,
-                   schema="newick",
-                   preserve_underscores=True)
+nexson = physcraper.opentree_helpers.get_nexson(study_id)
+tre, cite = get_tree_from_study(study_id, tree_id)
 
 
 #Pull down an alignment from treebase.

@@ -9,7 +9,7 @@ print("Running test_write_labelled\n\n")
 
 expected_tree_path = "tests/data/expected_output/labelled.tre"
 expected_aln_path = "tests/data/expected_output/labelled.fas"
-expected_tree_path_ottid = "tests/data/expected_output/labelled_ottid.tre"
+"aesxpected_tree_path_ottid = "tests/data/expected_output/labelled_ottid.tre"
 expected_aln_path_ottid = "tests/data/expected_output/labelled_ottid.fas"
 
 def test_write_labelled():
