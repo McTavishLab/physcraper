@@ -47,7 +47,6 @@ install:
   - python setup.py install
   
 script:  
-  - echo 'no' | python tests/testfilesetup.py
   #- py.test tests/ --setup-only
   #- sh tests/run_tests.sh
   - pytest tests
