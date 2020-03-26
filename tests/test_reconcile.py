@@ -128,16 +128,8 @@ def test_reconcile():
 
 
 
-    seqaln= "tests/data/tiny_test_example/test.fas"
     seqalnmiss= "tests/data/tiny_test_example/test_missingseq.fas"
-    mattype="fasta"
-    treefile= "tests/data/tiny_test_example/test.tre"
     treefilemiss= "tests/data/tiny_test_example/test_missingtip.tre"
-    schema_trf = "newick"
-    workdir="tests/output/owndata"
-    configfi = "example.config"
-    id_to_spn = r"tests/data/tiny_test_example/test_nicespl.csv"
-    otu_jsonfi = "tests/data/tmp/owndata/otu_dict.json".format(workdir)
 
     data_obj = generate_ATT_from_files(seqaln=seqalnmiss, 
                                      mattype=mattype, 
