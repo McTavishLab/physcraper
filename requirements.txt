@@ -3,7 +3,7 @@ configparser
 coverage
 DendroPy
 DateTime
--e git+https://github.com/OpenTreeOfLife/python-opentree@physcraper#egg=opentree
+-e git+https://github.com/OpenTreeOfLife/python-opentree@get-tree#egg=opentree
 
 opentree
 pandas
