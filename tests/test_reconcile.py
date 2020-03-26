@@ -18,7 +18,7 @@ def test_reconcile():
     workdir="tests/output/owndata"
     configfi = "example.config"
     id_to_spn = r"tests/data/tiny_test_example/test_nicespl.csv"
-    otu_jsonfi = "tests/data/tmp/owndata/otu_dict.json".format(workdir)
+    otu_jsonfi = "tests/data/tiny_test_example/otu_dict.json"
 
 
     conf = ConfigObj(configfi, interactive=False)
