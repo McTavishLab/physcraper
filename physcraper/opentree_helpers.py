@@ -169,10 +169,11 @@ def generate_ATT_from_phylesystem(aln,
         sys.stderr.write("failure getting tree {} from study {} from phylesystem".format(tree_id, study_id))
         sys.exit()
     # this gets the taxa that are in the subtree with all of their info - ott_id, original name,
-    otu_dict = {tn.otu:{} for tn in tree_obj.taxon_namespace}
+    otu_dict = {tn.taxon.otu:{} for tn in tree_obj.leaf_node_iter()}
     orig_lab_to_otu = {}
     treed_taxa = {}
-    for tn in tree_obj.taxon_namespace:
+    for leaf in tree_obj.leaf_node_iter():
+        tn = leaf.taxon
         otu_id = tn.otu
         tn.label = otu_id
         otu_dict[otu_id]["^ot:ottId"] = tn.ott_id
@@ -236,6 +237,19 @@ def get_dataset_from_treebase(study_id):
             sys.stderr.write(url + "\n")
         dna = DataSet.get(url=url, schema="nexml")
         return dna
+
+def scraper_from_opentree(study_id, tree_id, aln_file, config_file, workdir, schema = "nexus"):
+    # Read in the configuration information
+    conf = physcraper.ConfigObj(config_file)
+    aln = DnaCharacterMatrix.get(file=open(aln_file), schema=schema)
+    data_obj = generate_ATT_from_phylesystem(aln=aln,
+                                             workdir=workdir,
+                                             config_obj=conf,
+                                             study_id=study_id,
+                                             tree_id=tree_id)
+    ids = physcraper.IdDicts(conf, workdir=workdir)
+    scraper = physcraper.PhyscraperScrape(data_obj, ids)
+    return scraper
 
 
 

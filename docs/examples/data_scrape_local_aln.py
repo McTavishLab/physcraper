@@ -10,6 +10,8 @@ from peyotl.nexson_syntax import (
     extract_otu_nexson,
     PhyloSchema,
 )
+from physcraper.opentree_helpers import get_tree_from_study, get_dataset_from_treebase
+
 import dendropy
 
 configfi = "docs/examples/example.config"
@@ -23,17 +25,9 @@ conf = physcraper.ConfigObj(configfi)
 
 
 #Get an existing tree from the Open Tree of life, and convert it to newick format
-nexson = physcraper.opentree_helpers.get_nexson(study_id, 'api')
-newick = extract_tree(nexson,
-                      tree_id,
-                      PhyloSchema('newick',
-                                   output_nexml2json='1.2.1',
-                                   content="tree",
-                                   tip_label="ot:originalLabel"))
+nexson = physcraper.opentree_helpers.get_nexson(study_id)
+tre, cite = get_tree_from_study(study_id, tree_id)
 
-tre = dendropy.Tree.get(data=newick,
-                   schema="newick",
-                   preserve_underscores=True)
 
 
 aln = dendropy.DnaCharacterMatrix.get(file=open("docs/examples/{}{}.aln".format(study_id, tree_id)), schema="nexus", taxon_namespace=tre.taxon_namespace)

@@ -1,54 +1,111 @@
 #NEXUS
 
 BEGIN TAXA;
-    DIMENSIONS NTAX=42;
+    DIMENSIONS NTAX=57;
     TAXLABELS
-        Saccharomyces_cerevisiae_Z73326
-        Chaetosphaeria_tropicalis_AF466080
-        Chaetosphaeria_innumera_AY017375
-        Chloridium_lignicola_AF178544
-        Chaetosphaeria_capitata_AF466061
-        Umbrinosphaeria_caesariata_AF261069
-        Chaetosphaeria_conirostris_AF466066
-        Chaetosphaeria_fuegiana_EF063574
-        Chaetosphaeria_callimorpha_AF466062
-        Chaetosphaeria_preussii_AF178561
-        Chaetosphaeria_luquillensis_AF466074
-        Melanopsammella_gonytrichii_AF466085
-        Melanopsammella_vermicularioides_AF466087
         Melanochaeta_hemipsila_AY346292
+[&identifier.taxonVariant=40326,isDefinedBy=http://purl.org/phylo/treebase/phylows/study/TB2:S12806,identifier.taxon=17219,closeMatch=http://www.ubio.org/authority/metadata.php?lsid=urn:lsid:ubio.org:namebank:3211634,altLabel=Melanochaeta hemipsila,closeMatch=http://purl.uniprot.org/taxonomy/197732]
         Melanochaeta_aotearoae_AF466082
-        Pyrigemmula_aurantiaca_HM241692
-        Lecythothecium_duriligni_AF261071
-        Ellisembia_brachypus_DQ408563
-        Brunneodinemasporium_brasiliense_CBS_112007
-        Pseudolachnea_fraxini_CBS_113701
-        Dendrophoma_cytisporoides_CBS_223.95
-        Codinaeopsis_gonytrichoides_AF178556
+[&identifier.taxon=182501,closeMatch=http://www.ubio.org/authority/metadata.php?lsid=urn:lsid:ubio.org:namebank:3035227,altLabel=Melanochaeta aotearoae,closeMatch=http://purl.uniprot.org/taxonomy/197731,isDefinedBy=http://purl.org/phylo/treebase/phylows/study/TB2:S12806,identifier.taxonVariant=444365]
         Zignoella_pulviscula_AF466091
-        Chaetosphaeria_ciliata_GU180637
-        Zignoella_pulviscula_AF466090
-        Chaetosphaeria_ovoidea_AF064641
-        Striatosphaeria_codinaeophora_AF466088
-        Dinemasporium_americana_CBS_127127
-        Dinemasporium_morbidum_CBS_995.97
-        Dinemasporium_morbidum_CBS_129.66
-        Dinemasporium_polygonum_CBS_516.95
-        Dinemasporium_pseudoindicum_CBS_127402
-        Dinemasporium_strigosum_CPC_18898
-        Dinemasporium_strigosum_CBS_520.78
-        Dinemasporium_pseudostrigosum_CBS_717.85
-        Dinemasporium_strigosum_CBS_828.84
-        Dinemasporium_pseudostrigosum_CBS_825.91
-        Dinemasporium_decipiens_CBS_592.73
-        Tainosphaeria_crassiparies_AF466089
-        Rattania_setulifera_HM171322
+[&identifier.taxonVariant=113108,isDefinedBy=http://purl.org/phylo/treebase/phylows/study/TB2:S12806,identifier.taxon=5624,closeMatch=http://www.ubio.org/authority/metadata.php?lsid=urn:lsid:ubio.org:namebank:5963000,altLabel=Zignoella pulviscula,closeMatch=http://purl.uniprot.org/taxonomy/139953]
+        Zignoella_pulviscula_AF178543
+        Menispora_tortuosa_AF178558
+        Melanopsammella_vermicularioides_AF466087
+[&closeMatch=http://purl.uniprot.org/taxonomy/197735,identifier.taxonVariant=444367,isDefinedBy=http://purl.org/phylo/treebase/phylows/study/TB2:S12806,identifier.taxon=182504,closeMatch=http://www.ubio.org/authority/metadata.php?lsid=urn:lsid:ubio.org:namebank:3296098,altLabel=Melanopsammella vermicularioides]
+        Chaetosphaeria_callimorpha_AF466062
+[&closeMatch=http://purl.uniprot.org/taxonomy/139944,identifier.taxonVariant=13582,isDefinedBy=http://purl.org/phylo/treebase/phylows/study/TB2:S12806,identifier.taxon=5608,closeMatch=http://www.ubio.org/authority/metadata.php?lsid=urn:lsid:ubio.org:namebank:3109798,altLabel=Chaetosphaeria callimorpha]
         Thozetella_nivea_EU825200
+[&closeMatch=http://purl.uniprot.org/taxonomy/557972,identifier.taxonVariant=650558,isDefinedBy=http://purl.org/phylo/treebase/phylows/study/TB2:S12806,identifier.taxon=490888,closeMatch=http://www.ubio.org/authority/metadata.php?lsid=urn:lsid:ubio.org:namebank:3056602,altLabel=Thozetella nivea]
+        Zignoella_pulviscula_AF466090
+[&identifier.taxon=5624,closeMatch=http://www.ubio.org/authority/metadata.php?lsid=urn:lsid:ubio.org:namebank:5963000,altLabel=Zignoella pulviscula,closeMatch=http://purl.uniprot.org/taxonomy/139953,identifier.taxonVariant=113108,isDefinedBy=http://purl.org/phylo/treebase/phylows/study/TB2:S12806]
+        Dinemasporium_strigosum_CPC_18957
+        Pyrigemmula_aurantiaca_HM241692
+[&isDefinedBy=http://purl.org/phylo/treebase/phylows/study/TB2:S12806]
+        Dinemasporium_polygonum_CBS_516.95
+[&isDefinedBy=http://purl.org/phylo/treebase/phylows/study/TB2:S12806]
+        Chaetosphaeria_hebetiseta_AF178549
+        Dictyochaeta_simplex_EF029193
+        Thozetella_acerosa_AY330996
+        Dinemasporium_pseudostrigosum_CBS_825.91
+[&isDefinedBy=http://purl.org/phylo/treebase/phylows/study/TB2:S12806]
+        Dinemasporium_morbidum_CBS_995.97
+[&isDefinedBy=http://purl.org/phylo/treebase/phylows/study/TB2:S12806]
+        Dendrophoma_cytisporoides_CBS_223.95
+[&identifier.taxon=611742,isDefinedBy=http://purl.org/phylo/treebase/phylows/study/TB2:S12806,closeMatch=http://www.ubio.org/authority/metadata.php?lsid=urn:lsid:ubio.org:namebank:3074530,altLabel=Dendrophoma cytisporoides,identifier.taxonVariant=817858]
+        Pseudolachnea_fraxini_CBS_113701
+[&isDefinedBy=http://purl.org/phylo/treebase/phylows/study/TB2:S12806]
+        Chaetosphaeria_ovoidea_AF064641
+[&closeMatch=http://purl.uniprot.org/taxonomy/92899,prefLabel=Zignoella ovoidea,isDefinedBy=http://purl.org/phylo/treebase/phylows/study/TB2:S12806,altLabel=Chaetosphaeria ovoidea,identifier.taxonVariant=13610,closeMatch=http://www.ubio.org/authority/metadata.php?lsid=urn:lsid:ubio.org:namebank:3261228,identifier.taxon=5622]
+        Dinemasporium_decipiens_CBS_592.73
+[&identifier.taxonVariant=817859,identifier.taxon=611743,isDefinedBy=http://purl.org/phylo/treebase/phylows/study/TB2:S12806,closeMatch=http://www.ubio.org/authority/metadata.php?lsid=urn:lsid:ubio.org:namebank:3107195,altLabel=Dinemasporium decipiens]
+        Chloridium_lignicola_AF178544
+[&altLabel=Chloridium lignicola,closeMatch=http://www.ubio.org/authority/metadata.php?lsid=urn:lsid:ubio.org:namebank:3919454,closeMatch=http://purl.uniprot.org/taxonomy/139962,identifier.taxonVariant=14254,isDefinedBy=http://purl.org/phylo/treebase/phylows/study/TB2:S12806,identifier.taxon=5889]
+        Dinemasporium_strigosum_CPC_19796
+        Dinemasporium_strigosum_CBS_828.84
+[&identifier.taxonVariant=817857,identifier.taxon=611741,isDefinedBy=http://purl.org/phylo/treebase/phylows/study/TB2:S12806,closeMatch=http://www.ubio.org/authority/metadata.php?lsid=urn:lsid:ubio.org:namebank:3057481,altLabel=Dinemasporium strigosum]
+        Dinemasporium_americana_CBS_127127
+[&isDefinedBy=http://purl.org/phylo/treebase/phylows/study/TB2:S12806]
+        Thozetella_havanensis_EF029184
+        Chaetosphaeria_callimorpha_AF178555
+        Chaetosphaeria_fuegiana_EF063574
+[&altLabel=Chaetosphaeria fuegiana,closeMatch=http://www.ubio.org/authority/metadata.php?lsid=urn:lsid:ubio.org:namebank:9731140,closeMatch=http://purl.uniprot.org/taxonomy/426109,identifier.taxonVariant=394937,isDefinedBy=http://purl.org/phylo/treebase/phylows/study/TB2:S12806,identifier.taxon=370109]
+        Chaetosphaeria_capitata_AF466061
+[&closeMatch=http://purl.uniprot.org/taxonomy/197718,identifier.taxonVariant=255290,isDefinedBy=http://purl.org/phylo/treebase/phylows/study/TB2:S12806,identifier.taxon=182488,closeMatch=http://www.ubio.org/authority/metadata.php?lsid=urn:lsid:ubio.org:namebank:3261227,altLabel=Chaetosphaeria capitata]
+        Saccharomyces_cerevisiae_Z73326
+[&closeMatch=http://purl.uniprot.org/taxonomy/4932,identifier.taxonVariant=60823,isDefinedBy=http://purl.org/phylo/treebase/phylows/study/TB2:S12806,identifier.taxon=25995,closeMatch=http://www.ubio.org/authority/metadata.php?lsid=urn:lsid:ubio.org:namebank:3872294,altLabel=Saccharomyces cerevisiae]
         Infundibulomyces_cupulata_EF113979
+[&identifier.taxonVariant=389514,isDefinedBy=http://purl.org/phylo/treebase/phylows/study/TB2:S12806,identifier.taxon=361393,closeMatch=http://www.ubio.org/authority/metadata.php?lsid=urn:lsid:ubio.org:namebank:10330117,altLabel=Infundibulomyces cupulata,closeMatch=http://purl.uniprot.org/taxonomy/415312]
+        Rattania_setulifera_HM171322
+[&isDefinedBy=http://purl.org/phylo/treebase/phylows/study/TB2:S12806]
+        Umbrinosphaeria_caesariata_AF261069
+[&identifier.taxonVariant=435784,isDefinedBy=http://purl.org/phylo/treebase/phylows/study/TB2:S12806,identifier.taxon=150511,closeMatch=http://www.ubio.org/authority/metadata.php?lsid=urn:lsid:ubio.org:namebank:1454811,altLabel=Umbrinosphaeria caesariata,closeMatch=http://purl.uniprot.org/taxonomy/156753]
+        Chaetosphaeria_tropicalis_AF466080
+[&identifier.taxonVariant=255304,isDefinedBy=http://purl.org/phylo/treebase/phylows/study/TB2:S12806,identifier.taxon=182500,closeMatch=http://www.ubio.org/authority/metadata.php?lsid=urn:lsid:ubio.org:namebank:5969546,altLabel=Chaetosphaeria tropicalis,closeMatch=http://purl.uniprot.org/taxonomy/197730]
+        Chaetosphaeria_ciliata_GU180637
+[&isDefinedBy=http://purl.org/phylo/treebase/phylows/study/TB2:S12806]
+        Chaetosphaeria_innumera_AY017375
+[&identifier.taxon=5619,closeMatch=http://www.ubio.org/authority/metadata.php?lsid=urn:lsid:ubio.org:namebank:3872253,altLabel=Chaetosphaeria innumera,closeMatch=http://purl.uniprot.org/taxonomy/139949,isDefinedBy=http://purl.org/phylo/treebase/phylows/study/TB2:S12806,identifier.taxonVariant=13604]
+        Ellisembia_brachypus_DQ408563
+[&identifier.taxon=327838,closeMatch=http://www.ubio.org/authority/metadata.php?lsid=urn:lsid:ubio.org:namebank:3232499,altLabel=Ellisembia brachypus,closeMatch=http://purl.uniprot.org/taxonomy/375413,identifier.taxonVariant=369025,isDefinedBy=http://purl.org/phylo/treebase/phylows/study/TB2:S12806]
+        Chaetosphaeria_luquillensis_AF466074
+[&identifier.taxon=182495,closeMatch=http://www.ubio.org/authority/metadata.php?lsid=urn:lsid:ubio.org:namebank:5969541,altLabel=Chaetosphaeria luquillensis,closeMatch=http://purl.uniprot.org/taxonomy/197725,isDefinedBy=http://purl.org/phylo/treebase/phylows/study/TB2:S12806,identifier.taxonVariant=255297]
+        Melanopsammella_gonytrichii_AF466085
+[&altLabel=Melanopsammella gonytrichii,closeMatch=http://www.ubio.org/authority/metadata.php?lsid=urn:lsid:ubio.org:namebank:5969547,closeMatch=http://purl.uniprot.org/taxonomy/197734,identifier.taxonVariant=255305,isDefinedBy=http://purl.org/phylo/treebase/phylows/study/TB2:S12806,identifier.taxon=182503]
+        Tainosphaeria_crassiparies_AF466089
+[&identifier.taxonVariant=255306,isDefinedBy=http://purl.org/phylo/treebase/phylows/study/TB2:S12806,identifier.taxon=182506,closeMatch=http://www.ubio.org/authority/metadata.php?lsid=urn:lsid:ubio.org:namebank:5969548,altLabel=Tainosphaeria crassiparies,closeMatch=http://purl.uniprot.org/taxonomy/197737]
+        Chaetosphaeria_preussii_AF178561
+[&identifier.taxonVariant=13613,isDefinedBy=http://purl.org/phylo/treebase/phylows/study/TB2:S12806,identifier.taxon=5623,closeMatch=http://www.ubio.org/authority/metadata.php?lsid=urn:lsid:ubio.org:namebank:3919451,altLabel=Chaetosphaeria preussii,closeMatch=http://purl.uniprot.org/taxonomy/139952]
+        Dinemasporium_strigosum_CBS_520.78
+[&closeMatch=http://www.ubio.org/authority/metadata.php?lsid=urn:lsid:ubio.org:namebank:3057481,altLabel=Dinemasporium strigosum,identifier.taxonVariant=817857,isDefinedBy=http://purl.org/phylo/treebase/phylows/study/TB2:S12806,identifier.taxon=611741]
+        Cephalotheca_sulfurea_AB278194
+        Dinemasporium_strigosum_CPC_18898
+[&closeMatch=http://www.ubio.org/authority/metadata.php?lsid=urn:lsid:ubio.org:namebank:3057481,isDefinedBy=http://purl.org/phylo/treebase/phylows/study/TB2:S12806,altLabel=Dinemasporium strigosum,identifier.taxonVariant=817857,identifier.taxon=611741]
+        Lecythothecium_duriligni_AF261071
+[&altLabel=Lecythothecium duriligni,closeMatch=http://www.ubio.org/authority/metadata.php?lsid=urn:lsid:ubio.org:namebank:3357189,closeMatch=http://purl.uniprot.org/taxonomy/156755,identifier.taxonVariant=435786,isDefinedBy=http://purl.org/phylo/treebase/phylows/study/TB2:S12806,identifier.taxon=150513]
+        Dinemasporium_morbidum_CBS_129.66
+[&isDefinedBy=http://purl.org/phylo/treebase/phylows/study/TB2:S12806]
+        Dictyochaeta_fertilis_AF178540
+        Brunneodinemasporium_brasiliense_CBS_112007
+[&isDefinedBy=http://purl.org/phylo/treebase/phylows/study/TB2:S12806]
+        Thozetella_nivea_EU825201
+        Dinemasporium_pseudoindicum_CBS_127402
+[&isDefinedBy=http://purl.org/phylo/treebase/phylows/study/TB2:S12806]
+        Codinaeopsis_gonytrichoides_AF178556
+[&identifier.taxonVariant=15958,isDefinedBy=http://purl.org/phylo/treebase/phylows/study/TB2:S12806,identifier.taxon=6583,closeMatch=http://www.ubio.org/authority/metadata.php?lsid=urn:lsid:ubio.org:namebank:3348485,altLabel=Codinaeopsis gonytrichoides,closeMatch=http://purl.uniprot.org/taxonomy/139964]
+        Menispora_manitobaensis_EU488738
+        Dinemasporium_pseudostrigosum_CBS_717.85
+[&isDefinedBy=http://purl.org/phylo/treebase/phylows/study/TB2:S12806]
+        Menispora_ciliata_EU488737
+        Thozetella_falcata_AY331004
+        Striatosphaeria_codinaeophora_AF466088
+[&identifier.taxon=28098,closeMatch=http://www.ubio.org/authority/metadata.php?lsid=urn:lsid:ubio.org:namebank:5963001,isDefinedBy=http://purl.org/phylo/treebase/phylows/study/TB2:S12806,altLabel=Striatosphaeria codinaeophora,closeMatch=http://purl.uniprot.org/taxonomy/139957,identifier.taxonVariant=65581]
+        Chaetosphaeria_conirostris_AF466066
+[&identifier.taxon=182490,closeMatch=http://www.ubio.org/authority/metadata.php?lsid=urn:lsid:ubio.org:namebank:5969537,altLabel=Chaetosphaeria conirostris,closeMatch=http://purl.uniprot.org/taxonomy/197720,isDefinedBy=http://purl.org/phylo/treebase/phylows/study/TB2:S12806,identifier.taxonVariant=255292]
   ;
 END;
 
 BEGIN TREES;
-    TREE 1 = (Saccharomyces_cerevisiae_Z73326,(((((((((Chaetosphaeria_tropicalis_AF466080,(Chaetosphaeria_innumera_AY017375,Chloridium_lignicola_AF178544)),((Chaetosphaeria_capitata_AF466061,Umbrinosphaeria_caesariata_AF261069),Chaetosphaeria_conirostris_AF466066)),((Chaetosphaeria_fuegiana_EF063574,Chaetosphaeria_callimorpha_AF466062),Chaetosphaeria_preussii_AF178561)),Chaetosphaeria_luquillensis_AF466074),(((Melanopsammella_gonytrichii_AF466085,Melanopsammella_vermicularioides_AF466087),(Melanochaeta_hemipsila_AY346292,Melanochaeta_aotearoae_AF466082)),((Pyrigemmula_aurantiaca_HM241692,Lecythothecium_duriligni_AF261071),Ellisembia_brachypus_DQ408563))),((Brunneodinemasporium_brasiliense_CBS_112007,(Pseudolachnea_fraxini_CBS_113701,(Dendrophoma_cytisporoides_CBS_223.95,(Codinaeopsis_gonytrichoides_AF178556,(((Zignoella_pulviscula_AF466091,Chaetosphaeria_ciliata_GU180637),Zignoella_pulviscula_AF466090),Chaetosphaeria_ovoidea_AF064641))))),Striatosphaeria_codinaeophora_AF466088)),(((((((Dinemasporium_americana_CBS_127127,((Dinemasporium_morbidum_CBS_995.97,Dinemasporium_morbidum_CBS_129.66),Dinemasporium_polygonum_CBS_516.95)),Dinemasporium_pseudoindicum_CBS_127402),Dinemasporium_strigosum_CPC_18898,Dinemasporium_strigosum_CBS_520.78,Dinemasporium_pseudostrigosum_CBS_717.85,Dinemasporium_strigosum_CBS_828.84),Dinemasporium_pseudostrigosum_CBS_825.91),Dinemasporium_decipiens_CBS_592.73),Tainosphaeria_crassiparies_AF466089),Rattania_setulifera_HM171322)),Thozetella_nivea_EU825200),Infundibulomyces_cupulata_EF113979));
+    TREE Fig._1 = [&unrootedTree=False,curatedType=,nodeLabelTimeUnit=,reasonsToExcludeFromSynthesis={},outGroupEdge=,nodeLabelMode=,branchLengthDescription=,tag={},branchLengthMode=ot:undefined]((Infundibulomyces_cupulata_EF113979,((((Tainosphaeria_crassiparies_AF466089,(Dinemasporium_decipiens_CBS_592.73,(Dinemasporium_pseudostrigosum_CBS_825.91,(Dinemasporium_strigosum_CBS_828.84,((Dinemasporium_americana_CBS_127127,(Dinemasporium_polygonum_CBS_516.95,(Dinemasporium_morbidum_CBS_995.97,Dinemasporium_morbidum_CBS_129.66)Tn8916162)Tn8916202)Tn8916164,Dinemasporium_pseudoindicum_CBS_127402)Tn8916165,Dinemasporium_pseudostrigosum_CBS_717.85,Dinemasporium_strigosum_CBS_520.78,Dinemasporium_strigosum_CPC_18898)Tn8916161)Tn8916185)Tn8916223)Tn8916227,Rattania_setulifera_HM171322)Tn8916212,(((((Melanopsammella_vermicularioides_AF466087,Melanopsammella_gonytrichii_AF466085)Tn8916194,(Melanochaeta_aotearoae_AF466082,Melanochaeta_hemipsila_AY346292)Tn8916219)Tn8916205,((Pyrigemmula_aurantiaca_HM241692,Lecythothecium_duriligni_AF261071)Tn8916211,Ellisembia_brachypus_DQ408563)Tn8916155)Tn8916200,(Chaetosphaeria_luquillensis_AF466074,((((Chaetosphaeria_innumera_AY017375,Chloridium_lignicola_AF178544)Tn8916148,Chaetosphaeria_tropicalis_AF466080)Tn8916174,((Chaetosphaeria_capitata_AF466061,Umbrinosphaeria_caesariata_AF261069)Tn8916187,Chaetosphaeria_conirostris_AF466066)Tn8916214)Tn8916213,((Chaetosphaeria_fuegiana_EF063574,Chaetosphaeria_callimorpha_AF466062)Tn8916180,Chaetosphaeria_preussii_AF178561)Tn8916215)Tn8916206)Tn8916203)Tn8916191,(Striatosphaeria_codinaeophora_AF466088,(((Dendrophoma_cytisporoides_CBS_223.95,((Chaetosphaeria_ovoidea_AF064641,((Chaetosphaeria_ciliata_GU180637,Zignoella_pulviscula_AF466091)Tn8916188,Zignoella_pulviscula_AF466090)Tn8916221)Tn8916209,Codinaeopsis_gonytrichoides_AF178556)Tn8916151)Tn8916204,Pseudolachnea_fraxini_CBS_113701)Tn8916197,Brunneodinemasporium_brasiliense_CBS_112007)Tn8916220)Tn8916152)Tn8916222)Tn8916173,Thozetella_nivea_EU825200)Tn8916217)Tn8916201,Saccharomyces_cerevisiae_Z73326)Tn8916210;
 END;
 
