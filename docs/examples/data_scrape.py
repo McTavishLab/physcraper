@@ -15,7 +15,7 @@ aln_fi = "docs/examples/{}{}.aln".format(study_id, tree_id)
 
 
 # Create an 'scraper' object to get data from NCBI, align it an
-scraper = scraper_from_opentree(study_id, tree_id, aln_fi, configfi, workdir)
+scraper = scraper_from_opentree(study_id = study_id, tree_id = tree_id, aln_file = aln_fi, config_file = configfi, workdir = workdir)
 
 sys.stdout.write("{} taxa in alignement and tree\n".format(len(scraper.data.aln)))
 

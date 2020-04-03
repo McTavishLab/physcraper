@@ -26,7 +26,7 @@ from physcraper import writeinfofiles
 from physcraper import AWSWWW
 
 _VERBOSE = 1
-_DEBUG = 0
+_DEBUG = 1
 def debug(msg):
     """short debugging command
     """
@@ -566,7 +566,7 @@ class PhyscraperScrape(object):
         with open(self.logfile, "a") as log:
             log.write("{} new sequences added from GenBank after evalue filtering\n".format(len(self.new_seqs)))
         if len(self.new_seqs) == 0:
-            sys.stderr.write("no new squences found in blast. Exiting")
+            sys.stderr.write("no new sequences found in blast. Exiting")
             sys.exit()
         self.remove_identical_seqs()
         self._blast_read = 1
@@ -921,6 +921,7 @@ class PhyscraperScrape(object):
         fi.close()
         self._query_seqs_written = 1
         self.data.write_otus(schema='table')
+        self.data.write_otus(schema='json')
         return fipath
 
 
@@ -1098,17 +1099,12 @@ class PhyscraperScrape(object):
         if _VERBOSE:
                 sys.stdout.write("running: "+" ".join(cmd)+"\n")
         self.replace_tre("RAxML_bestTree.{}".format(label))
+        self.data.write_files()
         self.data.write_labelled('^ot:ottTaxonName')
         os.chdir(cwd)
         return label
 
-#        self.tre = Tree.get(data="RAxML_bestTree.{}".format(label),
-#                            schema="newick",
-#                            preserve_underscores=True,
-#                            taxon_namespace=self.data.aln.taxon_namespace)
-#        self.data._reconcile()
-#        self.data.write_files()
-
+#
 
                     
     def calculate_bootstrap(self, alignment = None):

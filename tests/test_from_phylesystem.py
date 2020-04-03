@@ -11,7 +11,7 @@ def test_generate_ATT_from_phylesystem():
     seqaln = "tests/data/minitest.fas"
     mattype = "fasta"
     workdir = "tests/output/opentree"
-    configfi = "tests/data/remotencbi.config"
+    configfi = "tests/data/test.config"
 
 
     conf = physcraper.ConfigObj(configfi, interactive=False)
@@ -37,7 +37,7 @@ def test_generate_ATT_from_phylesystem_fail():
     seqaln = "tests/data/minitest.fas"
     mattype = "fasta"
     workdir = "tests/output/opentree"
-    configfi = "tests/data/remotencbi.config"
+    configfi = "tests/data/test.config"
 
 
     sys.stdout.write("\nTesting 'generate_ATT_from_files (fromfile.py)'\n")

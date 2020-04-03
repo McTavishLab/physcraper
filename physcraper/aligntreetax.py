@@ -3,22 +3,23 @@ import re
 import os
 import json
 import pickle
+import shutil
 
 from dendropy import Tree, DnaCharacterMatrix, DataSet, datamodel
-from physcraper import ncbi_data_parser
+from physcraper import ncbi_data_parser, ConfigObj
 from physcraper.opentree_helpers import get_mrca_ott
 from physcraper.helpers import standardize_label, to_string, debug
 
 _VERBOSE = 1
 _DEBUG = 0
 
-def generate_ATT_from_files(seqaln,
+def generate_ATT_from_files(workdir,
+                            configfile,
+                            alnfile,
                             mattype,
-                            workdir,
-                            config_obj,
                             treefile,
                             otu_json,
-                            schema_trf,
+                            tree_schema,
                             ingroup_mrca=None):
     """Build an ATT object without phylesystem, use your own files instead.
 
@@ -43,16 +44,15 @@ def generate_ATT_from_files(seqaln,
     if not os.path.exists(workdir):
         os.makedirs(workdir)
     # use replaced aln as input
-    aln = DnaCharacterMatrix.get(path=seqaln, schema=mattype)
+    aln = DnaCharacterMatrix.get(path=alnfile, schema=mattype)
     assert aln.taxon_namespace
     for tax in aln.taxon_namespace:
         tax.label = tax.label.replace(" ", "_")  # Forcing all spaces to underscore
     tre = Tree.get(path=treefile,
-                   schema=schema_trf,
+                   schema=tree_schema,
                    preserve_underscores=True,
                    taxon_namespace=aln.taxon_namespace)
     assert tre.taxon_namespace is aln.taxon_namespace, "tre and aln have not the same namespace."
-    otu_newick = tre.as_string(schema=schema_trf)
     otu_dict = json.load(open(otu_json, "r"))
     if ingroup_mrca:
         mrca_ott = int(ingroup_mrca)
@@ -61,9 +61,31 @@ def generate_ATT_from_files(seqaln,
         ott_ids = filter(None, ott_ids)
         ott_ids = set(ott_ids)
         mrca_ott = get_mrca_ott(ott_ids)
-    return AlignTreeTax(otu_newick, otu_dict, aln, ingroup_mrca=mrca_ott, workdir=workdir,
-                        config_obj=config_obj, schema=schema_trf)
+    return AlignTreeTax(tre, otu_dict, aln, ingroup_mrca=mrca_ott, workdir=workdir,
+                        configfile=configfile, schema=schema_trf)
 
+def generate_ATT_from_run(workdir):
+    """Build an ATT object without phylesystem, use your own files instead.
+    :return: object of class ATT
+    """
+
+    assert os.path.exists(workdir)
+    # use replaced aln as input
+    seqaln = "{}/physcraper.fas".format(workdir)
+    treefile = "{}/physcraper.tre".format(workdir)
+    otu_json = "{}/otu_info.json".format(workdir)
+    aln = DnaCharacterMatrix.get(path=seqaln, schema="fasta")
+    assert aln.taxon_namespace
+    tre = Tree.get(path=treefile,
+                   schema="newick",
+                   preserve_underscores=True,
+                   taxon_namespace=aln.taxon_namespace)
+    assert tre.taxon_namespace is aln.taxon_namespace
+    otu_newick = tre.as_string(schema=schema_trf)
+    otu_dict = json.load(open(otu_json, "r"))
+    mrca_ott = mrca_ott = int(open("{}/mrca.txt".format(workdir)).readline().split()[-1])
+    return AlignTreeTax(treefile, otu_dict, aln, ingroup_mrca=mrca_ott, workdir=workdir,
+                        configfile=config_obj, schema=schema_trf)
 
 
 class AlignTreeTax(object):
@@ -140,16 +162,40 @@ class AlignTreeTax(object):
           * self.aln, self.tre and self.otu_dict, self.ps_otu, self.gi_dict
     """
 
-    def __init__(self, tree, otu_dict, alignment, ingroup_mrca, workdir, config_obj,
+    def __init__(self, tree, otu_dict, alignment, ingroup_mrca, workdir, configfile=None,
                  schema='newick', taxon_namespace=None):
         debug("build ATT class")
-        self.aln = alignment
-        assert isinstance(self.aln, datamodel.charmatrixmodel.DnaCharacterMatrix), \
-                ("your aln '%s' is not a DnaCharacterMatrix" % alignment)
-        self.tre = Tree.get(data=tree,
+        if isinstance(aln, string):
+            if os.path.exists:
+                self.tre = Tree.get(path=tree,
                             schema=schema,
                             preserve_underscores=True,
                             taxon_namespace=self.aln.taxon_namespace)
+            else:
+                assert tree.startswith('(')
+                self.tre = Tree.get(data=tree,
+                            schema=schema,
+                            preserve_underscores=True,
+                            taxon_namespace=self.aln.taxon_namespace)
+        elif isinstance(tree, dendropy.datamodel.treemodel.Tree):
+            self.tre = tree
+        self.aln = alignment
+        assert isinstance(self.aln, datamodel.charmatrixmodel.DnaCharacterMatrix), \
+                ("your aln '%s' is not a DnaCharacterMatrix" % alignment)
+        if isinstance(tree, string):
+            if os.path.exists:
+                self.tre = Tree.get(path=tree,
+                            schema=schema,
+                            preserve_underscores=True,
+                            taxon_namespace=self.aln.taxon_namespace)
+            else:
+                assert tree.startswith('(')
+                self.tre = Tree.get(data=tree,
+                            schema=schema,
+                            preserve_underscores=True,
+                            taxon_namespace=self.aln.taxon_namespace)
+        elif isinstance(tree, dendropy.datamodel.treemodel.Tree):
+            self.tre = tree
         assert (self.tre.taxon_namespace is self.aln.taxon_namespace), "tre and aln taxon_namespace are not identical"
         assert isinstance(otu_dict, dict), ("otu_dict '%s' is not of type dict" % otu_dict)
         self.otu_dict = otu_dict
@@ -159,13 +205,17 @@ class AlignTreeTax(object):
                                         "^physcraper:status":"original",
                                         "^physcraper:last_blasted":None
                                         }
-        self.config = config_obj
         self.ps_otu = 1  # iterator for new otu IDs
         self._reconcile()
         self._reconcile_names()
         self.workdir = os.path.abspath(workdir)
         if not os.path.exists(self.workdir):
             os.makedirs(self.workdir)
+        if configfi:
+            self.config = ConfigObj(configfile)
+            shutil.copyfile(self.config.configfi, "{}/run.config".format(self.workdir))
+        else:
+            self.config = ConfigObj()
         assert int(ingroup_mrca), ("your ingroup_mrca '%s' is not an integer." % ingroup_mrca)
         self.mrca_ott = ingroup_mrca  # ott_ingroup mrca can be pulled directly from phylesystem
         self.orig_seqlen = []  # will get filled in later...
@@ -205,18 +255,8 @@ class AlignTreeTax(object):
         self.aln.remove_sequences(del_aln)
         self.tre.prune_taxa(del_tre)
         for tax in prune:
-            # potentially slow at large number of taxa and large numbers to be pruned
-            found = 0
-            for otu in self.otu_dict:
-                if "^ot:originalLabel" in self.otu_dict[otu]:
-                    if self.otu_dict[otu][u'^ot:originalLabel'] == tax.label:
-                        self.otu_dict[otu]['^physcraper:status'] = "deleted in reconciliation"
-                        found = 1
-                elif otu == tax.label:
-                    self.otu_dict[otu]['^physcraper:status'] = "deleted in reconciliation"
-                    found = 1
-            if found == 0:
-                sys.stderr.write("lost taxon {} in reconcilliation\n".format(self.otu_dict[tax.label]['^ot:originalLabel']))
+            otu = tax.label
+            self.otu_dict[otu]['^physcraper:status'] = "deleted in reconciliation"
             self.aln.taxon_namespace.remove_taxon(tax)
         assert self.aln.taxon_namespace == self.tre.taxon_namespace
 
@@ -565,7 +605,7 @@ class AlignTreeTax(object):
         :param schema: either table or json format
         :return: writes out otu_dict to file
         """
-        # TODO: schema is unused!
+
         assert schema in ["table", "json"]
         if schema == "json":
             with open("{}/{}.json".format(self.workdir, filename), "w") as outfile:

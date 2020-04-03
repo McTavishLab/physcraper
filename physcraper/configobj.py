@@ -10,6 +10,12 @@ from physcraper.helpers import cd, debug
 _DEBUG = 0
 
 
+
+
+physcraper_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+#sys.stdout.write(physcraper_dir)
+
+
 def is_number(s):
     """test if string can be coerced to float"""
     try:
@@ -60,7 +66,6 @@ class ConfigObj(object):
       * **self.get_ncbi_taxonomy**: Path to sh file doing something...
       * **self.phylesystem_loc**: defines which phylesystem for OpenTree datastore is used. The default is api, but can run on local version too.
       * **self.ott_ncbi**: file containing OTT id, ncbi and taxon name (??)
-      * **self.id_pickle**: path to pickle file
       * **self.email**: email address used for blast queries
       * **self.blast_loc**: defines which blasting method to use:
 
@@ -91,6 +96,7 @@ class ConfigObj(object):
             sys.stdout.write("Building config object\n")
         assert os.path.isfile(configfi), "file `%s` does not exist" % configfi
         config = configparser.ConfigParser()
+        self.configfi = configfi
         config.read_file(open(configfi))
         
         # read in blast settings
@@ -112,8 +118,6 @@ class ConfigObj(object):
         if self.blast_loc == "local":
             self.blastdb = config["blast"]["localblastdb"]
             self.url_base = None
-            self.ncbi_parser_nodes_fn = config["ncbi_parser"]["nodes_fn"]
-            self.ncbi_parser_names_fn = config["ncbi_parser"]["names_fn"]
         if self.blast_loc == "remote":
             self.url_base = config["blast"].get("url_base")
         if _DEBUG:
@@ -167,14 +171,15 @@ class ConfigObj(object):
         assert self.phylesystem_loc in ["local", "api"], \
             (
                 "phylesystem location must be either local or api")  # default is api, but can run on local version of OpenTree datastore
-        self.ott_ncbi = config["taxonomy"][
-            "ott_ncbi"
-        ]
+        if "path" in config["taxonomy"].keys():
+            self.taxonomy_dir = config["taxonomy"]["path"]
+        else:
+            self.taxonomy_dir = "{}/taxonomy".format(physcraper_dir)
+        self.ott_ncbi = "{}/ott_ncbi".format(self.taxonomy_dir)
         assert os.path.isfile(self.ott_ncbi), (
                 "file `%s` does not exists" % self.ott_ncbi
         )
         # rewrites relative path to absolute path so that it behaves when changing dirs
-        self.id_pickle = os.path.abspath(config["taxonomy"]["id_pickle"]) #TODO wtf?
         
         ####
         # check database status
@@ -230,10 +235,10 @@ class ConfigObj(object):
                       "You agree to their terms")
                 x = get_user_input()
                 if x == "yes":
-                    os.system("wget 'ftp://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdump.tar.gz' -P ./tests/data/")
-                    os.system("gunzip -f -cd ./taxonomy/taxdump.tar.gz | (tar xvf - names.dmp nodes.dmp)")
-                    os.system("mv nodes.dmp ./taxonomy")
-                    os.system("mv names.dmp ./taxonomy/")
+                    os.system("wget 'ftp://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdump.tar.gz' -P .{}".format(self.taxonomy_dir))
+                    os.system("gunzip -f -cd {}/taxdump.tar.gz | (tar xvf - names.dmp nodes.dmp)".format(self.taxonomy_dir))
+                    os.system("mv nodes.dmp {}/".format(self.taxonomy_dir))
+                    os.system("mv names.dmp {}/".format(self.taxonomy_dir))
                     os.system("rm taxdump.tar.gz")
                 elif x == "no":
                     print("You did not agree to download data from ncbi. Program will default to blast web-queries.")
@@ -251,10 +256,11 @@ class ConfigObj(object):
                           "You agree to their terms")
                     x = get_user_input()
                     if x == "yes":
-                        os.system("wget 'ftp://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdump.tar.gz' -P ./taxonomy/")
-                        os.system("gunzip -f -cd ./tests/data/taxdump.tar.gz | (tar xvf - names.dmp nodes.dmp)")
-                        os.system("mv nodes.dmp ./taxonomy/")
-                        os.system("mv names.dmp ./taxonomy/")
+                        os.system("wget 'ftp://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdump.tar.gz' -P {}".format(self.taxonomy_dir))
+                        os.system("gunzip -f -cd {}/taxdump.tar.gz | (tar xvf - names.dmp nodes.dmp)".format(self.taxonomy_dir))
+                        os.system("mv nodes.dmp {}/".format(self.taxonomy_dir))
+                        os.system("mv names.dmp {}/".format(self.taxonomy_dir))
+                        os.system("rm taxdump.tar.gz")
                     elif x == "no":
                         print("You did not agree to update data from ncbi. Old database files will be used.")
                     else:

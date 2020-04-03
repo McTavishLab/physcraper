@@ -40,12 +40,12 @@ ottids = [otu_json[ite]['^ot:ottId'] for ite in otu_json]
 mrca = opentree_helpers.get_mrca_ott(ottids)
 
 
-data_obj_base = generate_ATT_from_files(seqaln=seqaln, 
+data_obj_base = generate_ATT_from_files(alnfile=seqaln, 
                              mattype=mattype, 
                              workdir=workdir,
-                             config_obj=conf_base,
+                             configfile=configfi,
                              treefile=trfn,
-                             schema_trf = schema_trf,
+                             tree_schema = schema_trf,
                              otu_json=otu_jsonfi,
                              ingroup_mrca=mrca)
 

@@ -1,6 +1,6 @@
 import sys
 import os
-import pickle
+import json
 import time
 
 
@@ -98,7 +98,9 @@ class IdDicts(object):
             debug("Config not remote {}".format(config_obj.blast_loc))
             self.ncbi_parser = ncbi_data_parser.Parser(names_file=self.config.ncbi_parser_names_fn,
                                                        nodes_file=self.config.ncbi_parser_nodes_fn)
-        self.acc_tax_seq_dict = {} 
+        self.acc_tax_seq_dict = {}
+        self.full_seq_path = "{}/full_seqs".format(self.config.taxonomy_dir)
+
 
     def get_ncbiid_from_acc(self, acc):
         '''checks local dicts, and then runs eftech to get ncbi id for accession'''
@@ -118,11 +120,19 @@ class IdDicts(object):
  #removed function find_tax_id because it wasn't being used
    
     def get_tax_seq_acc(self, acc):
+        if not os.path.exists(self.full_seq_path):
+            os.makedirs(self.full_seq_path)
         gb_id = acc
         if len(gb_id.split(".")) == 1:
             debug("accession number {} not recognized".format(gb_id))
             return None, None, None
+        seq_path = "{}/{}.json".format(self.full_seq_path, gb_id)
         if gb_id in self.acc_tax_seq_dict:
+            tax_name = self.acc_tax_seq_dict[gb_id]["taxname"]
+            ncbi_id = self.acc_tax_seq_dict[gb_id]["^ncbi:taxon"]
+            seq = self.acc_tax_seq_dict[gb_id]["seq"]
+        elif os.path.exists(seq_path):
+            self.acc_tax_seq_dict[gb_id] = json.load(open(seq_path))
             tax_name = self.acc_tax_seq_dict[gb_id]["taxname"]
             ncbi_id = self.acc_tax_seq_dict[gb_id]["^ncbi:taxon"]
             seq = self.acc_tax_seq_dict[gb_id]["seq"]
@@ -135,6 +145,7 @@ class IdDicts(object):
             self.ncbiid_to_spn[ncbi_id] = tax_name
             self.acc_ncbi_dict[gb_id] = ncbi_id
             self.acc_tax_seq_dict[gb_id] = {'taxname':tax_name, "^ncbi:taxon":ncbi_id, 'seq':seq} #This is going to be a memory hog...
+            json.dump(self.acc_tax_seq_dict[gb_id], open(seq_path, 'w'))
         assert ncbi_id is not None
         return ncbi_id, tax_name, seq
 

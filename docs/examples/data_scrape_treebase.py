@@ -13,6 +13,12 @@ workdir ="scrape_ot_350_treebase"
 conf = physcraper.ConfigObj(configfi)
 
 
+
+# We need to create a physcraper ids object to translate between ncbi and OpenTree identifiers.
+ids = physcraper.IdDicts(conf, workdir=workdir)
+ids.get_tax_seq_acc("DQ912354.1")
+
+
 #Get an existing tree from the Open Tree of life, and convert it to newick format
 nexson = physcraper.opentree_helpers.get_nexson(study_id)
 tre, cite = get_tree_from_study(study_id, tree_id)
@@ -66,12 +72,8 @@ json.dump(data_obj.otu_dict, open('{}/otu_dict.json'.format(workdir), 'wb'))
 
 
 
-# We need to create a physcraper ids object to translate between ncbi and OpenTree identifiers.
-ids = physcraper.IdDicts(conf, workdir=workdir)
-
-
 # Create an 'scraper' object to get data from NCBI, align it an
-scraper = physcraper.PhyscraperScrape(data_obj, ids)
+scraper = physcraper.PhyscraperScrape(data_obj=data_obj, ids_obj=ids)
 
 
 sys.stdout.write("{} taxa in alignement and tree\n".format(len(scraper.data.aln)))
