@@ -29,12 +29,12 @@ def test():
     json.dump(otu_json, open(otu_jsonfi,"w"))
 
 
-    data_obj = generate_ATT_from_files(seqaln=seqaln, 
-                                     mattype=mattype, 
+    data_obj = generate_ATT_from_files(alnfile=seqaln, 
+                                     aln_schema=mattype, 
                                      workdir=workdir,
-                                     config_obj=conf,
+                                     configfile=configfi,
                                      treefile=treefile,
-                                     schema_trf=schema_trf,
+                                     tree_schema=schema_trf,
                                      otu_json=otu_jsonfi,
                                      ingroup_mrca=None)
 

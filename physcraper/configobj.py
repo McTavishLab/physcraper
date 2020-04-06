@@ -180,7 +180,9 @@ class ConfigObj(object):
                 "file `%s` does not exists" % self.ott_ncbi
         )
         # rewrites relative path to absolute path so that it behaves when changing dirs
-        
+        if self.blast_loc == "local": 
+            self.ncbi_parser_nodes_fn = "{}/nodes.dmp".format(self.taxonomy_dir)
+            self.ncbi_parser_names_fn = "{}/names.dmp".format(self.taxonomy_dir)
         ####
         # check database status
         if interactive is None:
@@ -237,8 +239,8 @@ class ConfigObj(object):
                 if x == "yes":
                     os.system("wget 'ftp://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdump.tar.gz' -P .{}".format(self.taxonomy_dir))
                     os.system("gunzip -f -cd {}/taxdump.tar.gz | (tar xvf - names.dmp nodes.dmp)".format(self.taxonomy_dir))
-                    os.system("mv nodes.dmp {}/".format(self.taxonomy_dir))
-                    os.system("mv names.dmp {}/".format(self.taxonomy_dir))
+                    os.system("mv nodes.dmp {}".format(self.ncbi_parser_nodes_fn))
+                    os.system("mv names.dmp {}".format(self.ncbi_parser_names_fn))
                     os.system("rm taxdump.tar.gz")
                 elif x == "no":
                     print("You did not agree to download data from ncbi. Program will default to blast web-queries.")
@@ -256,10 +258,10 @@ class ConfigObj(object):
                           "You agree to their terms")
                     x = get_user_input()
                     if x == "yes":
-                        os.system("wget 'ftp://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdump.tar.gz' -P {}".format(self.taxonomy_dir))
+                        os.system("wget 'ftp://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdump.tar.gz' -P .{}".format(self.taxonomy_dir))
                         os.system("gunzip -f -cd {}/taxdump.tar.gz | (tar xvf - names.dmp nodes.dmp)".format(self.taxonomy_dir))
-                        os.system("mv nodes.dmp {}/".format(self.taxonomy_dir))
-                        os.system("mv names.dmp {}/".format(self.taxonomy_dir))
+                        os.system("mv nodes.dmp {}".format(self.ncbi_parser_nodes_fn))
+                        os.system("mv names.dmp {}".format(self.ncbi_parser_names_fn))
                         os.system("rm taxdump.tar.gz")
                     elif x == "no":
                         print("You did not agree to update data from ncbi. Old database files will be used.")

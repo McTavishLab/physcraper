@@ -14,12 +14,14 @@ def test_config():
 
 
     if conf.blast_loc == "local":
-        expected_keys = ['seq_len_perc', 'num_threads', 'phylesystem_loc', 'maxlen', 'hitlist_size', 'gb_id_filename', 'delay', 'taxonomy_dir', 'unmapped', 'trim_perc', 'url_base', 'ott_ncbi', 'blast_loc','email', 'e_value_thresh', 'blastdb']
+        expected_keys = [ 'seq_len_perc', 'num_threads', 'phylesystem_loc', 'maxlen', 'hitlist_size', 'gb_id_filename', 'delay', 'taxonomy_dir', 'unmapped', 'trim_perc', 'url_base', 'ott_ncbi', 'blast_loc','email', 'e_value_thresh', 'blastdb']
     else:
         expected_keys = ['seq_len_perc', 'num_threads', 'phylesystem_loc', 'maxlen', 'hitlist_size', 'gb_id_filename', 'delay', 'unmapped', 'trim_perc', 'url_base', 'ott_ncbi', 'blast_loc', 'taxonomy_dir', 'email', 'e_value_thresh']
 
     assert len(conf.email.split("@")) == 2
 #    assert conf.url_base == None
-    assert set(conf.__dict__.keys())==set(expected_keys)
+    assert set(expected_keys).issubset(set(conf.__dict__.keys()))
+
+#    defaultconf = ConfigObj()
 
 test_config()

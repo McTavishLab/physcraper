@@ -16,7 +16,7 @@ _DEBUG = 0
 def generate_ATT_from_files(workdir,
                             configfile,
                             alnfile,
-                            mattype,
+                            aln_schema,
                             treefile,
                             otu_json,
                             tree_schema,
@@ -27,13 +27,13 @@ def generate_ATT_from_files(workdir,
 
     Note: has test -> test_owndata.py
 
-    :param seqaln: path to sequence alignment
-    :param mattype: string containing format of sequence alignment
+    :param alnfile: path to sequence alignment
+    :param aln_schema: string containing format of sequence alignment
     :param workdir: path to working directory
     :param config_obj: config class including the settings
     :param treefile: path to phylogeny
     :param otu_json: path to json file containing the translation of tip names to taxon names, generated with OtuJsonDict()
-    :param schema_trf: string defining the format of the input phylogeny
+    :param tree_schema: a string defining the format of the input phylogeny
     :param ingroup_mrca: optional - OToL ID of the mrca of the clade of interest. If no ingroup mrca ott_id is provided, will use all taxa in tree to calc mrca.
 
     :return: object of class ATT
@@ -44,7 +44,7 @@ def generate_ATT_from_files(workdir,
     if not os.path.exists(workdir):
         os.makedirs(workdir)
     # use replaced aln as input
-    aln = DnaCharacterMatrix.get(path=alnfile, schema=mattype)
+    aln = DnaCharacterMatrix.get(path=alnfile, schema=aln_schema)
     assert aln.taxon_namespace
     for tax in aln.taxon_namespace:
         tax.label = tax.label.replace(" ", "_")  # Forcing all spaces to underscore
@@ -169,7 +169,9 @@ class AlignTreeTax(object):
        
         ## Match taxa to labels
         self.otu_dict = otu_dict
-        self.otu_rev = {self.otu_dict[otu]['^ot:originalLabel']:otu for otu in self.otu_dict}        
+        self.otu_rev = {self.otu_dict[otu].get('^ot:originalLabel'):otu for otu in self.otu_dict}
+        if None in self.otu_rev.keys():
+            del self.otu_rev[None] 
         self.read_in_tree(tree, tree_schema)
         self.read_in_aln(alignment, aln_schema)
 
@@ -211,11 +213,16 @@ class AlignTreeTax(object):
         assert isinstance(self.tre, datamodel.treemodel.Tree)
         for leaf in self.tre.leaf_nodes():
             assert(leaf.taxon.label in self.otu_dict or leaf.taxon.label in self.otu_rev), leaf.taxon.label
-            if leaf.taxon.label in self.otu_dict:
-                self.otu_dict[leaf.taxon.label]['taxon'] = leaf.taxon
+            if leaf.taxon.label in self.otu_rev:
+                pass
             elif leaf.taxon.label in self.otu_rev:
                 otu = self.otu_rev[leaf.taxon.label]
-                self.otu_dict[otu]['taxon'] = leaf.taxon
+            else:
+                self.otu_dict[leaf.taxon.label] = {'^ot:originalLabel':leaf.taxon.label,
+                                                 "^physcraper:status":"original",
+                                                  "^physcraper:last_blasted":None
+                                                  }
+ 
     def read_in_aln(self, alignment, aln_schema):
         assert isinstance(alignment, str)
         assert os.path.exists(alignment)
@@ -237,14 +244,12 @@ class AlignTreeTax(object):
         treed_tax = set()
         for leaf in self.tre.leaf_nodes():
             treed_tax.add(leaf.taxon)
-            print("leaf in in tree is {}".format(leaf.taxon.label))
         aln_tax = set()
         for tax, seq in self.aln.items():
             aln_tax.add(tax)
-            print("tip in aln is {}".format(tax.label))
         assert(aln_tax.intersection(treed_tax))
-        print(self.otu_rev)
-        for tax in self.aln.taxon_namespace:
+        all_tax = treed_tax.union(aln_tax)
+        for tax in all_tax:
             if tax.label not in self.otu_dict:
                 if tax.label in self.otu_rev:
                     otu = self.otu_rev[tax.label]
@@ -275,7 +280,6 @@ class AlignTreeTax(object):
         self.aln.remove_sequences(del_aln)
         for tax in del_tre:
             assert(tax in treed_tax), tax
-            print(tax.label)
         self.tre.prune_taxa(del_tre)
         for tax in prune:
             otu = tax.label

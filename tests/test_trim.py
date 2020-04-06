@@ -33,14 +33,16 @@ def test_trim():
       json.dump(otu_json, open(otu_jsonfi,"w"))
 
 
-  data_obj = generate_ATT_from_files(seqaln=seqaln, 
-                                   mattype=mattype, 
-                                   workdir=workdir,
-                                   config_obj=conf,
-                                   treefile=treefile,
-                                   schema_trf = schema_trf,
-                                   otu_json=otu_jsonfi,
-                                   ingroup_mrca=None)
+  data_obj = generate_ATT_from_files(alnfile=seqaln, 
+                                     aln_schema=mattype, 
+                                     workdir=workdir,
+                                     configfile=configfi,
+                                     treefile=treefile,
+                                     tree_schema=schema_trf,
+                                     otu_json=otu_jsonfi,
+                                     ingroup_mrca=None)
+
+
 
   for tax, seq in data_obj.aln.items():
   	len_start = len(seq)

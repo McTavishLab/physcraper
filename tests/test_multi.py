@@ -41,7 +41,7 @@ mrca = opentree_helpers.get_mrca_ott(ottids)
 
 
 data_obj_base = generate_ATT_from_files(alnfile=seqaln, 
-                             mattype=mattype, 
+                             aln_schema=mattype, 
                              workdir=workdir,
                              configfile=configfi,
                              treefile=trfn,

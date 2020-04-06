@@ -39,8 +39,6 @@ def test_generate_ATT_from_phylesystem_fail():
 
     sys.stdout.write("\nTesting 'generate_ATT_from_files (fromfile.py)'\n")
 
-    conf = physcraper.ConfigObj(configfi, interactive=False)
-    aln = DnaCharacterMatrix.get(path=seqaln, schema=mattype)
     data_obj = physcraper.generate_ATT_from_phylesystem(alnfile=seqaln,
                                                     workdir=workdir,
                                                     configfile=configfi,

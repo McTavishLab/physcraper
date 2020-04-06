@@ -31,14 +31,14 @@ def test_prune_short():
         json.dump(otu_json, open(otu_jsonfi,"w"))
 
 
-    data_obj = physcraper.generate_ATT_from_files(seqaln=seqaln, 
-                                     mattype=mattype, 
-                                     workdir=workdir,
-                                     config_obj=conf,
-                                     treefile=treefile,
-                                     schema_trf = schema_trf,
-                                     otu_json=otu_jsonfi,
-                                     ingroup_mrca=None)
+    data_obj = physcraper.generate_ATT_from_files(alnfile=seqaln, 
+                                                 aln_schema=mattype, 
+                                                 workdir=workdir,
+                                                 configfile=configfi,
+                                                 treefile=treefile,
+                                                 tree_schema=schema_trf,
+                                                 otu_json=otu_jsonfi,
+                                                 ingroup_mrca=None)
 
 
     data_obj.config.seq_len_perc = 0.9

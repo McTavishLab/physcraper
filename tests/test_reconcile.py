@@ -21,14 +21,12 @@ def test_reconcile():
     otu_jsonfi = "tests/data/tiny_test_example/otu_dict.json"
 
 
-    conf = ConfigObj(configfi, interactive=False)
-
-    data_obj = generate_ATT_from_files(seqaln=seqalnmiss, 
-                                     mattype=mattype, 
-                                    workdir=workdir,
-                                     config_obj=conf,
+    data_obj = generate_ATT_from_files(alnfile=seqalnmiss, 
+                                     aln_schema=mattype, 
+                                     workdir=workdir,
+                                     configfile=configfi,
                                      treefile=treefile,
-                                     schema_trf = schema_trf,
+                                     tree_schema=schema_trf,
                                      otu_json=otu_jsonfi,
                                      ingroup_mrca=None)
 
@@ -38,90 +36,19 @@ def test_reconcile():
 
     #----------------------------------------------------
 
-    data_obj = generate_ATT_from_files(seqaln=seqaln, 
-                                     mattype=mattype, 
-                                    workdir=workdir,
-                                     config_obj=conf,
+    data_obj = generate_ATT_from_files(alnfile=seqaln, 
+                                     aln_schema=mattype, 
+                                     workdir=workdir,
+                                     configfile=configfi,
                                      treefile=treefilemiss,
-                                     schema_trf = schema_trf,
+                                     tree_schema=schema_trf,
                                      otu_json=otu_jsonfi,
                                      ingroup_mrca=None)
-
 
 
     for otu in data_obj.otu_dict:
         if data_obj.otu_dict[otu][u'^ot:originalLabel'] == 'S_scopolii':
             assert data_obj.otu_dict[otu]['^physcraper:status'] == "deleted in reconciliation"
-
-
-
-
-    #----------------------------------------------------
-
-
-    aln = DnaCharacterMatrix.get(path=seqalnmiss, schema=mattype)
-
-    assert aln.taxon_namespace
-    for tax in aln.taxon_namespace:
-            tax.label = tax.label.replace(" ", "_")  # Forcing all spaces to underscore UGH
-
-
-    tre = Tree.get(path=treefile,
-                   schema="newick",
-                    preserve_underscores=True,
-                    taxon_namespace=aln.taxon_namespace)
-
-
-
-    assert aln.taxon_namespace == tre.taxon_namespace
-    assert aln.taxon_namespace is tre.taxon_namespace
-
-
-    treed_taxa = set()
-    for leaf in tre.leaf_nodes():
-        treed_taxa.add(leaf.taxon)
-    aln_tax = set()
-    for tax, seq in aln.items():
-        aln_tax.add(tax)
-
-
-    prune = treed_taxa ^ aln_tax
-
-    assert len(prune) == 1
-    assert list(prune)[0].label == '2029_doronicum'
-
-    #----------------
-
-    aln = DnaCharacterMatrix.get(path=seqaln, schema=mattype)
-
-    assert aln.taxon_namespace
-    for tax in aln.taxon_namespace:
-            tax.label = tax.label.replace(" ", "_")  # Forcing all spaces to underscore UGH
-
-
-    tre = Tree.get(path=treefilemiss,
-                   schema="newick",
-                    preserve_underscores=True,
-                    taxon_namespace=aln.taxon_namespace)
-
-
-
-    assert aln.taxon_namespace == tre.taxon_namespace
-    assert aln.taxon_namespace is tre.taxon_namespace
-
-
-    treed_taxa = set()
-    for leaf in tre.leaf_nodes():
-        treed_taxa.add(leaf.taxon)
-    aln_tax = set()
-    for tax, seq in aln.items():
-        aln_tax.add(tax)
-
-
-    prune = treed_taxa ^ aln_tax
-
-    assert len(prune) == 1
-    assert list(prune)[0].label == 'S_scopolii'
 
 
     # ----------------------------
@@ -131,14 +58,14 @@ def test_reconcile():
     seqalnmiss= "tests/data/tiny_test_example/test_missingseq.fas"
     treefilemiss= "tests/data/tiny_test_example/test_missingtip.tre"
 
-    data_obj = generate_ATT_from_files(seqaln=seqalnmiss, 
-                                     mattype=mattype, 
-                                     workdir=workdir,
-                                     config_obj=conf,
-                                     treefile=treefilemiss,
-                                     schema_trf = schema_trf,
-                                     otu_json=otu_jsonfi,
-                                     ingroup_mrca=None)
+    data_obj = generate_ATT_from_files(alnfile=seqalnmiss, 
+                                       aln_schema=mattype, 
+                                       workdir=workdir,
+                                       configfile=configfi,
+                                       treefile=treefilemiss,
+                                       tree_schema = schema_trf,
+                                       otu_json=otu_jsonfi,
+                                      ingroup_mrca=None)
 
 
 
@@ -146,8 +73,6 @@ def test_reconcile():
     for otu in data_obj.otu_dict:
         if data_obj.otu_dict[otu][u'^ot:originalLabel'] == '2029_doronicum':
             assert data_obj.otu_dict[otu]['^physcraper:status'] == "deleted in reconciliation"
-
-    for otu in data_obj.otu_dict:
         if data_obj.otu_dict[otu][u'^ot:originalLabel'] == 'S_scopolii':
             assert data_obj.otu_dict[otu]['^physcraper:status'] == "deleted in reconciliation"
 

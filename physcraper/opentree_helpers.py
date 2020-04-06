@@ -196,7 +196,6 @@ def generate_ATT_from_phylesystem(alnfile,
     else:  # just get the mrca for teh whole tree
         ott_mrca = get_mrca_ott([otu_dict[otu_id].get(u"^ot:ottId") for otu_id in otu_dict])
     otu_newick = tree_obj.as_string(schema="newick")
-    print(otu_newick)
     return physcraper.aligntreetax.AlignTreeTax(tree = otu_newick, otu_dict =otu_dict, alignment=alnfile, ingroup_mrca=ott_mrca, workdir=workdir, configfile=configfile)
     # newick should be bare, but alignment should be DNACharacterMatrix
 
