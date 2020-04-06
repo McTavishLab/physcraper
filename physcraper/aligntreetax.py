@@ -61,8 +61,8 @@ def generate_ATT_from_files(workdir,
         ott_ids = filter(None, ott_ids)
         ott_ids = set(ott_ids)
         mrca_ott = get_mrca_ott(ott_ids)
-    return AlignTreeTax(tre, otu_dict, aln, ingroup_mrca=mrca_ott, workdir=workdir,
-                        configfile=configfile, schema=schema_trf)
+    return AlignTreeTax(tre, otu_dict, alnfile, ingroup_mrca=mrca_ott, workdir=workdir,
+                        configfile=configfile, tree_schema=tree_schema)
 
 def generate_ATT_from_run(workdir):
     """Build an ATT object without phylesystem, use your own files instead.
@@ -85,7 +85,7 @@ def generate_ATT_from_run(workdir):
     otu_dict = json.load(open(otu_json, "r"))
     mrca_ott = mrca_ott = int(open("{}/mrca.txt".format(workdir)).readline().split()[-1])
     return AlignTreeTax(treefile, otu_dict, aln, ingroup_mrca=mrca_ott, workdir=workdir,
-                        configfile=config_obj, schema=schema_trf)
+                        configfile=config_obj, tree_schema=schema_trf)
 
 
 class AlignTreeTax(object):
@@ -163,55 +163,28 @@ class AlignTreeTax(object):
     """
 
     def __init__(self, tree, otu_dict, alignment, ingroup_mrca, workdir, configfile=None,
-                 schema='newick', taxon_namespace=None):
+                 tree_schema='newick',aln_schema ='fasta',taxon_namespace=None):
         debug("build ATT class")
-        if isinstance(aln, string):
-            if os.path.exists:
-                self.tre = Tree.get(path=tree,
-                            schema=schema,
-                            preserve_underscores=True,
-                            taxon_namespace=self.aln.taxon_namespace)
-            else:
-                assert tree.startswith('(')
-                self.tre = Tree.get(data=tree,
-                            schema=schema,
-                            preserve_underscores=True,
-                            taxon_namespace=self.aln.taxon_namespace)
-        elif isinstance(tree, dendropy.datamodel.treemodel.Tree):
-            self.tre = tree
-        self.aln = alignment
-        assert isinstance(self.aln, datamodel.charmatrixmodel.DnaCharacterMatrix), \
-                ("your aln '%s' is not a DnaCharacterMatrix" % alignment)
-        if isinstance(tree, string):
-            if os.path.exists:
-                self.tre = Tree.get(path=tree,
-                            schema=schema,
-                            preserve_underscores=True,
-                            taxon_namespace=self.aln.taxon_namespace)
-            else:
-                assert tree.startswith('(')
-                self.tre = Tree.get(data=tree,
-                            schema=schema,
-                            preserve_underscores=True,
-                            taxon_namespace=self.aln.taxon_namespace)
-        elif isinstance(tree, dendropy.datamodel.treemodel.Tree):
-            self.tre = tree
+        ##Read Tree
+       
+        ## Match taxa to labels
+        self.otu_dict = otu_dict
+        self.otu_rev = {self.otu_dict[otu]['^ot:originalLabel']:otu for otu in self.otu_dict}        
+        self.read_in_tree(tree, tree_schema)
+        self.read_in_aln(alignment, aln_schema)
+
+
+        ## Read Alignment
+        
         assert (self.tre.taxon_namespace is self.aln.taxon_namespace), "tre and aln taxon_namespace are not identical"
         assert isinstance(otu_dict, dict), ("otu_dict '%s' is not of type dict" % otu_dict)
-        self.otu_dict = otu_dict
-        for tax in self.aln.taxon_namespace:
-            if tax.label not in otu_dict:
-                otu_dict[tax.label] = {'^ot:originalLabel':tax.label,
-                                        "^physcraper:status":"original",
-                                        "^physcraper:last_blasted":None
-                                        }
         self.ps_otu = 1  # iterator for new otu IDs
         self._reconcile()
         self._reconcile_names()
         self.workdir = os.path.abspath(workdir)
         if not os.path.exists(self.workdir):
             os.makedirs(self.workdir)
-        if configfi:
+        if configfile:
             self.config = ConfigObj(configfile)
             shutil.copyfile(self.config.configfi, "{}/run.config".format(self.workdir))
         else:
@@ -222,7 +195,38 @@ class AlignTreeTax(object):
         self.gb_dict = {}  # has all info about new blast seq
         self._reconciled = False
         self.unpubl_otu_json = None
-
+    def read_in_tree(self, tree, tree_schema):
+        if isinstance(tree, str):
+            if os.path.exists(tree):
+                self.tre = Tree.get(path=tree,
+                            schema=tree_schema,
+                            preserve_underscores=True)
+            else:
+                assert tree.startswith('(')
+                self.tre = Tree.get(data=tree,
+                            schema=tree_schema,
+                            preserve_underscores=True)
+        elif isinstance(tree, datamodel.treemodel.Tree):
+            self.tre = tree
+        assert isinstance(self.tre, datamodel.treemodel.Tree)
+        for leaf in self.tre.leaf_nodes():
+            assert(leaf.taxon.label in self.otu_dict or leaf.taxon.label in self.otu_rev), leaf.taxon.label
+            if leaf.taxon.label in self.otu_dict:
+                self.otu_dict[leaf.taxon.label]['taxon'] = leaf.taxon
+            elif leaf.taxon.label in self.otu_rev:
+                otu = self.otu_rev[leaf.taxon.label]
+                self.otu_dict[otu]['taxon'] = leaf.taxon
+    def read_in_aln(self, alignment, aln_schema):
+        assert isinstance(alignment, str)
+        assert os.path.exists(alignment)
+        ##Check namespace
+        self.aln = DnaCharacterMatrix.get(path=alignment, schema=aln_schema, taxon_namespace = self.tre.taxon_namespace)
+        #for tax, seq in self.aln.items():
+         #   aln_tax.add(tax)
+        #elif isinstance(alignment, datamodel.charmatrixmodel.DnaCharacterMatrix):
+        #    self.aln = alignment
+        assert isinstance(self.aln, datamodel.charmatrixmodel.DnaCharacterMatrix), \
+                ("your aln '%s' is not a DnaCharacterMatrix" % alignment)
     def _reconcile(self):
         """Taxa that are only found in the tree, or only in the alignment are deleted.
 
@@ -233,15 +237,31 @@ class AlignTreeTax(object):
         treed_tax = set()
         for leaf in self.tre.leaf_nodes():
             treed_tax.add(leaf.taxon)
+            print("leaf in in tree is {}".format(leaf.taxon.label))
         aln_tax = set()
         for tax, seq in self.aln.items():
             aln_tax.add(tax)
+            print("tip in aln is {}".format(tax.label))
+        assert(aln_tax.intersection(treed_tax))
+        print(self.otu_rev)
+        for tax in self.aln.taxon_namespace:
+            if tax.label not in self.otu_dict:
+                if tax.label in self.otu_rev:
+                    otu = self.otu_rev[tax.label]
+                    tax.label = otu
+                else:
+                    self.otu_dict[tax.label] = {'^ot:originalLabel':tax.label,
+                                           "^physcraper:status":"original",
+                                           "^physcraper:last_blasted":None
+                                           }
+ 
+            assert tax.label in self.otu_dict, tax.label
         prune = treed_tax ^ aln_tax
         missing = [i.label for i in prune]
         if missing:
             errmf = 'NAME RECONCILIATION Some of the taxa in the tree are not in the alignment or vice versa' \
-                    ' and will be pruned. Missing "{}"\n'
-            missing = [self.otu_dict[tax].get('^ot:originalLabel', tax) for tax in missing]
+                    ' and will be pruned. Missing "{}"...\n'
+            missing = [self.otu_dict[tax].get('^ot:originalLabel', tax) for tax in missing][:10]
             errm = errmf.format('", "'.join(missing))
             sys.stderr.write(errm)
         del_aln = []
@@ -253,12 +273,16 @@ class AlignTreeTax(object):
             if taxon in treed_tax:
                 del_tre.append(taxon)
         self.aln.remove_sequences(del_aln)
+        for tax in del_tre:
+            assert(tax in treed_tax), tax
+            print(tax.label)
         self.tre.prune_taxa(del_tre)
         for tax in prune:
             otu = tax.label
             self.otu_dict[otu]['^physcraper:status'] = "deleted in reconciliation"
             self.aln.taxon_namespace.remove_taxon(tax)
         assert self.aln.taxon_namespace == self.tre.taxon_namespace
+
 
     def _reconcile_names(self):
         """It rewrites some tip names, which kept being an issue when it starts with a number at the beginning.

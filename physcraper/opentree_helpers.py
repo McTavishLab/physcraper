@@ -134,9 +134,9 @@ def get_tree_from_study(study_id, tree_id, label_format="ot:originallabel"):
 
 
 # ATT is a dumb acronym for Alignment Tree Taxa object
-def generate_ATT_from_phylesystem(aln,
+def generate_ATT_from_phylesystem(alnfile,
                                   workdir,
-                                  config_obj,
+                                  configfile,
                                   study_id,
                                   tree_id,
                                   phylesystem_loc='api',
@@ -156,10 +156,6 @@ def generate_ATT_from_phylesystem(aln,
     :param ingroup_mrca: optional.  OToL identifier of the mrca of the clade that shall be updated (can be subset of the phylogeny)
     :return: object of class ATT
     """
-    assert isinstance(aln, datamodel.charmatrixmodel.DnaCharacterMatrix), \
-            "your alignment `%s` ist not of type DnaCharacterMatrix" % aln
-    for tax in aln.taxon_namespace:
-        tax.label = tax.label.replace(" ", "_")  # Forcing all spaces to underscore
     try:
         study = OT.get_study(study_id)
         study_nexson = study.response_dict['data']
@@ -175,28 +171,16 @@ def generate_ATT_from_phylesystem(aln,
     for leaf in tree_obj.leaf_node_iter():
         tn = leaf.taxon
         otu_id = tn.otu
-        tn.label = otu_id
         otu_dict[otu_id]["^ot:ottId"] = tn.ott_id
         otu_dict[otu_id]["^ot:ottTaxonName"] = tn.ott_taxon_name
-        otu_dict[otu_id]["^ot:originalLabel"] = tn.original_label
+        otu_dict[otu_id]["^ot:originalLabel"] = tn.original_label.replace(" ", "_")
         otu_dict[otu_id]["^physcraper:status"] = "original"
         otu_dict[otu_id]["^physcraper:last_blasted"] = None
         orig = otu_dict[otu_id].get(u"^ot:originalLabel").replace(" ", "_")
         orig_lab_to_otu[orig] = otu_id
+        tn.label = otu_dict[otu_id].get(u"^ot:originalLabel")
         treed_taxa[orig] = otu_dict[otu_id].get(u"^ot:ottId")
-    aln_taxa = set()
-    for tax in aln.taxon_namespace:
-        if tax.label in otu_dict:
-            sys.stdout.write("{} aligned\n".format(tax.label))
-        else:
-            try:
-                tax.label = orig_lab_to_otu[tax.label]
-            except KeyError:
-                sys.stderr.write("{} doesn't have an otu id. It is being removed from the alignment. "
-                                 "This may indicate a mismatch between tree and alignment\n".format(tax.label))
-        aln_taxa.add(tax.label)
     # need to prune tree to seqs and seqs to tree...
-    otu_newick = tree_obj.as_string(schema="newick")
     ott_ids = nexson_helpers.get_subtree_otus(study_nexson,
                                               tree_id=tree_id,
                                               subtree_id="ingroup",
@@ -211,8 +195,9 @@ def generate_ATT_from_phylesystem(aln,
         ott_mrca = get_mrca_ott(ott_ids)
     else:  # just get the mrca for teh whole tree
         ott_mrca = get_mrca_ott([otu_dict[otu_id].get(u"^ot:ottId") for otu_id in otu_dict])
-    workdir = os.path.abspath(workdir)
-    return physcraper.aligntreetax.AlignTreeTax(otu_newick, otu_dict, aln, ingroup_mrca=ott_mrca, workdir=workdir, config_obj=config_obj)
+    otu_newick = tree_obj.as_string(schema="newick")
+    print(otu_newick)
+    return physcraper.aligntreetax.AlignTreeTax(tree = otu_newick, otu_dict =otu_dict, alignment=alnfile, ingroup_mrca=ott_mrca, workdir=workdir, configfile=configfile)
     # newick should be bare, but alignment should be DNACharacterMatrix
 
 

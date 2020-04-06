@@ -14,12 +14,9 @@ def test_generate_ATT_from_phylesystem():
     configfi = "tests/data/test.config"
 
 
-    conf = physcraper.ConfigObj(configfi, interactive=False)
-    aln = DnaCharacterMatrix.get(path=seqaln, schema=mattype)
-
-    data_obj = physcraper.generate_ATT_from_phylesystem(aln=aln,
+    data_obj = physcraper.generate_ATT_from_phylesystem(alnfile=seqaln,
                                                     workdir=workdir,
-                                                    config_obj=conf,
+                                                    configfile=configfi,
                                                     study_id=study_id,
                                                     tree_id=tree_id)
 
@@ -44,9 +41,9 @@ def test_generate_ATT_from_phylesystem_fail():
 
     conf = physcraper.ConfigObj(configfi, interactive=False)
     aln = DnaCharacterMatrix.get(path=seqaln, schema=mattype)
-    data_obj = physcraper.generate_ATT_from_phylesystem(aln=aln,
+    data_obj = physcraper.generate_ATT_from_phylesystem(alnfile=seqaln,
                                                     workdir=workdir,
-                                                    config_obj=conf,
+                                                    configfile=configfi,
                                                     study_id=study_id,
                                                     tree_id=tree_id)
     
