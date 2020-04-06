@@ -64,7 +64,6 @@ class ConfigObj(object):
       * **self.trim_perc**: value that determines how many seq need to be present before the beginning and end of alignment will be trimmed
       * **self.maxlen**: max length for values to add to aln
       * **self.get_ncbi_taxonomy**: Path to sh file doing something...
-      * **self.phylesystem_loc**: defines which phylesystem for OpenTree datastore is used. The default is api, but can run on local version too.
       * **self.ott_ncbi**: file containing OTT id, ncbi and taxon name (??)
       * **self.email**: email address used for blast queries
       * **self.blast_loc**: defines which blasting method to use:
@@ -90,10 +89,27 @@ class ConfigObj(object):
               * self.ncbi_parser_names_fn: path to 'names.dmp' file, that contains the different ID's
     """
 
-    def __init__(self, configfi, interactive=None):
+    def __init__(self, configfile = None, interactive=False):
        # debug(configfi)
         if _DEBUG:
             sys.stdout.write("Building config object\n")
+        if configfile:
+            self.read_config(configfile, interactive)
+        else:
+            self.set_defaults()
+    def set_defaults(self):
+        self.email = None
+        self.e_value_thresh = 0.00001
+        self.hitlist_size = 10
+        self.blast_loc = 'remote'
+        self.url_base = None
+        self.num_threads = 2
+        self.delay = 90
+        self.seq_len_perc = 0.8
+        self.trim_perc = 0.8
+        self.maxlen = 1.2
+        self.taxonomy_dir = "{}/taxonomy".format(physcraper_dir)
+    def read_config(self, configfi, interactive):
         assert os.path.isfile(configfi), "file `%s` does not exist" % configfi
         config = configparser.ConfigParser()
         self.configfi = configfi
@@ -132,15 +148,6 @@ class ConfigObj(object):
        # print(os.environ.get('SLURM_JOB_CPUS_PER_NODE'))
         if os.environ.get('SLURM_JOB_CPUS_PER_NODE'):
             self.num_threads = int(os.environ.get('SLURM_JOB_CPUS_PER_NODE'))
-
-      #  debug(self.num_threads)
-        self.gb_id_filename = config["blast"].get("gb_id_filename", False)
-        if self.gb_id_filename is not False:
-            if self.gb_id_filename == "True" or self.gb_id_filename == "true":
-                self.gb_id_filename = True
-            else:
-                self.gb_id_filename = False
-     #   debug("shared blast folder? {}".format(self.gb_id_filename))
         self.delay = int(config["blast"]["delay"])
         assert is_number(self.delay), (
                 "value `%s`is not a number" % self.delay
@@ -167,12 +174,8 @@ class ConfigObj(object):
         
 
         # read in settings for internal Physcraper processes
-        self.phylesystem_loc = config["phylesystem"]["location"]
-        assert self.phylesystem_loc in ["local", "api"], \
-            (
-                "phylesystem location must be either local or api")  # default is api, but can run on local version of OpenTree datastore
-        if "path" in config["taxonomy"].keys():
-            self.taxonomy_dir = config["taxonomy"]["path"]
+        if "taxonomy_path" in config["physcraper"].keys():
+            self.taxonomy_dir = config["physcraper"]["taxonomy_path"]
         else:
             self.taxonomy_dir = "{}/taxonomy".format(physcraper_dir)
         self.ott_ncbi = "{}/ott_ncbi".format(self.taxonomy_dir)

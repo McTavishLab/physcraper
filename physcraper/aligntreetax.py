@@ -165,8 +165,7 @@ class AlignTreeTax(object):
     def __init__(self, tree, otu_dict, alignment, ingroup_mrca, workdir, configfile=None,
                  tree_schema='newick',aln_schema ='fasta',taxon_namespace=None):
         debug("build ATT class")
-        ##Read Tree
-       
+        self.workdir = os.path.abspath(workdir)
         ## Match taxa to labels
         self.otu_dict = otu_dict
         self.otu_rev = {self.otu_dict[otu].get('^ot:originalLabel'):otu for otu in self.otu_dict}
@@ -174,23 +173,20 @@ class AlignTreeTax(object):
             del self.otu_rev[None] 
         self.read_in_tree(tree, tree_schema)
         self.read_in_aln(alignment, aln_schema)
-
-
+        if configfile == None:
+            self.config = ConfigObj()
+            sys.stdout.write("Using default configuration\n")
+        elif isinstance(configfile, str):
+            self.config = ConfigObj(configfile)
+            shutil.copyfile(self.config.configfi, "{}/run.config".format(self.workdir))
         ## Read Alignment
-        
         assert (self.tre.taxon_namespace is self.aln.taxon_namespace), "tre and aln taxon_namespace are not identical"
         assert isinstance(otu_dict, dict), ("otu_dict '%s' is not of type dict" % otu_dict)
         self.ps_otu = 1  # iterator for new otu IDs
         self._reconcile()
         self._reconcile_names()
-        self.workdir = os.path.abspath(workdir)
         if not os.path.exists(self.workdir):
             os.makedirs(self.workdir)
-        if configfile:
-            self.config = ConfigObj(configfile)
-            shutil.copyfile(self.config.configfi, "{}/run.config".format(self.workdir))
-        else:
-            self.config = ConfigObj()
         assert int(ingroup_mrca), ("your ingroup_mrca '%s' is not an integer." % ingroup_mrca)
         self.mrca_ott = ingroup_mrca  # ott_ingroup mrca can be pulled directly from phylesystem
         self.orig_seqlen = []  # will get filled in later...
