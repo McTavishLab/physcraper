@@ -15,10 +15,11 @@ def test_generate_ATT_from_phylesystem():
 
 
     data_obj = physcraper.generate_ATT_from_phylesystem(alnfile=seqaln,
-                                                    workdir=workdir,
-                                                    configfile=configfi,
-                                                    study_id=study_id,
-                                                    tree_id=tree_id)
+                                                        aln_schema = mattype,
+                                                        workdir=workdir,
+                                                        configfile=configfi,
+                                                        study_id=study_id,
+                                                        tree_id=tree_id)
 
     data_obj == True
     assert len(data_obj.tre.leaf_nodes())==16
@@ -40,8 +41,9 @@ def test_generate_ATT_from_phylesystem_fail():
     sys.stdout.write("\nTesting 'generate_ATT_from_files (fromfile.py)'\n")
 
     data_obj = physcraper.generate_ATT_from_phylesystem(alnfile=seqaln,
-                                                    workdir=workdir,
-                                                    configfile=configfi,
-                                                    study_id=study_id,
-                                                    tree_id=tree_id)
+                                                        aln_schema = mattype,
+                                                        workdir=workdir,
+                                                        configfile=configfi,
+                                                        study_id=study_id,
+                                                        tree_id=tree_id)
     

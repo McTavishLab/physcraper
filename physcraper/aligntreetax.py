@@ -4,7 +4,7 @@ import os
 import json
 import pickle
 import shutil
-
+import dendropy
 from dendropy import Tree, DnaCharacterMatrix, DataSet, datamodel
 from physcraper import ncbi_data_parser, ConfigObj
 from physcraper.opentree_helpers import get_mrca_ott
@@ -61,7 +61,7 @@ def generate_ATT_from_files(workdir,
         ott_ids = filter(None, ott_ids)
         ott_ids = set(ott_ids)
         mrca_ott = get_mrca_ott(ott_ids)
-    return AlignTreeTax(tre, otu_dict, alnfile, ingroup_mrca=mrca_ott, workdir=workdir,
+    return AlignTreeTax(treefile, otu_dict, alnfile, ingroup_mrca=mrca_ott, workdir=workdir,
                         configfile=configfile, tree_schema=tree_schema)
 
 def generate_ATT_from_run(workdir):
@@ -166,13 +166,16 @@ class AlignTreeTax(object):
                  tree_schema='newick',aln_schema ='fasta',taxon_namespace=None):
         debug("build ATT class")
         self.workdir = os.path.abspath(workdir)
+        if not os.path.exists(self.workdir):
+            os.makedirs(self.workdir)
         ## Match taxa to labels
         self.otu_dict = otu_dict
         self.otu_rev = {self.otu_dict[otu].get('^ot:originalLabel'):otu for otu in self.otu_dict}
         if None in self.otu_rev.keys():
-            del self.otu_rev[None] 
-        self.read_in_tree(tree, tree_schema)
+            del self.otu_rev[None]
+        self.tns = dendropy.TaxonNamespace()
         self.read_in_aln(alignment, aln_schema)
+        self.read_in_tree(tree, tree_schema)
         if configfile == None:
             self.config = ConfigObj()
             sys.stdout.write("Using default configuration\n")
@@ -185,8 +188,7 @@ class AlignTreeTax(object):
         self.ps_otu = 1  # iterator for new otu IDs
         self._reconcile()
         self._reconcile_names()
-        if not os.path.exists(self.workdir):
-            os.makedirs(self.workdir)
+        
         assert int(ingroup_mrca), ("your ingroup_mrca '%s' is not an integer." % ingroup_mrca)
         self.mrca_ott = ingroup_mrca  # ott_ingroup mrca can be pulled directly from phylesystem
         self.orig_seqlen = []  # will get filled in later...
@@ -198,12 +200,14 @@ class AlignTreeTax(object):
             if os.path.exists(tree):
                 self.tre = Tree.get(path=tree,
                             schema=tree_schema,
-                            preserve_underscores=True)
+                            preserve_underscores=True,
+                            taxon_namespace = self.tns)
             else:
                 assert tree.startswith('(')
                 self.tre = Tree.get(data=tree,
                             schema=tree_schema,
-                            preserve_underscores=True)
+                            preserve_underscores=True,
+                            taxon_namespace = self.tns)
         elif isinstance(tree, datamodel.treemodel.Tree):
             self.tre = tree
         assert isinstance(self.tre, datamodel.treemodel.Tree)
@@ -219,13 +223,13 @@ class AlignTreeTax(object):
                                                   "^physcraper:last_blasted":None
                                                   }
  
-    def read_in_aln(self, alignment, aln_schema):
+    def read_in_aln(self, alignment, aln_schema, namespace=None):
         assert isinstance(alignment, str)
         assert os.path.exists(alignment)
         ##Check namespace
-        self.aln = DnaCharacterMatrix.get(path=alignment, schema=aln_schema, taxon_namespace = self.tre.taxon_namespace)
-        #for tax, seq in self.aln.items():
-         #   aln_tax.add(tax)
+        self.aln = DnaCharacterMatrix.get(path=alignment, schema=aln_schema, taxon_namespace = self.tns)
+        for tax, seq in self.aln.items():
+            tax.label = tax.label.replace(" ","_")
         #elif isinstance(alignment, datamodel.charmatrixmodel.DnaCharacterMatrix):
         #    self.aln = alignment
         assert isinstance(self.aln, datamodel.charmatrixmodel.DnaCharacterMatrix), \
@@ -242,8 +246,12 @@ class AlignTreeTax(object):
             treed_tax.add(leaf.taxon)
         aln_tax = set()
         for tax, seq in self.aln.items():
-            aln_tax.add(tax)
-        assert(aln_tax.intersection(treed_tax))
+            aln_tax.add(tax);
+        if not aln_tax.intersection(treed_tax):
+            self.write_files()
+            self.write_otus()
+            sys.stdout.write("No match in taxon labels between tree and alignemnt, files writen to workdir {}\n".format(self.workdir))
+            assert(aln_tax.intersection(treed_tax))
         all_tax = treed_tax.union(aln_tax)
         for tax in all_tax:
             if tax.label not in self.otu_dict:
@@ -252,9 +260,9 @@ class AlignTreeTax(object):
                     tax.label = otu
                 else:
                     self.otu_dict[tax.label] = {'^ot:originalLabel':tax.label,
-                                           "^physcraper:status":"original",
-                                           "^physcraper:last_blasted":None
-                                           }
+                                                "^physcraper:status":"original",
+                                                  "^physcraper:last_blasted":None
+                                                 }
  
             assert tax.label in self.otu_dict, tax.label
         prune = treed_tax ^ aln_tax

@@ -135,6 +135,7 @@ def get_tree_from_study(study_id, tree_id, label_format="ot:originallabel"):
 
 # ATT is a dumb acronym for Alignment Tree Taxa object
 def generate_ATT_from_phylesystem(alnfile,
+                                  aln_schema,
                                   workdir,
                                   configfile,
                                   study_id,
@@ -196,7 +197,7 @@ def generate_ATT_from_phylesystem(alnfile,
     else:  # just get the mrca for teh whole tree
         ott_mrca = get_mrca_ott([otu_dict[otu_id].get(u"^ot:ottId") for otu_id in otu_dict])
     otu_newick = tree_obj.as_string(schema="newick")
-    return physcraper.aligntreetax.AlignTreeTax(tree = otu_newick, otu_dict =otu_dict, alignment=alnfile, ingroup_mrca=ott_mrca, workdir=workdir, configfile=configfile)
+    return physcraper.aligntreetax.AlignTreeTax(tree = otu_newick, otu_dict =otu_dict, alignment=alnfile, aln_schema = aln_schema, ingroup_mrca=ott_mrca, workdir=workdir, configfile=configfile)
     # newick should be bare, but alignment should be DNACharacterMatrix
 
 
@@ -222,13 +223,13 @@ def get_dataset_from_treebase(study_id):
         dna = DataSet.get(url=url, schema="nexml")
         return dna
 
-def scraper_from_opentree(study_id, tree_id, aln_file, config_file, workdir, schema = "nexus"):
+def scraper_from_opentree(study_id, tree_id, alnfile, configfile, workdir, aln_schema):
     # Read in the configuration information
-    conf = physcraper.ConfigObj(config_file)
-    aln = DnaCharacterMatrix.get(file=open(aln_file), schema=schema)
-    data_obj = generate_ATT_from_phylesystem(aln=aln,
+    conf = physcraper.ConfigObj(configfile)
+    data_obj = generate_ATT_from_phylesystem(alnfile=alnfile,
+                                             aln_schema = aln_schema,
                                              workdir=workdir,
-                                             config_obj=conf,
+                                             configfile=configfile,
                                              study_id=study_id,
                                              tree_id=tree_id)
     ids = physcraper.IdDicts(conf, workdir=workdir)
