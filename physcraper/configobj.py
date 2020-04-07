@@ -7,7 +7,7 @@ from physcraper import ncbi_data_parser  # is the ncbi data parser class and ass
 
 from physcraper.helpers import cd, debug
 
-_DEBUG = 0
+_DEBUG = 1
 
 
 
@@ -24,26 +24,6 @@ def is_number(s):
     except ValueError:
         return False
 
-
-def get_user_input():
-    """Asks for yes or no user input.
-
-    :return: user input
-    """
-    debug("get user input")
-    is_valid = 0
-    x = None
-    while not is_valid:
-        try:
-            x = input("Please write either 'yes' or 'no': ")
-            if x == 'yes' or x == 'no':
-                is_valid = 1  # set it to 1 to validate input and to terminate the while..not loop
-            else:
-                is_valid = 1 
-                x = 'no'
-        except ValueError as e:
-            print("'%s' is not a valid answer." % e.args[0].split(": ")[1])
-    return x
 
 
 class ConfigObj(object):
@@ -127,12 +107,49 @@ class ConfigObj(object):
         assert is_number(self.hitlist_size), (
                 "value `%s`is not a number" % self.e_value_thresh
         )
+
+        # read in settings for internal Physcraper processes
+        if "taxonomy_path" in config["physcraper"].keys():
+            self.taxonomy_dir = config["physcraper"]["taxonomy_path"]
+        else:
+            self.taxonomy_dir = "{}/taxonomy".format(physcraper_dir)
+        self.ott_ncbi = "{}/ott_ncbi".format(self.taxonomy_dir)
+        assert os.path.isfile(self.ott_ncbi), (
+                "file `%s` does not exists" % self.ott_ncbi
+        )
+
+
         self.blast_loc = config["blast"]["location"]
         assert self.blast_loc in ["local", "remote"], (
                 "your blast location `%s` is not remote or local" % self.email
         )        
         if self.blast_loc == "local":
             self.blastdb = config["blast"]["localblastdb"]
+            self.ncbi_parser_nodes_fn = "{}/nodes.dmp".format(self.taxonomy_dir)
+            self.ncbi_parser_names_fn = "{}/names.dmp".format(self.taxonomy_dir)
+            if not os.path.isdir(self.blastdb):
+                sys.stderr.write("Local Blast DB not found at {}, please use a remote search, or update as described in 'taxonomy/update_blast_db'\n".format(self.blastdb))
+                sys.exit()
+            if not os.path.exists("{}/nt.60.nhr".format(self.blastdb)):
+                sys.stderr.write("Errors with local Blast DB at {}, please use a remote search, or update as described in 'taxonomy/update_blast_db'\n".format(self.blastdb))
+                sys.exit()
+            else:
+                download_date = os.path.getmtime("{}/nt.60.nhr".format(self.blastdb))
+                download_date = datetime.datetime.fromtimestamp(download_date)
+                today = datetime.datetime.now()
+                time_passed = (today - download_date).days
+                if time_passed >= 90:
+                    sys.stderr.write("Your databases might not be up to date anymore. You downloaded them {} days ago. Continuing, but perhaps use a remote search, or update as decribed in 'taxonomy/update_blast_db'\n".format(time_passed))
+            if not os.path.exists(self.ncbi_parser_nodes_fn):
+                sys.stderr.write("NCBI taxonomy not found at {} - please update nodes and names.dmp, as described in 'taxonomy/update_blast_db'\n".format(self.ncbi_parser_nodes_fn))
+                sys.exit()
+            else:
+                download_date = os.path.getmtime(self.ncbi_parser_nodes_fn)
+                download_date = datetime.datetime.fromtimestamp(download_date)
+                today = datetime.datetime.now()
+                time_passed = (today - download_date).days
+                if time_passed >= 90:
+                    sys.stderr.write("Your taxonomy databases from NCBI were dowloaded {} days ago. Please update nodes and names.dmp, as described in 'taxonomy/update_blast_db'\n".format(time_passed))
             self.url_base = None
         if self.blast_loc == "remote":
             self.url_base = config["blast"].get("url_base")
@@ -172,99 +189,3 @@ class ConfigObj(object):
                 "value `%s` is not larger than 1" % self.maxlen
         )
         
-
-        # read in settings for internal Physcraper processes
-        if "taxonomy_path" in config["physcraper"].keys():
-            self.taxonomy_dir = config["physcraper"]["taxonomy_path"]
-        else:
-            self.taxonomy_dir = "{}/taxonomy".format(physcraper_dir)
-        self.ott_ncbi = "{}/ott_ncbi".format(self.taxonomy_dir)
-        assert os.path.isfile(self.ott_ncbi), (
-                "file `%s` does not exists" % self.ott_ncbi
-        )
-        # rewrites relative path to absolute path so that it behaves when changing dirs
-        if self.blast_loc == "local": 
-            self.ncbi_parser_nodes_fn = "{}/nodes.dmp".format(self.taxonomy_dir)
-            self.ncbi_parser_names_fn = "{}/names.dmp".format(self.taxonomy_dir)
-            if not os.path.isdir(self.blastdb):
-                if interactive is None:
-                    interactive = sys.stdin.isatty()
-                    if interactive is False:
-                        sys.stdout.write("local blast dir does not exist: '{}'.".format(self.blastdb))
-                        sys.exit()
-                    if interactive is True:
-                        self._download_ncbi_parser()
-                        self._download_localblastdb()
-    def _download_localblastdb(self):
-        """Check if files are present and if they are uptodate.
-        If not files will be downloaded.
-        """
-        if self.blast_loc == "local":
-            # next line of codes exists to have interactive mode enabled while testing
-            # this allows to not actually have a local ncbi database downloaded
-            if not os.path.isfile("{}/empty_local_db_for_testing.nhr".format(self.blastdb)):
-                if not os.path.isfile("{}/nt.69.nhr".format(self.blastdb)):
-                    print("To run local blast queries, download the blast data basefrom ncbi. See https://www.ncbi.nlm.nih.gov/guide/howto/run-blast-local/")
-                    self.blast_loc = "remote"
-                else:
-                    download_date = os.path.getmtime("{}/nt.60.nhr".format(self.blastdb))
-                    download_date = datetime.datetime.fromtimestamp(download_date)
-                    today = datetime.datetime.now()
-                    time_passed = (today - download_date).days
-                    if time_passed >= 90:
-                        print("Your databases might not be uptodate anymore. You downloaded them {} days ago. "
-                              "Do you want to update the blast databases from ncbi? Note: This is a US government website! "
-                              "You agree to their terms".format(time_passed))
-                        x = get_user_input()
-                        if x == "yes":
-                            with cd(self.blastdb):
-                                os.system("update_blastdb nt")
-                                os.system("cat *.tar.gz | tar -xvzf - -i")
-                                os.system("update_blastdb taxdb")
-                                os.system("gunzip -cd taxdb.tar.gz | (tar xvf - )")
-                                os.system("rm *.tar.gz*")
-                        elif x == "no":
-                            print("You did not agree to update data from ncbi. Old database files will be used.")
-                        else:
-                            print("You did not type 'yes' or 'no'!")
-
-    def _download_ncbi_parser(self):
-        """Check if files are present and if they are up to date.
-        If not files will be downloaded. 
-        """
-        if self.blast_loc == "local":
-            if not os.path.isfile(self.ncbi_parser_nodes_fn):
-                print("Do you want to download taxonomy databases from ncbi? Note: This is a US government website! "
-                      "You agree to their terms")
-                x = get_user_input()
-                if x == "yes":
-                    os.system("wget 'ftp://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdump.tar.gz' -P .{}".format(self.taxonomy_dir))
-                    os.system("gunzip -f -cd {}/taxdump.tar.gz | (tar xvf - names.dmp nodes.dmp)".format(self.taxonomy_dir))
-                    os.system("mv nodes.dmp {}".format(self.ncbi_parser_nodes_fn))
-                    os.system("mv names.dmp {}".format(self.ncbi_parser_names_fn))
-                    os.system("rm taxdump.tar.gz")
-                elif x == "no":
-                    print("You did not agree to download data from ncbi. Program will default to blast web-queries.")
-                    print("This is slow and crashes regularly!")
-                    self.blast_loc = "remote"
-                else:
-                    print("You did not type yes or no!")
-            else:
-                download_date = os.path.getmtime(self.ncbi_parser_nodes_fn)
-                download_date = datetime.datetime.fromtimestamp(download_date)
-                today = datetime.datetime.now()
-                time_passed = (today - download_date).days
-                if time_passed >= 90:
-                    print("Do you want to update taxonomy databases from ncbi? Note: This is a US government website! "
-                          "You agree to their terms")
-                    x = get_user_input()
-                    if x == "yes":
-                        os.system("wget 'ftp://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdump.tar.gz' -P .{}".format(self.taxonomy_dir))
-                        os.system("gunzip -f -cd {}/taxdump.tar.gz | (tar xvf - names.dmp nodes.dmp)".format(self.taxonomy_dir))
-                        os.system("mv nodes.dmp {}".format(self.ncbi_parser_nodes_fn))
-                        os.system("mv names.dmp {}".format(self.ncbi_parser_names_fn))
-                        os.system("rm taxdump.tar.gz")
-                    elif x == "no":
-                        print("You did not agree to update data from ncbi. Old database files will be used.")
-                    else:
-                        print("You did not type yes or no!")

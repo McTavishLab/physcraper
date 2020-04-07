@@ -1,0 +1,15 @@
+# To Update or download blast DB:
+# go to your local blast dblocation
+update_blastdb nt
+cat *.tar.gz | tar -xvzf - -i
+update_blastdb taxdb
+gunzip -cd taxdb.tar.gz | (tar xvf - )
+rm *.tar.gz*
+
+
+
+#to download taxonomy databases from ncbi, place them in the 'physcraper/taxonomy directory'
+cd taxonomy
+wget 'ftp://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdump.tar.gz' 
+gunzip -f -cd taxdump.tar.gz | (tar xvf - names.dmp nodes.dmp)
+

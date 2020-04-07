@@ -241,8 +241,8 @@ class AlignTreeTax(object):
         if not aln_tax.intersection(treed_tax):
             self.write_files()
             self.write_otus()
-            sys.stdout.write("No match in taxon labels between tree and alignemnt, files writen to workdir {}\n".format(self.workdir))
-            assert(aln_tax.intersection(treed_tax))
+            sys.stdout.write("No match in taxon labels between tree and alignment, files writen to workdir {}\n".format(self.workdir))
+            sys.exit()
         all_tax = treed_tax.union(aln_tax)
         for tax in all_tax:
             if tax.label not in self.otu_dict:

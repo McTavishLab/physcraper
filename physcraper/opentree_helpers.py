@@ -141,7 +141,8 @@ def generate_ATT_from_phylesystem(alnfile,
                                   study_id,
                                   tree_id,
                                   phylesystem_loc='api',
-                                  ingroup_mrca=None):
+                                  ingroup_mrca=None,
+                                  tip_label='^ot:originalLabel'):
     """gathers together tree, alignment, and study info - forces names to otu_ids.
 
     Study and tree ID's can be obtained by using python ./scripts/find_trees.py LINEAGE_NAME
@@ -157,6 +158,7 @@ def generate_ATT_from_phylesystem(alnfile,
     :param ingroup_mrca: optional.  OToL identifier of the mrca of the clade that shall be updated (can be subset of the phylogeny)
     :return: object of class ATT
     """
+    assert(tip_label in ['^ot:originalLabel', 'otu', "^ot:ottTaxonName", "^ot:ottId"])
     try:
         study = OT.get_study(study_id)
         study_nexson = study.response_dict['data']
@@ -179,7 +181,10 @@ def generate_ATT_from_phylesystem(alnfile,
         otu_dict[otu_id]["^physcraper:last_blasted"] = None
         orig = otu_dict[otu_id].get(u"^ot:originalLabel").replace(" ", "_")
         orig_lab_to_otu[orig] = otu_id
-        tn.label = otu_dict[otu_id].get(u"^ot:originalLabel")
+        if tip_label == 'otu':
+            tn.label = otu_id
+        else:
+            tn.label = otu_dict[otu_id].get(tip_label)
         treed_taxa[orig] = otu_dict[otu_id].get(u"^ot:ottId")
     # need to prune tree to seqs and seqs to tree...
     ott_ids = nexson_helpers.get_subtree_otus(study_nexson,
