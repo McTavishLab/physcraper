@@ -14,7 +14,7 @@ def test_owndata():
 	trfn= "tests/data/tiny_test_example/test.tre"
 	schema_trf = "newick"
 	workdir="tests/output/owndata"
-	configfi = "tests/data/localblast.config"
+	configfi = "tests/data/test.config"
 	id_to_spn = r"tests/data/tiny_test_example/test_nicespl.csv"
 	otu_jsonfi = "{}/otu_dict.json".format(workdir)
 
@@ -65,10 +65,9 @@ def test_opentree():
     # print "1. {}".format(conf.email)
           
 	aln = DnaCharacterMatrix.get(path=seqaln, schema=mattype)
-	data_obj = physcraper.generate_ATT_from_phylesystem(aln=aln,
+	data_obj = physcraper.generate_ATT_from_phylesystem(alnfile=aln,
 		                                     			workdir=workdir,
-                                                        config_obj=conf,
+                                                        configfile=conf,
                                                         study_id=study_id,
-                                                        tree_id=tree_id,
-                                                        phylesystem_loc=conf.phylesystem_loc)
+                                                        tree_id=tree_id)
 	assert isinstance(data_obj, AlignTreeTax)
