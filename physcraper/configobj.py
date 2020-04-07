@@ -186,17 +186,15 @@ class ConfigObj(object):
         if self.blast_loc == "local": 
             self.ncbi_parser_nodes_fn = "{}/nodes.dmp".format(self.taxonomy_dir)
             self.ncbi_parser_names_fn = "{}/names.dmp".format(self.taxonomy_dir)
-        ####
-        # check database status
-        if interactive is None:
-            interactive = sys.stdin.isatty()
-            if interactive is False:
-                sys.stdout.write("REMEMBER TO UPDATE THE NCBI DATABASES REGULARLY!!\n")
-        if interactive is True:
-            self._download_ncbi_parser()
-            self._download_localblastdb()
-#        debug("check db file status?: {}".format(interactive))
-
+            if not os.path.isdir(self.blastdb):
+                if interactive is None:
+                    interactive = sys.stdin.isatty()
+                    if interactive is False:
+                        sys.stdout.write("local blast dir does not exist: '{}'.".format(self.blastdb))
+                        sys.exit()
+                    if interactive is True:
+                        self._download_ncbi_parser()
+                        self._download_localblastdb()
     def _download_localblastdb(self):
         """Check if files are present and if they are uptodate.
         If not files will be downloaded.

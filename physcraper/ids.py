@@ -81,12 +81,8 @@ class IdDicts(object):
         for lin in fi:  
             lii = lin.split(",")
             self.ott_to_ncbi[int(lii[0])] = int(lii[1])
+            self.ncbi_to_ott[int(lii[1])] = int(lii[0])
             self.ott_to_name[int(lii[0])] = lii[2].strip()  # todo merge into ott_to_ncbi?
-        fi.close()
-        fi = open("{}/ncbi_ott".format(tax_folder))
-        for lin in fi:
-            lii = lin.split(",")
-            self.ncbi_to_ott[int(lii[0])] = int(lii[1])
         fi.close()
         assert len(self.ott_to_ncbi) > 0
         assert len(self.ott_to_name) > 0

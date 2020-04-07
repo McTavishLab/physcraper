@@ -5,7 +5,7 @@ from physcraper.opentree_helpers import scraper_from_opentree
 configfi = "docs/examples/example.config"
 study_id = "ot_350"
 tree_id = "Tr53297"
-workdir ="scrape_ot_350_compact"
+workdir ="scrape_ot_350_compact1"
 
 
 aln_fi = "docs/examples/{}{}.aln".format(study_id, tree_id)

@@ -44,15 +44,6 @@ def generate_ATT_from_files(workdir,
     if not os.path.exists(workdir):
         os.makedirs(workdir)
     # use replaced aln as input
-    aln = DnaCharacterMatrix.get(path=alnfile, schema=aln_schema)
-    assert aln.taxon_namespace
-    for tax in aln.taxon_namespace:
-        tax.label = tax.label.replace(" ", "_")  # Forcing all spaces to underscore
-    tre = Tree.get(path=treefile,
-                   schema=tree_schema,
-                   preserve_underscores=True,
-                   taxon_namespace=aln.taxon_namespace)
-    assert tre.taxon_namespace is aln.taxon_namespace, "tre and aln have not the same namespace."
     otu_dict = json.load(open(otu_json, "r"))
     if ingroup_mrca:
         mrca_ott = int(ingroup_mrca)
