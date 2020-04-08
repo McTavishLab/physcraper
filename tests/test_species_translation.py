@@ -31,7 +31,7 @@ def test_compare_json():
 
 
 	conf = ConfigObj(configfi, interactive=False)
-	ids = IdDicts(conf, workdir=workdir)
+	ids = IdDicts(configfi)
 
 	otu_json = OtuJsonDict(id_to_spn, ids)
 

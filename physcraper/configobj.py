@@ -7,7 +7,7 @@ from physcraper import ncbi_data_parser  # is the ncbi data parser class and ass
 
 from physcraper.helpers import cd, debug
 
-_DEBUG = 1
+_DEBUG = 0
 
 
 
@@ -76,6 +76,7 @@ class ConfigObj(object):
         if configfile:
             self.read_config(configfile, interactive)
         else:
+            sys.stdout.write("No config file, using defaults\n")
             self.set_defaults()
     def set_defaults(self):
         self.email = None
@@ -89,6 +90,7 @@ class ConfigObj(object):
         self.trim_perc = 0.8
         self.maxlen = 1.2
         self.taxonomy_dir = "{}/taxonomy".format(physcraper_dir)
+        self.ott_ncbi = "{}/ott_ncbi".format(self.taxonomy_dir)
     def read_config(self, configfi, interactive):
         assert os.path.isfile(configfi), "file `%s` does not exist" % configfi
         config = configparser.ConfigParser()

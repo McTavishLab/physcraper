@@ -18,12 +18,8 @@ def test_trim():
   otu_jsonfi = "{}/otu_dict.json".format(workdir)
 
 
-
-  if not os.path.exists("{}".format(workdir)):
-          os.makedirs("{}".format(workdir))
-
   conf = ConfigObj(configfi, interactive=False)
-  ids = IdDicts(conf, workdir=workdir)
+  ids = IdDicts(configfi)
 
   if os.path.exists(otu_jsonfi):
       print("load json")

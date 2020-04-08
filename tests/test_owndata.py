@@ -25,7 +25,7 @@ def test_owndata():
 		os.makedirs("{}".format(workdir))
 
 	conf = ConfigObj(configfi)
-	ids = IdDicts(conf, workdir=workdir)
+	ids = IdDicts(configfi)
 
 	if os.path.exists(otu_jsonfi):
 		print("load json")

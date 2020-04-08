@@ -11,7 +11,7 @@ else:
 
 from Bio import Entrez
 
-from physcraper import ncbi_data_parser  # is the ncbi data parser class and associated functions
+from physcraper import ncbi_data_parser, ConfigObj  # is the ncbi data parser class and associated functions
 from physcraper.helpers import debug
 
 _DEBUG = 1
@@ -66,18 +66,24 @@ class IdDicts(object):
                * self.otu_rank: for remote blast to store the rank information
     """
 
-    def __init__(self, config_obj, workdir):
+    def __init__(self, configfile = None, workdir=None):
         """Generates a series of name disambiguation dicts"""
-        self.config = config_obj
-        assert self.config.email
+        if configfile == None:
+            self.config = ConfigObj()
+        elif os.path.exists(configfile):
+            self.config = ConfigObj(configfile)
+        else:
+            sys.stderr.write("Error reading config file\n".format(configfile))
+            sys.exit()
+        assert self.config
         self.ott_to_ncbi = {} 
         self.ncbi_to_ott = {}  # used to get ott_id for new Genbank query taxa
         self.ott_to_name = {}  # used in add_otu to get name from otuId
         self.acc_ncbi_dict = {}  # filled by ncbi_parser (by subprocess in earlier versions of the code).
         self.spn_to_ncbiid = {}  # spn to ncbi_id, it's only fed by the ncbi_data_parser, but makes it faster
         self.ncbiid_to_spn = {} #TODO when is this generated? MK: well, here. it is filled with information from genbank to speed up translation between ncbi_taxon_ids and names. similar to  acc_ncbi_dict and spn_to_ncbiid.
-        tax_folder = os.path.dirname(config_obj.ott_ncbi)
-        fi = open(config_obj.ott_ncbi)  # This is in the taxonomy folder of the repo, needs to be updated by devs when OpenTree taxonomy changes.
+        tax_folder = self.config.taxonomy_dir
+        fi = open(self.config.ott_ncbi)  # This is in the taxonomy folder of the repo, needs to be updated by devs when OpenTree taxonomy changes.
         for lin in fi:  
             lii = lin.split(",")
             self.ott_to_ncbi[int(lii[0])] = int(lii[1])
@@ -87,11 +93,11 @@ class IdDicts(object):
         assert len(self.ott_to_ncbi) > 0
         assert len(self.ott_to_name) > 0
         assert len(self.ncbi_to_ott) > 1000
-        if config_obj.blast_loc == 'remote':
-            debug("Config remote {}".format(config_obj.blast_loc))
+        if self.config.blast_loc == 'remote':
+            debug("Config remote {}".format(self.config.blast_loc))
             self.otu_rank = {}  # used only for web queries - contains taxonomic hierarchy information
         else:  # ncbi parser contains information about spn, tax_id, and ranks
-            debug("Config not remote {}".format(config_obj.blast_loc))
+            debug("Config not remote {}".format(self.config.blast_loc))
             self.ncbi_parser = ncbi_data_parser.Parser(names_file=self.config.ncbi_parser_names_fn,
                                                        nodes_file=self.config.ncbi_parser_nodes_fn)
         self.acc_tax_seq_dict = {}

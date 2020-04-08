@@ -22,7 +22,7 @@ def test_prune_short():
     conf = physcraper.ConfigObj(configfi, interactive=False)
     conf.blast_loc='remote' #saves time over loading names and nodes, and they aren't used here
 
-    ids = physcraper.IdDicts(conf, workdir=workdir)
+    ids = physcraper.IdDicts(configfi)
 
     if os.path.exists(otu_jsonfi):
         otu_json = json.load(open(otu_jsonfi))

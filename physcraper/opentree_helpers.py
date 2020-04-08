@@ -230,14 +230,13 @@ def get_dataset_from_treebase(study_id):
 
 def scraper_from_opentree(study_id, tree_id, alnfile, configfile, workdir, aln_schema):
     # Read in the configuration information
-    conf = physcraper.ConfigObj(configfile)
     data_obj = generate_ATT_from_phylesystem(alnfile=alnfile,
                                              aln_schema = aln_schema,
                                              workdir=workdir,
                                              configfile=configfile,
                                              study_id=study_id,
                                              tree_id=tree_id)
-    ids = physcraper.IdDicts(conf, workdir=workdir)
+    ids = physcraper.IdDicts(configfile)
     scraper = physcraper.PhyscraperScrape(data_obj, ids)
     return scraper
 

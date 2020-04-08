@@ -173,6 +173,7 @@ class AlignTreeTax(object):
         elif isinstance(configfile, str):
             self.config = ConfigObj(configfile)
             shutil.copyfile(self.config.configfi, "{}/run.config".format(self.workdir))
+        assert(self.config)
         ## Read Alignment
         assert (self.tre.taxon_namespace is self.aln.taxon_namespace), "tre and aln taxon_namespace are not identical"
         assert isinstance(otu_dict, dict), ("otu_dict '%s' is not of type dict" % otu_dict)

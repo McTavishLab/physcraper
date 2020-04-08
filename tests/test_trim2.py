@@ -23,7 +23,7 @@ def test():
             os.makedirs("{}".format(workdir))
 
     conf = ConfigObj(configfi, interactive=False)
-    ids = IdDicts(conf, workdir=workdir)
+    ids = IdDicts(configfi)
 
     otu_json = OtuJsonDict(id_to_spn, ids)
     json.dump(otu_json, open(otu_jsonfi,"w"))
