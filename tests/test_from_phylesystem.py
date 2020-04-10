@@ -22,8 +22,9 @@ def test_generate_ATT_from_phylesystem():
                                                         tree_id=tree_id)
 
     data_obj == True
-    assert len(data_obj.tre.leaf_nodes())==16
-
+    assert(len(data_obj.tre.leaf_nodes())==16)
+    assert(data_obj.otu_dict['Tl805422']['^ot:ottId'] ==  517518)
+    assert(data_obj.otu_dict['Tl805431']['^ot:originalLabel']=='Dinemasporium_pseudostrigosum_CBS_717.85')
 test_generate_ATT_from_phylesystem()
 
 

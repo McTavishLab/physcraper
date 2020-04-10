@@ -205,7 +205,7 @@ class AlignTreeTax(object):
         assert isinstance(self.tre, datamodel.treemodel.Tree)
         for leaf in self.tre.leaf_nodes():
             assert(leaf.taxon.label in self.otu_dict or leaf.taxon.label in self.otu_rev), leaf.taxon.label
-            if leaf.taxon.label in self.otu_rev:
+            if leaf.taxon.label in self.otu_dict:
                 pass
             elif leaf.taxon.label in self.otu_rev:
                 otu = self.otu_rev[leaf.taxon.label]

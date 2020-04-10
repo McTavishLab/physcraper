@@ -13,7 +13,6 @@ from dendropy import Tree, DnaCharacterMatrix, DataSet, datamodel
 
 from Bio.Blast import NCBIXML
 from Bio.Seq import Seq
-from Bio.Alphabet import generic_dna
 
 from physcraper.configobj import ConfigObj
 from physcraper.ids import IdDicts
@@ -414,24 +413,39 @@ class PhyscraperScrape(object):
 #                    assert gb_acc in line, (gb_acc, line)
             f.close()
         # check direction of sequence:
-        orig = Seq(seq, generic_dna)
-        dna_comp = orig.complement()
-        dna_rcomp = orig.reverse_complement()
-        dna_r = orig[::-1]
-        full_seq = str()
-        if blast_seq.replace("-", "") in orig:
-            full_seq = seq
-        elif blast_seq.replace("-", "") in dna_r:
-            full_seq = dna_r
-        elif blast_seq.replace("-", "") in dna_comp:
-            full_seq = dna_comp
-        elif blast_seq.replace("-", "") in dna_rcomp:
-            full_seq = dna_rcomp
+        match = blast_seq.replace("-", "") 
+        full_seq = self.check_complement(match, seq, gb_id)
         if blast_seq.replace("-", "") not in full_seq:
             taxid, taxname, full_seq = self.ids.get_tax_seq_acc(gb_acc)
         full_seq = str(full_seq)
         assert type(full_seq) == str, (type(full_seq))
         return full_seq
+
+    def check_complement(self, match, seq, gb_id):
+        if match in seq.lower():
+            return seq
+        else:
+            if isinstance(seq, str):
+                orig = Seq(seq)
+            elif isinstance(seq, Seq):
+                orig = seq
+            else:
+                sys.stderr.write("check complement requires a Bio.Seq object\n")
+            dna_comp = orig.complement()
+            dna_rcomp = orig.reverse_complement()
+            dna_r = orig[::-1]
+            if match in dna_r:
+                with open(self.logfile, "a") as log:
+                    log.write("acc {}, reverse\n".format(gb_id))
+                return(str(dna_r))
+            elif match in dna_comp:
+                with open(self.logfile, "a") as log:
+                    log.write("acc {}, comp\n".format(gb_id))
+                return(str(dna_comp))
+            elif match in dna_rcomp:
+                with open(self.logfile, "a") as log:
+                    log.write("acc {}, rcomp\n".format(gb_id))
+                return(str(dna_rcomp))
 
 
     def read_unpublished_blast_query(self):
@@ -500,22 +514,21 @@ class PhyscraperScrape(object):
                             if len(gb_id.split(".")) == 1:
                                  sys.stdout.write("skipping acc {}, incorrect format\n".format(gb_id))
                             elif gb_id not in self.data.gb_dict:  # skip ones we already have
-                                # gb_id = int(alignment.title.split('|')[1])  # 1 is for gi
-                                # assert type(gb_id) is int
-                                # SHOULD NOT BE NECESSARY....IS WEBBLAST HAS THE TAXON ALREADY LIMITED
-                                # if len(self.acc_list_mrca) >= 1 and (gb_id not in self.acc_list_mrca):
-                                #     pass
-                                # else:
                                 taxid,taxname, seq = self.ids.get_tax_seq_acc(gb_id)
-                                self.new_seqs[gb_id] = seq
                                 gi_id = alignment.title.split('|')[1]
-                                gb_acc = alignment.__dict__['accession']
-                                stitle = alignment.__dict__['title']
-                                hsps = alignment.__dict__['hsps']
-                                length = alignment.__dict__['length']
+                                gb_acc = alignment.accession
+                                stitle = alignment.title
+                                hsps = alignment.hsps
+                                for hsp in hsps:
+                                    match = hsp.sbjct.lower().replace('-','')
+                                    if match not in seq.lower():
+                                        seq = self.check_complement(match, seq, gb_id)
+                                length = alignment.length
                                 query_dict = {'^ncbi:gi': gi_id, 'accession': gb_acc, 'title': stitle,
                                               'length': length, 'hsps': hsps}
                                 self.data.gb_dict[gb_id] = query_dict
+                                self.new_seqs[gb_id] = seq
+
                         else:
                             # if gb_id not in self.gb_not_added:
                             #     self.gb_not_added.append(gb_id)
