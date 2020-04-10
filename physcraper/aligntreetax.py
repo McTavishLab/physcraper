@@ -55,28 +55,23 @@ def generate_ATT_from_files(workdir,
     return AlignTreeTax(treefile, otu_dict, alnfile, ingroup_mrca=mrca_ott, workdir=workdir,
                         configfile=configfile, tree_schema=tree_schema)
 
-def generate_ATT_from_run(workdir):
+def generate_ATT_from_run(workdir, configfile=None):
     """Build an ATT object without phylesystem, use your own files instead.
     :return: object of class ATT
     """
 
     assert os.path.exists(workdir)
     # use replaced aln as input
-    seqaln = "{}/physcraper.fas".format(workdir)
+    if configfile == None:
+        if os.path.exists("{}/run.config".format(workdir)):
+            configfile = "{}/run.config".format(workdir)
+    alnfi = "{}/physcraper.fas".format(workdir)
     treefile = "{}/physcraper.tre".format(workdir)
     otu_json = "{}/otu_info.json".format(workdir)
-    aln = DnaCharacterMatrix.get(path=seqaln, schema="fasta")
-    assert aln.taxon_namespace
-    tre = Tree.get(path=treefile,
-                   schema="newick",
-                   preserve_underscores=True,
-                   taxon_namespace=aln.taxon_namespace)
-    assert tre.taxon_namespace is aln.taxon_namespace
-    otu_newick = tre.as_string(schema=schema_trf)
     otu_dict = json.load(open(otu_json, "r"))
     mrca_ott = mrca_ott = int(open("{}/mrca.txt".format(workdir)).readline().split()[-1])
-    return AlignTreeTax(treefile, otu_dict, aln, ingroup_mrca=mrca_ott, workdir=workdir,
-                        configfile=config_obj, tree_schema=schema_trf)
+    return AlignTreeTax(tree = treefile, otu_dict= otu_dict, alignment = alnfi, ingroup_mrca=mrca_ott, workdir=workdir,
+                        configfile=configfile, tree_schema='newick')
 
 
 class AlignTreeTax(object):
@@ -172,7 +167,8 @@ class AlignTreeTax(object):
             sys.stdout.write("Using default configuration\n")
         elif isinstance(configfile, str):
             self.config = ConfigObj(configfile)
-            shutil.copyfile(self.config.configfi, "{}/run.config".format(self.workdir))
+            if not os.path.exists("{}/run.config".format(self.workdir)):
+                shutil.copyfile(self.config.configfi, "{}/run.config".format(self.workdir))
         assert(self.config)
         ## Read Alignment
         assert (self.tre.taxon_namespace is self.aln.taxon_namespace), "tre and aln taxon_namespace are not identical"

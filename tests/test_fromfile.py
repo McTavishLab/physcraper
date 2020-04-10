@@ -1,15 +1,9 @@
 
-import json
 import sys
-from physcraper import generate_ATT_from_files, ConfigObj, IdDicts, PhyscraperScrape
-from dendropy import Tree,\
-                     DnaCharacterMatrix,\
-                     DataSet,\
-                     datamodel
+from physcraper import generate_ATT_from_files, generate_ATT_from_run
 
-#Use OpenTree phylesystem identifiers to get study and tree
 
-def test_generate_ATT_from_file():
+def test_generate_ATT_from_files():
 
     seqaln = "tests/data/input.fas"
     mattype="fasta"
@@ -20,9 +14,6 @@ def test_generate_ATT_from_file():
     configfi = "tests/data/test.config"
 
     sys.stdout.write("\nTesting 'generate_ATT_from_files (fromfile.py)'\n")
-
-    conf = ConfigObj(configfi, interactive=False)
-
     data_obj = generate_ATT_from_files(alnfile=seqaln, 
                                      aln_schema=mattype, 
                                      workdir=workdir,
@@ -32,7 +23,12 @@ def test_generate_ATT_from_file():
                                      otu_json=otu_jsonfi,
                                      ingroup_mrca=None)
 
-
-
     data_obj == True
+
+
+def test_generate_ATT_from_run():
+    workdir="tests/data/precooked/output"
+
+    sys.stdout.write("\nTesting 'generate_ATT_from_run (fromfile.py)'\n")
+    data_obj = generate_ATT_from_run(workdir=workdir)
       

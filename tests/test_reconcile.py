@@ -16,7 +16,7 @@ def test_reconcile():
     treefilemiss= "tests/data/tiny_test_example/test_missingtip.tre"
     schema_trf = "newick"
     workdir="tests/output/owndata"
-    configfi = "example.config"
+    configfi = "docs/examples/example.config"
     id_to_spn = r"tests/data/tiny_test_example/test_nicespl.csv"
     otu_jsonfi = "tests/data/tiny_test_example/otu_dict.json"
 
