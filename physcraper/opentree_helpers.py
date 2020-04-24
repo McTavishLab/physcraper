@@ -228,7 +228,7 @@ def get_dataset_from_treebase(study_id):
         dna = DataSet.get(url=url, schema="nexml")
         return dna
 
-def scraper_from_opentree(study_id, tree_id, alnfile, configfile, workdir, aln_schema):
+def scraper_from_opentree(study_id, tree_id, alnfile, workdir, aln_schema, configfile=None ):
     # Read in the configuration information
     data_obj = generate_ATT_from_phylesystem(alnfile=alnfile,
                                              aln_schema = aln_schema,

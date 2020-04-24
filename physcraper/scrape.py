@@ -724,6 +724,8 @@ class PhyscraperScrape(object):
         self.new_seqs = {} #Wipe clean
 #        debug("len new seqs otu dict after remove identical{}".format(len(self.new_seqs_otu_id)))
         sys.stdout.write("**** Found {} new sequences****\n".format(len(self.new_seqs_otu_id)))
+        if len(self.new_seqs_otu_id)==0:
+            sys.exit()
         with open(self.logfile, "a") as log:
             log.write("{} new sequences added from Genbank after removing identical seq, "
                       "of {} before filtering\n".format(len(self.new_seqs_otu_id), len(self.new_seqs)))

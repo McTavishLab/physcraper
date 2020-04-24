@@ -1,35 +1,28 @@
-import physcraper
 import sys
-from dendropy import DnaCharacterMatrix
+import physcraper
+from physcraper.opentree_helpers import scraper_from_opentree
 
 
 # Use OpenTree phylesystem identifiers to get study and tree
-study_id = "pg_873"
-tree_id = "tree1679"
-seqaln = "tests/data/minitest.fas"
-mattype = "fasta"
-workdir = "tests/output/opentree"
-configfi = "tests/data/remotencbi.config"
+configfi = "docs/examples/example.config"
+study_id = "ot_350"
+tree_id = "Tr53297"
+workdir ="scrape_ot_350_compact"
 
-sys.stdout.write("\nTesting 'opentree scrape (1 round)'\n")
-conf = physcraper.ConfigObj(configfi, interactive=False)
-print "1. {}".format(conf.email)
-      
-    
-aln = DnaCharacterMatrix.get(path=seqaln, schema=mattype)
-data_obj = physcraper.generate_ATT_from_phylesystem(aln=aln,
-                                                    workdir=workdir,
-                                                    config_obj=conf,
-                                                    study_id=study_id,
-                                                    tree_id=tree_id)
+aln_fi = "docs/examples/{}{}.aln".format(study_id, tree_id)
 
-ids = physcraper.IdDicts(conf, workdir=workdir)
 
-print "3. {}".format(ids.config.email)
+# Create an 'scraper' object to get data from NCBI, align it an
+scraper = scraper_from_opentree(study_id = study_id, 
+                                tree_id = tree_id, 
+                                alnfile = aln_fi, 
+                                aln_schema = "nexus", 
+                                configfile = configfi, 
+                                workdir = workdir)
 
-data_obj.prune_short()
-assert len(data_obj.aln) == 9
-data_obj.write_files()
+sys.stdout.write("{} taxa in alignement and tree\n".format(len(scraper.data.aln)))
 
-scraper = physcraper.PhyscraperScrape(data_obj, ids)
+
+#scraper.read_blast_wrapper()
 scraper.est_full_tree()
+scraper.data.write_labelled(label='^ot:ottTaxonName')

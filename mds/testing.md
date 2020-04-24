@@ -4,11 +4,6 @@ Code testing the major functionalities of `physcraper` can be found in [test](..
 
 To run these tests locally (in your own computer), do
 
-```
-python tests/testfilesetup.py
-```
-
-and then
 
 ```
 sh tests/run_test.sh
