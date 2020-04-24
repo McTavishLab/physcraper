@@ -90,13 +90,16 @@ class PhyscraperScrape(object):
                 * self._full_tree_est: 0/1, if est_full_tree() was called, it is set to 1 for the round.
             * **self.OToL_unmapped_tips()**: function that either removes or maps unmapped taxa from OToL studies
     """
-    def __init__(self, data_obj, ids_obj, ingroup_mrca=None, threshold = 5):
+    def __init__(self, data_obj, ids_obj=None, ingroup_mrca=None, threshold = 5):
         assert isinstance(data_obj, AlignTreeTax)
-        assert isinstance(ids_obj, IdDicts)
         self.workdir = data_obj.workdir
         self.logfile = "{}/logfile".format(self.workdir)
         self.data = data_obj
-        self.ids = ids_obj
+        if ids_obj == None:
+            self.ids = IdDicts()
+        else:
+            assert isinstance(ids_obj, IdDicts)
+            self.ids = ids_obj
         self.config = self.ids.config  # pointer to config
         self.new_seqs = {}  # all new seq after read_blast_wrapper
         self.new_seqs_otu_id = {}  # only new seq which passed remove_identical
@@ -113,7 +116,6 @@ class PhyscraperScrape(object):
         self.unpublished = False  # used to look for local unpublished seq that shall be added.
         self.path_to_local_seq = False  # path to unpublished seq.
         self.backbone = False
-        self.OToL_unmapped_tips()  # added to do stuff with un-mapped tips from OToL #WTF
         self.gb_not_added = []  # list of blast seqs not added
         self.del_superseq = set()  # items that were deleted bc they are superseqs, needed for assert statement
         self.mrca_ott = data_obj.mrca_ott
@@ -150,31 +152,6 @@ class PhyscraperScrape(object):
             fi.write("ingroup mrca ott_id {}\n".format(self.mrca_ott))
             fi.write("ingroup mrca NCBI: {}\n".format(self.mrca_ncbi))
 
-
-    def OToL_unmapped_tips(self):
-        """Assign names or remove tips from aln and tre that were not mapped during initiation of ATT class.
-        """
-        debug("OTOL unmapped")
-        if self.config.unmapped == "remove":
-            for key in self.data.otu_dict:
-                if "^ot:ottId" not in self.data.otu_dict[key]:
-                    # second condition for OToL unmapped taxa, not present in own_data
-                    if u"^ot:treebaseOTUId" in self.data.otu_dict[key]:
-                        self.data.remove_taxa_aln_tre(key)
-        elif self.config.unmapped == "keep":
-            i = 1
-            for key in self.data.otu_dict:
-                i = i + 1
-                if "^ot:ottId" not in self.data.otu_dict[key]:
-                    self.data.otu_dict[key]["^ot:ottId"] = self.data.mrca_ott
-                    if self.data.mrca_ott in self.ids.ott_to_name:
-                        self.data.otu_dict[key]['^ot:ottTaxonName'] = self.ids.ott_to_name[self.data.mrca_ott]
-                    else:
-                        debug("think about a way...")
-                        tx = APIWrapper().taxomachine
-                        nms = tx.taxon(self.data.mrca_ott)
-                        taxon_name = nms[u'unique_name']
-                        self.data.otu_dict[key]['^ot:ottTaxonName'] = "unknown_{}".format(taxon_name)
 
     def run_local_blast_cmd(self, query, taxon_label, fn_path):
         """Contains the cmds used to run a local blast query, which is different from the web-queries.
@@ -894,6 +871,7 @@ class PhyscraperScrape(object):
         self.data.write_otus('otu_dict.json')
         with open("{}/{}".format(self.workdir, 'config.json'), "w") as outfile:
                 json.dump(self.config.__dict__, outfile)
+
 
     def write_query_seqs(self, filename='date'):
         """writes out the query sequence file"""
