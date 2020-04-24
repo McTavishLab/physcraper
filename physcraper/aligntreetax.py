@@ -74,6 +74,21 @@ def generate_ATT_from_run(workdir, configfile=None):
                         configfile=configfile, tree_schema='newick')
 
 
+#def concatenate_ATTs(att_list, number_per_taxon='max', level='spp'):
+#    """concatenate aligenmnts from multiple runs
+#    :return: object of class ATT
+#    """
+#    taxon_dict = {} #
+#    for i, att in att_list:
+#        for otu in att.otu_dict:
+#            tax = att.otu_dict["^ot:ottId"]
+#            if tax not in taxon_dict:
+#                taxon_dict[tax] = []
+
+
+
+
+
 class AlignTreeTax(object):
     """wrap up the key parts together, requires OTT_id, and names must already match.
         Hypothetically, all the keys in the  otu_dict should be clean.
