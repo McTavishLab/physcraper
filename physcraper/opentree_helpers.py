@@ -191,16 +191,19 @@ def generate_ATT_from_phylesystem(alnfile,
                                               tree_id=tree_id,
                                               subtree_id="ingroup",
                                               return_format="ottid")
+    ott_mrca = None
     if ingroup_mrca:
         if type(ingroup_mrca) == list:
             ott_ids = set(ingroup_mrca)
             ott_mrca = get_mrca_ott(ott_ids)
         else:
             ott_mrca = int(ingroup_mrca)
-    elif ott_ids:  # if no ingroup is specified, ott_ids will be none
+    if ott_mrca == None:
+        ott_ids = set([otu_dict[otu_id].get(u"^ot:ottId") for otu_id in otu_dict])
+        if None in ott_ids:
+            ott_ids.remove(None)
+        assert(len(ott_ids)>=1)
         ott_mrca = get_mrca_ott(ott_ids)
-    else:  # just get the mrca for teh whole tree
-        ott_mrca = get_mrca_ott([otu_dict[otu_id].get(u"^ot:ottId") for otu_id in otu_dict])
     otu_newick = tree_obj.as_string(schema="newick")
     return physcraper.aligntreetax.AlignTreeTax(tree = otu_newick, otu_dict =otu_dict, alignment=alnfile, aln_schema = aln_schema, ingroup_mrca=ott_mrca, workdir=workdir, configfile=configfile)
     # newick should be bare, but alignment should be DNACharacterMatrix

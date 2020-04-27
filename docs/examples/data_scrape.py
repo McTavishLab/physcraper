@@ -6,8 +6,6 @@ configfi = "docs/examples/example.config"
 study_id = "ot_350"
 tree_id = "Tr53297"
 workdir ="scrape_ot_350_compact"
-
-
 aln_fi = "docs/examples/{}{}.aln".format(study_id, tree_id)
 
 
@@ -19,7 +17,7 @@ scraper = scraper_from_opentree(study_id = study_id,
                                 configfile = configfi, 
                                 workdir = workdir)
 
-sys.stdout.write("{} taxa in alignement and tree\n".format(len(scraper.data.aln)))
+sys.stdout.write("{} taxa in alignment and tree\n".format(len(scraper.data.aln)))
 
 
 #scraper.read_blast_wrapper()

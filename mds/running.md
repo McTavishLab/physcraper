@@ -11,15 +11,11 @@ The easist way to start a physcraper run is using a tree uploaded to the Open Tr
 and a single gene alignment for those taxa.  
 By using OpenTree data tips of your tree are already ampped to taxa.
 
-If you want to use a tree that is not available on OpenTree, you will need to provide a table linking the 
-labels in your alignemnt and phylogeny to taxon names.
-
 There is an example of a physcraper run based on data in OpenTree in docs/examples/data_scrape.py  
 
 Default physcraper runs use the OpenTree and NCBI web services, and are slow. 
 They are best run on a server or a desktop.
 
 
-
-
-
+If you want to use a tree that is not available on OpenTree, you will need to provide a table linking the 
+labels in your alignemnt and phylogeny to taxon names.
