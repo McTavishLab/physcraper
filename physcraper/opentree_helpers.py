@@ -231,6 +231,31 @@ def get_dataset_from_treebase(study_id):
         dna = DataSet.get(url=url, schema="nexml")
         return dna
 
+def count_match_tree_to_aln(tree, dataset):
+    aln_match = {}
+    i = 0
+    leaves = [leaf.taxon.label for leaf in tree.leaf_node_iter()]
+    for mat in dataset.char_matrices:
+        aln_match[i] = 0
+        for tax in mat:
+            if tax.label in leaves:
+                aln_match[i] += 1
+        i+=1
+    return aln_match
+
+def get_max_match_aln(tree, dataset, min_match = 3):
+    aln_match = count_match_tree_to_aln(tree, dataset)
+    max_val = min_match
+    max_match = None
+    for aln in aln_match:
+        if aln_match[aln] > max_val:
+            max_match = aln
+            max_val = aln_match[aln]
+    if max_match is not None:
+        return dataset.char_matrices[max_match]
+    else:
+        return None
+
 def scraper_from_opentree(study_id, tree_id, alnfile, workdir, aln_schema, configfile=None):
     # Read in the configuration information
     data_obj = generate_ATT_from_phylesystem(alnfile=alnfile,
