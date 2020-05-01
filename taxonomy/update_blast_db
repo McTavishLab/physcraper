@@ -18,7 +18,7 @@ update_blastdb nt
 cat *.tar.gz | tar -xvzf - -i
 update_blastdb taxdb
 gunzip -cd taxdb.tar.gz | (tar xvf - )
-rm *.tar.gz*
+
 
 
 
