@@ -1,4 +1,9 @@
 # To Update or download blast DB:
+
+Install blast command line tools:
+Instructions at
+https://www.ncbi.nlm.nih.gov/books/NBK279671/
+https://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/
 # go to your local blast dblocation
 update_blastdb nt
 cat *.tar.gz | tar -xvzf - -i
