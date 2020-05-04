@@ -1,0 +1,27 @@
+
+name: physcraper_env
+channels:
+  - bioconda
+  - conda-forge
+dependencies:
+  - python>=3.5
+
+  - biopython
+  - configparser
+  - coverage
+  - DendroPy
+  - DateTime
+  - -e git+https://github.com/OpenTreeOfLife/python-opentree@get-tree#egg=opentree
+  - pandas
+  - requests
+  - sh
+  - urllib3>=1.23
+  - numpy
+  - pytest
+  - pytest-cov
+  - pytest-xdist
+  - recommonmark
+
+  - raxml
+  - blast
+  - muscle 
