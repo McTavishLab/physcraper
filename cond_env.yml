@@ -5,14 +5,14 @@ channels:
   - conda-forge
 dependencies:
   - python>=3.5
+  - pip
 
   - biopython
   - configparser
   - coverage
   - dendropy
-  - datetime
   - numpy
-  - opentree
+
   - pandas
   - requests
   - sh
@@ -25,3 +25,5 @@ dependencies:
   - raxml
   - blast
   - muscle 
+
+  ##datetime and opentree need install seperately
