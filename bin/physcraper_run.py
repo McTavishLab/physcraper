@@ -14,23 +14,24 @@ parser.add_argument("-db", "--blast_db", help="local download of blast database"
 parser.add_argument("-o","--output", help="path to output directory")
 parser.add_argument("-tx","--taxonomy", help="path to taxonomy")
 parser.add_argument("-c","--config_file", help="path to config file")
-parser.add_argument("-tb","--treebase", action="store true", help="download alignment from treebase")
-parser.add_argument("-no_est","--estimate_tree", action='store true', help="run blast search and estimate tree")
+parser.add_argument("-tb","--treebase", action="store_true", help="download alignment from treebase")
+parser.add_argument("-no_est","--no_estimate_tree", action='store_true', help="run blast search and estimate tree")
 
 
 #Not yet implemented
-parser.add_argument("-bl","--blast_sequence", action='store true', help="run blast search, and align but do not estimate tree")
-parser.add_argument("-d","--download_data", action='store true', help="write out tree and alignment, without blasting")
+parser.add_argument("-bl","--blast_sequence", action='store_true', help="run blast search, and align but do not estimate tree")
+parser.add_argument("-d","--download_data", action='store_true', help="write out tree and alignment, without blasting")
 parser.add_argument("-bs","--bootstrap", help="number of bootstrap reps")
-parser.add_argument("-gt","--get_tree", action='store true', help="get tree from opentree")
-parser.add_argument("-ga","--get_aln", action='store true', help="get alignment from opentree")
+parser.add_argument("-gt","--get_tree", action='store_true', help="get tree from opentree")
+parser.add_argument("-ga","--get_aln", action='store_true', help="get alignment from opentree")
 parser.add_argument("-tf", "--tree_file", help="path to your tree")
-parser.add_argument("-l","linker_file", help="path to .csv linking tip labels to taxon names")
+parser.add_argument("-l","--linker_file", help="path to .csv linking tip labels to taxon names")
 
 
 args = parser.parse_args()
 
 assert(args.output), "Output directory (-o) is required."
+workdir = args.output
 
 if args.config_file:
     conf = physcraper.ConfigObj(args.configfile)
@@ -56,6 +57,7 @@ if args.tree_link:
 
 if args.study_id:
     study_id = args.study_id
+    tree_id = args.tree_id
 
 if args.alignment:
     alnfile = args.alignment
@@ -85,11 +87,11 @@ if study_id:
                                     tree_id = tree_id, 
                                     alnfile = alnfile, 
                                     aln_schema = aln_schema,
-                                    workdir = output,
+                                    workdir = workdir,
                                     configfile = conf)
     sys.stdout.write("{} taxa in alignment and tree\n".format(len(scraper.data.aln)))
 
-if not args.no_est:
+if not args.no_estimate_tree:
 #scraper.read_blast_wrapper()
     scraper.est_full_tree()
     scraper.data.write_labelled(label='^ot:ottTaxonName')
