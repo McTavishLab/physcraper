@@ -119,8 +119,6 @@ class ConfigObj(object):
         assert os.path.isfile(self.ott_ncbi), (
                 "file `%s` does not exists" % self.ott_ncbi
         )
-
-
         self.blast_loc = config["blast"]["location"]
         assert self.blast_loc in ["local", "remote"], (
                 "your blast location `%s` is not remote or local" % self.email
@@ -171,11 +169,11 @@ class ConfigObj(object):
         if not os.path.isdir(self.blastdb):
             sys.stderr.write("Local Blast DB not found at {}, please use a remote search, or update as described in 'taxonomy/update_blast_db'\n".format(self.blastdb))
             sys.exit()
-        if not os.path.exists("{}/nt.60.nhr".format(self.blastdb)):
-            sys.stderr.write("Errors with local Blast DB at {}, please use a remote search, or update as described in 'taxonomy/update_blast_db'\n".format(self.blastdb))
+        if not os.path.exists("{}/nt.23.nhr".format(self.blastdb)):
+            sys.stderr.write("Errors with local Blast DB at {}, may be incomplete. please use a remote search, or update as described in 'taxonomy/update_blast_db'\n".format(self.blastdb))
             sys.exit()
         else:
-            download_date = os.path.getmtime("{}/nt.60.nhr".format(self.blastdb))
+            download_date = os.path.getmtime("{}/nt.23.nhr".format(self.blastdb))
             download_date = datetime.datetime.fromtimestamp(download_date)
             today = datetime.datetime.now()
             time_passed = (today - download_date).days
