@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 import argparse
+import os
 import sys
 import physcraper
-from physcraper.opentree_helpers import scraper_from_opentree
+from physcraper.opentree_helpers import get_tree_from_study, scraper_from_opentree, get_max_match_aln, count_match_tree_to_aln
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-s","--study_id", help="OpenTree study id")
