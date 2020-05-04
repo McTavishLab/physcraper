@@ -2,6 +2,7 @@ import sys
 import os
 import datetime
 import configparser
+import shutil
 
 from physcraper import ncbi_data_parser  # is the ncbi data parser class and associated functions
 
@@ -189,4 +190,5 @@ class ConfigObj(object):
             time_passed = (today - download_date).days
             if time_passed >= 90:
                 sys.stderr.write("Your taxonomy databases from NCBI were dowloaded {} days ago. Please update nodes and names.dmp, as described in 'taxonomy/update_blast_db'\n".format(time_passed))
+        assert(shutil.which("blastn")), "blastn  not found in path"
         self.url_base = None
