@@ -11,9 +11,21 @@
 git clone git@github.com:McTavishLab/physcraper.git
 ```
 
+# Install using conda
+Install anaconda  
+
+```
+   conda env create -f cond_env.yml 
+   conda activate physcraper_env
+   # This next step is temprary until opentree changes are uploaded to pypi
+   pip install -e git+https://github.com/OpenTreeOfLife/python-opentree@get-tree#egg=opentree
+
+```
+
+
+# INstall using Virtual Env
 ## Create a python virtual environment
 
-Recommended install procedure is using a virtual environment (are there any other ways?). From your terminal do:
 
 ```
 virtualenv venv-physcraper
@@ -41,10 +53,49 @@ which raxmlHPC
 ```
 
 
-#### Python packages:
+# Databases
+
+The tool can be run locally using databases, which can be downloaded and updated from the National Center for Biotechnology Information ([NCBI](https://www.ncbi.nlm.nih.gov/)). 
+
+To blast locally you will need to install blast command line tools.  
+Instructions at
+https://www.ncbi.nlm.nih.gov/books/NBK279671/
+https://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/
+
+
+e.g. on linux:
+    wget https://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/LATEST/ncbi-blast-2.10.0+-x64-linux.tar.gz
+    tar -xzvf ncbi-blast-2.10.0+-x64-linux.tar.gz 
+    
+ The binaries are in /bin
+
+
+If you want to download the blast database and taxonomy for faster local searches
+NOTE: this download can take several hours, depending on your internet connection.
+
+``` 
+    mkdir local_blast_db
+    update_blastdb nt
+    cat *.tar.gz | tar -xvzf - -i
+    update_blastdb taxdb
+    gunzip -cd taxdb.tar.gz | (tar xvf - )
+```
+
+# Download the the nodes and names dowloads in tothe physcraper/taxonomy directory
+
+```
+    cd physcraper/taxonomy
+    wget 'ftp://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdump.tar.gz' 
+    gunzip -f -cd taxdump.tar.gz | (tar xvf - names.dmp nodes.dmp)
+```
+
+
+
+
+
+# Python packages:
 These will all be installed if you install physcraper using `python setup.py install`
 
-(but note, if you are using virtualenv there are some weird interactions with setuptools and python 2.7.6)
 
 - Dendropy https://pythonhosted.org/DendroPy/
 - Peyotl https://github.com/OpenTreeOfLife/peyotl (currently needs to be on physcraper branch)
@@ -53,7 +104,6 @@ These will all be installed if you install physcraper using `python setup.py ins
 
 ## Databases
 
-The tool can be run locally using databases, which can be downloaded and updated from the National Center for Biotechnology Information ([NCBI](https://www.ncbi.nlm.nih.gov/)). 
 
 [Previous: Back home](../README.md)
 
