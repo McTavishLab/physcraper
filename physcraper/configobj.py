@@ -65,8 +65,8 @@ class ConfigObj(object):
           * if blastloc == local:
 
               * self.blastdb: this defines the path to the local blast database
-              * self.ncbi_parser_nodes_fn: path to 'nodes.dmp' file, that contains the hierarchical information
-              * self.ncbi_parser_names_fn: path to 'names.dmp' file, that contains the different ID's
+              * self.ncbi_nodes: path to 'nodes.dmp' file, that contains the hierarchical information
+              * self.ncbi_names: path to 'names.dmp' file, that contains the different ID's
     """
 
     def __init__(self, configfile = None, interactive=False):
@@ -127,32 +127,7 @@ class ConfigObj(object):
         )        
         if self.blast_loc == "local":
             self.blastdb = config["blast"]["localblastdb"]
-            self.ncbi_parser_nodes_fn = "{}/nodes.dmp".format(self.taxonomy_dir)
-            self.ncbi_parser_names_fn = "{}/names.dmp".format(self.taxonomy_dir)
-            if not os.path.isdir(self.blastdb):
-                sys.stderr.write("Local Blast DB not found at {}, please use a remote search, or update as described in 'taxonomy/update_blast_db'\n".format(self.blastdb))
-                sys.exit()
-            if not os.path.exists("{}/nt.60.nhr".format(self.blastdb)):
-                sys.stderr.write("Errors with local Blast DB at {}, please use a remote search, or update as described in 'taxonomy/update_blast_db'\n".format(self.blastdb))
-                sys.exit()
-            else:
-                download_date = os.path.getmtime("{}/nt.60.nhr".format(self.blastdb))
-                download_date = datetime.datetime.fromtimestamp(download_date)
-                today = datetime.datetime.now()
-                time_passed = (today - download_date).days
-                if time_passed >= 90:
-                    sys.stderr.write("Your databases might not be up to date anymore. You downloaded them {} days ago. Continuing, but perhaps use a remote search, or update as decribed in 'taxonomy/update_blast_db'\n".format(time_passed))
-            if not os.path.exists(self.ncbi_parser_nodes_fn):
-                sys.stderr.write("NCBI taxonomy not found at {} - please update nodes and names.dmp, as described in 'taxonomy/update_blast_db'\n".format(self.ncbi_parser_nodes_fn))
-                sys.exit()
-            else:
-                download_date = os.path.getmtime(self.ncbi_parser_nodes_fn)
-                download_date = datetime.datetime.fromtimestamp(download_date)
-                today = datetime.datetime.now()
-                time_passed = (today - download_date).days
-                if time_passed >= 90:
-                    sys.stderr.write("Your taxonomy databases from NCBI were dowloaded {} days ago. Please update nodes and names.dmp, as described in 'taxonomy/update_blast_db'\n".format(time_passed))
-            self.url_base = None
+            self.set_local()
         if self.blast_loc == "remote":
             self.url_base = config["blast"].get("url_base")
         if _DEBUG:
@@ -190,4 +165,30 @@ class ConfigObj(object):
         assert 1 < self.maxlen, (
                 "value `%s` is not larger than 1" % self.maxlen
         )
-        
+    def set_local(self):
+        self.ncbi_nodes = "{}/nodes.dmp".format(self.taxonomy_dir)
+        self.ncbi_names = "{}/names.dmp".format(self.taxonomy_dir)
+        if not os.path.isdir(self.blastdb):
+            sys.stderr.write("Local Blast DB not found at {}, please use a remote search, or update as described in 'taxonomy/update_blast_db'\n".format(self.blastdb))
+            sys.exit()
+        if not os.path.exists("{}/nt.60.nhr".format(self.blastdb)):
+            sys.stderr.write("Errors with local Blast DB at {}, please use a remote search, or update as described in 'taxonomy/update_blast_db'\n".format(self.blastdb))
+            sys.exit()
+        else:
+            download_date = os.path.getmtime("{}/nt.60.nhr".format(self.blastdb))
+            download_date = datetime.datetime.fromtimestamp(download_date)
+            today = datetime.datetime.now()
+            time_passed = (today - download_date).days
+            if time_passed >= 90:
+                sys.stderr.write("Your databases might not be up to date anymore. You downloaded them {} days ago. Continuing, but perhaps use a remote search, or update as decribed in 'taxonomy/update_blast_db'\n".format(time_passed))
+        if not os.path.exists(self.ncbi_nodes):
+            sys.stderr.write("NCBI taxonomy not found at {} - please update nodes and names.dmp, as described in 'taxonomy/update_blast_db'\n".format(self.ncbi_nodes))
+            sys.exit()
+        else:
+            download_date = os.path.getmtime(self.ncbi_nodes)
+            download_date = datetime.datetime.fromtimestamp(download_date)
+            today = datetime.datetime.now()
+            time_passed = (today - download_date).days
+            if time_passed >= 90:
+                sys.stderr.write("Your taxonomy databases from NCBI were dowloaded {} days ago. Please update nodes and names.dmp, as described in 'taxonomy/update_blast_db'\n".format(time_passed))
+        self.url_base = None

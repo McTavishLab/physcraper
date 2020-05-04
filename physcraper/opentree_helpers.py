@@ -264,7 +264,7 @@ def scraper_from_opentree(study_id, tree_id, alnfile, workdir, aln_schema, confi
                                              configfile=configfile,
                                              study_id=study_id,
                                              tree_id=tree_id)
-    ids = physcraper.IdDicts(configfile)
+    ids = physcraper.IdDicts(data_obj.config)
     scraper = physcraper.PhyscraperScrape(data_obj, ids)
     return scraper
 

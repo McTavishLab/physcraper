@@ -17,18 +17,29 @@ parser.add_argument("-tx","--taxonomy", help="path to taxonomy")
 args = parser.parse_args()
 
 
+conf = physcraper.ConfigObj()
+
+if args.taxonomy:
+    conf.taxonomy_dir = args.taxonomy
+
+
+if args.blast_db:
+    conf.blast_loc = "local"
+    conf.blastdb = args.blast_db
+    conf.set_local()
+
+
+
+
 
 # Create an 'scraper' object to get data from NCBI, align it an
 scraper = scraper_from_opentree(study_id =args.study_id, 
                                 tree_id = args.tree_id, 
                                 alnfile = args.alignment, 
                                 aln_schema = args.aln_schema,
-                                workdir = args.output)
+                                workdir = args.output,
+                                configfile = conf)
 
-scraper.config.blast_loc = "local"
-scraper.config.blastdb = args.blast_db
-if args.taxonomy:
-    scraper.config.taxonomy_dir = args.taxonomy
 
 
 sys.stdout.write("{} taxa in alignment and tree\n".format(len(scraper.data.aln)))

@@ -182,26 +182,7 @@ class PhyscraperScrape(object):
             os.system(blastcmd)
 
 
-    def local_blast_for_unpublished(self, query, taxon):
-        """
-        Run a local blast search if the data is unpublished.
 
-        :param query: query sequence
-        :param taxon: taxon.label used as identifier for the sequences
-        :return: xml files with the results of the local blast
-        """
-        with cd(os.path.join(self.workdir, "blast")):
-            debug("run against local unpublished data")
-            debug(self.blast_subdir)
-            toblast = open("{}/tmp.fas".format(self.blast_subdir), "w")
-            toblast.write(">{}\n".format(taxon))
-            toblast.write("{}\n".format(query))
-            toblast.close()
-            blast_db = "local_unpubl_seq_db"
-            output = "tst_fn"
-            blastcmd = "blastn -query {}/tmp.fas -db {} -out output_{}.xml " \
-                       "-outfmt 5".format(self.blast_subdir, blast_db, output)
-            os.system(blastcmd)
 
     def run_web_blast_query(self, query, equery, fn_path):
         """Equivalent to run_local_blast_cmd() but for webqueries,
@@ -352,7 +333,7 @@ class PhyscraperScrape(object):
 
  
 
-    def get_full_seq(self, gb_acc, blast_seq, local=False):
+    def get_full_seq(self, gb_id, blast_seq):
         """
         Get full sequence from gb_acc that was retrieved via blast. 
 
@@ -365,40 +346,37 @@ class PhyscraperScrape(object):
         # debug("get full seq")
         # if we did not already try to get full seq:
 
-        if not os.path.exists("{}/tmp".format(self.workdir)):
-            os.mkdir("{}/tmp".format(self.workdir))
-        if not os.path.exists("{}/tmp/full_seq_{}".format(self.workdir, gb_acc)):
-            fn = "{}/tmp/tmp_search.csv".format(self.workdir)
-            fn_open = open(fn, "w+")
-            fn_open.write("{}\n".format(gb_acc.split(".")[0]))
-            fn_open.close()
+        if not os.path.exists(self.ids.full_seq_path):
+            os.mkdir(self.ids.full_seq_path)
+        seq_path = "{}/{}.fasta".format(self.ids.full_seq_path, gb_id)
+        if not os.path.exists(seq_path):
             db_path = "{}/nt".format(self.config.blastdb)
-
-            cmd1 = "blastdbcmd -db {}  -entry_batch {} -outfmt %f -out {}/tmp/full_seq_{}.fasta".format(db_path, fn, self.workdir, gb_acc)
+            cmd1 = "blastdbcmd -db {}  -entry {} -outfmt %f -out {}".format(db_path, gb_id, seq_path)
             # debug(cmd1)
             os.system(cmd1)
             # read in file to get full seq        
-            fn = "{}/tmp/full_seq_{}.fasta".format(self.workdir, gb_acc)
-            f = open(fn)
-            seq = ""
-            for line in iter(f):
-                line = line.rstrip().lstrip()
-                if line[0]  != ">":
-                    seq += line
-                elif line[0]  == ">":
-                    pass
+        f = open(seq_path)
+        seq = ""
+        for line in iter(f):
+            line = line.rstrip().lstrip()
+            if line[0]  != ">":
+                seq += line
+            elif line[0]  == ">":
+                pass
 #                    assert gb_acc in line, (gb_acc, line)
-            f.close()
+        f.close()
         # check direction of sequence:
-        match = blast_seq.replace("-", "") 
+        match = blast_seq.replace("-", "")
         full_seq = self.check_complement(match, seq, gb_id)
-        if blast_seq.replace("-", "") not in full_seq:
-            taxid, taxname, full_seq = self.ids.get_tax_seq_acc(gb_acc)
+        #if blast_seq.replace("-", "") not in full_seq:
+        #    taxid, taxname, full_seq = self.ids.get_tax_seq_acc(gb_acc)
         full_seq = str(full_seq)
         assert type(full_seq) == str, (type(full_seq))
         return full_seq
 
     def check_complement(self, match, seq, gb_id):
+        match = match.lower()
+        seq = seq.lower()
         if match in seq.lower():
             return seq
         else:
@@ -579,6 +557,7 @@ class PhyscraperScrape(object):
             return seq_dict
         tax_new_seq = self.data.otu_dict[new_otu_label].get('^ncbi:taxon', 1)
         if self.config.blast_loc == "local": #need to check if included in taxon of intrest (mrca)
+            #self.ids.ncbi_parser = ncbi_data_parser.Parser(names_file=self.config.ncbi_names, nodes_file=self.config.ncbi_nodes)
             if self.ids.ncbi_parser.match_id_to_mrca(tax_new_seq, self.mrca_ncbi):
                 #taxon is within mrca, continue
                 #debug("local: otu {} is within mrca".format(new_otu_label))

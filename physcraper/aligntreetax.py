@@ -184,6 +184,9 @@ class AlignTreeTax(object):
             self.config = ConfigObj(configfile)
             if not os.path.exists("{}/run.config".format(self.workdir)):
                 shutil.copyfile(self.config.configfi, "{}/run.config".format(self.workdir))
+        else:
+            assert(isinstance(configfile, ConfigObj)),type(configfile)
+            self.config = configfile
         assert(self.config)
         ## Read Alignment
         assert (self.tre.taxon_namespace is self.aln.taxon_namespace), "tre and aln taxon_namespace are not identical"
