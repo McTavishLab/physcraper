@@ -9,14 +9,14 @@ dependencies:
   - biopython
   - configparser
   - coverage
-  - DendroPy
-  - DateTime
-  - -e git+https://github.com/OpenTreeOfLife/python-opentree@get-tree#egg=opentree
+  - dendropy
+  - datetime
+  - numpy
+  - opentree
   - pandas
   - requests
   - sh
   - urllib3>=1.23
-  - numpy
   - pytest
   - pytest-cov
   - pytest-xdist
