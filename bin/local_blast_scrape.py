@@ -15,7 +15,7 @@ parser.add_argument("-tx","--taxonomy", help="path to taxonomy")
 
 
 args = parser.parse_args()
-
+assert(agrs.study_id)
 
 conf = physcraper.ConfigObj()
 
