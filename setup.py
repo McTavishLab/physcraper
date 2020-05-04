@@ -12,6 +12,7 @@ setup(name='Physcraper',
       author_email='ejmctavish@gmail.com',
       packages=['physcraper'],
       scripts=['bin/opentree_scrape.py',
-                'bin/auto_scrape.py'],
+               'bin/auto_scrape.py',
+               'bin/physcraper_run.py'],
       install_requires=[]
      )
