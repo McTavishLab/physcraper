@@ -70,6 +70,8 @@ class IdDicts(object):
         """Generates a series of name disambiguation dicts"""
         if configfile == None:
             self.config = ConfigObj()
+        elif isinstance(configfile, ConfigObj):
+            self.config = configfile
         elif os.path.exists(configfile):
             self.config = ConfigObj(configfile)
         else:
@@ -98,8 +100,8 @@ class IdDicts(object):
             self.otu_rank = {}  # used only for web queries - contains taxonomic hierarchy information
         else:  # ncbi parser contains information about spn, tax_id, and ranks
             debug("Config not remote {}".format(self.config.blast_loc))
-            self.ncbi_parser = ncbi_data_parser.Parser(names_file=self.config.ncbi_parser_names_fn,
-                                                       nodes_file=self.config.ncbi_parser_nodes_fn)
+            self.ncbi_parser = ncbi_data_parser.Parser(names_file=self.config.ncbi_names,
+                                                       nodes_file=self.config.ncbi_nodes)
         self.acc_tax_seq_dict = {}
         self.full_seq_path = "{}/full_seqs".format(self.config.taxonomy_dir)
 

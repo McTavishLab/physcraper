@@ -144,10 +144,13 @@ nodes = None
 names = None
 
 
-def strip(str_):
+def strip(input):
     """ Strips of blank characters from string in pd dataframe.
     """
-    return str_.strip()
+    if isinstance(input, str):
+        return input.strip()
+    else:
+        return input
 
 
 def load_nodes(nodes_file):

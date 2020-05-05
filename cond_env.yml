@@ -1,0 +1,29 @@
+
+name: physcraper_env
+channels:
+  - bioconda
+  - conda-forge
+dependencies:
+  - python>=3.5
+  - pip
+
+  - biopython
+  - configparser
+  - coverage
+  - dendropy
+  - numpy
+
+  - pandas
+  - requests
+  - sh
+  - urllib3>=1.23
+  - pytest
+  - pytest-cov
+  - pytest-xdist
+  - recommonmark
+
+  - raxml
+  - blast
+  - muscle 
+
+  ##datetime and opentree need install seperately
