@@ -75,6 +75,7 @@ NOTE: this download can take several hours, depending on your internet connectio
 
 ``` 
     mkdir local_blast_db
+    cd local_blast_db
     update_blastdb nt
     cat *.tar.gz | tar -xvzf - -i
     update_blastdb taxdb
