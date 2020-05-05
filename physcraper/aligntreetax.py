@@ -234,8 +234,14 @@ class AlignTreeTax(object):
         assert os.path.exists(alignment)
         ##Check namespace
         self.aln = DnaCharacterMatrix.get(path=alignment, schema=aln_schema, taxon_namespace = self.tns)
+        empty = set()
         for tax, seq in self.aln.items():
             tax.label = tax.label.replace(" ","_")
+            if len(str(seq).replace("?","").replace("-","")) == 0:
+                empty.add(tax)
+        self.aln.remove_sequences(empty)
+        msg = ", ".join([str(tax) for tax in list(empty)])
+        sys.stdout.write("All gap taxa {}\n".format(msg))
         #elif isinstance(alignment, datamodel.charmatrixmodel.DnaCharacterMatrix):
         #    self.aln = alignment
         assert isinstance(self.aln, datamodel.charmatrixmodel.DnaCharacterMatrix), \
