@@ -568,7 +568,7 @@ class AlignTreeTax(object):
 
     def write_aln(self, alnname=None, alnschema="fasta"):
         if alnname == None:
-            alnname = "{}_physcraper.fas".format(self.tag)
+            alnname = "physcraper_{}.fas".format(self.tag)
         alnpath = "{}/{}".format(self.workdir, alnname)
         self.aln.write(path=alnpath,
                        schema=alnschema)
@@ -578,13 +578,13 @@ class AlignTreeTax(object):
         """Outputs both the streaming files, labeled with OTU ids.
         Can be mapped to original labels using otu_dict.json or otu_seq_info.csv"""
         #debug("write_files")
-        self.tre.write(path="{}/{}_{}".format(self.workdir, self.tag, treepath),
+        self.tre.write(path="{}/{}".format(self.workdir, treepath),
                        schema=treeschema, unquoted_underscores=True)
-        self.aln.write(path="{}/{}_{}".format(self.workdir, self.tag, alnpath),
+        self.aln.write(path="{}/{}".format(self.workdir, alnpath),
                        schema=alnschema)
 
 
-    def write_labelled(self, label, filename = "labelled", direc='workdir', norepeats=True, add_gb_id=False, tag = False):
+    def write_labelled(self, label, filename = "labelled", direc='workdir', norepeats=True, add_gb_id=False):
         """output tree and alignment with human readable labels
         Jumps through a bunch of hoops to make labels unique.
 
@@ -603,9 +603,9 @@ class AlignTreeTax(object):
         #debug("write labelled files")
         if direc == 'workdir':
             direc = self.workdir
-        if tag:
-            treepath = "{}/{}_{}.tre".format(direc, self.tag, filename)
-            alnpath = "{}/{}_{}.fas".format(direc, self.tag, filename)
+        if filename == "labelled":
+            treepath = "{}/{}_{}.tre".format(direc, filename, self.tag)
+            alnpath = "{}/{}_{}.fas".format(direc, filename, self.tag)
         else:
             treepath = "{}/{}.tre".format(direc, filename)
             alnpath = "{}/{}.fas".format(direc, filename)
