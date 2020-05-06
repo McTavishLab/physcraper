@@ -164,8 +164,11 @@ class AlignTreeTax(object):
     """
 
     def __init__(self, tree, otu_dict, alignment, ingroup_mrca, workdir, configfile=None,
-                 tree_schema='newick',aln_schema ='fasta',taxon_namespace=None):
+                 tree_schema='newick',aln_schema ='fasta',taxon_namespace=None, tag=None):
         debug("build ATT class")
+        if tag == None:
+            self.tag = alignment.split('/')[-1].split('.')[0]
+        print("alignment tag is {}".format(self.tag))
         self.workdir = os.path.abspath(workdir)
         if not os.path.exists(self.workdir):
             os.makedirs(self.workdir)
@@ -563,7 +566,9 @@ class AlignTreeTax(object):
         fi.close()
         return treepath
 
-    def write_aln(self, alnname="physcraper.fas", alnschema="fasta"):
+    def write_aln(self, alnname=None, alnschema="fasta"):
+        if alnname == None:
+            alnname = "{}_physcraper.fas".format(self.tag)
         alnpath = "{}/{}".format(self.workdir, alnname)
         self.aln.write(path=alnpath,
                        schema=alnschema)
@@ -573,13 +578,13 @@ class AlignTreeTax(object):
         """Outputs both the streaming files, labeled with OTU ids.
         Can be mapped to original labels using otu_dict.json or otu_seq_info.csv"""
         #debug("write_files")
-        self.tre.write(path="{}/{}".format(self.workdir, treepath),
+        self.tre.write(path="{}/{}_{}".format(self.workdir, self.tag, treepath),
                        schema=treeschema, unquoted_underscores=True)
-        self.aln.write(path="{}/{}".format(self.workdir, alnpath),
+        self.aln.write(path="{}/{}_{}".format(self.workdir, self.tag, alnpath),
                        schema=alnschema)
 
 
-    def write_labelled(self, label, filename = "labelled", direc='workdir', norepeats=True, add_gb_id=False):
+    def write_labelled(self, label, filename = "labelled", direc='workdir', norepeats=True, add_gb_id=False, tag = False):
         """output tree and alignment with human readable labels
         Jumps through a bunch of hoops to make labels unique.
 
@@ -598,8 +603,12 @@ class AlignTreeTax(object):
         #debug("write labelled files")
         if direc == 'workdir':
             direc = self.workdir
-        treepath = "{}/{}".format(direc, "{}.tre".format(filename))
-        alnpath = "{}/{}".format(direc, '{}.fas'.format(filename))
+        if tag:
+            treepath = "{}/{}_{}.tre".format(direc, self.tag, filename)
+            alnpath = "{}/{}_{}.fas".format(direc, self.tag, filename)
+        else:
+            treepath = "{}/{}.tre".format(direc, filename)
+            alnpath = "{}/{}.fas".format(direc, filename)
         debug(treepath)
         assert label in ['^ot:ottTaxonName', '^user:TaxonName', '^physcraper:TaxonName',
                          "^ot:originalLabel", "^ot:ottId", "^ncbi:taxon"]
@@ -652,7 +661,7 @@ class AlignTreeTax(object):
 
         assert schema in ["table", "json"]
         if schema == "json":
-            with open("{}/{}.json".format(self.workdir, filename), "w") as outfile:
+            with open("{}/{}_{}.json".format(self.workdir, self.tag, filename), "w") as outfile:
                 json.dump(self.otu_dict, outfile)
         if schema == "table":
             all_keys =  set()

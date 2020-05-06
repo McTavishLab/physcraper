@@ -73,15 +73,14 @@ if args.treebase:
         os.makedirs(workdir)
 
     tre, cite = get_tree_from_study(study_id, tree_id)
-    sys.stdout.write("downloading best match alignment from treebase")
     tre.write(path="{}/{}{}.tre".format(workdir, study_id, tree_id), schema="nexus")
     if not os.path.exists(alnfile):
-        sys.stdout.write("downloading best match alignment from treebase")
+        sys.stdout.write("downloading best match alignment from treebase\n")
         dataset = physcraper.opentree_helpers.get_dataset_from_treebase(study_id)
         aln = get_max_match_aln(tre, dataset)
         aln.write(path=alnfile, schema = aln_schema)
     else:
-        sys.stdout.write("Using alignment file found at {}.".format(alnfile))
+        sys.stdout.write("Using alignment file found at {}.\n".format(alnfile))
 
 if study_id:
     scraper = scraper_from_opentree(study_id =study_id, 

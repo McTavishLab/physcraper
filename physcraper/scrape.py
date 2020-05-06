@@ -104,7 +104,7 @@ class PhyscraperScrape(object):
         self.new_seqs = {}  # all new seq after read_blast_wrapper
         self.new_seqs_otu_id = {}  # only new seq which passed remove_identical
         self.tmpfi = "{}/physcraper_run_in_progress".format(self.workdir)  # TODO: For what do we want to use this? Unused!
-        self.blast_subdir = "{}/current_blast_run".format(self.workdir)
+        self.blast_subdir = "{}/{}_blast_run".format(self.workdir, self.data.tag)
         if not os.path.exists(self.workdir):
             os.makedirs(self.workdir)
         self.date = str(datetime.date.today())  # Date of the run - may lag behind real date!
