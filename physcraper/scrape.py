@@ -103,8 +103,7 @@ class PhyscraperScrape(object):
         self.config = self.ids.config  # pointer to config
         self.new_seqs = {}  # all new seq after read_blast_wrapper
         self.new_seqs_otu_id = {}  # only new seq which passed remove_identical
-        self.tmpfi = "{}/physcraper_run_in_progress".format(self.workdir)  # TODO: For what do we want to use this? Unused!
-        self.blast_subdir = "{}/{}_blast_run".format(self.workdir, self.data.tag)
+        self.blast_subdir = "{}/blast_run_{}".format(self.workdir, self.data.tag)
         if not os.path.exists(self.workdir):
             os.makedirs(self.workdir)
         self.date = str(datetime.date.today())  # Date of the run - may lag behind real date!
@@ -169,17 +168,21 @@ class PhyscraperScrape(object):
         toblast.write("{}\n".format(query))
         toblast.close()
         assert os.path.isdir(self.config.blastdb), ("blast dir does not exist: '{}'.".format(self.config.blastdb))
-        with cd(self.config.blastdb):
-            # this format (6) allows to get the taxonomic information at the same time
-            outfmt = " -outfmt '6 sseqid staxids sscinames pident evalue bitscore sseq salltitles sallseqid'"
-            # outfmt = " -outfmt 5"  # format for xml file type
-            # TODO query via stdin
-            blastcmd = "blastn -query " + "{}/tmp.fas".format(abs_blastdir) + \
-                       " -db {}/nt -out ".format(self.config.blastdb) + abs_fn + \
-                       " {} -num_threads {}".format(outfmt, self.config.num_threads) + \
-                       " -max_target_seqs {} -max_hsps {}".format(self.config.hitlist_size,
-                                                                  self.config.hitlist_size)
-            os.system(blastcmd)
+        try:
+            with cd(self.config.blastdb):
+                # this format (6) allows to get the taxonomic information at the same time
+                outfmt = " -outfmt '6 sseqid staxids sscinames pident evalue bitscore sseq salltitles sallseqid'"
+                # outfmt = " -outfmt 5"  # format for xml file type
+                # TODO query via stdin
+                blastcmd = "blastn -query " + "{}/tmp.fas".format(abs_blastdir) + \
+                           " -db {}/nt -out ".format(self.config.blastdb) + abs_fn + \
+                           " {} -num_threads {}".format(outfmt, self.config.num_threads) + \
+                           " -max_target_seqs {} -max_hsps {}".format(self.config.hitlist_size,
+                                                                      self.config.hitlist_size)
+                os.system(blastcmd)
+        except KeyboardInterrupt:
+            os.remove(abs_fn)
+            sys.exit
 
 
 
@@ -230,55 +233,54 @@ class PhyscraperScrape(object):
             os.makedirs(self.blast_subdir)
         with open(self.logfile, "a") as log:
             log.write("Blast run {} \n".format(datetime.date.today()))
-        for taxon, seq in self.data.aln.items():
-            otu_id = taxon.label
-#            tmpfile = open("{}/{}.tmp".format(self.workdir, otu_id),"w")
-#            tmpfile.write(seq.symbols_as_string())
-#            tmpfile.write("\n")
-            assert otu_id in self.data.otu_dict
-            last_blast = self.data.otu_dict[otu_id].get('^physcraper:last_blasted')
-            if last_blast == None:
-                time_passed = delay + 1
-            else:
-                time_passed = abs((datetime.datetime.strptime(today, "%Y/%m/%d") - datetime.datetime.strptime(
-                last_blast, "%Y/%m/%d")).days)
-            if time_passed > delay:
-                query = seq.symbols_as_string().replace("-", "").replace("?", "")
-               # tmpfile.write(query)
-                if self.config.blast_loc == "local":
-                    file_ending = "txt"
+        try:
+            for taxon, seq in self.data.aln.items():
+                otu_id = taxon.label
+                assert otu_id in self.data.otu_dict
+                last_blast = self.data.otu_dict[otu_id].get('^physcraper:last_blasted')
+                if last_blast == None:
+                    time_passed = delay + 1
                 else:
-                    file_ending = "xml"
-                fn_path = "{}/{}.{}".format(self.blast_subdir, taxon.label, file_ending)
-                # if _DEBUG:
-                #     sys.stdout.write("attempting to write {}\n".format(fn_path))
-                if not os.path.isfile(fn_path):
+                    time_passed = abs((datetime.datetime.strptime(today, "%Y/%m/%d") - datetime.datetime.strptime(
+                    last_blast, "%Y/%m/%d")).days)
+                if time_passed > delay:
+                    query = seq.symbols_as_string().replace("-", "").replace("?", "")
+                   # tmpfile.write(query)
+                    if self.config.blast_loc == "local":
+                        file_ending = "txt"
+                    else:
+                        file_ending = "xml"
+                    fn_path = "{}/{}.{}".format(self.blast_subdir, taxon.label, file_ending)
+                    # if _DEBUG:
+                    #     sys.stdout.write("attempting to write {}\n".format(fn_path))
+                    if not os.path.isfile(fn_path):
+                        if _VERBOSE:
+                            sys.stdout.write("blasting seq {}\n".format(taxon.label))
+                        if self.config.blast_loc == 'local':
+                            self.run_local_blast_cmd(query, taxon.label, fn_path)
+                        if self.config.blast_loc == 'remote':
+                            if last_blast:
+                                equery = "txid{}[orgn] AND {}:{}[mdat]".format(self.mrca_ncbi, last_blast, today)
+                            else:
+                                equery = "txid{}[orgn]".format(self.mrca_ncbi)
+                            debug(equery)
+                   #         tmpfile.write("\nequery\n")
+                   #         tmpfile.write(equery)
+                   #         tmpfile.write("\nquery\n")
+                   #         tmpfile.write(query)
+                   #         tmpfile.close()
+                            self.run_web_blast_query(query, equery, fn_path)
+                        self.data.otu_dict[otu_id]['^physcraper:last_blasted'] = today
+                    else:
+                        if _DEBUG:
+                            sys.stdout.write("file {} exists in current blast run. Will not blast, "
+                                             "delete file to force\n".format(fn_path))
+                else:
                     if _VERBOSE:
-                        sys.stdout.write("blasting seq {}\n".format(taxon.label))
-                    if self.config.blast_loc == 'local':
-                        self.run_local_blast_cmd(query, taxon.label, fn_path)
-                    if self.config.blast_loc == 'remote':
-                        if last_blast:
-                            equery = "txid{}[orgn] AND {}:{}[mdat]".format(self.mrca_ncbi, last_blast, today)
-                        else:
-                            equery = "txid{}[orgn]".format(self.mrca_ncbi)
-                        debug(equery)
-               #         tmpfile.write("\nequery\n")
-               #         tmpfile.write(equery)
-               #         tmpfile.write("\nquery\n")
-               #         tmpfile.write(query)
-               #         tmpfile.close()
-                        self.run_web_blast_query(query, equery, fn_path)
-                    self.data.otu_dict[otu_id]['^physcraper:last_blasted'] = today
-                else:
-                    if _DEBUG:
-                        sys.stdout.write("file {} exists in current blast run. Will not blast, "
-                                         "delete file to force\n".format(fn_path))
-            else:
-                if _VERBOSE:
-                    sys.stdout.write("otu {} was last blasted {} days ago and is not being re-blasted. "
-                                     "Use run_blast_wrapper(delay = 0) to force a search.\n".format(otu_id,
-                                                                                                    last_blast))
+                        sys.stdout.write("otu {} was last blasted {} days ago and is not being re-blasted. "
+                                         "Use run_blast_wrapper(delay = 0) to force a search.\n".format(otu_id, last_blast))
+        except KeyboardInterrupt:
+            sys.exit()                                                                                          
         self._blasted = 1
 
   
