@@ -335,8 +335,8 @@ def test_write_labelled():
     expected_tree_path_ottid = "tests/data/expected_output/labelled_ottid.tre"
     expected_aln_path_ottid = "tests/data/expected_output/labelled_ottid.fas"
     data_obj = copy.deepcopy(data_obj_base)
-    treepath = 'tests/data/tmp/labelled.tre'
-    alnpath = 'tests/data/tmp/labelled.fas'
+    treepath = 'tests/data/tmp/labelled_test.tre'
+    alnpath = 'tests/data/tmp/labelled_test.fas'
 
     data_obj.write_labelled(label='^user:TaxonName', filename='labelled', direc='tests/data/tmp/', norepeats = False)
 
