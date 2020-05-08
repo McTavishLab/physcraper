@@ -111,7 +111,7 @@ if args.reload_files:
         tag = args.tag
     elif args.alignment:
         tag = args.alignment.split('/')[-1].split('.')[0]
-    data_obj = generate_ATT_from_run(args.reload_files, tag=tag, configfile=conf)
+    data_obj = generate_ATT_from_run(args.reload_files, configfile=conf)
     ids = physcraper.IdDicts(conf)
     scraper = physcraper.PhyscraperScrape(data_obj, ids)
     sys.stdout.write("Reloaded {} taxa in alignment and tree\n".format(len(scraper.data.aln)))

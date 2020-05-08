@@ -126,6 +126,8 @@ class PhyscraperScrape(object):
         self.map_taxa_to_ncbi()
         assert self.mrca_ncbi
         self.write_mrca()
+        self.data.write_otus(schema='table')
+        self.data.write_otus(schema='json')
         self.threshold = threshold
 #markers for status
 #holders for new data

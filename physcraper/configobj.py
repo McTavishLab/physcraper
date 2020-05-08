@@ -129,7 +129,8 @@ class ConfigObj(object):
         
         # read in blast settings
         self.email = config["blast"]["Entrez.email"]
-        assert "@" in self.email, "your email `%s` does not have an @ sign" % self.email
+        if not "@" in self.email:
+            sys.stderr.write("your email `%s` does not have an @ sign. NCBI blast requests an email address." % self.email)
         
         self.e_value_thresh = config["blast"]["e_value_thresh"]
         assert is_number(self.e_value_thresh), (
