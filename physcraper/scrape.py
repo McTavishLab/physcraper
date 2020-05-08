@@ -92,6 +92,8 @@ class PhyscraperScrape(object):
     def __init__(self, data_obj, ids_obj=None, ingroup_mrca=None, threshold = 5):
         assert isinstance(data_obj, AlignTreeTax)
         self.workdir = data_obj.workdir
+        if not os.path.exists(self.workdir):
+            os.makedirs(self.workdir)
         self.logfile = "{}/logfile".format(self.workdir)
         self.data = data_obj
         if ids_obj == None:
@@ -104,8 +106,7 @@ class PhyscraperScrape(object):
         self.new_seqs = {}  # all new seq after read_blast_wrapper
         self.new_seqs_otu_id = {}  # only new seq which passed remove_identical
         self.blast_subdir = "{}/blast_run_{}".format(self.workdir, self.data.tag)
-        if not os.path.exists(self.workdir):
-            os.makedirs(self.workdir)
+
         self.date = str(datetime.date.today())  # Date of the run - may lag behind real date!
         self.repeat = 1  # used to determine if we continue updating the tree
         self.newseqs_acc = []  # all ever added Genbank accession numbers during any PhyScraper run, used to speed up adding process
