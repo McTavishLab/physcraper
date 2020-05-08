@@ -296,6 +296,8 @@ class PhyscraperScrape(object):
             for lin in infile:
                 sseqid, staxids, sscinames, pident, evalue, bitscore, sseq, stitle, sallseqid = lin.strip().split('\t')
                 gb_acc = get_acc_from_blast(sseqid)
+                if gb_acc == None:
+                    continue
                 gi_id = get_gi_from_blast(sseqid)                
                 sseq = sseq.replace("-", "") #TODO here is where we want to grab the full sequence MK: I wrote a batch query for the seqs we are interested. Makes it faster.
                 taxname = sscinames.replace(" ", "_").replace("/", "_")
@@ -309,13 +311,15 @@ class PhyscraperScrape(object):
                             # NOTE: sometimes there are seq which are identical & are combined in the local blast db...
                             # Get all of them! (they can be of a different taxon ids = get redundant seq info)
                             if len(sallseqid.split(';')) > 1:
-                                for gb_acc in sallseqid:
-                                    full_seq = self.get_full_seq(gb_acc, sseq)
-                                    query_dict[gb_acc] = {'^ncbi:gi': gi_id, 'accession': gb_acc, 'staxids': staxids,
-                                                          'sscinames': sscinames, 'pident': pident, 'evalue': evalue,
-                                                          'bitscore': bitscore, 'sseq':full_seq, 'title': stitle}
-                                    self.data.gb_dict[gb_acc] = query_dict[gb_acc]
-                                    self.new_seqs[gb_acc] = query_dict[gb_acc]["sseq"]
+                                for match in sallseqid.split(';'):
+                                    gb_acc = get_acc_from_blast(sseqid)
+                                    if gb_acc != None:
+                                        full_seq = self.get_full_seq(gb_acc, sseq)
+                                        query_dict[gb_acc] = {'^ncbi:gi': gi_id, 'accession': gb_acc, 'staxids': staxids,
+                                                              'sscinames': sscinames, 'pident': pident, 'evalue': evalue,
+                                                              'bitscore': bitscore, 'sseq':full_seq, 'title': stitle}
+                                        self.data.gb_dict[gb_acc] = query_dict[gb_acc]
+                                        self.new_seqs[gb_acc] = query_dict[gb_acc]["sseq"]
                             else:
                                 taxid = int(staxids)
                                 self.ids.spn_to_ncbiid[sscinames] = staxids
