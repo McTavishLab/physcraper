@@ -28,8 +28,8 @@ def get_acc_from_blast(query_string):
     else:
         gb_acc = query_string.split("|")[0]
     if len(gb_acc.split(".")) < 2:
-        sys.stderr.write("query string {} does not contain a Genbank accession number.".format(query_string))
-        exit(-15)
+        sys.stderr.write("query string {} does not contain a Genbank accession number. Skipping\n".format(query_string))
+        return None
     assert len(gb_acc.split(".")) >= 2, (len(gb_acc.split(".")), gb_acc)
     return gb_acc
 

@@ -1,17 +1,15 @@
 [Back home](../README.md)
 
 
-# Installing `physcraper`
+# I. Installing physcraper
 
-## Preinstallation requirements
-
-## Download `physcraper`
+## 1. Downloading `physcraper`
 
 ```
 git clone git@github.com:McTavishLab/physcraper.git
 ```
 
-# Install using conda
+## 2A. Install using conda
 Install anaconda  
 
 ```
@@ -23,8 +21,8 @@ Install anaconda
 ```
 
 
-# INstall using Virtual Env
-## Create a python virtual environment
+## 2B. Install using Virtual Env
+### 1. Create a python virtual environment
 
 
 ```
@@ -32,15 +30,39 @@ virtualenv venv-physcraper
 ```
 
 
-## Activate the installed virtual environment
+### 2. Activate the installed virtual environment
+
 Once you have a venv-physcraper directory, **_activate_** it with:
 
 ```
 source venv-physcraper/bin/activate
+```
+Remember that you will have to activate the virtual environment every time you want to run `physcraper`.
+
+### 3. Install `physcraper` inside the virtual environment with
+
+```
 python setup.py install
 ```
 
-## Dependencies
+This will install the following python packages also:
+
+- Dendropy https://pythonhosted.org/DendroPy/
+- Peyotl https://github.com/OpenTreeOfLife/peyotl (currently needs to be on physcraper branch)
+- Biopython http://biopython.org/wiki/Download
+- ConfigParser
+
+
+### 4. Come out of the virtual environment:
+
+```
+deactivate
+```
+
+Do this after you are finisged working with physcraper.
+
+
+# II. Checking for dependencies
 
 Currently complete phylogenetic updating WITH `physcraper` requires
 [raxmlHPC](http://sco.h-its.org/exelixis/web/software/raxml/index.html) and [MUSCLE](install-muscle.md) to be installed and in the path.
@@ -53,57 +75,50 @@ which raxmlHPC
 ```
 
 
-# Databases
+# III. Local Databases
 
-The tool can be run locally using databases, which can be downloaded and updated from the National Center for Biotechnology Information ([NCBI](https://www.ncbi.nlm.nih.gov/)). 
+The tool can be run using local databases, which can be downloaded and updated from the National Center for Biotechnology Information ([NCBI](https://www.ncbi.nlm.nih.gov/)). 
 
-To blast locally you will need to install blast command line tools.  
-Instructions at
+### 1. Installing blast command line tools
+
+To blast locally you will need to install blast command line tools first.  
+Find general instructions at
 https://www.ncbi.nlm.nih.gov/books/NBK279671/
 https://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/
 
 
-e.g. on linux:
+e.g. installing blast command line tools on linux:
+
+```
     wget https://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/LATEST/ncbi-blast-2.10.0+-x64-linux.tar.gz
     tar -xzvf ncbi-blast-2.10.0+-x64-linux.tar.gz 
-    
- The binaries are in /bin
+ ```
+ 
+The binaries/scripts/executables will be installed in the `/bin` folder.
 
+### 2. Downloading the NCBI database
 
-If you want to download the blast database and taxonomy for faster local searches
-NOTE: this download can take several hours, depending on your internet connection.
+If you want to download the NCBI blast database and taxonomy for faster local searches
+note that the download can take several hours, depending on your internet connection.
+
+This is what you should do:
 
 ``` 
-    mkdir local_blast_db
-    cd local_blast_db
-    update_blastdb nt
-    cat *.tar.gz | tar -xvzf - -i
-    update_blastdb taxdb
-    gunzip -cd taxdb.tar.gz | (tar xvf - )
+    mkdir local_blast_db  # create the folder to save the database
+    cd local_blast_db  # move to the newly created folder
+    update_blastdb nt  # download the NCBI nucleotide databases
+    cat *.tar.gz | tar -xvzf - -i  # unzip the nucleotide databases
+    update_blastdb taxdb  # download the NCBI taxonomy database
+    gunzip -cd taxdb.tar.gz | (tar xvf - )  # unzip the taxonomy database
 ```
 
-# Download the the nodes and names dowloads in tothe physcraper/taxonomy directory
+### 3. Downloading the nodes and names into the physcraper/taxonomy directory
 
 ```
     cd physcraper/taxonomy
     wget 'ftp://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdump.tar.gz' 
     gunzip -f -cd taxdump.tar.gz | (tar xvf - names.dmp nodes.dmp)
 ```
-
-
-
-
-
-# Python packages:
-These will all be installed if you install physcraper using `python setup.py install`
-
-
-- Dendropy https://pythonhosted.org/DendroPy/
-- Peyotl https://github.com/OpenTreeOfLife/peyotl (currently needs to be on physcraper branch)
-- Biopython http://biopython.org/wiki/Download
-- ConfigParser
-
-## Databases
 
 
 [Previous: Back home](../README.md)

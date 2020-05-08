@@ -55,23 +55,27 @@ def generate_ATT_from_files(workdir,
     return AlignTreeTax(treefile, otu_dict, alnfile, ingroup_mrca=mrca_ott, workdir=workdir,
                         configfile=configfile, tree_schema=tree_schema)
 
-def generate_ATT_from_run(workdir, configfile=None):
+def generate_ATT_from_run(workdir, tag=None, configfile=None):
     """Build an ATT object without phylesystem, use your own files instead.
     :return: object of class ATT
     """
-
+    files = [f for f in os.listdir(workdir)]
+    for file in files:
+        if file.startswith('physcraper_'):
+            tag = file.split('.')[0].replace('physcraper_', '')
+    sys.stdout.write("Reloading files with tag {}\n".format(tag))
     assert os.path.exists(workdir)
     # use replaced aln as input
     if configfile == None:
         if os.path.exists("{}/run.config".format(workdir)):
             configfile = "{}/run.config".format(workdir)
-    alnfi = "{}/physcraper.fas".format(workdir)
-    treefile = "{}/physcraper.tre".format(workdir)
-    otu_json = "{}/otu_info.json".format(workdir)
+    alnfi = "{}/physcraper_{}.fas".format(workdir, tag)
+    treefile = "{}/physcraper_{}.tre".format(workdir, tag)
+    otu_json = "{}/otu_info_{}.json".format(workdir, tag)
     otu_dict = json.load(open(otu_json, "r"))
     mrca_ott = mrca_ott = int(open("{}/mrca.txt".format(workdir)).readline().split()[-1])
     return AlignTreeTax(tree = treefile, otu_dict= otu_dict, alignment = alnfi, ingroup_mrca=mrca_ott, workdir=workdir,
-                        configfile=configfile, tree_schema='newick')
+                        configfile=configfile, tag=tag, tree_schema='newick')
 
 
 #def concatenate_ATTs(att_list, number_per_taxon='max', level='spp'):
@@ -164,8 +168,13 @@ class AlignTreeTax(object):
     """
 
     def __init__(self, tree, otu_dict, alignment, ingroup_mrca, workdir, configfile=None,
-                 tree_schema='newick',aln_schema ='fasta',taxon_namespace=None):
+                 tree_schema='newick',aln_schema ='fasta',taxon_namespace=None, tag=None):
         debug("build ATT class")
+        if tag == None:
+            self.tag = alignment.split('/')[-1].split('.')[0]
+        else:
+            self.tag = tag
+        print("alignment tag is {}".format(self.tag))
         self.workdir = os.path.abspath(workdir)
         if not os.path.exists(self.workdir):
             os.makedirs(self.workdir)
@@ -241,7 +250,8 @@ class AlignTreeTax(object):
                 empty.add(tax)
         self.aln.remove_sequences(empty)
         msg = ", ".join([str(tax) for tax in list(empty)])
-        sys.stdout.write("All gap taxa {}\n".format(msg))
+        if len(empty) >= 1:
+            sys.stdout.write("All gap taxa {}\n".format(msg))
         #elif isinstance(alignment, datamodel.charmatrixmodel.DnaCharacterMatrix):
         #    self.aln = alignment
         assert isinstance(self.aln, datamodel.charmatrixmodel.DnaCharacterMatrix), \
@@ -563,16 +573,22 @@ class AlignTreeTax(object):
         fi.close()
         return treepath
 
-    def write_aln(self, alnname="physcraper.fas", alnschema="fasta"):
+    def write_aln(self, alnname=None, alnschema="fasta"):
+        if alnname == None:
+            alnname = "physcraper_{}.fas".format(self.tag)
         alnpath = "{}/{}".format(self.workdir, alnname)
         self.aln.write(path=alnpath,
                        schema=alnschema)
         return os.path.abspath(alnpath)
 
-    def write_files(self, treepath="physcraper.tre", treeschema="newick", alnpath="physcraper.fas", alnschema="fasta"):
+    def write_files(self, treepath=None, treeschema="newick", alnpath=None, alnschema="fasta"):
         """Outputs both the streaming files, labeled with OTU ids.
         Can be mapped to original labels using otu_dict.json or otu_seq_info.csv"""
         #debug("write_files")
+        if alnpath == None:
+            alnpath = "physcraper_{}.fas".format(self.tag)
+        if treepath == None:
+            treepath = "physcraper_{}.tre".format(self.tag)
         self.tre.write(path="{}/{}".format(self.workdir, treepath),
                        schema=treeschema, unquoted_underscores=True)
         self.aln.write(path="{}/{}".format(self.workdir, alnpath),
@@ -598,8 +614,12 @@ class AlignTreeTax(object):
         #debug("write labelled files")
         if direc == 'workdir':
             direc = self.workdir
-        treepath = "{}/{}".format(direc, "{}.tre".format(filename))
-        alnpath = "{}/{}".format(direc, '{}.fas'.format(filename))
+        if filename == "labelled":
+            treepath = "{}/{}_{}.tre".format(direc, filename, self.tag)
+            alnpath = "{}/{}_{}.fas".format(direc, filename, self.tag)
+        else:
+            treepath = "{}/{}.tre".format(direc, filename)
+            alnpath = "{}/{}.fas".format(direc, filename)
         debug(treepath)
         assert label in ['^ot:ottTaxonName', '^user:TaxonName', '^physcraper:TaxonName',
                          "^ot:originalLabel", "^ot:ottId", "^ncbi:taxon"]
@@ -652,7 +672,7 @@ class AlignTreeTax(object):
 
         assert schema in ["table", "json"]
         if schema == "json":
-            with open("{}/{}.json".format(self.workdir, filename), "w") as outfile:
+            with open("{}/{}_{}.json".format(self.workdir, filename, self.tag), "w") as outfile:
                 json.dump(self.otu_dict, outfile)
         if schema == "table":
             all_keys =  set()
@@ -660,7 +680,7 @@ class AlignTreeTax(object):
                 all_keys.update(self.otu_dict[otu].keys())
             keys = list(all_keys) 
             header = ["otu_id"] + keys
-            with open("{}/{}.csv".format(self.workdir, filename), "w") as outfile:
+            with open("{}/{}_{}.csv".format(self.workdir, filename, self.tag), "w") as outfile:
                 outfile.write("\t".join(header)+"\n")
                 for otu in self.otu_dict:
                     vals = [str(self.otu_dict[otu].get(key, "-")) for key in keys]

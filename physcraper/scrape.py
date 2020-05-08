@@ -88,11 +88,12 @@ class PhyscraperScrape(object):
                 * self._query_seqs_placed: 0/1, if place_query_seqs() was called, it is set to 1 for the round.
                 * self._reconciled: 0
                 * self._full_tree_est: 0/1, if est_full_tree() was called, it is set to 1 for the round.
-            * **self.OToL_unmapped_tips()**: function that either removes or maps unmapped taxa from OToL studies
     """
     def __init__(self, data_obj, ids_obj=None, ingroup_mrca=None, threshold = 5):
         assert isinstance(data_obj, AlignTreeTax)
         self.workdir = data_obj.workdir
+        if not os.path.exists(self.workdir):
+            os.makedirs(self.workdir)
         self.logfile = "{}/logfile".format(self.workdir)
         self.data = data_obj
         if ids_obj == None:
@@ -101,12 +102,11 @@ class PhyscraperScrape(object):
             assert isinstance(ids_obj, IdDicts)
             self.ids = ids_obj
         self.config = self.ids.config  # pointer to config
+        self.config.write_file(self.workdir)
         self.new_seqs = {}  # all new seq after read_blast_wrapper
         self.new_seqs_otu_id = {}  # only new seq which passed remove_identical
-        self.tmpfi = "{}/physcraper_run_in_progress".format(self.workdir)  # TODO: For what do we want to use this? Unused!
-        self.blast_subdir = "{}/current_blast_run".format(self.workdir)
-        if not os.path.exists(self.workdir):
-            os.makedirs(self.workdir)
+        self.blast_subdir = "{}/blast_run_{}".format(self.workdir, self.data.tag)
+
         self.date = str(datetime.date.today())  # Date of the run - may lag behind real date!
         self.repeat = 1  # used to determine if we continue updating the tree
         self.newseqs_acc = []  # all ever added Genbank accession numbers during any PhyScraper run, used to speed up adding process
@@ -126,6 +126,8 @@ class PhyscraperScrape(object):
         self.map_taxa_to_ncbi()
         assert self.mrca_ncbi
         self.write_mrca()
+        self.data.write_otus(schema='table')
+        self.data.write_otus(schema='json')
         self.threshold = threshold
 #markers for status
 #holders for new data
@@ -169,17 +171,21 @@ class PhyscraperScrape(object):
         toblast.write("{}\n".format(query))
         toblast.close()
         assert os.path.isdir(self.config.blastdb), ("blast dir does not exist: '{}'.".format(self.config.blastdb))
-        with cd(self.config.blastdb):
-            # this format (6) allows to get the taxonomic information at the same time
-            outfmt = " -outfmt '6 sseqid staxids sscinames pident evalue bitscore sseq salltitles sallseqid'"
-            # outfmt = " -outfmt 5"  # format for xml file type
-            # TODO query via stdin
-            blastcmd = "blastn -query " + "{}/tmp.fas".format(abs_blastdir) + \
-                       " -db {}/nt -out ".format(self.config.blastdb) + abs_fn + \
-                       " {} -num_threads {}".format(outfmt, self.config.num_threads) + \
-                       " -max_target_seqs {} -max_hsps {}".format(self.config.hitlist_size,
-                                                                  self.config.hitlist_size)
-            os.system(blastcmd)
+        try:
+            with cd(self.config.blastdb):
+                # this format (6) allows to get the taxonomic information at the same time
+                outfmt = " -outfmt '6 sseqid staxids sscinames pident evalue bitscore sseq salltitles sallseqid'"
+                # outfmt = " -outfmt 5"  # format for xml file type
+                # TODO query via stdin
+                blastcmd = "blastn -query " + "{}/tmp.fas".format(abs_blastdir) + \
+                           " -db {}/nt -out ".format(self.config.blastdb) + abs_fn + \
+                           " {} -num_threads {}".format(outfmt, self.config.num_threads) + \
+                           " -max_target_seqs {} -max_hsps {}".format(self.config.hitlist_size,
+                                                                      self.config.hitlist_size)
+                os.system(blastcmd)
+        except KeyboardInterrupt:
+            os.remove(abs_fn)
+            sys.exit
 
 
 
@@ -230,55 +236,54 @@ class PhyscraperScrape(object):
             os.makedirs(self.blast_subdir)
         with open(self.logfile, "a") as log:
             log.write("Blast run {} \n".format(datetime.date.today()))
-        for taxon, seq in self.data.aln.items():
-            otu_id = taxon.label
-#            tmpfile = open("{}/{}.tmp".format(self.workdir, otu_id),"w")
-#            tmpfile.write(seq.symbols_as_string())
-#            tmpfile.write("\n")
-            assert otu_id in self.data.otu_dict
-            last_blast = self.data.otu_dict[otu_id].get('^physcraper:last_blasted')
-            if last_blast == None:
-                time_passed = delay + 1
-            else:
-                time_passed = abs((datetime.datetime.strptime(today, "%Y/%m/%d") - datetime.datetime.strptime(
-                last_blast, "%Y/%m/%d")).days)
-            if time_passed > delay:
-                query = seq.symbols_as_string().replace("-", "").replace("?", "")
-               # tmpfile.write(query)
-                if self.config.blast_loc == "local":
-                    file_ending = "txt"
+        try:
+            for taxon, seq in self.data.aln.items():
+                otu_id = taxon.label
+                assert otu_id in self.data.otu_dict
+                last_blast = self.data.otu_dict[otu_id].get('^physcraper:last_blasted')
+                if last_blast == None:
+                    time_passed = delay + 1
                 else:
-                    file_ending = "xml"
-                fn_path = "{}/{}.{}".format(self.blast_subdir, taxon.label, file_ending)
-                # if _DEBUG:
-                #     sys.stdout.write("attempting to write {}\n".format(fn_path))
-                if not os.path.isfile(fn_path):
+                    time_passed = abs((datetime.datetime.strptime(today, "%Y/%m/%d") - datetime.datetime.strptime(
+                    last_blast, "%Y/%m/%d")).days)
+                if time_passed > delay:
+                    query = seq.symbols_as_string().replace("-", "").replace("?", "")
+                   # tmpfile.write(query)
+                    if self.config.blast_loc == "local":
+                        file_ending = "txt"
+                    else:
+                        file_ending = "xml"
+                    fn_path = "{}/{}.{}".format(self.blast_subdir, taxon.label, file_ending)
+                    # if _DEBUG:
+                    #     sys.stdout.write("attempting to write {}\n".format(fn_path))
+                    if not os.path.isfile(fn_path):
+                        if _VERBOSE:
+                            sys.stdout.write("blasting seq {}\n".format(taxon.label))
+                        if self.config.blast_loc == 'local':
+                            self.run_local_blast_cmd(query, taxon.label, fn_path)
+                        if self.config.blast_loc == 'remote':
+                            if last_blast:
+                                equery = "txid{}[orgn] AND {}:{}[mdat]".format(self.mrca_ncbi, last_blast, today)
+                            else:
+                                equery = "txid{}[orgn]".format(self.mrca_ncbi)
+                            debug(equery)
+                   #         tmpfile.write("\nequery\n")
+                   #         tmpfile.write(equery)
+                   #         tmpfile.write("\nquery\n")
+                   #         tmpfile.write(query)
+                   #         tmpfile.close()
+                            self.run_web_blast_query(query, equery, fn_path)
+                        self.data.otu_dict[otu_id]['^physcraper:last_blasted'] = today
+                    else:
+                        if _DEBUG:
+                            sys.stdout.write("file {} exists in current blast run. Will not blast, "
+                                             "delete file to force\n".format(fn_path))
+                else:
                     if _VERBOSE:
-                        sys.stdout.write("blasting seq {}\n".format(taxon.label))
-                    if self.config.blast_loc == 'local':
-                        self.run_local_blast_cmd(query, taxon.label, fn_path)
-                    if self.config.blast_loc == 'remote':
-                        if last_blast:
-                            equery = "txid{}[orgn] AND {}:{}[mdat]".format(self.mrca_ncbi, last_blast, today)
-                        else:
-                            equery = "txid{}[orgn]".format(self.mrca_ncbi)
-                        debug(equery)
-               #         tmpfile.write("\nequery\n")
-               #         tmpfile.write(equery)
-               #         tmpfile.write("\nquery\n")
-               #         tmpfile.write(query)
-               #         tmpfile.close()
-                        self.run_web_blast_query(query, equery, fn_path)
-                    self.data.otu_dict[otu_id]['^physcraper:last_blasted'] = today
-                else:
-                    if _DEBUG:
-                        sys.stdout.write("file {} exists in current blast run. Will not blast, "
-                                         "delete file to force\n".format(fn_path))
-            else:
-                if _VERBOSE:
-                    sys.stdout.write("otu {} was last blasted {} days ago and is not being re-blasted. "
-                                     "Use run_blast_wrapper(delay = 0) to force a search.\n".format(otu_id,
-                                                                                                    last_blast))
+                        sys.stdout.write("otu {} was last blasted {} days ago and is not being re-blasted. "
+                                         "Use run_blast_wrapper(delay = 0) to force a search.\n".format(otu_id, last_blast))
+        except KeyboardInterrupt:
+            sys.exit()                                                                                          
         self._blasted = 1
 
   
@@ -294,6 +299,8 @@ class PhyscraperScrape(object):
             for lin in infile:
                 sseqid, staxids, sscinames, pident, evalue, bitscore, sseq, stitle, sallseqid = lin.strip().split('\t')
                 gb_acc = get_acc_from_blast(sseqid)
+                if gb_acc == None:
+                    continue
                 gi_id = get_gi_from_blast(sseqid)                
                 sseq = sseq.replace("-", "") #TODO here is where we want to grab the full sequence MK: I wrote a batch query for the seqs we are interested. Makes it faster.
                 taxname = sscinames.replace(" ", "_").replace("/", "_")
@@ -307,19 +314,26 @@ class PhyscraperScrape(object):
                             # NOTE: sometimes there are seq which are identical & are combined in the local blast db...
                             # Get all of them! (they can be of a different taxon ids = get redundant seq info)
                             if len(sallseqid.split(';')) > 1:
-                                debug("multiple taxa have identical blast match {}, using {}\n".format(sallseqid, gb_acc))
-                                taxid, taxname, full_seq = self.ids.get_tax_seq_acc(gb_acc)
+                                for match in sallseqid.split(';'):
+                                    gb_acc = get_acc_from_blast(sseqid)
+                                    if gb_acc != None:
+                                        full_seq = self.get_full_seq(gb_acc, sseq)
+                                        query_dict[gb_acc] = {'^ncbi:gi': gi_id, 'accession': gb_acc, 'staxids': staxids,
+                                                              'sscinames': sscinames, 'pident': pident, 'evalue': evalue,
+                                                              'bitscore': bitscore, 'sseq':full_seq, 'title': stitle}
+                                        self.data.gb_dict[gb_acc] = query_dict[gb_acc]
+                                        self.new_seqs[gb_acc] = query_dict[gb_acc]["sseq"]
                             else:
                                 taxid = int(staxids)
                                 self.ids.spn_to_ncbiid[sscinames] = staxids
                                 if gb_acc not in self.ids.acc_ncbi_dict:  # fill up dict with more information.
                                     self.ids.acc_ncbi_dict[gb_acc] = staxids
                                 full_seq = self.get_full_seq(gb_acc, sseq)
-                            query_dict[gb_acc] = {'^ncbi:gi': gi_id, 'accession': gb_acc, 'staxids': staxids,
+                                query_dict[gb_acc] = {'^ncbi:gi': gi_id, 'accession': gb_acc, 'staxids': staxids,
                                                           'sscinames': sscinames, 'pident': pident, 'evalue': evalue,
                                                           'bitscore': bitscore, 'sseq': full_seq, 'title': stitle}
-                            self.data.gb_dict[gb_acc] = query_dict[gb_acc]
-                            self.new_seqs[gb_acc] = query_dict[gb_acc]["sseq"]
+                                self.data.gb_dict[gb_acc] = query_dict[gb_acc]
+                                self.new_seqs[gb_acc] = query_dict[gb_acc]["sseq"]
 
                     else:
                         fn = open("{}/blast_threshold_not_passed.csv".format(self.workdir), "a+")

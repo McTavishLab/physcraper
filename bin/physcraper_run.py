@@ -4,6 +4,7 @@ import os
 import sys
 import physcraper
 from physcraper.opentree_helpers import get_tree_from_study, scraper_from_opentree, get_max_match_aln, count_match_tree_to_aln
+from physcraper.aligntreetax import generate_ATT_from_run
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-s","--study_id", help="OpenTree study id")
@@ -15,8 +16,12 @@ parser.add_argument("-db", "--blast_db", help="local download of blast database"
 parser.add_argument("-o","--output", help="path to output directory")
 parser.add_argument("-tx","--taxonomy", help="path to taxonomy")
 parser.add_argument("-c","--config_file", help="path to config file")
+parser.add_argument("-e","--email", help="email address for ncbi balst searches")
+parser.add_argument("-re","--reload_files",  help="reload files and configureation from dir")
+parser.add_argument("-tag","--tag", help="gene name or other specifier")
 parser.add_argument("-tb","--treebase", action="store_true", help="download alignment from treebase")
 parser.add_argument("-no_est","--no_estimate_tree", action='store_true', help="run blast search and estimate tree")
+
 
 
 #Not yet implemented
@@ -34,8 +39,13 @@ args = parser.parse_args()
 assert(args.output), "Output directory (-o) is required."
 workdir = args.output
 
+
 if args.config_file:
     conf = physcraper.ConfigObj(args.configfile)
+elif args.reload_files:
+    configfile = "{}/run.config".format(args.reload_files)
+    conf = physcraper.ConfigObj(configfile)
+    sys.stdout.write("Using config file {}\n".format(configfile))
 else:
     conf = physcraper.ConfigObj()
 
@@ -55,6 +65,8 @@ if args.tree_link:
     study_id == linkl[5]
     tree_id = linkl[-1].split("=")[1]
 
+if args.email:
+    conf.email = args.email
 
 if args.study_id:
     study_id = args.study_id
@@ -73,15 +85,14 @@ if args.treebase:
         os.makedirs(workdir)
 
     tre, cite = get_tree_from_study(study_id, tree_id)
-    sys.stdout.write("downloading best match alignment from treebase")
     tre.write(path="{}/{}{}.tre".format(workdir, study_id, tree_id), schema="nexus")
     if not os.path.exists(alnfile):
-        sys.stdout.write("downloading best match alignment from treebase")
+        sys.stdout.write("downloading best match alignment from treebase\n")
         dataset = physcraper.opentree_helpers.get_dataset_from_treebase(study_id)
         aln = get_max_match_aln(tre, dataset)
         aln.write(path=alnfile, schema = aln_schema)
     else:
-        sys.stdout.write("Using alignment file found at {}.".format(alnfile))
+        sys.stdout.write("Using alignment file found at {}.\n".format(alnfile))
 
 if study_id:
     scraper = scraper_from_opentree(study_id =study_id, 
@@ -91,6 +102,20 @@ if study_id:
                                     workdir = workdir,
                                     configfile = conf)
     sys.stdout.write("{} taxa in alignment and tree\n".format(len(scraper.data.aln)))
+    
+    scraper.data.write_files()
+    scraper.data.write_otus(schema="json")
+
+if args.reload_files:
+    if args.tag:
+        tag = args.tag
+    elif args.alignment:
+        tag = args.alignment.split('/')[-1].split('.')[0]
+    data_obj = generate_ATT_from_run(args.reload_files, configfile=conf)
+    ids = physcraper.IdDicts(conf)
+    scraper = physcraper.PhyscraperScrape(data_obj, ids)
+    sys.stdout.write("Reloaded {} taxa in alignment and tree\n".format(len(scraper.data.aln)))
+
 
 if not args.no_estimate_tree:
 #scraper.read_blast_wrapper()

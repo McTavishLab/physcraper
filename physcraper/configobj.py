@@ -56,10 +56,6 @@ class ConfigObj(object):
 
           * if blastloc == remote: it defines the url for the blast queries.
           * if blastloc == local: url_base = None
-      * **self.unmapped**: used for OToL original tips that can not be assigned to a taxon
-
-          * keep: keep the unmapped taxa and asign them to life
-          * remove: remove the unmapped taxa from aln and tre
       * **self.delay**: defines when to reblast sequences in days
       * **optional self.objects**:
 
@@ -75,6 +71,7 @@ class ConfigObj(object):
         if _DEBUG:
             sys.stdout.write("Building config object\n")
         if configfile:
+            self.set_defaults()
             self.read_config(configfile, interactive)
         else:
             sys.stdout.write("No config file, using defaults\n")
@@ -85,13 +82,45 @@ class ConfigObj(object):
         self.hitlist_size = 10
         self.blast_loc = 'remote'
         self.url_base = None
+        self.blastdb = None
         self.num_threads = 2
         self.delay = 90
         self.seq_len_perc = 0.8
         self.trim_perc = 0.8
         self.maxlen = 1.2
+        self.url_base = None
         self.taxonomy_dir = "{}/taxonomy".format(physcraper_dir)
         self.ott_ncbi = "{}/ott_ncbi".format(self.taxonomy_dir)
+    def write_file(self, workdir, filename = "run.config"):
+        config_text='''[blast]\n
+                        Entrez.email = {email}\n
+                        e_value_thresh = {e_val}\n
+                        hitlist_size = {hls}\n
+                        location = {bl}\n
+                        localblastdb = {db}\n
+                        url_base = {ul}\n
+                        num_threads = {nt}\n
+                        delay = {delay}\n
+                        [physcraper]\n
+                        seq_len_perc = {perc}\n
+                        trim_perc = {t_perc}\n
+                        max_len = {max_len}\n
+                        taxonomy_path = {taxonomy}\n'''.format(
+                            email=self.email,
+                            e_val=self.e_value_thresh,
+                            hls=self.hitlist_size,
+                            bl=self.blast_loc,
+                            db=self.blastdb,
+                            ul=self.url_base,
+                            nt=self.num_threads,
+                            delay=self.delay,
+                            perc=self.seq_len_perc,
+                            t_perc=self.trim_perc,
+                            max_len=self.maxlen,
+                            taxonomy = self.taxonomy_dir)
+        fi = open("{}/{}".format(workdir, filename),"w")
+        fi.write(config_text)
+        fi.close()
     def read_config(self, configfi, interactive):
         assert os.path.isfile(configfi), "file `%s` does not exist" % configfi
         config = configparser.ConfigParser()
@@ -100,7 +129,8 @@ class ConfigObj(object):
         
         # read in blast settings
         self.email = config["blast"]["Entrez.email"]
-        assert "@" in self.email, "your email `%s` does not have an @ sign" % self.email
+        if not "@" in self.email:
+            sys.stderr.write("your email `%s` does not have an @ sign. NCBI blast requests an email address." % self.email)
         
         self.e_value_thresh = config["blast"]["e_value_thresh"]
         assert is_number(self.e_value_thresh), (
@@ -147,11 +177,7 @@ class ConfigObj(object):
         )       
         # #############
         # read in physcraper settings       
-        self.unmapped = config["physcraper"]["unmapped"]
-        assert self.unmapped in ["remove", "keep"], (
-                "your unmapped statement `%s` in the config file is not remove or keep"
-                % self.unmapped
-        )
+
         self.seq_len_perc = float(config["physcraper"]["seq_len_perc"])
         assert 0 < self.seq_len_perc <= 1, (
                 "value `%s` is not between 0 and 1" % self.seq_len_perc

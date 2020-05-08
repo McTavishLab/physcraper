@@ -225,10 +225,18 @@ def get_dataset_from_treebase(study_id):
         sys.exit(-2)
     else:
         tb_id = treebase_url.split(':S')[1]
-        url = "https://treebase.org/treebase-web/search/downloadAStudy.html?id={}&format=nexml".format(tb_id)
+        try: 
+            url = "https://raw.githubusercontent.com/TreeBASE/supertreebase/master/data/treebase/S{}.xml".format(tb_id)
+            dna = DataSet.get(url=url, schema="nexml")
+        except HTTPError as err:
+            try:
+                url = "https://treebase.org/treebase-web/search/downloadAStudy.html?id={}&format=nexml".format(tb_id)
+                dna = DataSet.get(url=url, schema="nexml")
+            except:
+                sys.stderr.write("Data not found on treebase or supertreebase. Try downloading to a file.\n")
+                sys.exit()     
         if _DEBUG:
             sys.stderr.write(url + "\n")
-        dna = DataSet.get(url=url, schema="nexml")
         return dna
 
 def count_match_tree_to_aln(tree, dataset):
