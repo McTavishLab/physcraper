@@ -250,7 +250,8 @@ class AlignTreeTax(object):
                 empty.add(tax)
         self.aln.remove_sequences(empty)
         msg = ", ".join([str(tax) for tax in list(empty)])
-        sys.stdout.write("All gap taxa {}\n".format(msg))
+        if len(empty) >= 1:
+            sys.stdout.write("All gap taxa {}\n".format(msg))
         #elif isinstance(alignment, datamodel.charmatrixmodel.DnaCharacterMatrix):
         #    self.aln = alignment
         assert isinstance(self.aln, datamodel.charmatrixmodel.DnaCharacterMatrix), \

@@ -225,7 +225,7 @@ def get_dataset_from_treebase(study_id):
         sys.exit(-2)
     else:
         tb_id = treebase_url.split(':S')[1]
-        url = "https://treebase.org/treebase-web/search/downloadAStudy.html?id={}&format=nexml".format(tb_id)
+        url = "https://raw.githubusercontent.com/TreeBASE/supertreebase/master/data/treebase/S{}.xml".format(tb_id)
         if _DEBUG:
             sys.stderr.write(url + "\n")
         dna = DataSet.get(url=url, schema="nexml")
