@@ -88,7 +88,6 @@ class PhyscraperScrape(object):
                 * self._query_seqs_placed: 0/1, if place_query_seqs() was called, it is set to 1 for the round.
                 * self._reconciled: 0
                 * self._full_tree_est: 0/1, if est_full_tree() was called, it is set to 1 for the round.
-            * **self.OToL_unmapped_tips()**: function that either removes or maps unmapped taxa from OToL studies
     """
     def __init__(self, data_obj, ids_obj=None, ingroup_mrca=None, threshold = 5):
         assert isinstance(data_obj, AlignTreeTax)
@@ -101,6 +100,7 @@ class PhyscraperScrape(object):
             assert isinstance(ids_obj, IdDicts)
             self.ids = ids_obj
         self.config = self.ids.config  # pointer to config
+        self.config.write_file(self.workdir)
         self.new_seqs = {}  # all new seq after read_blast_wrapper
         self.new_seqs_otu_id = {}  # only new seq which passed remove_identical
         self.blast_subdir = "{}/blast_run_{}".format(self.workdir, self.data.tag)
@@ -309,19 +309,24 @@ class PhyscraperScrape(object):
                             # NOTE: sometimes there are seq which are identical & are combined in the local blast db...
                             # Get all of them! (they can be of a different taxon ids = get redundant seq info)
                             if len(sallseqid.split(';')) > 1:
-                                debug("multiple taxa have identical blast match {}, using {}\n".format(sallseqid, gb_acc))
-                                taxid, taxname, full_seq = self.ids.get_tax_seq_acc(gb_acc)
+                                for gb_acc in sallseqid:
+                                    full_seq = self.get_full_seq(gb_acc, sseq)
+                                    query_dict[gb_acc] = {'^ncbi:gi': gi_id, 'accession': gb_acc, 'staxids': staxids,
+                                                          'sscinames': sscinames, 'pident': pident, 'evalue': evalue,
+                                                          'bitscore': bitscore, 'sseq':full_seq, 'title': stitle}
+                                    self.data.gb_dict[gb_acc] = query_dict[gb_acc]
+                                    self.new_seqs[gb_acc] = query_dict[gb_acc]["sseq"]
                             else:
                                 taxid = int(staxids)
                                 self.ids.spn_to_ncbiid[sscinames] = staxids
                                 if gb_acc not in self.ids.acc_ncbi_dict:  # fill up dict with more information.
                                     self.ids.acc_ncbi_dict[gb_acc] = staxids
                                 full_seq = self.get_full_seq(gb_acc, sseq)
-                            query_dict[gb_acc] = {'^ncbi:gi': gi_id, 'accession': gb_acc, 'staxids': staxids,
+                                query_dict[gb_acc] = {'^ncbi:gi': gi_id, 'accession': gb_acc, 'staxids': staxids,
                                                           'sscinames': sscinames, 'pident': pident, 'evalue': evalue,
                                                           'bitscore': bitscore, 'sseq': full_seq, 'title': stitle}
-                            self.data.gb_dict[gb_acc] = query_dict[gb_acc]
-                            self.new_seqs[gb_acc] = query_dict[gb_acc]["sseq"]
+                                self.data.gb_dict[gb_acc] = query_dict[gb_acc]
+                                self.new_seqs[gb_acc] = query_dict[gb_acc]["sseq"]
 
                     else:
                         fn = open("{}/blast_threshold_not_passed.csv".format(self.workdir), "a+")
