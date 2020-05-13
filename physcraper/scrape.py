@@ -25,7 +25,7 @@ from physcraper import writeinfofiles
 from physcraper import AWSWWW
 
 _VERBOSE = 1
-_DEBUG = 1
+_DEBUG = 0
 def debug(msg):
     """short debugging command
     """
@@ -89,7 +89,7 @@ class PhyscraperScrape(object):
                 * self._reconciled: 0
                 * self._full_tree_est: 0/1, if est_full_tree() was called, it is set to 1 for the round.
     """
-    def __init__(self, data_obj, ids_obj=None, ingroup_mrca=None, threshold = 5):
+    def __init__(self, data_obj, ids_obj=None, ingroup_mrca=None):
         assert isinstance(data_obj, AlignTreeTax)
         self.workdir = data_obj.workdir
         if not os.path.exists(self.workdir):
@@ -128,7 +128,7 @@ class PhyscraperScrape(object):
         self.write_mrca()
         self.data.write_otus(schema='table')
         self.data.write_otus(schema='json')
-        self.threshold = threshold
+        self.threshold = self.config.spp_threshold
 #markers for status
 #holders for new data
         self.blacklist = []
@@ -615,15 +615,15 @@ class PhyscraperScrape(object):
                     #debug("seq is identical and shorter")
                     if existing_tax_id != tax_new_seq:  # different taxa
                         if _VERBOSE or _DEBUG:
-                            sys.stdout.write("seq {} is subsequence of {}, "
-                                             "but different species name ".format(new_otu_label, otu_lab))
+                            sys.stdout.write("\nseq {} is subsequence of {}, "
+                                             "but different species name \n".format(new_otu_label, otu_lab))
                         reason = "new seq added; subsequence of {}, but different taxon".format(otu_lab)
                         #debug("otu {}, tmp status {}".format(new_otu_label, reason))
                         #still should be added, but need to check other samples
                     else:  # subseq of same otu
                         reason = "seq {} is subsequence or identical to {}, not added ".format(new_otu_label, otu_lab)
                         if _VERBOSE:
-                            sys.stdout.write(reason)
+                            sys.stdout.write("\n{}\n".format(reason))
                         self.data.otu_dict[new_otu_label]['^physcraper:status'] = "subsequence, not added"
                         #debug("{} not added, subseq of {}".format(new_otu_label, otu_lab))
                         #debug("{} was NOT added to seq_dict: {}".format(new_otu_label, reason))
@@ -642,7 +642,7 @@ class PhyscraperScrape(object):
                     elif existing_tax_id != tax_new_seq:  # different taxa
                         reason = "seq {} is supersequence of {}, but different taxon ".format(new_otu_label, otu_lab)
                         if _VERBOSE or _DEBUG:
-                            sys.stdout.write("\n" + reason)
+                            sys.stdout.write("\n{}\n".format(reason))
                         #can still be added
                     else:
                         # new seq s a super sequence, delet old one and add new one. DO NOT KEEP CHECKING
@@ -651,7 +651,7 @@ class PhyscraperScrape(object):
                         self.data.remove_taxa_aln_tre(otu_lab)
                         reason = "\nseq {} is supersequence of {}, {} added and {} removed ".format(new_otu_label, otu_lab, new_otu_label, otu_lab)
                         if _VERBOSE or _DEBUG:
-                            sys.stdout.write(reason)
+                            sys.stdout.write("\n{}\n".format(reason))
                         self.data.otu_dict[otu_lab]['^physcraper:status'] = "deleted, {} is supersequence ".format(new_otu_label)
                         self.data.otu_dict[new_otu_label]['^physcraper:status'] = "new seq added in place of {} ".format(otu_lab)
                         seq_dict[new_otu_label] = seq
@@ -698,11 +698,11 @@ class PhyscraperScrape(object):
                     otu_id = self.data.add_otu(gb_id, self.ids)
                     tmp_dict = self.seq_dict_build(seq, otu_id, tmp_dict)
             else:
-                debug("len {}:{} was not between {} and {}".format(gb_id, len(seq), seq_len_min, seq_len_max))
+                debug("\nlen {}:{} was not between {} and {}\n".format(gb_id, len(seq), seq_len_min, seq_len_max))
         otu_in_aln = set([taxon.label for taxon in self.data.aln])
         for otu in otu_in_aln:
             del tmp_dict[otu]
-        filter_dict = self.filter_seqs(tmp_dict, type='random', threshold = self.threshold)
+        filter_dict = self.filter_seqs(tmp_dict, type='random', threshold = self.config.spp_threshold)
         self.new_seqs_otu_id = filter_dict  # renamed new seq to their otu_ids from GI's, but all info is in self.otu_dict
         self.new_seqs = {} #Wipe clean
 #        debug("len new seqs otu dict after remove identical{}".format(len(self.new_seqs_otu_id)))
@@ -714,7 +714,9 @@ class PhyscraperScrape(object):
                       "of {} before filtering\n".format(len(self.new_seqs_otu_id), len(self.new_seqs)))
 #        self.data.dump()
     
-    def filter_seqs(self, tmp_dict, threshold=5, type="random"):
+    def filter_seqs(self, tmp_dict, type="random", threshold=None):
+        if threshold == None:
+            threshold = self.config.spp_threshold
         assert type in ['length','random'], "type {} not recognized, please filter by 'length' or 'random'".format(type)
         selected_otus = set()
         filtered_dict = {}
@@ -962,10 +964,11 @@ class PhyscraperScrape(object):
     def run_muscle(self, outname = 'muscle_aln.fas'):
         finame = self.write_all_unaligned()
         outpath = "{}/{}".format(self.workdir, outname)
+        f = open('{}/muscle.log'.format(self.workdir), 'w')
         try:
             subprocess.check_call(["muscle",
                                    "-in", finame,
-                                   "-out", outpath])
+                                   "-out", outpath], stdout=f, stderr=subprocess.STDOUT)
             if _VERBOSE:
                 sys.stdout.write("Muscle done")
         except subprocess.CalledProcessError as grepexc:

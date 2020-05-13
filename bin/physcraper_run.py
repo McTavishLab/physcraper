@@ -15,23 +15,31 @@ parser.add_argument("-as","--aln_schema", help="alignment schema (nexus or fasta
 parser.add_argument("-db", "--blast_db", help="local download of blast database")
 parser.add_argument("-o","--output", help="path to output directory")
 parser.add_argument("-tx","--taxonomy", help="path to taxonomy")
-parser.add_argument("-c","--config_file", help="path to config file")
+parser.add_argument("-c","--configfile", help="path to config file")
 parser.add_argument("-e","--email", help="email address for ncbi balst searches")
 parser.add_argument("-re","--reload_files",  help="reload files and configureation from dir")
 parser.add_argument("-tag","--tag", help="gene name or other specifier")
 parser.add_argument("-tb","--treebase", action="store_true", help="download alignment from treebase")
 parser.add_argument("-no_est","--no_estimate_tree", action='store_true', help="run blast search and estimate tree")
+parser.add_argument("-ev","--eval", help="blast evalue cutoff")
+parser.add_argument("-hl","--hitlist_len", help="number of blast searches to save per taxon")
+parser.add_argument("-tp","--trim_perc", help="minimum percentage of seqs end of alignemnts")
+parser.add_argument("-rl","--relative_length", help="max relative length of added seqs, compared to input aln len")
+parser.add_argument("-spn","--species_number", help="max number of seqs to include per species")
+parser.add_argument("-nt","--num_threads", help="number of threads to use in processing")
+parser.add_argument("-de","--delay", help="how long to wait before blasting the same sequence again")
+
 
 
 
 #Not yet implemented
-parser.add_argument("-bl","--blast_sequence", action='store_true', help="run blast search, and align but do not estimate tree")
-parser.add_argument("-d","--download_data", action='store_true', help="write out tree and alignment, without blasting")
-parser.add_argument("-bs","--bootstrap", help="number of bootstrap reps")
-parser.add_argument("-gt","--get_tree", action='store_true', help="get tree from opentree")
-parser.add_argument("-ga","--get_aln", action='store_true', help="get alignment from opentree")
-parser.add_argument("-tf", "--tree_file", help="path to your tree")
-parser.add_argument("-l","--linker_file", help="path to .csv linking tip labels to taxon names")
+#parser.add_argument("-bl","--blast_sequence", action='store_true', help="run blast search, and align but do not estimate tree")
+#parser.add_argument("-d","--download_data", action='store_true', help="write out tree and alignment, without blasting")
+#parser.add_argument("-bs","--bootstrap", help="number of bootstrap reps")
+#parser.add_argument("-gt","--get_tree", action='store_true', help="get tree from opentree")
+#parser.add_argument("-ga","--get_aln", action='store_true', help="get alignment from opentree")
+#parser.add_argument("-tf", "--tree_file", help="path to your tree")
+#parser.add_argument("-l","--linker_file", help="path to .csv linking tip labels to taxon names")
 
 
 args = parser.parse_args()
@@ -39,8 +47,8 @@ args = parser.parse_args()
 assert(args.output), "Output directory (-o) is required."
 workdir = args.output
 
-
-if args.config_file:
+#set configuration
+if args.configfile:
     conf = physcraper.ConfigObj(args.configfile)
 elif args.reload_files:
     configfile = "{}/run.config".format(args.reload_files)
@@ -52,11 +60,37 @@ else:
 if args.taxonomy:
     conf.taxonomy_dir = args.taxonomy
 
-
 if args.blast_db:
     conf.blast_loc = "local"
     conf.blastdb = args.blast_db
     conf.set_local()
+
+if args.eval:
+    conf.e_value_thresh = args.eval
+
+if args.hitlist_len:
+    conf.hitlist_size = args.hitlist_len
+
+if args.trim_perc:
+    conf.trim_perc = args.trim_perc
+
+if args.relative_length:
+    conf.maxlen = args.relative_length
+
+if args.species_number:
+    conf.spp_threshold = args.species_number
+
+if args.num_threads:
+   conf.num_threads = args.num_threads
+
+if args.delay:
+    conf.delay = args.delay
+
+if args.email:
+    conf.email = args.email
+
+print("CONFIGURETAION")
+print(conf.config_str())
 
 study_id =  None
 if args.tree_link:
@@ -64,9 +98,6 @@ if args.tree_link:
     assert(linkl[4]=="view")
     study_id == linkl[5]
     tree_id = linkl[-1].split("=")[1]
-
-if args.email:
-    conf.email = args.email
 
 if args.study_id:
     study_id = args.study_id
@@ -102,8 +133,8 @@ if study_id:
                                     workdir = workdir,
                                     configfile = conf)
     sys.stdout.write("{} taxa in alignment and tree\n".format(len(scraper.data.aln)))
-    
     scraper.data.write_files()
+    scraper.data.write_labelled(filename="before_labelled_{}".format(scraper.data.tag), label='^ot:ottTaxonName')
     scraper.data.write_otus(schema="json")
 
 if args.reload_files:

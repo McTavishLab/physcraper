@@ -85,39 +85,45 @@ class ConfigObj(object):
         self.blastdb = None
         self.num_threads = 4
         self.delay = 90
+        self.spp_threshold = 5
         self.seq_len_perc = 0.8
         self.trim_perc = 0.8
         self.maxlen = 1.2
         self.url_base = None
         self.taxonomy_dir = "{}/taxonomy".format(physcraper_dir)
         self.ott_ncbi = "{}/ott_ncbi".format(self.taxonomy_dir)
+    def config_str(self):
+        config_text='''[blast]
+Entrez.email = {email}
+e_value_thresh = {e_val}
+hitlist_size = {hls}
+location = {bl}
+localblastdb = {db}
+url_base = {ul}
+num_threads = {nt}
+delay = {delay}
+[physcraper]
+spp_threshold = {sppt}
+seq_len_perc = {perc}
+trim_perc = {t_perc}
+max_len = {max_len}
+taxonomy_path = {taxonomy}'''.format(
+                                    email=self.email,
+                                    e_val=self.e_value_thresh,
+                                    hls=self.hitlist_size,
+                                    bl=self.blast_loc,
+                                    db=self.blastdb,
+                                    ul=self.url_base,
+                                    nt=self.num_threads,
+                                    delay=self.delay,
+                                    sppt=self.spp_threshold,
+                                    perc=self.seq_len_perc,
+                                    t_perc=self.trim_perc,
+                                    max_len=self.maxlen,
+                                    taxonomy = self.taxonomy_dir)
+        return(config_text)
     def write_file(self, workdir, filename = "run.config"):
-        config_text='''[blast]\n
-                        Entrez.email = {email}\n
-                        e_value_thresh = {e_val}\n
-                        hitlist_size = {hls}\n
-                        location = {bl}\n
-                        localblastdb = {db}\n
-                        url_base = {ul}\n
-                        num_threads = {nt}\n
-                        delay = {delay}\n
-                        [physcraper]\n
-                        seq_len_perc = {perc}\n
-                        trim_perc = {t_perc}\n
-                        max_len = {max_len}\n
-                        taxonomy_path = {taxonomy}\n'''.format(
-                            email=self.email,
-                            e_val=self.e_value_thresh,
-                            hls=self.hitlist_size,
-                            bl=self.blast_loc,
-                            db=self.blastdb,
-                            ul=self.url_base,
-                            nt=self.num_threads,
-                            delay=self.delay,
-                            perc=self.seq_len_perc,
-                            t_perc=self.trim_perc,
-                            max_len=self.maxlen,
-                            taxonomy = self.taxonomy_dir)
+        config_text = self.config_str()
         fi = open("{}/{}".format(workdir, filename),"w")
         fi.write(config_text)
         fi.close()
@@ -146,6 +152,7 @@ class ConfigObj(object):
             self.taxonomy_dir = config["physcraper"]["taxonomy_path"]
         else:
             self.taxonomy_dir = "{}/taxonomy".format(physcraper_dir)
+
         self.ott_ncbi = "{}/ott_ncbi".format(self.taxonomy_dir)
         assert os.path.isfile(self.ott_ncbi), (
                 "file `%s` does not exists" % self.ott_ncbi
@@ -177,11 +184,11 @@ class ConfigObj(object):
         )       
         # #############
         # read in physcraper settings       
-
         self.seq_len_perc = float(config["physcraper"]["seq_len_perc"])
         assert 0 < self.seq_len_perc <= 1, (
                 "value `%s` is not between 0 and 1" % self.seq_len_perc
         )
+        self.spp_threshold = int(config["physcraper"]["spp_threshold"])
         self.trim_perc = float(config["physcraper"]["trim_perc"])
         assert 0 < self.trim_perc < 1, (
                 "value `%s` is not between 0 and 1" % self.trim_perc
