@@ -83,7 +83,7 @@ class ConfigObj(object):
         self.blast_loc = 'remote'
         self.url_base = None
         self.blastdb = None
-        self.num_threads = 2
+        self.num_threads = 4
         self.delay = 90
         self.seq_len_perc = 0.8
         self.trim_perc = 0.8
