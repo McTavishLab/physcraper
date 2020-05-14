@@ -64,7 +64,7 @@ def test_add_all():
 
     filteredScrape = PhyscraperScrape(data_obj, ids)
     filteredScrape._blasted = 1
-    filteredScrape.threshold = threshold
+    filteredScrape.config.spp_threshold = threshold
     filteredScrape.read_blast_wrapper(blast_dir="tests/data/precooked/fixed/tte_blast_files")
     filteredScrape.remove_identical_seqs()
     sp_d = filteredScrape.make_sp_dict(filteredScrape.new_seqs_otu_id)
