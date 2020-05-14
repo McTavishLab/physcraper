@@ -89,8 +89,8 @@ if args.delay:
 if args.email:
     conf.email = args.email
 
-print("CONFIGURETAION")
-print(conf.config_str())
+sys.stdout.write("Configuration Settings")
+sys.stdout.write(conf.config_str)
 
 study_id =  None
 if args.tree_link:
