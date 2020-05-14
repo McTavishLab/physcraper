@@ -122,6 +122,9 @@ class PhyscraperScrape(object):
         self.mrca_ncbi = self.ids.ott_to_ncbi.get(data_obj.mrca_ott)
         if self.mrca_ncbi == None:
             sys.stderr.write("ingroup mrca{} does not have a direct match to ncbi.\n".format(ingroup_mrca))
+        sys.stdout.write("restricting blast search to ncbi taxon ncbi:{} (ott:{}; {})\n".format(self.mrca_ncbi,
+                                                                                                self.mrca_ott, 
+                                                                                                self.ids.ott_to_name[self.mrca_ott]))
         debug("created physcraper ncbi_mrca {},".format(self.mrca_ncbi))
         self.map_taxa_to_ncbi()
         assert self.mrca_ncbi
@@ -716,7 +719,7 @@ class PhyscraperScrape(object):
     
     def filter_seqs(self, tmp_dict, type="random", threshold=None):
         if threshold == None:
-            threshold = self.config.spp_threshold
+            threshold = int(self.config.spp_threshold)
         assert type in ['length','random'], "type {} not recognized, please filter by 'length' or 'random'".format(type)
         selected_otus = set()
         filtered_dict = {}

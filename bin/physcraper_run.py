@@ -3,7 +3,7 @@ import argparse
 import os
 import sys
 import physcraper
-from physcraper.opentree_helpers import get_tree_from_study, scraper_from_opentree, get_max_match_aln, count_match_tree_to_aln
+from physcraper.opentree_helpers import get_tree_from_study, scraper_from_opentree, get_max_match_aln, count_match_tree_to_aln, generate_ATT_from_phylesystem
 from physcraper.aligntreetax import generate_ATT_from_run
 
 parser = argparse.ArgumentParser()
@@ -28,6 +28,8 @@ parser.add_argument("-rl","--relative_length", help="max relative length of adde
 parser.add_argument("-spn","--species_number", help="max number of seqs to include per species")
 parser.add_argument("-nt","--num_threads", help="number of threads to use in processing")
 parser.add_argument("-de","--delay", help="how long to wait before blasting the same sequence again")
+parser.add_argument("-st","--search_taxon", help="taxonomic id to constrain blast search. format ott:123 or ncbi:123. Deafult will use ingroup of tree on OpenTree, or MRCA of input tips ")
+
 
 
 
@@ -78,7 +80,7 @@ if args.relative_length:
     conf.maxlen = args.relative_length
 
 if args.species_number:
-    conf.spp_threshold = args.species_number
+    conf.spp_threshold = int(args.species_number)
 
 if args.num_threads:
    conf.num_threads = args.num_threads
@@ -89,8 +91,8 @@ if args.delay:
 if args.email:
     conf.email = args.email
 
-sys.stdout.write("Configuration Settings")
-sys.stdout.write(conf.config_str)
+sys.stdout.write("Configuration Settings\n")
+sys.stdout.write(conf.config_str())
 
 study_id =  None
 if args.tree_link:
@@ -126,12 +128,30 @@ if args.treebase:
         sys.stdout.write("Using alignment file found at {}.\n".format(alnfile))
 
 if study_id:
-    scraper = scraper_from_opentree(study_id =study_id, 
-                                    tree_id = tree_id, 
-                                    alnfile = alnfile, 
-                                    aln_schema = aln_schema,
-                                    workdir = workdir,
-                                    configfile = conf)
+    if args.search_taxon:
+        ids = physcraper.IdDicts(conf)
+        if args.search_taxon.startswith('ott'):
+            ott_id = args.search_taxon.split(':')[1]
+        elif args.search_taxon.startswith('ncbi'):
+            ncbi_id = inst(args.search_taxon.split(':')[1])
+            ott_id = ids.ncbi_ott[ncbi_id]
+        else:
+            sys.stderr.write("search taxon id must be in format ott:123 or ncbi:123\n")
+        data_obj = generate_ATT_from_phylesystem(study_id =study_id, 
+                                                tree_id = tree_id, 
+                                                alnfile = alnfile, 
+                                                aln_schema = aln_schema,
+                                                workdir = workdir,
+                                                configfile = conf,
+                                                ingroup_mrca = ott_id)
+        scraper = physcraper.PhyscraperScrape(data_obj, ids)
+    else:
+        scraper = scraper_from_opentree(study_id =study_id, 
+                                        tree_id = tree_id, 
+                                        alnfile = alnfile, 
+                                        aln_schema = aln_schema,
+                                        workdir = workdir,
+                                        configfile = conf)
     sys.stdout.write("{} taxa in alignment and tree\n".format(len(scraper.data.aln)))
     scraper.data.write_files()
     scraper.data.write_labelled(filename="before_labelled_{}".format(scraper.data.tag), label='^ot:ottTaxonName')
