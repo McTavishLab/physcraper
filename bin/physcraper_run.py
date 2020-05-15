@@ -154,6 +154,7 @@ if study_id:
                                         configfile = conf)
     sys.stdout.write("{} taxa in alignment and tree\n".format(len(scraper.data.aln)))
     scraper.data.write_files()
+    scraper.data.write_files(treepath = "before_otu_{}.tre".format(scraper.data.tag), alnpath = "before_otu_{}.aln".format(scraper.data.tag))
     scraper.data.write_labelled(filename="before_labelled_{}".format(scraper.data.tag), label='^ot:ottTaxonName')
     scraper.data.write_otus(schema="json")
 
