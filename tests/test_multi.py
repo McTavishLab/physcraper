@@ -252,6 +252,30 @@ def test_run_raxml():
     # assert os.path.exists("{}/RAxML_bootstrap.all{}".format(scraper.workdir, scraper.date))
 
 
+def test_run_align():
+    workdir = "tests/output/test_write_unaligned"
+    absworkdir = os.path.abspath(workdir)
+    conf = copy.deepcopy(conf_base)
+    ids = copy.deepcopy(ids_base)
+    data_obj = copy.deepcopy(data_obj_base)
+    data_obj.workdir = absworkdir
+    scraper = PhyscraperScrape(data_obj, ids)
+    blast_dir = "tests/data/precooked/fixed/tte_blast_files"
+
+    # run needed functions
+    # scraper.run_blast_wrapper()
+    scraper.read_blast_wrapper(blast_dir=blast_dir)
+
+    assert(scraper.data.otu_dict['otuPS1']['^ncbi:taxon'] == int(scraper.data.otu_dict['2029_doronicum']['^ncbi:taxon']))
+    scraper.data.aln.write(path="{}/myfilename.fas".format(scraper.workdir), schema='fasta')
+    scraper.write_all_unaligned()
+    scraper.write_query_seqs(filename="only_new_seqs.aln")
+
+    #scraper.est_full_tree()
+    # scraper.generate_streamed_alignment()
+    #assert os.path.exists("{}/RAxML_bestTree.{}".format(scraper.workdir, scraper.date))
+
+test_run_align()
 
 @mark.xfail
 def test_mpi():    
