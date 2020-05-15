@@ -92,7 +92,7 @@ if args.email:
     conf.email = args.email
 
 sys.stdout.write("Configuration Settings\n")
-sys.stdout.write(conf.config_str())
+sys.stdout.write(conf.config_str()+"\n")
 
 study_id =  None
 if args.tree_link:
