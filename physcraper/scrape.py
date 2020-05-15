@@ -123,7 +123,7 @@ class PhyscraperScrape(object):
         if self.mrca_ncbi == None:
             sys.stderr.write("ingroup mrca{} does not have a direct match to ncbi.\n".format(ingroup_mrca))
         sys.stdout.write("restricting blast search to ncbi taxon ncbi:{} (ott:{}; {})\n".format(self.mrca_ncbi,
-                                                                                                self.mrca_ott, 
+                                                                                                self.mrca_ott,
                                                                                                 self.ids.ott_to_name[self.mrca_ott]))
         debug("created physcraper ncbi_mrca {},".format(self.mrca_ncbi))
         self.map_taxa_to_ncbi()
@@ -135,7 +135,7 @@ class PhyscraperScrape(object):
 #markers for status
 #holders for new data
         self.blacklist = []
-                     
+
     def map_taxa_to_ncbi(self):
         for otu in self.data.otu_dict:
             if self.data.otu_dict[otu].get("^ncbi:taxon") == None:
@@ -143,7 +143,7 @@ class PhyscraperScrape(object):
                     ottid = self.data.otu_dict[otu]["^ot:ottId"]
                     self.data.otu_dict[otu]["^ncbi:taxon"]=self.ids.ott_to_ncbi.get(ottid,0)
 
-    
+
     # TODO is this the right place for this? MK: According to PEP8, no...
     def reset_markers(self):
         self._blasted = 0
@@ -299,10 +299,10 @@ class PhyscraperScrape(object):
                     sys.stdout.write("otu {} was last blasted {} days ago and is not being re-blasted. "
                                      "Use run_blast_wrapper(delay = 0) to force a search.\n".format(otu_id, last_blast))
     #except KeyboardInterrupt:
-           # sys.exit()                                                                                          
+           # sys.exit()
         self._blasted = 1
 
-  
+
     def read_local_blast_query(self, fn_path):
         """ Implementation to read in results of local blast searches.
 
@@ -317,13 +317,13 @@ class PhyscraperScrape(object):
                 gb_acc = get_acc_from_blast(sseqid)
                 if gb_acc == None:
                     continue
-                gi_id = get_gi_from_blast(sseqid)                
+                gi_id = get_gi_from_blast(sseqid)
                 sseq = sseq.replace("-", "") #TODO here is where we want to grab the full sequence MK: I wrote a batch query for the seqs we are interested. Makes it faster.
                 taxname = sscinames.replace(" ", "_").replace("/", "_")
                 pident = float(pident)
                 evalue = float(evalue)
                 bitscore = float(bitscore)
-                if len(gb_acc.split('.')) > 1: 
+                if len(gb_acc.split('.')) > 1:
                     # get additional info only for seq that pass the eval
                     if evalue < float(self.config.e_value_thresh):
                         if gb_acc not in self.new_seqs.keys(): # do not do it for gb_ids we already considered
@@ -361,11 +361,11 @@ class PhyscraperScrape(object):
 
 
 
- 
+
 
     def get_full_seq(self, gb_id, blast_seq):
         """
-        Get full sequence from gb_acc that was retrieved via blast. 
+        Get full sequence from gb_acc that was retrieved via blast.
 
         Currently only used for local searches, Genbank database sequences are retrieving them in batch mode, which is hopefully faster.
 
@@ -384,7 +384,7 @@ class PhyscraperScrape(object):
             cmd1 = "blastdbcmd -db {}  -entry {} -outfmt %f -out {}".format(db_path, gb_id, seq_path)
             # debug(cmd1)
             os.system(cmd1)
-            # read in file to get full seq        
+            # read in file to get full seq
         f = open(seq_path)
         seq = ""
         for line in iter(f):
@@ -583,7 +583,7 @@ class PhyscraperScrape(object):
         :return: updated seq_dict
         """
         #debug("new_lab: {} in seq_dict_build".format(new_otu_label))
-        if new_otu_label == None: #in case of add_otu failure, doean't edit dict 
+        if new_otu_label == None: #in case of add_otu failure, doean't edit dict
             return seq_dict
         tax_new_seq = self.data.otu_dict[new_otu_label].get('^ncbi:taxon', 1)
         if self.config.blast_loc == "local": #need to check if included in taxon of intrest (mrca)
@@ -612,7 +612,7 @@ class PhyscraperScrape(object):
                     sys.stdout.write("\n")
             existing_tax_id = self.data.otu_dict[otu_lab].get('^ncbi:taxon', None)
             inc_seq = seq_dict[otu_lab].replace("-", "").lower()
-            if len(inc_seq) >= len(new_seq):  
+            if len(inc_seq) >= len(new_seq):
                 #debug("seq {} is shorter than {}".format(new_otu_label, otu_lab))
                 if new_seq in inc_seq:# if seq is identical and shorter
                     #debug("seq is identical and shorter")
@@ -634,7 +634,7 @@ class PhyscraperScrape(object):
                 else:
                     pass
                     #didn't run into any problems yet, should_add still true
-            elif len(new_seq) > len(inc_seq):  
+            elif len(new_seq) > len(inc_seq):
                 #debug("seq is longer")
                 if new_seq.find(inc_seq) != -1:
                     if self.data.otu_dict[otu_lab].get('^physcraper:status') == "original":
@@ -716,7 +716,7 @@ class PhyscraperScrape(object):
             log.write("{} new sequences added from Genbank after removing identical seq, "
                       "of {} before filtering\n".format(len(self.new_seqs_otu_id), len(self.new_seqs)))
 #        self.data.dump()
-    
+
     def filter_seqs(self, tmp_dict, type="random", threshold=None):
         if threshold == None:
             threshold = int(self.config.spp_threshold)
@@ -768,7 +768,7 @@ class PhyscraperScrape(object):
         sp_d = {}
         for otu_id in otu_list:
             if self.data.otu_dict[otu_id]['^physcraper:status'].split(' ')[0] not in self.seq_filter:
-                tax_id = self.data.otu_dict[otu_id].get('^ncbi:taxon') 
+                tax_id = self.data.otu_dict[otu_id].get('^ncbi:taxon')
                 if tax_id == None:
                     tax_id = "X"
                 if self.downtorank is not None:
@@ -836,7 +836,7 @@ class PhyscraperScrape(object):
                 if len(selected_otus) == count:
                     return selected_otus
         return selected_otus
-        
+
 
     def select_seq_at_random(self, otu_list, count):
         """This is another mode to filter the sequences, if there are more than the threshold.
@@ -912,7 +912,7 @@ class PhyscraperScrape(object):
             finam = "{}_ALL.fasta".format(self.date)
         else:
             finam = filename
-        fipath =  "{}/{}".format(self.workdir, finam)  
+        fipath =  "{}/{}".format(self.workdir, finam)
         #write out existing
         self.data.aln.write(path=fipath, schema='fasta')
         #append new
@@ -940,7 +940,7 @@ class PhyscraperScrape(object):
         self.data.trim()
         alnfi = self.data.write_aln()
         return alnfi
-    
+
     def replace_aln(self, filename, schema = 'fasta'):
         newaln = DnaCharacterMatrix.get(path=filename, schema=schema)
         for taxon in newaln:
@@ -969,8 +969,9 @@ class PhyscraperScrape(object):
         outpath = "{}/{}".format(self.workdir, outname)
         f = open('{}/muscle.log'.format(self.workdir), 'w')
         try:
-            subprocess.check_call(["muscle",
-                                   "-in", finame,
+            subprocess.check_call(["muscle -profile",
+                                   "-in1", aln,
+                                   "-in2", finame,
                                    "-out", outpath], stdout=f, stderr=subprocess.STDOUT)
             if _VERBOSE:
                 sys.stdout.write("Muscle done")
@@ -1096,7 +1097,7 @@ class PhyscraperScrape(object):
         label = "{}".format(self.date)
         if self.backbone:
             cmd= [rax_ex, "-m", "GTRCAT", "-s", alignment, "-r", "backbone.tre", "-p", "1", "-n", label]
-            
+
         else:
             cmd= [rax_ex, "-m", "GTRCAT", "-s", alignment, "-t", startingtree, "-p", "1", "-n", label]
         process = subprocess.Popen(cmd)
@@ -1111,7 +1112,7 @@ class PhyscraperScrape(object):
 
 #
 
-                    
+
     def calculate_bootstrap(self, alignment = None):
         """Calculates bootstrap and consensus trees.
 
@@ -1173,7 +1174,7 @@ class PhyscraperScrape(object):
             #                      "-z", "RAxML_bootstrap.all{}".format(self.date),
             #                      "-n", "EMR{}".format(self.date)])
 
-            
+
 
     def remove_blacklistitem(self):
         """This removes items from aln, and tree, if the corresponding Genbank identifer were added to the blacklist.
@@ -1246,4 +1247,3 @@ class PhyscraperScrape(object):
         with cd(os.path.join(self.workdir, "blast")):
             cmd1 = "makeblastdb -in {}_db -dbtype nucl".format("local_unpubl_seq")
             os.system(cmd1)
-
