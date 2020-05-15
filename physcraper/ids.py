@@ -130,7 +130,7 @@ class IdDicts(object):
         if len(gb_id.split(".")) == 1:
             debug("accession number {} not recognized".format(gb_id))
             return None, None, None
-        seq_path = "{}/{}.json".format(self.full_seq_path, gb_id)
+        seq_path = "{}/{}.json".format(self.full_seq_path, gb_id) ##EJM TODO MAKE FASTA!
         if gb_id in self.acc_tax_seq_dict:
             tax_name = self.acc_tax_seq_dict[gb_id]["taxname"]
             ncbi_id = self.acc_tax_seq_dict[gb_id]["^ncbi:taxon"]
