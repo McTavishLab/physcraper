@@ -884,7 +884,7 @@ class PhyscraperScrape(object):
                 json.dump(self.config.__dict__, outfile)
 
 
-    def write_query_seqs(self, filename='date'):
+    def write_new_seqs(self, filename='date'):
         """writes out the query sequence file"""
         debug("write query seq")
         if not self._blast_read:
@@ -923,7 +923,7 @@ class PhyscraperScrape(object):
         #append new
         if _VERBOSE:
             sys.stdout.write("writing out NEW sequences\n")
-        with open(fipathN, "a") as fi:
+        with open(fipathN, "w") as fi:
             for otu_id in self.new_seqs_otu_id.keys():
                 fi.write(">{}\n".format(otu_id))
                 fi.write("{}\n".format(self.new_seqs_otu_id[otu_id]))
@@ -934,7 +934,7 @@ class PhyscraperScrape(object):
         return fipathQ, fipathN
 
 
-    def align_query_seqs(self, aligner = 'muscle'):
+    def align_new_seqs(self, aligner = 'muscle', alnfi=None):
         if not self._blast_read:
             self.read_blast_wrapper()
         assert aligner in ['muscle', 'papara']
@@ -1102,7 +1102,7 @@ class PhyscraperScrape(object):
         cwd = os.getcwd()
         if alignment == None:
             debug("call align query seqs from est full tree, self._blast_read is {}".format(self._blast_read))
-            alignment = self.align_query_seqs()
+            alignment = self.align_new_seqs()
         if startingtree == None:
             startingtree = os.path.abspath(self.data.write_random_resolve_tre())
         debug("est full tree")

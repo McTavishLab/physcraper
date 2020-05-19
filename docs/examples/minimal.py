@@ -44,6 +44,8 @@ data_obj = generate_ATT_from_files(alnfile=aln_fi,
                              otu_json=otu_jsonfi,
                              ingroup_mrca=mrca)
 
+data_obj.tag = "minEx"
+
 scraper = PhyscraperScrape(data_obj, ids)
 
 sys.stdout.write("{} taxa in alignment and tree\n".format(len(scraper.data.aln)))
@@ -53,10 +55,11 @@ sys.stdout.write("Running read_blast_wrapper()...\n")
 scraper.read_blast_wrapper(blast_dir=blast_dir)
 sys.stdout.write("Running write_aln()...\n")
 aln_path1 = scraper.data.write_aln()
-sys.stdout.write("Running write_all_unaligned()...\n")
-aln_path = scraper.write_all_unaligned('test.fas')
+aln_path_alt = scraper.data.write_aln(filename="already_aligned_seqs.fas")
+unaln_path = scraper.write_new_seqs(filename='unaligned.fas')
+
 sys.stdout.write("Running align_query_seqs()...\n")
-scraper.align_query_seqs()
+scraper.align_new_seqs()
 
 # sys.stdout.write("estimating tree...")
 # scraper.est_full_tree()
