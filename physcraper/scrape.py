@@ -914,8 +914,8 @@ class PhyscraperScrape(object):
             self.run_muscle()
         self.data.trim()
         alnfi = self.data.write_aln()
-        self.data.write_otus("table")
-        self.data.write_otus("json")
+        self.data.write_otus(schema="table")
+        self.data.write_otus(schema="json")
         return alnfi
 
     def replace_aln(self, filename, schema = 'fasta'):
