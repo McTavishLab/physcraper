@@ -143,8 +143,7 @@ def test_remove_identical_seqs():
  #       assert(status in ('original', 'query'))
 
     aln_path1 = scraper.data.write_aln()
-    aln_path = scraper.write_all_unaligned('test.fas')
-    scraper.align_query_seqs()
+    scraper.align_new_seqs()
     assert len(scraper.data.aln) == 22
 
 
