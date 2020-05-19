@@ -890,7 +890,7 @@ class PhyscraperScrape(object):
         if not self._blast_read:
             self.read_blast_wrapper()
         if filename == 'date':
-            self.newseqs_file = "{}.fasta".format(self.date)
+            self.newseqs_file = "NEW{}_{}.fasta".format(self.date, self.data.tag)
         else:
             self.newseqs_file = filename
         fipath = ("{}/{}".format(self.workdir, self.newseqs_file))
@@ -903,38 +903,8 @@ class PhyscraperScrape(object):
         self._query_seqs_written = 1
         return fipath
 
-    def write_all_unaligned(self, filename='date'):
-        """writes out the query sequence file"""
-        debug("write query + aligned seqs")
-        if self._blasted == 1 and self._blast_read == 0:
-            self.read_blast_wrapper()
-        if filename == 'date':
-            finamQ = "{}_QUERY.fasta".format(self.date)
-            finamN = "{}_NEW.fasta".format(self.date)
-        else:
-            finamQ = "{}_QUERY.fasta".format(filename)
-            finamN = "{}_NEW.fasta".format(filename)
-        fipathQ =  "{}/{}".format(self.workdir, finamQ)
-        fipathN =  "{}/{}".format(self.workdir, finamN)
-        #write out existing
-        if _VERBOSE:
-            sys.stdout.write("writing out QUERY sequences\n")
-        self.data.aln.write(path=fipathQ, schema='fasta')
-        #append new
-        if _VERBOSE:
-            sys.stdout.write("writing out NEW sequences\n")
-        with open(fipathN, "w") as fi:
-            for otu_id in self.new_seqs_otu_id.keys():
-                fi.write(">{}\n".format(otu_id))
-                fi.write("{}\n".format(self.new_seqs_otu_id[otu_id]))
-        fi.close()
-        self._query_seqs_written = 1
-        self.data.write_otus(schema='table')
-        self.data.write_otus(schema='json')
-        return fipathQ, fipathN
 
-
-    def align_new_seqs(self, aligner = 'muscle', alnfi=None):
+    def align_new_seqs(self, aligner = 'muscle'):
         if not self._blast_read:
             self.read_blast_wrapper()
         assert aligner in ['muscle', 'papara']
@@ -944,6 +914,8 @@ class PhyscraperScrape(object):
             self.run_muscle()
         self.data.trim()
         alnfi = self.data.write_aln()
+        self.data.write_otus("table")
+        self.data.write_otus("json")
         return alnfi
 
     def replace_aln(self, filename, schema = 'fasta'):
@@ -969,15 +941,31 @@ class PhyscraperScrape(object):
 
 
 
-    def run_muscle(self, outname = 'muscle_aln.fas'):
-        finameQ = self.write_all_unaligned()[0] # these are already aligned
-        finameN = self.write_all_unaligned()[1] # these have to be aligned first
+    def run_muscle(self, input_aln_path = None, new_seqs_path = None, outname = 'muscle_aln.fas'):
+        if input_aln_path == None:
+            aln_filename = "before_physcraper_{}.fas".format(self.data.tag)
+            aln_path = "{}/{}".format(self.workdir, aln_filename)
+            if os.path.exists(aln_path):
+                input_aln_path = aln_path
+            else:
+                input_aln_path = self.data.write_aln(filename = aln_filename)
+        else:
+            assert(os.path.exists(input_aln_path))
+        if new_seqs_path == None:
+            new_filename = "NEW{}_{}.fasta".format(self.date, self.data.tag)
+            tmp_new_seqs_path = "{}/{}".format(self.workdir, new_filename)
+            if os.path.exists(tmp_new_seqs_path):
+                new_seqs_path = tmp_new_seqs_path
+            else:
+                new_seqs_path = self.write_new_seqs(filename = new_filename)
+        else:
+            assert(os.path.exists(new_seqs_path))
         outpath_NEW = "{}/muscle_NEW.fas".format(self.workdir)
         outpath_ALL = "{}/{}".format(self.workdir, outname)
         f = open('{}/muscle_NEW.log'.format(self.workdir), 'w')
         try:
             subprocess.check_call(["muscle",
-                                   "-in", finameN,
+                                   "-in", new_seqs_path,
                                    "-out", outpath_NEW], stdout=f, stderr=subprocess.STDOUT)
             if _VERBOSE:
                 sys.stdout.write("Muscle NEW done.\n")
@@ -987,7 +975,7 @@ class PhyscraperScrape(object):
         f2 = open('{}/muscle_ALL.log'.format(self.workdir), 'w')
         try:
             subprocess.check_call(["muscle", "-profile",
-                                   "-in1", finameQ,
+                                   "-in1", input_aln_path,
                                    "-in2", outpath_NEW,
                                    "-out", outpath_ALL], stdout=f2, stderr=subprocess.STDOUT)
             if _VERBOSE:

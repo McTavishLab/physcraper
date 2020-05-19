@@ -60,6 +60,10 @@ unaln_path = scraper.write_new_seqs(filename='unaligned.fas')
 
 sys.stdout.write("Running align_query_seqs()...\n")
 scraper.align_new_seqs()
+scraper.est_full_tree()
+scraper.data.write_labelled(label="^ot:ottTaxonName", norepeats=False)
+scraper.data.write_labelled(label="^ncbi:taxon", filename="ncbi", norepeats=False)
+
 
 # sys.stdout.write("estimating tree...")
 # scraper.est_full_tree()
