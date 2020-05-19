@@ -909,16 +909,21 @@ class PhyscraperScrape(object):
         if self._blasted == 1 and self._blast_read == 0:
             self.read_blast_wrapper()
         if filename == 'date':
-            finam = "{}_ALL.fasta".format(self.date)
+            finamQ = "{}_QUERY.fasta".format(self.date)
+            finamN = "{}_NEW.fasta".format(self.date)
         else:
-            finam = filename
-        fipath =  "{}/{}".format(self.workdir, finam)
+            finamQ = "{}_QUERY.fasta".format(filename)
+            finamN = "{}_NEW.fasta".format(filename)
+        fipathQ =  "{}/{}".format(self.workdir, finamQ)
+        fipathN =  "{}/{}".format(self.workdir, finamN)
         #write out existing
-        self.data.aln.write(path=fipath, schema='fasta')
+        if _VERBOSE:
+            sys.stdout.write("writing out QUERY sequences\n")
+        self.data.aln.write(path=fipathQ, schema='fasta')
         #append new
         if _VERBOSE:
-            sys.stdout.write("writing out ALL sequences\n")
-        with open(fipath, "a") as fi:
+            sys.stdout.write("writing out NEW sequences\n")
+        with open(fipathN, "a") as fi:
             for otu_id in self.new_seqs_otu_id.keys():
                 fi.write(">{}\n".format(otu_id))
                 fi.write("{}\n".format(self.new_seqs_otu_id[otu_id]))
@@ -926,7 +931,7 @@ class PhyscraperScrape(object):
         self._query_seqs_written = 1
         self.data.write_otus(schema='table')
         self.data.write_otus(schema='json')
-        return fipath
+        return fipathQ, fipathN
 
 
     def align_query_seqs(self, aligner = 'muscle'):
@@ -965,19 +970,31 @@ class PhyscraperScrape(object):
 
 
     def run_muscle(self, outname = 'muscle_aln.fas'):
-        finame = self.write_all_unaligned()
-        outpath = "{}/{}".format(self.workdir, outname)
-        f = open('{}/muscle.log'.format(self.workdir), 'w')
+        finameQ = self.write_all_unaligned()[0] # these are already aligned
+        finameN = self.write_all_unaligned()[1] # these have to be aligned first
+        outpath_NEW = "{}/muscle_NEW.fas".format(self.workdir)
+        outpath_ALL = "{}/{}".format(self.workdir, outname)
+        f = open('{}/muscle_NEW.log'.format(self.workdir), 'w')
         try:
-            subprocess.check_call(["muscle -profile",
-                                   "-in1", aln,
-                                   "-in2", finame,
-                                   "-out", outpath], stdout=f, stderr=subprocess.STDOUT)
+            subprocess.check_call(["muscle",
+                                   "-in", finameN,
+                                   "-out", outpath_NEW], stdout=f, stderr=subprocess.STDOUT)
             if _VERBOSE:
-                sys.stdout.write("Muscle done")
+                sys.stdout.write("Muscle NEW done.\n")
         except subprocess.CalledProcessError as grepexc:
             sys.stderr.write("error code {}, {}".format(grepexc.returncode, grepexc.output))
-        self.replace_aln(outpath)
+
+        f2 = open('{}/muscle_ALL.log'.format(self.workdir), 'w')
+        try:
+            subprocess.check_call(["muscle", "-profile",
+                                   "-in1", finameQ,
+                                   "-in2", outpath_NEW,
+                                   "-out", outpath_ALL], stdout=f2, stderr=subprocess.STDOUT)
+            if _VERBOSE:
+                sys.stdout.write("Muscle ALL done.\n")
+        except subprocess.CalledProcessError as grepexc:
+            sys.stderr.write("error code {}, {}".format(grepexc.returncode, grepexc.output))
+        self.replace_aln(outpath_ALL)
 
 
     def run_papara(self, papara_runname="extended"):
