@@ -18,7 +18,7 @@ schema_trf = "newick"
 workdir="tests/data/tmp/multi"
 
 configfi = "tests/data/test.config"
-id_to_spn = r"tests/data/tiny_test_example/test_nicespl.csv"
+id_to_spn = "tests/data/tiny_test_example/test_nicespl.csv"
 otu_jsonfi = "{}/otu_dict.json".format(workdir)
 
 """Generates the files needed for the tests.
@@ -35,13 +35,23 @@ otu_json = OtuJsonDict(id_to_spn, ids_base)
 with open(otu_jsonfi,"w") as outfile:
     json.dump(otu_json, outfile)
 
+"""Extract ott ids from `otu_json` dictionary (???):
+"""
 
 ottids = [otu_json[ite]['^ot:ottId'] for ite in otu_json]
+
+
+"""To get the MRCA of the matched taxa, use function `opentree_helpers.get_mrca_ott()`:
+"""
+
 mrca = opentree_helpers.get_mrca_ott(ottids)
 
 
-data_obj_base = generate_ATT_from_files(alnfile=seqaln, 
-                             aln_schema=mattype, 
+"""Generate the alignment-taxon object:
+"""
+
+data_obj_base = generate_ATT_from_files(alnfile=seqaln,
+                             aln_schema=mattype,
                              workdir=workdir,
                              configfile=configfi,
                              treefile=trfn,
@@ -57,11 +67,9 @@ def check_otu_dict():
 
 def test_add_all():
     threshold = 2
-
     conf = copy.deepcopy(conf_base)
     data_obj = copy.deepcopy(data_obj_base)
     ids = copy.deepcopy(ids_base)
-
     filteredScrape = PhyscraperScrape(data_obj, ids)
     filteredScrape._blasted = 1
     filteredScrape.config.spp_threshold = threshold
@@ -79,15 +87,12 @@ def test_no_mrca():
     # setup the run
     if not os.path.exists("{}".format(workdir)):
         os.makedirs("{}".format(workdir))
-
     conf = copy.deepcopy(conf_base)
     ids = copy.deepcopy(ids_base)
     data_obj = copy.deepcopy(data_obj_base)
-    
     filteredScrape = PhyscraperScrape(data_obj, ids, ingroup_mrca)
     filteredScrape.threshold = 5
     assert filteredScrape.mrca_ncbi == 795077
-    
     blast_dir = "tests/data/precooked/fixed/tte_blast_files"
     filteredScrape._blasted = 1
     filteredScrape.read_blast_wrapper(blast_dir=blast_dir)
@@ -100,7 +105,6 @@ def test_remove_identical_seqs():
     conf = copy.deepcopy(conf_base)
     ids = copy.deepcopy(ids_base)
     data_obj = copy.deepcopy(data_obj_base)
-
     # print("start")
     scraper = PhyscraperScrape(data_obj, ids)
     scraper._blasted = 1
@@ -108,7 +112,6 @@ def test_remove_identical_seqs():
     #scraper.gi_list_mrca = pickle.load(open("tests/data/precooked/gi_list_mrca.p", 'rb'))
     scraper.read_blast_wrapper(blast_dir=blast_dir)
     #print scraper.ncbi_mrca
-
     assert(len(scraper.new_seqs) == 0)
     assert(len(scraper.data.aln) == 5)
     assert len(scraper.new_seqs_otu_id) == 17
@@ -116,7 +119,7 @@ def test_remove_identical_seqs():
 
 #TODO find an example where we do get identical sequences and need to discard them
 
-    
+
 #    seqset = set()
 #    for otu in scraper.new_seqs_otu_id:
 #        seq = scraper.new_seqs_otu_id[otu]
@@ -138,7 +141,7 @@ def test_remove_identical_seqs():
  #       assert(taxon.label in scraper.data.otu_dict)
  #       status = scraper.data.otu_dict[taxon.label].get(u'^physcraper:status')
  #       assert(status in ('original', 'query'))
-    
+
     aln_path1 = scraper.data.write_aln()
     aln_path = scraper.write_all_unaligned('test.fas')
     scraper.align_query_seqs()
@@ -217,7 +220,7 @@ def test_run_raxml():
     data_obj = copy.deepcopy(data_obj_base)
 
     data_obj.workdir = absworkdir
-    
+
     scraper = PhyscraperScrape(data_obj, ids)
     blast_dir = "tests/data/precooked/fixed/tte_blast_files"
     scraper._blasted = 1
@@ -248,13 +251,13 @@ def test_run_raxml():
     #   time.sleep(50)
     #   print('This should never get printed because the line before timed out')
     # # os.chdir(CWD)
-    # # scraper.calculate_boostrap()    
+    # # scraper.calculate_boostrap()
     # assert os.path.exists("{}/RAxML_bootstrap.all{}".format(scraper.workdir, scraper.date))
 
 
 
 @mark.xfail
-def test_mpi():    
+def test_mpi():
     env_var = [os.environ.get('PMI_RANK'), os.environ.get('PMI_SIZE'), os.environ.get('OMPI_COMM_WORLD_SIZE')]
     mpi = False
     for var in env_var:
@@ -277,7 +280,7 @@ def test_internal_mpi():
     conf = ConfigObj("tests/data/test.config", interactive=False)
 
 
-    #load data 
+    #load data
     data_obj = pickle.load(open("tests/data/precooked/tiny_dataobj.p", 'rb'))
     data_obj.workdir = absworkdir
     ids = IdDicts(conf, workdir=data_obj.workdir)
@@ -319,7 +322,7 @@ def test_internal_mpi():
     assert os.path.exists("{}/previous_run/papara_alignment.extended".format(scraper.workdir))
     with cd(scraper.workdir):
         print("run with mpi")
-        subprocess.call(["mpiexec", "-n", "{}".format(env_var), "raxmlHPC-MPI-AVX2", 
+        subprocess.call(["mpiexec", "-n", "{}".format(env_var), "raxmlHPC-MPI-AVX2",
                          "-m", "GTRCAT",
                          "-s", "{}/previous_run/papara_alignment.extended".format(scraper.workdir),
                          "-p", "1", "-f", "a", "-x", "1", "-#", "autoMRE",

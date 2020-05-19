@@ -23,3 +23,6 @@ dist/
 .DS_Store
 ott3.1*
 *.tsv
+physcraper_example_minimal/
+scrape_ot_350_compact/
+physcraper_example_ot_350/
