@@ -41,7 +41,7 @@ def test_prune_short():
                                                  ingroup_mrca=None)
 
 
-    data_obj.config.seq_len_perc = 0.9
+    data_obj.config.minlen = 0.9
     len_before = len(data_obj.tre.taxon_namespace)
     data_obj.prune_short()
     len_after = len(data_obj.tre.taxon_namespace)

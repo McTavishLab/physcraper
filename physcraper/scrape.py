@@ -684,7 +684,7 @@ class PhyscraperScrape(object):
         self.data.orig_seqlen = [len(self.data.aln[tax].symbols_as_string().replace("-", "").replace("N", "")) for tax in
                                  self.data.aln]
         avg_seqlen = sum(self.data.orig_seqlen) / len(self.data.orig_seqlen)  # HMMMMMMMM
-        seq_len_min = avg_seqlen * self.config.seq_len_perc
+        seq_len_min = avg_seqlen * self.config.minlen
         seq_len_max = avg_seqlen * self.config.maxlen
         #debug("we already have {}".format(all_added_gi))
         for gb_id, seq in self.new_seqs.items():
@@ -936,7 +936,6 @@ class PhyscraperScrape(object):
             self.run_papara()
         if aligner == 'muscle':
             self.run_muscle()
-        self.data.trim()
         alnfi = self.data.write_aln()
         return alnfi
     
@@ -1200,7 +1199,6 @@ class PhyscraperScrape(object):
         debug("calculate final tree")
         self.data.write_files(treepath="physcraper_final_notrim.tre", alnpath="physcraper_final_notrim.fas")
         self.data.prune_short()
-        self.data.trim()
         self.data.write_files(treepath="physcraper_final_trim.tre", alnpath="physcraper_final_trim.fas")
         if os.path.exists("[]/previous_run".format(self.workdir)):
             self.est_full_tree(path="previous_run")
