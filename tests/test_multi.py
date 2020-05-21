@@ -68,7 +68,7 @@ def test_add_all():
     filteredScrape.read_blast_wrapper(blast_dir="tests/data/precooked/fixed/tte_blast_files")
     filteredScrape.remove_identical_seqs()
     sp_d = filteredScrape.make_sp_dict(filteredScrape.new_seqs_otu_id)
-    assert len(sp_d) == 5
+    assert len(sp_d) == 4
     for taxon in sp_d:
         assert len(sp_d[taxon]) <= threshold
 
@@ -92,7 +92,7 @@ def test_no_mrca():
     filteredScrape._blasted = 1
     filteredScrape.read_blast_wrapper(blast_dir=blast_dir)
     filteredScrape.remove_identical_seqs()
-    assert len(filteredScrape.new_seqs_otu_id) in [23,17] #Blurghhh, local vs remote searches get diffenrt number of seqs!
+    assert len(filteredScrape.new_seqs_otu_id) in [23,14] #Blurghhh, local vs remote searches get diffenrt number of seqs!
 
 
 
@@ -111,7 +111,7 @@ def test_remove_identical_seqs():
 
     assert(len(scraper.new_seqs) == 0)
     assert(len(scraper.data.aln) == 5)
-    assert len(scraper.new_seqs_otu_id) == 17
+    assert len(scraper.new_seqs_otu_id) == 14
     #Now that we are pulling the full remote sequences, we don'thave any identical seuqnces in the test.
 
 #TODO find an example where we do get identical sequences and need to discard them
@@ -142,7 +142,7 @@ def test_remove_identical_seqs():
     aln_path1 = scraper.data.write_aln()
     aln_path = scraper.write_all_unaligned('test.fas')
     scraper.align_query_seqs()
-    assert len(scraper.data.aln) == 22
+    assert len(scraper.data.aln) == 19
 
 
 localblast = mark.localblast

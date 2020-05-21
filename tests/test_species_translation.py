@@ -19,7 +19,7 @@ def test_species_translation():
 
 
 def test_compare_json():
-	expected_json = {'2029_doronicum': {'^ncbi:taxon': '462523', '^ot:ottTaxonName': 'Senecio doronicum', '^ot:ottId': 318436, '^ot:originalLabel': '2029_doronicum', '^user:TaxonName': 'Senecio_doronicum', '^physcraper:status': 'original', '^physcraper:last_blasted': None, '^physcraper:TaxonName': 'Senecio doronicum', '^ncbi:TaxonName': 'Senecio doronicum'}, 'S_doronicum': {'^ncbi:taxon': '462523', '^ot:ottTaxonName': 'Senecio doronicum', '^ot:ottId': 318436, '^ot:originalLabel': 'S_doronicum', '^user:TaxonName': 'Senecio_doronicum', '^physcraper:status': 'original', '^physcraper:last_blasted': None, '^physcraper:TaxonName': 'Senecio doronicum', '^ncbi:TaxonName': 'Senecio doronicum'}, 'S_lagascanus': {'^ncbi:taxon': '1268580', '^ot:ottTaxonName': 'Senecio lagascanus', '^ot:ottId': 640718, '^ot:originalLabel': 'S_lagascanus', '^user:TaxonName': 'Senecio_lagascanus', '^physcraper:status': 'original', '^physcraper:last_blasted': None, '^physcraper:TaxonName': 'Senecio lagascanus', '^ncbi:TaxonName': 'Senecio lagascanus'}, 'S_lopezii': {'^ncbi:taxon': '1268581', '^ot:ottTaxonName': 'Senecio lopezii', '^ot:ottId': 688688, '^ot:originalLabel': 'S_lopezii', '^user:TaxonName': 'Senecio_lopezii', '^physcraper:status': 'original', '^physcraper:last_blasted': None, '^physcraper:TaxonName': 'Senecio lopezii', '^ncbi:TaxonName': 'Senecio lopezii'}, 'S_scopolii': {'^ncbi:taxon': '1268589', '^ot:ottTaxonName': 'Senecio scopolii', '^ot:ottId': 688671, '^ot:originalLabel': 'S_scopolii', '^user:TaxonName': 'Senecio_scopolii', '^physcraper:status': 'original', '^physcraper:last_blasted': None, '^physcraper:TaxonName': 'Senecio scopolii', '^ncbi:TaxonName': 'Senecio scopolii'}}
+	expected_json = {'2029_doronicum': {'^ncbi:taxon': 462523, '^ot:ottTaxonName': 'Senecio doronicum', '^ot:ottId': 318436, '^ot:originalLabel': '2029_doronicum', '^user:TaxonName': 'Senecio_doronicum', '^physcraper:status': 'original', '^physcraper:last_blasted': None, '^physcraper:TaxonName': 'Senecio doronicum', '^ncbi:TaxonName': 'Senecio doronicum'}, 'S_doronicum': {'^ncbi:taxon': 462523, '^ot:ottTaxonName': 'Senecio doronicum', '^ot:ottId': 318436, '^ot:originalLabel': 'S_doronicum', '^user:TaxonName': 'Senecio_doronicum', '^physcraper:status': 'original', '^physcraper:last_blasted': None, '^physcraper:TaxonName': 'Senecio doronicum', '^ncbi:TaxonName': 'Senecio doronicum'}, 'S_lagascanus': {'^ncbi:taxon': 1268580, '^ot:ottTaxonName': 'Senecio lagascanus', '^ot:ottId': 640718, '^ot:originalLabel': 'S_lagascanus', '^user:TaxonName': 'Senecio_lagascanus', '^physcraper:status': 'original', '^physcraper:last_blasted': None, '^physcraper:TaxonName': 'Senecio lagascanus', '^ncbi:TaxonName': 'Senecio lagascanus'}, 'S_lopezii': {'^ncbi:taxon': 1268581, '^ot:ottTaxonName': 'Senecio lopezii', '^ot:ottId': 688688, '^ot:originalLabel': 'S_lopezii', '^user:TaxonName': 'Senecio_lopezii', '^physcraper:status': 'original', '^physcraper:last_blasted': None, '^physcraper:TaxonName': 'Senecio lopezii', '^ncbi:TaxonName': 'Senecio lopezii'}, 'S_scopolii': {'^ncbi:taxon': 1268589, '^ot:ottTaxonName': 'Senecio scopolii', '^ot:ottId': 688671, '^ot:originalLabel': 'S_scopolii', '^user:TaxonName': 'Senecio_scopolii', '^physcraper:status': 'original', '^physcraper:last_blasted': None, '^physcraper:TaxonName': 'Senecio scopolii', '^ncbi:TaxonName': 'Senecio scopolii'}}
 
 
 
@@ -29,7 +29,6 @@ def test_compare_json():
 	otu_jsonfi = "{}/otu_dict.json".format(workdir)
 
 
-
 	conf = ConfigObj(configfi, interactive=False)
 	ids = IdDicts(configfi)
 
@@ -37,4 +36,4 @@ def test_compare_json():
 
 	print(otu_json)
 	assert otu_json == expected_json
-	
+
