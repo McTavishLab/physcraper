@@ -571,26 +571,31 @@ class AlignTreeTax(object):
         fi.close()
         return treepath
 
-    def write_aln(self, alnname=None, alnschema="fasta"):
-        if alnname == None:
-            alnname = "physcraper_{}.fas".format(self.tag)
-        alnpath = "{}/{}".format(self.workdir, alnname)
+    def write_aln(self, filename=None, alnschema="fasta"):
+        if filename == None:
+            filename = "physcraper_{}.fas".format(self.tag)
+        alnpath = "{}/{}".format(self.workdir, filename)
         self.aln.write(path=alnpath,
                        schema=alnschema)
         return os.path.abspath(alnpath)
 
-    def write_files(self, treepath=None, treeschema="newick", alnpath=None, alnschema="fasta"):
+    def write_files(self, treefilename=None, treeschema="newick", alnfilename=None, alnschema="fasta"):
         """Outputs both the streaming files, labeled with OTU ids.
         Can be mapped to original labels using otu_dict.json or otu_seq_info.csv"""
         #debug("write_files")
-        if alnpath == None:
-            alnpath = "physcraper_{}.fas".format(self.tag)
-        if treepath == None:
+        if treefilename == None:
             treepath = "physcraper_{}.tre".format(self.tag)
-        self.tre.write(path="{}/{}".format(self.workdir, treepath),
+        else:
+            treepath = "{}/{}".format(self.workdir, treefilename)
+        if alnfilename == None:
+            alnpath = "physcraper_{}.fas".format(self.tag)
+        else:
+            alnpath = "{}/{}".format(self.workdir, alnfilename)
+        self.tre.write(path=treepath,
                        schema=treeschema, unquoted_underscores=True)
-        self.aln.write(path="{}/{}".format(self.workdir, alnpath),
+        self.aln.write(path=alnpath,
                        schema=alnschema)
+        return(treepath, alnpath)
 
 
     def write_labelled(self, label, filename = "labelled", direc='workdir', norepeats=True, add_gb_id=False):
