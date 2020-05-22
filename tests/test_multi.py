@@ -271,8 +271,7 @@ def test_run_align():
 
     assert(scraper.data.otu_dict['otuPS1']['^ncbi:taxon'] == int(scraper.data.otu_dict['2029_doronicum']['^ncbi:taxon']))
     scraper.data.aln.write(path="{}/myfilename.fas".format(scraper.workdir), schema='fasta')
-    scraper.write_all_unaligned()
-    scraper.write_query_seqs(filename="only_new_seqs.aln")
+    scraper.write_new_seqs(filename="only_new_seqs.aln")
 
     #scraper.est_full_tree()
     # scraper.generate_streamed_alignment()
