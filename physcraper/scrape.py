@@ -178,8 +178,6 @@ class PhyscraperScrape(object):
         outfmt = "6 sseqid staxids sscinames pident evalue bitscore sseq salltitles sallseqid"
         # outfmt = " -outfmt 5"  # format for xml file type
         # TODO query via stdin
-        #blastn -query /home/ejmctavish/projects/otapi/data_physcraper/output_pg55_local/current_blast_run/tmp.fas -db /home/ejmctavish/ncbi/localblastdb//nt -out /home/ejmctavish/projects/otapi/data_physcraper/output_pg55_local/current_blast_run/otu376447.txt  -outfmt '6 sseqid staxids sscinames pident evalue bitscore sseq salltitles sallseqid' -num_threads 2 -max_target_seqs 10 -max_hsps 10
-
         blastcmd = ["blastn",
                     "-query",
                     "{}/tmp.fas".format(abs_blastdir),
@@ -616,18 +614,18 @@ class PhyscraperScrape(object):
                 #debug("seq {} is shorter than {}".format(new_otu_label, otu_lab))
                 if new_seq in inc_seq:# if seq is identical and shorter
                     #debug("seq is identical and shorter")
-                    if existing_tax_id != tax_new_seq:  # different taxa
+                    if int(existing_tax_id) != int(tax_new_seq):  # different taxa
                         if _VERBOSE or _DEBUG:
-                            sys.stdout.write("\nseq {} is subsequence of {}, "
+                            sys.stdout.write("\nseq {} is identical and/or subsequence of {}, "
                                              "but different species name \n".format(new_otu_label, otu_lab))
-                        reason = "new seq added; subsequence of {}, but different taxon".format(otu_lab)
+                        reason = "new seq added; identical and/or subsequence of {}, but different taxon".format(otu_lab)
                         #debug("otu {}, tmp status {}".format(new_otu_label, reason))
                         #still should be added, but need to check other samples
                     else:  # subseq of same otu
                         reason = "seq {} is subsequence or identical to {}, not added ".format(new_otu_label, otu_lab)
                         if _VERBOSE:
                             sys.stdout.write("\n{}\n".format(reason))
-                        self.data.otu_dict[new_otu_label]['^physcraper:status'] = "subsequence, not added"
+                        self.data.otu_dict[new_otu_label]['^physcraper:status'] = "identical and/or subsequence of {}, not added".format(otu_lab)
                         #debug("{} not added, subseq of {}".format(new_otu_label, otu_lab))
                         #debug("{} was NOT added to seq_dict: {}".format(new_otu_label, reason))
                         return seq_dict
@@ -652,7 +650,7 @@ class PhyscraperScrape(object):
                         del seq_dict[otu_lab]
                         seq_dict[new_otu_label] = seq
                         self.data.remove_taxa_aln_tre(otu_lab)
-                        reason = "\nseq {} is supersequence of {}, {} added and {} removed ".format(new_otu_label, otu_lab, new_otu_label, otu_lab)
+                        reason = "seq {} is supersequence of {}, {} added and {} removed ".format(new_otu_label, otu_lab, new_otu_label, otu_lab)
                         if _VERBOSE or _DEBUG:
                             sys.stdout.write("\n{}\n".format(reason))
                         self.data.otu_dict[otu_lab]['^physcraper:status'] = "deleted, {} is supersequence ".format(new_otu_label)
@@ -686,7 +684,7 @@ class PhyscraperScrape(object):
         self.data.orig_seqlen = [len(self.data.aln[tax].symbols_as_string().replace("-", "").replace("N", "")) for tax in
                                  self.data.aln]
         avg_seqlen = sum(self.data.orig_seqlen) / len(self.data.orig_seqlen)  # HMMMMMMMM
-        seq_len_min = avg_seqlen * self.config.seq_len_perc
+        seq_len_min = avg_seqlen * self.config.minlen
         seq_len_max = avg_seqlen * self.config.maxlen
         #debug("we already have {}".format(all_added_gi))
         for gb_id, seq in self.new_seqs.items():
@@ -706,6 +704,7 @@ class PhyscraperScrape(object):
         for otu in otu_in_aln:
             del tmp_dict[otu]
         filter_dict = self.filter_seqs(tmp_dict, type='random', threshold = self.config.spp_threshold)
+        ##EJM TODO add to notes in OTU_DICT
         self.new_seqs_otu_id = filter_dict  # renamed new seq to their otu_ids from GI's, but all info is in self.otu_dict
         self.new_seqs = {} #Wipe clean
 #        debug("len new seqs otu dict after remove identical{}".format(len(self.new_seqs_otu_id)))
@@ -912,7 +911,6 @@ class PhyscraperScrape(object):
             self.run_papara()
         if aligner == 'muscle':
             self.run_muscle()
-        self.data.trim()
         alnfi = self.data.write_aln()
         self.data.write_otus(schema="table")
         self.data.write_otus(schema="json")
@@ -1207,7 +1205,6 @@ class PhyscraperScrape(object):
         debug("calculate final tree")
         self.data.write_files(treepath="physcraper_final_notrim.tre", alnpath="physcraper_final_notrim.fas")
         self.data.prune_short()
-        self.data.trim()
         self.data.write_files(treepath="physcraper_final_trim.tre", alnpath="physcraper_final_trim.fas")
         if os.path.exists("[]/previous_run".format(self.workdir)):
             self.est_full_tree(path="previous_run")

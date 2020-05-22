@@ -130,17 +130,24 @@ class IdDicts(object):
         if len(gb_id.split(".")) == 1:
             debug("accession number {} not recognized".format(gb_id))
             return None, None, None
-        seq_path = "{}/{}.json".format(self.full_seq_path, gb_id)
+        seq_path = "{}/{}_remote.fasta".format(self.full_seq_path, gb_id)
+        ncbi_id = tax_name = seq = None
         if gb_id in self.acc_tax_seq_dict:
             tax_name = self.acc_tax_seq_dict[gb_id]["taxname"]
-            ncbi_id = self.acc_tax_seq_dict[gb_id]["^ncbi:taxon"]
+            ncbi_id = self.acc_tax_seq_dict[gb_id]["^ncbi:"]
             seq = self.acc_tax_seq_dict[gb_id]["seq"]
         elif os.path.exists(seq_path):
-            self.acc_tax_seq_dict[gb_id] = json.load(open(seq_path))
-            tax_name = self.acc_tax_seq_dict[gb_id]["taxname"]
-            ncbi_id = self.acc_tax_seq_dict[gb_id]["^ncbi:taxon"]
-            seq = self.acc_tax_seq_dict[gb_id]["seq"]
-        else:
+            fi = open(seq_path)
+            header = fi.readline().strip('>')
+            #try:
+            assert(header.split()[1].startswith('taxname:'))
+            tax_name = header.split()[1].strip('taxname:')
+            ncbi_id = header.split()[2].strip('ncbi_id:')
+            seq = "".join(fi.readlines())
+#            except IndexError:
+ #               print("IndexError")
+  #              pass
+        if seq == None:
             read_handle = self.entrez_efetch(gb_id)
             tax_name = ncbi_data_parser.get_ncbi_tax_name(read_handle)
             ncbi_id =  ncbi_data_parser.get_ncbi_tax_id(read_handle)
@@ -149,7 +156,9 @@ class IdDicts(object):
             self.ncbiid_to_spn[ncbi_id] = tax_name
             self.acc_ncbi_dict[gb_id] = ncbi_id
             self.acc_tax_seq_dict[gb_id] = {'taxname':tax_name, "^ncbi:taxon":ncbi_id, 'seq':seq} #This is going to be a memory hog...
-            json.dump(self.acc_tax_seq_dict[gb_id], open(seq_path, 'w'))
+            with open(seq_path, 'w') as fi:
+                fi.write("> {} taxname:{} ncbi:{}\n".format(gb_id, tax_name, ncbi_id))
+                fi.write(self.acc_tax_seq_dict[gb_id]['seq'])
         assert ncbi_id is not None
         return ncbi_id, tax_name, seq
 

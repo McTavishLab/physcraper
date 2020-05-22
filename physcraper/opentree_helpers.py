@@ -323,7 +323,7 @@ def OtuJsonDict(id_to_spn, id_dict):
             else:
                 ncbi_spn = id_dict.ott_to_ncbi[ottid]
             sp_info_dict[otu_id] = {
-                "^ncbi:taxon": ncbiid,
+                "^ncbi:taxon": int(ncbiid),
                 "^ot:ottTaxonName": ottname,
                 "^ot:ottId": ottid,
                 "^ot:originalLabel": tipname,

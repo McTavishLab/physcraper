@@ -17,7 +17,7 @@ Pulls out the configuration information from
   * **self.e_value_thresh**: the defined threshold for the e-value during Blast searches, check out:
                             https://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Web&PAGE_TYPE=BlastDocs&DOC_TYPE=FAQ
   * **self.hitlist_size**: the maximum number of sequences retrieved by a single blast search
-  * **self.seq_len_perc**: value from 0 to 1. Defines how much shorter new seq can be compared to input
+  * **self.minlen**: value from 0 to 1. Defines how much shorter new seq can be compared to input
   * **self.get_ncbi_taxonomy**: Path to sh file doing something...
   * **self.ncbi_dmp**: path to file that has gi numbers and the corresponding ncbi tax id's
   * **self.phylesystem_loc**: defines which phylesystem for OpenTree datastore is used. 

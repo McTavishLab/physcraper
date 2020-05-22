@@ -41,7 +41,7 @@ class ConfigObj(object):
 
       * **self.e_value_thresh**: the defined threshold for the e-value during Blast searches, check out: https://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Web&PAGE_TYPE=BlastDocs&DOC_TYPE=FAQ
       * **self.hitlist_size**: the maximum number of sequences retrieved by a single blast search
-      * **self.seq_len_perc**: value from 0 to 1. Defines how much shorter new seq can be compared to input
+      * **self.minlen**: value from 0 to 1. Defines how much shorter new seq can be compared to input
       * **self.trim_perc**: value that determines how many seq need to be present before the beginning and end of alignment will be trimmed
       * **self.maxlen**: max length for values to add to aln
       * **self.get_ncbi_taxonomy**: Path to sh file doing something...
@@ -86,8 +86,7 @@ class ConfigObj(object):
         self.num_threads = 4
         self.delay = 90
         self.spp_threshold = 5
-        self.seq_len_perc = 0.8
-        self.trim_perc = 0.8
+        self.minlen = 0.8
         self.maxlen = 1.2
         self.url_base = None
         self.taxonomy_dir = "{}/taxonomy".format(physcraper_dir)
@@ -104,9 +103,8 @@ num_threads = {nt}
 delay = {delay}
 [physcraper]
 spp_threshold = {sppt}
-seq_len_perc = {perc}
-trim_perc = {t_perc}
-max_len = {max_len}
+min_length = {perc}
+max_length = {maxlen}
 taxonomy_path = {taxonomy}'''.format(
                                     email=self.email,
                                     e_val=self.e_value_thresh,
@@ -117,9 +115,8 @@ taxonomy_path = {taxonomy}'''.format(
                                     nt=self.num_threads,
                                     delay=self.delay,
                                     sppt=self.spp_threshold,
-                                    perc=self.seq_len_perc,
-                                    t_perc=self.trim_perc,
-                                    max_len=self.maxlen,
+                                    perc=self.minlen,
+                                    maxlen=self.maxlen,
                                     taxonomy = self.taxonomy_dir)
         return(config_text)
     def write_file(self, workdir, filename = "run.config"):
@@ -184,16 +181,12 @@ taxonomy_path = {taxonomy}'''.format(
         )       
         # #############
         # read in physcraper settings       
-        self.seq_len_perc = float(config["physcraper"]["seq_len_perc"])
-        assert 0 < self.seq_len_perc <= 1, (
-                "value `%s` is not between 0 and 1" % self.seq_len_perc
+        self.minlen = float(config["physcraper"]["min_length"])
+        assert 0 < self.minlen <= 1, (
+                "value `%s` is not between 0 and 1" % self.minlen
         )
         self.spp_threshold = int(config["physcraper"]["spp_threshold"])
-        self.trim_perc = float(config["physcraper"]["trim_perc"])
-        assert 0 < self.trim_perc < 1, (
-                "value `%s` is not between 0 and 1" % self.trim_perc
-        )
-        self.maxlen = float(config["physcraper"]["max_len"])
+        self.maxlen = float(config["physcraper"]["max_length"])
         assert 1 < self.maxlen, (
                 "value `%s` is not larger than 1" % self.maxlen
         )

@@ -353,7 +353,7 @@ class AlignTreeTax(object):
                             self.aln]
         avg_seqlen = sum(self.orig_seqlen) / len(self.orig_seqlen)
         #debug("average sequence length is {}".format(avg_seqlen))
-        seq_len_cutoff = avg_seqlen * self.config.seq_len_perc
+        seq_len_cutoff = avg_seqlen * self.config.minlen
         prune = []
         aln_ids = set()
         for tax, seq in self.aln.items():
@@ -376,56 +376,6 @@ class AlignTreeTax(object):
         self.check_tre_in_aln()
         self._reconciled = 1
 
-    def trim(self):
-        """ It removes bases at the start and end of alignments, if they are represented by less than the value
-        specified in the config file. E.g. 0.75 given in config means, that 75% of the sequences need to have a
-        base present
-
-        Ensures, that not whole chromosomes get dragged in. It's cutting the ends of long sequences.
-
-        has test: test_trim.py
-        """
-        # debug('in trim')
-        taxon_missingness = self.config.trim_perc
-        i = 0
-        seqlen = len(self.aln[i])
-        while seqlen == 0:
-            i = i + 1
-            seqlen = len(self.aln[i])
-        for tax in self.aln:
-            if len(self.aln[tax]) != seqlen:
-                sys.stderr.write("can't trim un-aligned inputs, moving on")
-                return
-        start = 0
-        stop = seqlen
-        cutoff = len(self.aln) * taxon_missingness
-        for i in range(seqlen):
-            counts = {"?": 0, "-": 0}
-            for tax in self.aln:
-                call = self.aln[tax][i].label
-                if call in ["?", "-"]:
-                    counts[call] += 1
-            if counts['?'] + counts['-'] <= cutoff:  # first ok column
-                start = i
-                break
-        for i in range(seqlen, 0, -1):  # previously seqlen-1, that cuts off last character of aln, I changed it.
-            counts = {'?': 0, '-': 0}
-            for tax in self.aln:
-                call = self.aln[tax][i - 1].label  # changing seqlen-1 to seqlen requires that we have here i-1
-                if call in ['?', '-']:
-                    counts[call] += 1
-            if counts['?'] + counts['-'] <= cutoff:
-                stop = i
-                break
-        # here alignment gets shortened to start:stop
-        for taxon in self.aln:
-            self.aln[taxon] = self.aln[taxon][start:stop]
-        # make sure that tre is presented in aln
-        self.check_tre_in_aln()
-        if _VERBOSE:
-            sys.stdout.write("trimmed alignment ends to < {} missing taxa, "
-                             "start {}, stop {}\n".format(taxon_missingness, start, stop))
-        return
 
 
     def check_tre_in_aln(self):
@@ -474,6 +424,54 @@ class AlignTreeTax(object):
         else:
             self.otu_dict[taxon_label]['^physcraper:status'] = "deleted, updated otu_dict but was never in tre or aln!"
 
+    def trim(self, min_taxon_perc):
+        """ It removes bases at the start and end of alignments, if they are represented by less than the value
+        specified. E.g. 0.75  that 75% of the sequences need to have a base present
+
+        Ensures, that not whole chromosomes get dragged in. It's cutting the ends of long sequences.
+
+        has test: test_trim.py
+        """
+        # debug('in trim')
+        i = 0
+        seqlen = len(self.aln[i])
+        while seqlen == 0:
+            i = i + 1
+            seqlen = len(self.aln[i])
+        for tax in self.aln:
+            if len(self.aln[tax]) != seqlen:
+                sys.stderr.write("can't trim un-aligned inputs, moving on")
+                return
+        start = 0
+        stop = seqlen
+        cutoff = len(self.aln) * min_taxon_perc
+        for i in range(seqlen):
+            counts = {"?": 0, "-": 0}
+            for tax in self.aln:
+                call = self.aln[tax][i].label
+                if call in ["?", "-"]:
+                    counts[call] += 1
+            if counts['?'] + counts['-'] <= cutoff:  # first ok column
+                start = i
+                break
+        for i in range(seqlen, 0, -1):  # previously seqlen-1, that cuts off last character of aln, I changed it.
+            counts = {'?': 0, '-': 0}
+            for tax in self.aln:
+                call = self.aln[tax][i - 1].label  # changing seqlen-1 to seqlen requires that we have here i-1
+                if call in ['?', '-']:
+                    counts[call] += 1
+            if counts['?'] + counts['-'] <= cutoff:
+                stop = i
+                break
+        # here alignment gets shortened to start:stop
+        for taxon in self.aln:
+            self.aln[taxon] = self.aln[taxon][start:stop]
+        # make sure that tre is presented in aln
+        self.check_tre_in_aln()
+        if _VERBOSE:
+            sys.stdout.write("trimmed alignment ends to < {} missing taxa, "
+                             "start {}, stop {}\n".format(min_taxon_perc, start, stop))
+        return
     
     def get_otu_for_acc(self, gb_id):
         if gb_id in set([self.otu_dict[otu].get("^ncbi:accession",'UNK') for otu in self.otu_dict]):

@@ -76,7 +76,7 @@ def test_add_all():
     filteredScrape.read_blast_wrapper(blast_dir="tests/data/precooked/fixed/tte_blast_files")
     filteredScrape.remove_identical_seqs()
     sp_d = filteredScrape.make_sp_dict(filteredScrape.new_seqs_otu_id)
-    assert len(sp_d) == 5
+    assert len(sp_d) == 4
     for taxon in sp_d:
         assert len(sp_d[taxon]) <= threshold
 
@@ -97,7 +97,7 @@ def test_no_mrca():
     filteredScrape._blasted = 1
     filteredScrape.read_blast_wrapper(blast_dir=blast_dir)
     filteredScrape.remove_identical_seqs()
-    assert len(filteredScrape.new_seqs_otu_id) in [23,17] #Blurghhh, local vs remote searches get diffenrt number of seqs!
+    assert len(filteredScrape.new_seqs_otu_id) in [23,14] #Blurghhh, local vs remote searches get diffenrt number of seqs!
 
 
 
@@ -114,7 +114,7 @@ def test_remove_identical_seqs():
     #print scraper.ncbi_mrca
     assert(len(scraper.new_seqs) == 0)
     assert(len(scraper.data.aln) == 5)
-    assert len(scraper.new_seqs_otu_id) == 17
+    assert len(scraper.new_seqs_otu_id) == 14
     #Now that we are pulling the full remote sequences, we don'thave any identical seuqnces in the test.
 
 #TODO find an example where we do get identical sequences and need to discard them
@@ -144,7 +144,8 @@ def test_remove_identical_seqs():
 
     aln_path1 = scraper.data.write_aln()
     scraper.align_new_seqs()
-    assert len(scraper.data.aln) == 22
+    assert len(scraper.data.aln) == 19
+
 
 
 localblast = mark.localblast
@@ -254,6 +255,29 @@ def test_run_raxml():
     # assert os.path.exists("{}/RAxML_bootstrap.all{}".format(scraper.workdir, scraper.date))
 
 
+def test_run_align():
+    workdir = "tests/output/test_write_unaligned"
+    absworkdir = os.path.abspath(workdir)
+    conf = copy.deepcopy(conf_base)
+    ids = copy.deepcopy(ids_base)
+    data_obj = copy.deepcopy(data_obj_base)
+    data_obj.workdir = absworkdir
+    scraper = PhyscraperScrape(data_obj, ids)
+    blast_dir = "tests/data/precooked/fixed/tte_blast_files"
+
+    # run needed functions
+    # scraper.run_blast_wrapper()
+    scraper.read_blast_wrapper(blast_dir=blast_dir)
+
+    assert(scraper.data.otu_dict['otuPS1']['^ncbi:taxon'] == int(scraper.data.otu_dict['2029_doronicum']['^ncbi:taxon']))
+    scraper.data.aln.write(path="{}/myfilename.fas".format(scraper.workdir), schema='fasta')
+    scraper.write_new_seqs(filename="only_new_seqs.aln")
+
+    #scraper.est_full_tree()
+    # scraper.generate_streamed_alignment()
+    #assert os.path.exists("{}/RAxML_bestTree.{}".format(scraper.workdir, scraper.date))
+
+test_run_align()
 
 @mark.xfail
 def test_mpi():
