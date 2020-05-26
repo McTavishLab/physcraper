@@ -939,9 +939,9 @@ class PhyscraperScrape(object):
 
 
 
-    def run_muscle(self, input_aln_path = None, new_seqs_path = None, outname = 'muscle_aln.fas'):
+    def run_muscle(self, input_aln_path = None, new_seqs_path = None, outname = 'all_align.fas'):
         if input_aln_path == None:
-            aln_filename = "before_physcraper_{}.fas".format(self.data.tag)
+            aln_filename = "original_{}.fas".format(self.data.tag)
             aln_path = "{}/{}".format(self.workdir, aln_filename)
             if os.path.exists(aln_path):
                 input_aln_path = aln_path
@@ -950,7 +950,7 @@ class PhyscraperScrape(object):
         else:
             assert(os.path.exists(input_aln_path))
         if new_seqs_path == None:
-            new_filename = "NEW{}_{}.fasta".format(self.date, self.data.tag)
+            new_filename = "new_seqs_UNaligned_{}_{}.fas".format(self.date, self.data.tag)
             tmp_new_seqs_path = "{}/{}".format(self.workdir, new_filename)
             if os.path.exists(tmp_new_seqs_path):
                 new_seqs_path = tmp_new_seqs_path
@@ -958,9 +958,9 @@ class PhyscraperScrape(object):
                 new_seqs_path = self.write_new_seqs(filename = new_filename)
         else:
             assert(os.path.exists(new_seqs_path))
-        outpath_NEW = "{}/muscle_NEW.fas".format(self.workdir)
+        outpath_NEW = "new_seqs_aligned_{}_{}.fas".format(self.date, self.data.tag)
         outpath_ALL = "{}/{}".format(self.workdir, outname)
-        f = open('{}/muscle_NEW.log'.format(self.workdir), 'w')
+        f = open('{}/muscle.log'.format(self.workdir), 'w')
         try:
             subprocess.check_call(["muscle",
                                    "-in", new_seqs_path,
@@ -969,13 +969,12 @@ class PhyscraperScrape(object):
                 sys.stdout.write("Muscle NEW done.\n")
         except subprocess.CalledProcessError as grepexc:
             sys.stderr.write("error code {}, {}".format(grepexc.returncode, grepexc.output))
-
-        f2 = open('{}/muscle_ALL.log'.format(self.workdir), 'w')
+        f = open('{}/muscle.log'.format(self.workdir), 'a')
         try:
             subprocess.check_call(["muscle", "-profile",
                                    "-in1", input_aln_path,
                                    "-in2", outpath_NEW,
-                                   "-out", outpath_ALL], stdout=f2, stderr=subprocess.STDOUT)
+                                   "-out", outpath_ALL], stdout=f, stderr=subprocess.STDOUT)
             if _VERBOSE:
                 sys.stdout.write("Muscle ALL done.\n")
         except subprocess.CalledProcessError as grepexc:
