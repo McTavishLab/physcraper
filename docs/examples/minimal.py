@@ -61,7 +61,7 @@ aln_path1 = scraper.data.write_aln()
 sys.stdout.write("Running align_query_seqs()...\n")
 scraper.align_new_seqs()
 scraper.est_full_tree()
-scraper.data.write_labelled(label="^ot:ottTaxonName", filename="updated_taxon_name", norepeats=False)
+scraper.data.write_labelled(label="^ot:ottTaxonName", filename="updated_taxon_name", norepeats=True)
 scraper.data.write_labelled(label="^ncbi:taxon", filename="updated_ncbi_id", norepeats=False)
 
 

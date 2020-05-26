@@ -243,6 +243,7 @@ class PhyscraperScrape(object):
         """
         delay = self.config.delay
         today = str(datetime.date.today()).replace("-", "/")
+        debug("Today's date is {}".format(today))
         debug("run_blast_wrapper")
         debug(self.blast_subdir)
         self._blast_read = 0
@@ -281,11 +282,6 @@ class PhyscraperScrape(object):
                         else:
                             equery = "txid{}[orgn]".format(self.mrca_ncbi)
                         debug(equery)
-               #         tmpfile.write("\nequery\n")
-               #         tmpfile.write(equery)
-               #         tmpfile.write("\nquery\n")
-               #         tmpfile.write(query)
-               #         tmpfile.close()
                         self.run_web_blast_query(query, equery, fn_path)
                     self.data.otu_dict[otu_id]['^physcraper:last_blasted'] = today
                 else:
@@ -294,8 +290,8 @@ class PhyscraperScrape(object):
                                          "delete file to force\n".format(fn_path))
             else:
                 if _VERBOSE:
-                    sys.stdout.write("otu {} was last blasted {} days ago and is not being re-blasted. "
-                                     "Use run_blast_wrapper(delay = 0) to force a search.\n".format(otu_id, last_blast))
+                    sys.stdout.write("otu {} was last blasted on {}, {} days ago and is not being re-blasted. "
+                                     "Use run_blast_wrapper(delay = 0) to force a search.\n".format(otu_id, last_blast, time_passed))
     #except KeyboardInterrupt:
            # sys.exit()
         self._blasted = 1
@@ -939,7 +935,11 @@ class PhyscraperScrape(object):
 
 
 
-    def run_muscle(self, input_aln_path = None, new_seqs_path = None, outname = 'all_align.fas'):
+    def run_muscle(self, input_aln_path = None, new_seqs_path = None, outname = 'all_align'):
+        outpath_ALL = "{}/{}_{}.fas".format(self.workdir, outname, self.data.tag)
+        if os.path.exists(outpath_ALL):
+            self.replace_aln(outpath_ALL)
+            return(outpath_ALL)
         if input_aln_path == None:
             aln_filename = "original_{}.fas".format(self.data.tag)
             aln_path = "{}/{}".format(self.workdir, aln_filename)
@@ -959,8 +959,7 @@ class PhyscraperScrape(object):
         else:
             assert(os.path.exists(new_seqs_path))
         outpath_NEW = "new_seqs_aligned_{}_{}.fas".format(self.date, self.data.tag)
-        outpath_ALL = "{}/{}".format(self.workdir, outname)
-        f = open('{}/muscle.log'.format(self.workdir), 'w')
+        f = open('{}/muscle.log'.format(self.workdir), 'a')
         try:
             subprocess.check_call(["muscle",
                                    "-in", new_seqs_path,
@@ -980,6 +979,7 @@ class PhyscraperScrape(object):
         except subprocess.CalledProcessError as grepexc:
             sys.stderr.write("error code {}, {}".format(grepexc.returncode, grepexc.output))
         self.replace_aln(outpath_ALL)
+        return(outpath_ALL)
 
 
     def run_papara(self, papara_runname="extended"):
