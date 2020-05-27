@@ -55,14 +55,14 @@ sys.stdout.write("Running read_blast_wrapper()...\n")
 scraper.read_blast_wrapper(blast_dir=blast_dir)
 sys.stdout.write("Running write_aln()...\n")
 aln_path1 = scraper.data.write_aln()
-aln_path_alt = scraper.data.write_aln(filename="already_aligned_seqs.fas")
-unaln_path = scraper.write_new_seqs(filename='unaligned.fas')
+#aln_path_alt = scraper.data.write_aln(filename="already_aligned_seqs.fas")
+#unaln_path = scraper.write_new_seqs(filename='unaligned.fas')
 
 sys.stdout.write("Running align_query_seqs()...\n")
 scraper.align_new_seqs()
 scraper.est_full_tree()
-scraper.data.write_labelled(label="^ot:ottTaxonName", norepeats=False)
-scraper.data.write_labelled(label="^ncbi:taxon", filename="ncbi", norepeats=False)
+scraper.data.write_labelled(label="^ot:ottTaxonName", filename="updated_taxon_name", norepeats=True)
+scraper.data.write_labelled(label="^ncbi:taxon", filename="updated_ncbi_id", norepeats=False)
 
 
 # sys.stdout.write("estimating tree...")

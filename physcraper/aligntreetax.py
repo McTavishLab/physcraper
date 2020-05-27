@@ -678,10 +678,12 @@ class AlignTreeTax(object):
             with open("{}/{}_{}.json".format(self.workdir, filename, self.tag), "w") as outfile:
                 json.dump(self.otu_dict, outfile)
         if schema == "table":
-            all_keys =  set()
-            for otu in self.otu_dict:
-                all_keys.update(self.otu_dict[otu].keys())
-            keys = list(all_keys) 
+            #all_keys =  set()
+            #for otu in self.otu_dict:
+            #    all_keys.update(self.otu_dict[otu].keys())
+            #keys = list(all_key)
+            #keys.sort()
+            keys = ['^ot:ottTaxonName','^ot:ottId','^ncbi:taxon','^ncbi:accession','^ncbi:gi','^physcraper:last_blasted','^physcraper:status','^ot:originalLabel','^ncbi:title']
             header = ["otu_id"] + keys
             with open("{}/{}_{}.csv".format(self.workdir, filename, self.tag), "w") as outfile:
                 outfile.write("\t".join(header)+"\n")

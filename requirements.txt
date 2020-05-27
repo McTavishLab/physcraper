@@ -1,5 +1,5 @@
 argparse
-biopython
+biopython==1.76
 configparser
 coverage
 DendroPy
