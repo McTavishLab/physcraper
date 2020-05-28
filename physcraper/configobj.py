@@ -119,9 +119,9 @@ taxonomy_path = {taxonomy}'''.format(
                                     maxlen=self.maxlen,
                                     taxonomy = self.taxonomy_dir)
         return(config_text)
-    def write_file(self, workdir, filename = "run.config"):
+    def write_file(self, direc, filename = "run.config"):
         config_text = self.config_str()
-        fi = open("{}/{}".format(workdir, filename),"w")
+        fi = open("{}/{}".format(direc, filename),"w")
         fi.write(config_text)
         fi.close()
     def read_config(self, configfi, interactive):

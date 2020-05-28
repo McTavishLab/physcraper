@@ -103,7 +103,7 @@ class IdDicts(object):
             self.ncbi_parser = ncbi_data_parser.Parser(names_file=self.config.ncbi_names,
                                                        nodes_file=self.config.ncbi_nodes)
         self.acc_tax_seq_dict = {}
-        self.full_seq_path = "{}/full_seqs".format(self.config.taxonomy_dir)
+        self.full_seq_path = "{}/downloaded_ncbi_sequences".format(self.config.taxonomy_dir)
 
 
     def get_ncbiid_from_acc(self, acc):

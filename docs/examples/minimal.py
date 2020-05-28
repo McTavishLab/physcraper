@@ -9,7 +9,7 @@ from physcraper import opentree_helpers
 from physcraper.opentree_helpers import scraper_from_opentree
 
 configfi = "tests/data/test.config"
-workdir ="physcraper_example_minimal"
+workdir ="example_minimal"
 aln_fi = "tests/data/tiny_test_example/test.fas"
 blast_dir = "tests/data/precooked/fixed/tte_blast_files"
 # mattype="fasta"
@@ -61,8 +61,7 @@ aln_path1 = scraper.data.write_aln()
 sys.stdout.write("Running align_query_seqs()...\n")
 scraper.align_new_seqs()
 scraper.est_full_tree()
-scraper.data.write_labelled(label="^ot:ottTaxonName", filename="updated_taxon_name", norepeats=True)
-scraper.data.write_labelled(label="^ncbi:taxon", filename="updated_ncbi_id", norepeats=False)
+scraper.data.write_labelled(label="^ncbi:taxon", filename="updated_ncbi_id", norepeats=False, direc = scraper.outputsdir)
 
 
 # sys.stdout.write("estimating tree...")
