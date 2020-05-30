@@ -232,7 +232,7 @@ def test_run_raxml():
 
     scraper.est_full_tree()
     # scraper.generate_streamed_alignment()
-    assert os.path.exists("{}/RAxML_bestTree.{}".format(scraper.workdir, scraper.date))
+    assert os.path.exists("{}/RAxML_bestTree.{}".format(scraper.rundir, scraper.date))
     # scraper.generate_streamed_alignment()
 
     # if os.path.exists("{}/RAxML_bootstrap.all{}".format(scraper.workdir, scraper.date)):

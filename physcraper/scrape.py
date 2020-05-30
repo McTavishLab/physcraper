@@ -91,21 +91,31 @@ class PhyscraperScrape(object):
     """
     def __init__(self, data_obj, ids_obj=None, ingroup_mrca=None):
         assert isinstance(data_obj, AlignTreeTax)
+        self.data = data_obj
         self.workdir = data_obj.workdir
         if not os.path.exists(self.workdir):
             os.makedirs(self.workdir)
-        self.logfile = "{}/logfile".format(self.workdir)
-        self.data = data_obj
+        self.inputsdir = "{}/inputs_{}".format(self.workdir, self.data.tag)
+        if not os.path.exists(self.inputsdir):
+            os.makedirs(self.inputsdir)
+        self.data.write_files(direc=self.inputsdir)
+        self.outputsdir = "{}/outputs_{}".format(self.workdir, self.data.tag)
+        if not os.path.exists(self.outputsdir):
+            os.makedirs(self.outputsdir)
+        self.rundir = "{}/run_{}".format(self.workdir, self.data.tag)
+        if not os.path.exists(self.rundir):
+            os.makedirs(self.rundir)
+        self.logfile = "{}/logfile".format(self.rundir)
         if ids_obj == None:
             self.ids = IdDicts()
         else:
             assert isinstance(ids_obj, IdDicts)
             self.ids = ids_obj
         self.config = self.ids.config  # pointer to config
-        self.config.write_file(self.workdir)
+        self.config.write_file(self.rundir)
         self.new_seqs = {}  # all new seq after read_blast_wrapper
         self.new_seqs_otu_id = {}  # only new seq which passed remove_identical
-        self.blast_subdir = "{}/blast_run_{}".format(self.workdir, self.data.tag)
+        self.blast_subdir = "{}/blast_run_{}".format(self.rundir, self.data.tag)
 
         self.date = str(datetime.date.today())  # Date of the run - may lag behind real date!
         self.repeat = 1  # used to determine if we continue updating the tree
@@ -129,8 +139,8 @@ class PhyscraperScrape(object):
         self.map_taxa_to_ncbi()
         assert self.mrca_ncbi
         self.write_mrca()
-        self.data.write_otus(schema='table')
-        self.data.write_otus(schema='json')
+        self.data.write_otus(schema='table', direc=self.inputsdir)
+        self.data.write_otus(schema='json', direc=self.rundir)
         self.threshold = self.config.spp_threshold
 #markers for status
 #holders for new data
@@ -153,7 +163,7 @@ class PhyscraperScrape(object):
         self._full_tree_est = 0
 
     def write_mrca(self):
-        with open('{}/mrca.txt'.format(self.workdir),"w") as fi:
+        with open('{}/mrca.txt'.format(self.inputsdir),"w") as fi:
             fi.write("ingroup mrca ott_id {}\n".format(self.mrca_ott))
             fi.write("ingroup mrca NCBI: {}\n".format(self.mrca_ncbi))
 
@@ -346,7 +356,7 @@ class PhyscraperScrape(object):
                                 self.new_seqs[gb_acc] = query_dict[gb_acc]["sseq"]
 
                     else:
-                        fn = open("{}/blast_threshold_not_passed.csv".format(self.workdir), "a+")
+                        fn = open("{}/blast_threshold_not_passed.csv".format(self.rundir), "a+")
                         fn.write("blast_threshold_not_passed: {}, {}, {}\n".format(sscinames, gb_acc, gi_id))
                         fn.close()
                 else:
@@ -437,12 +447,12 @@ class PhyscraperScrape(object):
         output_blast = "output_tst_fn.xml"
         gb_counter = 1
         general_wd = os.getcwd()
-        os.chdir(os.path.join(self.workdir, "blast"))
+        os.chdir(os.path.join(self.rundir, "blast"))
         # with cd(os.path.join(self.workdir, "blast")):
         xml_file = open(output_blast)
         os.chdir(general_wd)
         blast_out = NCBIXML.parse(xml_file)
-        fn = open("{}/not_added_local_seq.csv".format(self.workdir), "a")
+        fn = open("{}/not_added_local_seq.csv".format(self.rundir), "a")
         fn.write("not_added_local_seq")
         for blast_record in blast_out:
             for alignment in blast_record.alignments:
@@ -875,7 +885,7 @@ class PhyscraperScrape(object):
 
     def dump(self):
         self.data.write_otus('otu_dict.json')
-        with open("{}/{}".format(self.workdir, 'config.json'), "w") as outfile:
+        with open("{}/{}".format(self.rundir, 'config.json'), "w") as outfile:
                 json.dump(self.config.__dict__, outfile)
 
 
@@ -888,7 +898,7 @@ class PhyscraperScrape(object):
             self.newseqs_file = "NEW{}_{}.fasta".format(self.date, self.data.tag)
         else:
             self.newseqs_file = filename
-        fipath = ("{}/{}".format(self.workdir, self.newseqs_file))
+        fipath = ("{}/{}".format(self.rundir, self.newseqs_file))
         if _VERBOSE:
             sys.stdout.write("writing out sequences\n")
         with open(fipath, "w") as fi:
@@ -907,9 +917,9 @@ class PhyscraperScrape(object):
             self.run_papara()
         if aligner == 'muscle':
             self.run_muscle()
-        alnfi = self.data.write_aln()
-        self.data.write_otus(schema="table")
-        self.data.write_otus(schema="json")
+        alnfi = self.data.write_aln(direc=self.rundir)
+        self.data.write_otus(schema='table', direc=self.outputsdir)
+        self.data.write_otus(schema='json', direc=self.rundir)
         return alnfi
 
     def replace_aln(self, filename, schema = 'fasta'):
@@ -936,30 +946,30 @@ class PhyscraperScrape(object):
 
 
     def run_muscle(self, input_aln_path = None, new_seqs_path = None, outname = 'all_align'):
-        outpath_ALL = "{}/{}_{}.fas".format(self.workdir, outname, self.data.tag)
+        outpath_ALL = "{}/{}_{}.fas".format(self.rundir, outname, self.data.tag)
         if os.path.exists(outpath_ALL):
             self.replace_aln(outpath_ALL)
             return(outpath_ALL)
         if input_aln_path == None:
             aln_filename = "original_{}.fas".format(self.data.tag)
-            aln_path = "{}/{}".format(self.workdir, aln_filename)
+            aln_path = "{}/{}".format(self.inputsdir, aln_filename)
             if os.path.exists(aln_path):
                 input_aln_path = aln_path
             else:
-                input_aln_path = self.data.write_aln(filename = aln_filename)
+                input_aln_path = self.data.write_aln(filename = aln_filename, direc = self.rundir)
         else:
             assert(os.path.exists(input_aln_path))
         if new_seqs_path == None:
             new_filename = "new_seqs_UNaligned_{}_{}.fas".format(self.date, self.data.tag)
-            tmp_new_seqs_path = "{}/{}".format(self.workdir, new_filename)
+            tmp_new_seqs_path = "{}/{}".format(self.rundir, new_filename)
             if os.path.exists(tmp_new_seqs_path):
                 new_seqs_path = tmp_new_seqs_path
             else:
                 new_seqs_path = self.write_new_seqs(filename = new_filename)
         else:
             assert(os.path.exists(new_seqs_path))
-        outpath_NEW = "new_seqs_aligned_{}_{}.fas".format(self.date, self.data.tag)
-        f = open('{}/muscle.log'.format(self.workdir), 'a')
+        outpath_NEW = "{}/new_seqs_aligned_{}_{}.fas".format(self.rundir, self.date, self.data.tag)
+        f = open('{}/muscle.log'.format(self.rundir), 'a')
         try:
             subprocess.check_call(["muscle",
                                    "-in", new_seqs_path,
@@ -968,7 +978,7 @@ class PhyscraperScrape(object):
                 sys.stdout.write("Muscle NEW done.\n")
         except subprocess.CalledProcessError as grepexc:
             sys.stderr.write("error code {}, {}".format(grepexc.returncode, grepexc.output))
-        f = open('{}/muscle.log'.format(self.workdir), 'a')
+        f = open('{}/muscle.log'.format(self.rundir), 'a')
         try:
             subprocess.check_call(["muscle", "-profile",
                                    "-in1", input_aln_path,
@@ -991,15 +1001,15 @@ class PhyscraperScrape(object):
         cwd = os.getcwd()
         if not self._query_seqs_written:
             self.write_query_seqs()
-        for filename in glob.glob('{}/papara*'.format(self.workdir)):
-            os.rename(filename, "{}/{}_tmp".format(self.workdir, filename.split("/")[-1]))
+        for filename in glob.glob('{}/papara*'.format(self.rundir)):
+            os.rename(filename, "{}/{}_tmp".format(self.rundir, filename.split("/")[-1]))
         if _VERBOSE:
             sys.stdout.write("aligning query sequences \n")
         self.data._reconcile()  # I think reconcile is what was needed here...instead of alien hack
         # note: sometimes there are still sp in any of the aln/tre
         # hack for the alien taxa thing
         self.data.write_papara_files()
-        os.chdir(self.workdir)  # Clean up dir moving
+        os.chdir(self.rundir)  # Clean up dir moving
         # with cd(self.workdir):
         assert self.data.aln.taxon_namespace == self.data.tre.taxon_namespace
         try:
@@ -1021,15 +1031,15 @@ class PhyscraperScrape(object):
             else:
                 # Something else went wrong while trying to run `wget`
                 raise
-        path = "{}/papara_alignment.{}".format(self.workdir, papara_runname)
+        path = "{}/papara_alignment.{}".format(self.rundir, papara_runname)
         assert os.path.exists(path), "{path} does not exists".format(path=path)
         os.chdir(cwd)
         aln = DnaCharacterMatrix.get(path="{}/papara_alignment."
-                                                    "{}".format(self.workdir, papara_runname), schema="phylip")
+                                                    "{}".format(self.rundir, papara_runname), schema="phylip")
         self.data.aln.taxon_namespace.is_mutable = True  # Was too strict...
         if _VERBOSE:
             sys.stdout.write("Papara done")
-        lfd = "{}/logfile".format(self.workdir)
+        lfd = "{}/logfile".format(self.rundir)
         with open(lfd, "a") as log:
             log.write("Following papara alignment, aln has {} seqs \n".format(len(self.data.aln)))
         return aln
@@ -1041,8 +1051,8 @@ class PhyscraperScrape(object):
         """runs raxml on the tree, and the combined alignment including the new query seqs.
         Just for placement, to use as starting tree."""
         if self.backbone is True:
-            with cd(self.workdir):
-                backbonetre = Tree.get(path="{}/backbone.tre".format(self.workdir),
+            with cd(self.rundir):
+                backbonetre = Tree.get(path="{}/backbone.tre".format(self.rundir),
                                        schema="newick",
                                        preserve_underscores=True)
 
@@ -1054,7 +1064,7 @@ class PhyscraperScrape(object):
         if _VERBOSE:
             sys.stdout.write("placing query sequences \n")
         rac_ex = get_raxml_ex()
-        with cd(self.workdir):
+        with cd(self.rundir):
             try:
                 debug("try")
                 subprocess.call([rax_ex,
@@ -1089,12 +1099,12 @@ class PhyscraperScrape(object):
             debug("call align query seqs from est full tree, self._blast_read is {}".format(self._blast_read))
             alignment = self.align_new_seqs()
         if startingtree == None:
-            startingtree = os.path.abspath(self.data.write_random_resolve_tre())
+            startingtree = os.path.abspath(self.data.write_random_resolve_tre(direc=self.rundir))
         debug("est full tree")
-        os.chdir(self.workdir)
+        os.chdir(self.rundir)
         rax_ex = get_raxml_ex()
-        for filename in glob.glob('{}/RAxML*'.format(self.workdir)):
-            os.rename(filename, "{}/treest_prev".format(self.workdir))
+        for filename in glob.glob('{}/RAxML*'.format(self.rundir)):
+            os.rename(filename, "{}/treest_prev".format(self.rundir))
         num_threads = int(self.config.num_threads)
         label = "{}".format(self.date)
         if self.backbone:
@@ -1107,8 +1117,8 @@ class PhyscraperScrape(object):
         if _VERBOSE:
                 sys.stdout.write("running: "+" ".join(cmd)+"\n")
         self.replace_tre("RAxML_bestTree.{}".format(label))
-        self.data.write_files()
-        self.data.write_labelled('^ot:ottTaxonName')
+        self.data.write_files(direc=self.outputsdir)
+        self.data.write_labelled(filename='updated_taxonname',label='^ot:ottTaxonName', direc = self.outputsdir)
         os.chdir(cwd)
         return label
 
@@ -1130,7 +1140,7 @@ class PhyscraperScrape(object):
         debug("calculate bootstrap")
         if alignment == None:
             alignment = "previous_run/papara_alignment.extended"
-        with cd(self.workdir):
+        with cd(self.rundir):
             ntasks = os.environ.get('SLURM_NTASKS_PER_NODE')
             nnodes = os.environ.get("SLURM_JOB_NUM_NODES")
             # env_var = int(nnodes) * int(ntasks)
@@ -1205,7 +1215,7 @@ class PhyscraperScrape(object):
         self.data.write_files(treepath="physcraper_final_notrim.tre", alnpath="physcraper_final_notrim.fas")
         self.data.prune_short()
         self.data.write_files(treepath="physcraper_final_trim.tre", alnpath="physcraper_final_trim.fas")
-        if os.path.exists("[]/previous_run".format(self.workdir)):
+        if os.path.exists("[]/previous_run".format(self.rundir)):
             self.est_full_tree(path="previous_run")
         else:
             self.est_full_tree()
@@ -1244,7 +1254,7 @@ class PhyscraperScrape(object):
                 key = gb_id_l[i].replace(">", "")
                 count = count + 1
                 seq = seq_l[i]
-                write_filterblast_db(self.workdir, key, seq, fn="local_unpubl_seq")
-        with cd(os.path.join(self.workdir, "blast")):
+                write_filterblast_db(self.rundir, key, seq, fn="local_unpubl_seq")
+        with cd(os.path.join(self.rundir, "blast")):
             cmd1 = "makeblastdb -in {}_db -dbtype nucl".format("local_unpubl_seq")
             os.system(cmd1)
