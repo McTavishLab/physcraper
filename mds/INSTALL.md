@@ -25,8 +25,10 @@ Install anaconda
 ### 1. Create a python virtual environment
 
 
+Move (with `cd`) to the pyscraper folder, and create a new python virtual environment with:
+
 ```
-virtualenv venv-physcraper
+virtualenv -p python3 venv-physcraper  
 ```
 
 
@@ -37,13 +39,26 @@ Once you have a venv-physcraper directory, **_activate_** it with:
 ```
 source venv-physcraper/bin/activate
 ```
-Remember that you will have to activate the virtual environment every time you want to run `physcraper`.
 
-### 3. Install `physcraper` inside the virtual environment with
+You will stay in the virtual environment even if you change directories and `physcraper` should run from anywhere, while the virtual environment is activated.
+
+Deactivate the virtual environment with:
 
 ```
-python setup.py install
+deactivate
 ```
+
+Note that you will have to activate the virtual environment every time you want to run `physcraper` ;)
+
+
+### 3. Install `physcraper` inside the virtual environment
+
+```
+pip install -r requirements.txt  
+pip install -e  .
+```
+
+Note the "dot" at the end of that last command!
 
 This will install the following python packages also:
 
@@ -59,7 +74,7 @@ This will install the following python packages also:
 deactivate
 ```
 
-Do this after you are finisged working with physcraper.
+Do this after you are finished working with physcraper.
 
 
 # II. Checking for dependencies
@@ -77,9 +92,9 @@ which raxmlHPC
 
 # III. Local Databases
 
-The tool can be run using local databases, which can be downloaded and updated from the National Center for Biotechnology Information ([NCBI](https://www.ncbi.nlm.nih.gov/)). 
+The BLAST tool can be run using local databases, which can be downloaded and updated from the National Center for Biotechnology Information ([NCBI](https://www.ncbi.nlm.nih.gov/)). 
 
-### 1. Installing blast command line tools
+### 1. Installing BLAST command line tools
 
 To blast locally you will need to install blast command line tools first.  
 Find general instructions at
@@ -87,7 +102,7 @@ https://www.ncbi.nlm.nih.gov/books/NBK279671/
 https://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/
 
 
-e.g. installing blast command line tools on linux:
+e.g. installing BLAST command line tools on **linux**:
 
 ```
     wget https://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/LATEST/ncbi-blast-2.10.0+-x64-linux.tar.gz
@@ -95,6 +110,11 @@ e.g. installing blast command line tools on linux:
  ```
  
 The binaries/scripts/executables will be installed in the `/bin` folder.
+
+Installing BLAST command line tools on **MAC OS** is easy, with the installer. Note, however, that the BLAST executables will be installed in `usr/local/ncbi/blast` and that you will have to add this to your path in order to be able to run the executables, by adding `export PATH=$PATH:"usr/local/ncbi/blast/bin"` to the .bash_profile
+
+If your terminal uses zshell instead of bash, make sure you're running the .bash_profile there too.
+
 
 ### 2. Downloading the NCBI database
 
@@ -107,6 +127,7 @@ This is what you should do:
     mkdir local_blast_db  # create the folder to save the database
     cd local_blast_db  # move to the newly created folder
     update_blastdb nt  # download the NCBI nucleotide databases
+    # update_blastdb.pl nt  # for MAC
     cat *.tar.gz | tar -xvzf - -i  # unzip the nucleotide databases
     update_blastdb taxdb  # download the NCBI taxonomy database
     gunzip -cd taxdb.tar.gz | (tar xvf - )  # unzip the taxonomy database
