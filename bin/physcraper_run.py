@@ -20,7 +20,7 @@ parser.add_argument("-e","--email", help="email address for ncbi balst searches"
 parser.add_argument("-re","--reload_files",  help="reload files and configureation from dir")
 parser.add_argument("-tag","--tag", help="gene name or other specifier")
 parser.add_argument("-tb","--treebase", action="store_true", help="download alignment from treebase")
-parser.add_argument("-no_est","--no_estimate_tree", action='store_true', help="run blast search and estimate tree")
+parser.add_argument("-no_est","--no_estimate_tree", action='store_true', help="don't estimate tree")
 parser.add_argument("-ev","--eval", help="blast evalue cutoff")
 parser.add_argument("-hl","--hitlist_len", help="number of blast searches to save per taxon")
 parser.add_argument("-tp","--trim_perc", help="minimum percentage of seqs end of alignemnts")
@@ -45,9 +45,17 @@ parser.add_argument("-st","--search_taxon", help="taxonomic id to constrain blas
 
 
 args = parser.parse_args()
+if len(sys.argv)==1:
+    parser.print_help(sys.stderr)
+    sys.exit(1)
 
-assert(args.output), "Output directory (-o) is required."
-workdir = args.output
+try:
+    assert(args.output)
+    workdir = args.output
+except AssertionError:
+    sys.stderr.write("ERROR: Output directory (-o) is required.\n")
+    sys.exit(-1)
+
 
 #set configuration
 if args.configfile:
@@ -101,14 +109,25 @@ if args.tree_link:
     study_id == linkl[5]
     tree_id = linkl[-1].split("=")[1]
 
-if args.study_id:
-    study_id = args.study_id
-    tree_id = args.tree_id
+if args.study_id or args.tree_id:
+    try:
+        study_id = args.study_id
+        tree_id = args.tree_id
+        assert(study_id)
+        assert(tree_id)
+    except AssertionError:
+        sys.stderr.write("ERROR: To get tree from OpenTree, specify both -s [study_id] and -t [tree_id]\n")
+        sys.exit(-1)
+
 
 if args.alignment:
     alnfile = args.alignment
-    assert(args.aln_schema)
-    aln_schema = args.aln_schema
+    try:
+        assert(args.aln_schema)
+        aln_schema = args.aln_schema
+    except AssertionError:
+        sys.stderr.write("ERROR: Specify alignment format using -as [fasta or nexus]\n")
+        sys.exit(-1)
 
 
 if args.treebase:
