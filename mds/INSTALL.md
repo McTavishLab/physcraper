@@ -127,9 +127,10 @@ This is what you should do:
     mkdir local_blast_db  # create the folder to save the database
     cd local_blast_db  # move to the newly created folder
     update_blastdb nt  # download the NCBI nucleotide databases
-    # update_blastdb.pl nt  # for MAC
-    cat *.tar.gz | tar -xvzf - -i  # unzip the nucleotide databases
+    # update_blastdb.pl nt  # in MAC
+    cat *.tar.gz | tar -xvzf - --ignore-zeros  # unzip the nucleotide databases
     update_blastdb taxdb  # download the NCBI taxonomy database
+    # update_blastdb.pl taxdb  # in MAC
     gunzip -cd taxdb.tar.gz | (tar xvf - )  # unzip the taxonomy database
 ```
 
