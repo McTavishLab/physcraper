@@ -980,8 +980,12 @@ class PhyscraperScrape(object):
             sys.stderr.write("error code {}, {}".format(grepexc.returncode, grepexc.output))
         f = open('{}/muscle.log'.format(self.rundir), 'a')
         try:
+            cleaned_align = open("{}/original_cleaned.fas".format(self.rundir), 'w')
+            subprocess.check_call(["sed", "s/?/-/g",
+                                    input_aln_path], stdout=cleaned_align, stderr=f)
+            cleaned_align.close()
             subprocess.check_call(["muscle", "-profile",
-                                   "-in1", input_aln_path,
+                                   "-in1", cleaned_align,
                                    "-in2", outpath_NEW,
                                    "-out", outpath_ALL], stdout=f, stderr=subprocess.STDOUT)
             if _VERBOSE:
