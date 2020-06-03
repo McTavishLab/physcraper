@@ -55,27 +55,54 @@ def generate_ATT_from_files(workdir,
     return AlignTreeTax(treefile, otu_dict, alnfile, ingroup_mrca=mrca_ott, workdir=workdir,
                         configfile=configfile, tree_schema=tree_schema)
 
-def generate_ATT_from_run(workdir, tag=None, configfile=None):
+def generate_ATT_from_run(workdir, start_files='output', tag=None, configfile=None):
     """Build an ATT object without phylesystem, use your own files instead.
     :return: object of class ATT
     """
     files = [f for f in os.listdir(workdir)]
     for file in files:
-        if file.startswith('physcraper_'):
-            tag = file.split('.')[0].replace('physcraper_', '')
-    sys.stdout.write("Reloading files with tag {}\n".format(tag))
+        if file.startswith('inputs_'):
+            tag = file.split('.')[0].replace('inputs_', '')
     assert os.path.exists(workdir)
-    # use replaced aln as input
+    rundir = "{}/run_{}".format(workdir, tag)
+    outputsdir = "{}/outputs_{}".format(workdir, tag)
+    inputsdir = "{}/inputs_{}".format(workdir, tag)
     if configfile == None:
-        if os.path.exists("{}/run.config".format(workdir)):
-            configfile = "{}/run.config".format(workdir)
-    alnfi = "{}/physcraper_{}.fas".format(workdir, tag)
-    treefile = "{}/physcraper_{}.tre".format(workdir, tag)
-    otu_json = "{}/otu_info_{}.json".format(workdir, tag)
-    otu_dict = json.load(open(otu_json, "r"))
-    mrca_ott = mrca_ott = int(open("{}/mrca.txt".format(workdir)).readline().split()[-1])
-    return AlignTreeTax(tree = treefile, otu_dict= otu_dict, alignment = alnfi, ingroup_mrca=mrca_ott, workdir=workdir,
-                        configfile=configfile, tag=tag, tree_schema='newick')
+       configfile = "{}/run.config".format(rundir)
+    try:
+        alnfi = "{}/physcraper_{}.fas".format(outputsdir, tag)
+        treefile = "{}/physcraper_{}.tre".format(inputsdir, tag)
+        otu_json = "{}/otu_info_{}.json".format(rundir, tag)
+        assert(os.path.exists(alnfi))
+        assert(os.path.exists(treefile))
+        assert(os.path.exists(otu_json))
+        otu_dict = json.load(open(otu_json, "r"))
+        mrca_ott = mrca_ott = int(open("{}/mrca.txt".format(inputsdir)).readline().split()[-1])
+        return AlignTreeTax(tree = treefile, otu_dict= otu_dict, alignment = alnfi, ingroup_mrca=mrca_ott, workdir=workdir,
+                    configfile=configfile, tag=tag, tree_schema='newick')
+    except AssertionError:
+        sys.stdout.write("No output files found in {}, loading files from {}\n".format(outputsdir, inputsdir))
+        alnfi = "{}/physcraper_{}.fas".format(inputsdir, tag)
+        treefile = "{}/physcraper_{}.tre".format(inputsdir, tag)
+        otu_json = "{}/otu_info_{}.json".format(rundir, tag)
+        assert(os.path.exists(alnfi)), alnfi
+        assert(os.path.exists(treefile)), treefile
+        assert(os.path.exists(otu_json)), otu_json
+        otu_dict = json.load(open(otu_json, "r"))
+        mrca_ott = mrca_ott = int(open("{}/mrca.txt".format(inputsdir)).readline().split()[-1])
+        return AlignTreeTax(tree = treefile, otu_dict= otu_dict, alignment = alnfi, ingroup_mrca=mrca_ott, workdir=workdir,
+                configfile=configfile, tag=tag, tree_schema='newick')
+    #except AssertionError:
+       #     sys.stdout.write("No run files found in {} or {}. Data not loaded\n".format(outputsdir, inputsdir))
+
+
+
+    # use replaced aln as input
+   
+    
+
+    
+
 
 
 #def concatenate_ATTs(att_list, number_per_taxon='max', level='spp'):

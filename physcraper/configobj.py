@@ -98,7 +98,6 @@ e_value_thresh = {e_val}
 hitlist_size = {hls}
 location = {bl}
 localblastdb = {db}
-url_base = {ul}
 num_threads = {nt}
 delay = {delay}
 [physcraper]
@@ -111,7 +110,6 @@ taxonomy_path = {taxonomy}'''.format(
                                     hls=self.hitlist_size,
                                     bl=self.blast_loc,
                                     db=self.blastdb,
-                                    ul=self.url_base,
                                     nt=self.num_threads,
                                     delay=self.delay,
                                     sppt=self.spp_threshold,
@@ -163,10 +161,12 @@ taxonomy_path = {taxonomy}'''.format(
             self.set_local()
         if self.blast_loc == "remote":
             self.url_base = config["blast"].get("url_base")
+            if self.url_base == 'None':
+                self.url_base = None
         if _DEBUG:
             sys.stdout.write("{}\n".format(self.email))
-            if self.blast_loc == "remote":
-                sys.stdout.write("url base = {}\n".format(self.url_base))
+            #if self.blast_loc == "remote":
+            #    sys.stdout.write("url base = {}\n".format(self.url_base))
             sys.stdout.write("{}\n".format(self.blast_loc))
             if self.blast_loc == "local":
                 sys.stdout.write("local blast db {}\n".format(self.blastdb))
