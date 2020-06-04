@@ -25,7 +25,7 @@ from physcraper import writeinfofiles
 from physcraper import AWSWWW
 
 _VERBOSE = 1
-_DEBUG = 0
+_DEBUG = 1
 def debug(msg):
     """short debugging command
     """
@@ -1125,16 +1125,15 @@ class PhyscraperScrape(object):
         process.wait()
         if _VERBOSE:
                 sys.stdout.write("running: "+" ".join(cmd)+"\n")
-        self.replace_tre("RAxML_bestTree.{}".format(label))
-        self.data.write_files(direc=self.outputsdir)
-        self.data.write_labelled(filename='updated_taxonname',label='^ot:ottTaxonName', direc = self.outputsdir)
+        outfilename = "RAxML_bestTree.{}".format(label)
         os.chdir(cwd)
-        return label
+        besttreepath = "{}/{}".format(self.rundir, outfilename)
+        return(besttreepath)
 
 #
 
 
-    def calculate_bootstrap(self, alignment = None):
+    def calculate_bootstrap(self, alignment = None, num_reps = "10"):
         """Calculates bootstrap and consensus trees.
 
         -p: random seed
@@ -1148,7 +1147,8 @@ class PhyscraperScrape(object):
         """
         debug("calculate bootstrap")
         if alignment == None:
-            alignment = "previous_run/papara_alignment.extended"
+            debug("call align query seqs from est full tree, self._blast_read is {}".format(self._blast_read))
+            alignment = self.align_new_seqs()
         with cd(self.rundir):
             ntasks = os.environ.get('SLURM_NTASKS_PER_NODE')
             nnodes = os.environ.get("SLURM_JOB_NUM_NODES")
@@ -1159,41 +1159,56 @@ class PhyscraperScrape(object):
                 mpi = True
             rax_ex = get_raxml_ex()
             if mpi:
+                ## Currently doesn't run
                 debug("run with mpi")
                 subprocess.call(["mpiexec", "-n", "{}".format(env_var), "raxmlHPC-MPI-AVX2",
                                  # "raxmlHPC-PTHREADS", "-T", "{}".format(num_threads),
                                  "-m", "GTRCAT",
                                  "-s", alignment,
-                                 "-p", "1", "-f", "a", "-x", "1", "-#", "autoMRE",
-                                 "-n", "{}".format(self.date)])
+                                 "-p", "1", "-f", "a", "-x", "1", "-#", num_reps,
+                                 "-n", "BOOT{}".format(self.date)])
             else:
                 subprocess.call([rax_ex, "-T", "{}".format(self.config.num_threads),
                                  "-m", "GTRCAT",
                                  "-s", alignment,
-                                 "-p", "1", "-b", "1", "-#", "autoMRE",
-                                 "-n", "{}".format(self.date)])
+                                 "-p", "1", "-b", "1", "-#", num_reps,
+                                 "-n", "BOOT{}".format(self.date)])
+        outpath = "{}/RAxML_bootstrap.BOOT{}".format(self.rundir,self.date)
+        return(outpath)
 
-            # try:
-            #     subprocess.call([rax_ex, "-T", "{}".format(self.config.num_threads), "-m", "GTRCAT",
-            #                      "-s", alignment,
-            #                      "-p", "1", "-f", "a", "-x", "1", "-#", "autoMRE",
-            #                      "-n", "all{}".format(self.date)])
 
-            #     # strict consensus:
-            #     subprocess.call([rax_ex,  "-T", "{}".format(self.config.num_threads), "-m", "GTRCAT",
-            #                      "-J", "STRICT",
-            #                      "-z", "RAxML_bootstrap.all{}".format(self.date),
-            #                      "-n", "StrictCon{}".format(self.date)])
-            #     # majority rule:
-            #     subprocess.call([rax_ex, "-T", "{}".format(self.config.num_threads), "-m", "GTRCAT",
-            #                      "-J", "MR",
-            #                      "-z", "RAxML_bootstrap.all{}".format(self.date),
-            #                      "-n", "MR_{}".format(self.date)])
-            #     # extended majority rule:
-            #     subprocess.call([rax_ex, "-T", "{}".format(self.config.num_threads), "-m", "GTRCAT",
-            #                      "-J", "MRE",
-            #                      "-z", "RAxML_bootstrap.all{}".format(self.date),
-            #                      "-n", "EMR{}".format(self.date)])
+
+    def summarize_boot(self, besttreepath, bootpath, min_clade_freq = 0.2):
+        summarized_tree_path = "{}/boot_summary.tre".format(self.rundir)
+        sumtree_file = open(summarized_tree_path, 'w')
+        subprocess.check_call(["sumtrees.py",
+                                "-t", besttreepath,
+                                "-f", str(min_clade_freq), 
+                                "-d0",
+                                bootpath], stdout=sumtree_file)
+        sumtree_file.close()
+        debug(summarized_tree_path)
+        return(summarized_tree_path)
+
+
+
+    def calculate_final_tree(self):
+        """Calculates the final tree using a trimmed alignment.
+
+        :return: final PS data
+        """
+        debug("calculate final tree")
+        self.data.write_files(treefilename="physcraper_final_notrim.tre", alnfilename="physcraper_final_notrim.fas")
+        self.data.prune_short()
+        self.data.write_files(treefilename="physcraper_final_trim.tre", alnfilename="physcraper_final_trim.fas")
+        besttreepath = self.est_full_tree()
+        bootpath = self.calculate_bootstrap()
+        sumtreepath = self.summarize_boot(besttreepath, bootpath)
+        self.replace_tre(sumtreepath, schema="nexus")
+        self.data.write_files(direc=self.outputsdir)
+        self.data.write_labelled(filename='updated_taxonname',label='^ot:ottTaxonName', direc = self.outputsdir)
+
+
 
 
 
@@ -1214,22 +1229,6 @@ class PhyscraperScrape(object):
         # self.data.prune_short()
         # debug(self.data.tre.as_string(schema='newick'))
 
-
-    def calculate_final_tree(self):
-        """Calculates the final tree using a trimmed alignment.
-
-        :return: final PS data
-        """
-        debug("calculate final tree")
-        self.data.write_files(treepath="physcraper_final_notrim.tre", alnpath="physcraper_final_notrim.fas")
-        self.data.prune_short()
-        self.data.write_files(treepath="physcraper_final_trim.tre", alnpath="physcraper_final_trim.fas")
-        if os.path.exists("[]/previous_run".format(self.rundir)):
-            self.est_full_tree(path="previous_run")
-        else:
-            self.est_full_tree()
-        self.repeat = 0
-        self.calculate_bootstrap()
 
     def write_unpubl_blastdb(self, path_to_local_seq):
         """Adds local sequences into a  local blast database, which then can be used to blast aln seq against it

@@ -57,7 +57,7 @@ data_obj_base = generate_ATT_from_files(alnfile=seqaln,
                              treefile=trfn,
                              tree_schema = schema_trf,
                              otu_json=otu_jsonfi,
-                             ingroup_mrca=mrca)
+                             search_taxon=mrca)
 
 
 def check_otu_dict():
@@ -83,14 +83,14 @@ def test_add_all():
 
 
 def test_no_mrca():
-    ingroup_mrca = None
+    search_taxon = None
     # setup the run
     if not os.path.exists("{}".format(workdir)):
         os.makedirs("{}".format(workdir))
     conf = copy.deepcopy(conf_base)
     ids = copy.deepcopy(ids_base)
     data_obj = copy.deepcopy(data_obj_base)
-    filteredScrape = PhyscraperScrape(data_obj, ids, ingroup_mrca)
+    filteredScrape = PhyscraperScrape(data_obj, ids, search_taxon)
     filteredScrape.threshold = 5
     assert filteredScrape.mrca_ncbi == 795077
     blast_dir = "tests/data/precooked/fixed/tte_blast_files"
