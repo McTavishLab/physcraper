@@ -166,7 +166,7 @@ if study_id:
                                                 aln_schema = aln_schema,
                                                 workdir = workdir,
                                                 configfile = conf,
-                                                ingroup_mrca = ott_id)
+                                                search_mrca = ott_id)
         scraper = physcraper.PhyscraperScrape(data_obj, ids)
     else:
         scraper = scraper_from_opentree(study_id =study_id, 
@@ -176,11 +176,6 @@ if study_id:
                                         workdir = workdir,
                                         configfile = conf)
     sys.stdout.write("{} taxa in alignment and tree\n".format(len(scraper.data.aln)))
-    scraper.data.write_files()
-    scraper.data.write_files(treefilename = "before_otu_{}.tre".format(scraper.data.tag),
-                             alnfilename = "before_otu_{}.aln".format(scraper.data.tag))
-    scraper.data.write_labelled(filename="before_labelled_{}".format(scraper.data.tag), label='^ot:ottTaxonName')
-    scraper.data.write_otus(schema="json")
 
 if args.reload_files:
     if args.tag:
