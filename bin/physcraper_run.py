@@ -61,9 +61,12 @@ except AssertionError:
 if args.configfile:
     conf = physcraper.ConfigObj(args.configfile)
 elif args.reload_files:
-    configfile = "{}/run.config".format(args.reload_files)
+    files = [f for f in os.listdir(workdir)]
+    for file in files:
+        if file.startswith('run_'):
+            tag = file.split('.')[0].replace('run_', '')
+    configfile = "{}/run_{}/run.config".format(args.reload_files, tag)
     conf = physcraper.ConfigObj(configfile)
-    sys.stdout.write("Using config file {}\n".format(configfile))
 else:
     conf = physcraper.ConfigObj()
 
@@ -105,9 +108,10 @@ sys.stdout.write(conf.config_str()+"\n")
 study_id =  None
 if args.tree_link:
     linkl = args.tree_link.split("/")
-    assert(linkl[4]=="view")
-    study_id == linkl[5]
+    assert(linkl[5]=="view")
+    study_id = linkl[6]
     tree_id = linkl[-1].split("=")[1]
+
 
 if args.study_id or args.tree_id:
     try:

@@ -938,6 +938,10 @@ class PhyscraperScrape(object):
                    preserve_underscores=True,
                    taxon_namespace = self.data.aln.taxon_namespace)
         aln_tax = [taxon.label for taxon in self.data.aln]
+        outgroup = [otu_id for otu_id in self.data.otu_dict if self.data.otu_dict[otu_id].get('^physcraper:ingroup', False) == False]
+        debug("rerooting tree using {} as outgroup".format(outgroup))
+        mrca = newtre.mrca(taxon_labels = outgroup)
+        newtre.reroot_at_node(mrca)
         for taxon in newtre.leaf_nodes():
             assert taxon.taxon.label in self.data.otu_dict, taxon.taxon.label
             assert taxon.taxon.label in aln_tax
@@ -980,8 +984,13 @@ class PhyscraperScrape(object):
             sys.stderr.write("error code {}, {}".format(grepexc.returncode, grepexc.output))
         f = open('{}/muscle.log'.format(self.rundir), 'a')
         try:
+            cleaned_align_path = "{}/original_cleaned.fas".format(self.rundir)
+            cleaned_align_file = open(cleaned_align_path, 'w')
+            subprocess.check_call(["sed", "s/?/-/g",
+                                    input_aln_path], stdout=cleaned_align_file, stderr=f)
+            cleaned_align_file.close()
             subprocess.check_call(["muscle", "-profile",
-                                   "-in1", input_aln_path,
+                                   "-in1", cleaned_align_path,
                                    "-in2", outpath_NEW,
                                    "-out", outpath_ALL], stdout=f, stderr=subprocess.STDOUT)
             if _VERBOSE:
