@@ -89,7 +89,7 @@ class PhyscraperScrape(object):
                 * self._reconciled: 0
                 * self._full_tree_est: 0/1, if est_full_tree() was called, it is set to 1 for the round.
     """
-    def __init__(self, data_obj, ids_obj=None, ingroup_mrca=None):
+    def __init__(self, data_obj, ids_obj=None, search_taxon=None):
         assert isinstance(data_obj, AlignTreeTax)
         self.data = data_obj
         self.workdir = data_obj.workdir
@@ -130,8 +130,8 @@ class PhyscraperScrape(object):
         self.del_superseq = set()  # items that were deleted bc they are superseqs, needed for assert statement
         self.mrca_ott = data_obj.mrca_ott
         self.mrca_ncbi = self.ids.ott_to_ncbi.get(data_obj.mrca_ott)
-        if self.mrca_ncbi == None:
-            sys.stderr.write("ingroup mrca{} does not have a direct match to ncbi.\n".format(ingroup_mrca))
+        if self.mrca_ncbi == None or self.mrca_ncbi == 0:
+            sys.stderr.write("search mrca{} does not have a direct match to ncbi.\n".format(search_taxon))
         sys.stdout.write("restricting blast search to ncbi taxon ncbi:{} (ott:{}; {})\n".format(self.mrca_ncbi,
                                                                                                 self.mrca_ott,
                                                                                                 self.ids.ott_to_name[self.mrca_ott]))
@@ -164,8 +164,8 @@ class PhyscraperScrape(object):
 
     def write_mrca(self):
         with open('{}/mrca.txt'.format(self.inputsdir),"w") as fi:
-            fi.write("ingroup mrca ott_id {}\n".format(self.mrca_ott))
-            fi.write("ingroup mrca NCBI: {}\n".format(self.mrca_ncbi))
+            fi.write("search mrca ott_id {}\n".format(self.mrca_ott))
+            fi.write("search mrca NCBI: {}\n".format(self.mrca_ncbi))
 
 
     def run_local_blast_cmd(self, query, taxon_label, fn_path):
@@ -937,11 +937,11 @@ class PhyscraperScrape(object):
                    schema=schema,
                    preserve_underscores=True,
                    taxon_namespace = self.data.aln.taxon_namespace)
-        aln_tax = [taxon.label for taxon in self.data.aln]
         outgroup = [otu_id for otu_id in self.data.otu_dict if self.data.otu_dict[otu_id].get('^physcraper:ingroup', False) == False]
         debug("rerooting tree using {} as outgroup".format(outgroup))
         mrca = newtre.mrca(taxon_labels = outgroup)
         newtre.reroot_at_node(mrca)
+        aln_tax = [taxon.label for taxon in self.data.aln]
         for taxon in newtre.leaf_nodes():
             assert taxon.taxon.label in self.data.otu_dict, taxon.taxon.label
             assert taxon.taxon.label in aln_tax

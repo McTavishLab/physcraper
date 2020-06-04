@@ -166,7 +166,7 @@ if study_id:
                                                 aln_schema = aln_schema,
                                                 workdir = workdir,
                                                 configfile = conf,
-                                                search_mrca = ott_id)
+                                                search_taxon = ott_id)
         scraper = physcraper.PhyscraperScrape(data_obj, ids)
     else:
         scraper = scraper_from_opentree(study_id =study_id, 
