@@ -28,7 +28,7 @@ def test_reconcile():
                                      treefile=treefile,
                                      tree_schema=schema_trf,
                                      otu_json=otu_jsonfi,
-                                     ingroup_mrca=None)
+                                     search_taxon=None)
 
     for otu in data_obj.otu_dict:
         if data_obj.otu_dict[otu][u'^ot:originalLabel'] == '2029_doronicum':
@@ -43,7 +43,7 @@ def test_reconcile():
                                      treefile=treefilemiss,
                                      tree_schema=schema_trf,
                                      otu_json=otu_jsonfi,
-                                     ingroup_mrca=None)
+                                     search_taxon=None)
 
 
     for otu in data_obj.otu_dict:
@@ -65,7 +65,7 @@ def test_reconcile():
                                        treefile=treefilemiss,
                                        tree_schema = schema_trf,
                                        otu_json=otu_jsonfi,
-                                      ingroup_mrca=None)
+                                      search_taxon=None)
 
 
 

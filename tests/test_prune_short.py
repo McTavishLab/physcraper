@@ -38,7 +38,7 @@ def test_prune_short():
                                                  treefile=treefile,
                                                  tree_schema=schema_trf,
                                                  otu_json=otu_jsonfi,
-                                                 ingroup_mrca=None)
+                                                 search_taxon=None)
 
 
     data_obj.config.minlen = 0.9

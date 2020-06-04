@@ -10,7 +10,7 @@ Hypothetically, all the keys in the  otu_dict should be clean.
   * **newick**: dendropy.tre.as_string(schema=schema_trf) object
   * **otu_dict**: json file including the otu_dict information generated earlier
   * **alignment**: dendropy DNACharacterMatrix object
-  * **ingroup_mrca**: OToL identifier of the group of interest, either subclade as defined by user or of
+  * **search_taxon**: OToL identifier of the group of interest, either subclade as defined by user or of
                     all tiplabels in the phylogeny
   * **workdir**: the path to the corresponding working directory
   * **schema**: optional argument to define tre file schema, if different from "newick"
