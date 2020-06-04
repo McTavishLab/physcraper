@@ -104,7 +104,7 @@ delay = {delay}
 spp_threshold = {sppt}
 min_length = {perc}
 max_length = {maxlen}
-taxonomy_path = {taxonomy}'''.format(
+'''.format(
                                     email=self.email,
                                     e_val=self.e_value_thresh,
                                     hls=self.hitlist_size,
@@ -114,8 +114,7 @@ taxonomy_path = {taxonomy}'''.format(
                                     delay=self.delay,
                                     sppt=self.spp_threshold,
                                     perc=self.minlen,
-                                    maxlen=self.maxlen,
-                                    taxonomy = self.taxonomy_dir)
+                                    maxlen=self.maxlen)
         return(config_text)
     def write_file(self, direc, filename = "run.config"):
         config_text = self.config_str()
