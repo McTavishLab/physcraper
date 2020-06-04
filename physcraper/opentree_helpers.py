@@ -171,6 +171,10 @@ def generate_ATT_from_phylesystem(alnfile,
     otu_dict = {tn.taxon.otu:{} for tn in tree_obj.leaf_node_iter()}
     orig_lab_to_otu = {}
     treed_taxa = {}
+    ingroup_otus = set(nexson_helpers.get_subtree_otus(study_nexson,
+                                              tree_id=tree_id,
+                                              subtree_id="ingroup",
+                                              return_format="otu_id"))
     for leaf in tree_obj.leaf_node_iter():
         tn = leaf.taxon
         otu_id = tn.otu
@@ -179,6 +183,10 @@ def generate_ATT_from_phylesystem(alnfile,
         otu_dict[otu_id]["^ot:originalLabel"] = tn.original_label.replace(" ", "_")
         otu_dict[otu_id]["^physcraper:status"] = "original"
         otu_dict[otu_id]["^physcraper:last_blasted"] = None
+        if otu_id in ingroup_otus:
+            otu_dict[otu_id]["^physcraper:ingroup"] = True
+        else:
+            otu_dict[otu_id]["^physcraper:ingroup"] = False            
         orig = otu_dict[otu_id].get(u"^ot:originalLabel").replace(" ", "_")
         orig_lab_to_otu[orig] = otu_id
         if tip_label == 'otu':
@@ -187,10 +195,6 @@ def generate_ATT_from_phylesystem(alnfile,
             tn.label = otu_dict[otu_id].get(tip_label)
         treed_taxa[orig] = otu_dict[otu_id].get(u"^ot:ottId")
     # need to prune tree to seqs and seqs to tree...
-    ott_ids = nexson_helpers.get_subtree_otus(study_nexson,
-                                              tree_id=tree_id,
-                                              subtree_id="ingroup",
-                                              return_format="ottid")
     ott_mrca = None
     if ingroup_mrca:
         if type(ingroup_mrca) == list:
@@ -199,11 +203,14 @@ def generate_ATT_from_phylesystem(alnfile,
         else:
             ott_mrca = int(ingroup_mrca)
     if ott_mrca == None:
-        ott_ids = set([otu_dict[otu_id].get(u"^ot:ottId") for otu_id in otu_dict])
-        if None in ott_ids:
-            ott_ids.remove(None)
-        assert(len(ott_ids)>=1)
-        ott_mrca = get_mrca_ott(ott_ids)
+        ingroup_ott_ids = set()
+        for otu_id in otu_dict:
+            if otu_dict[otu_id]["^physcraper:ingroup"] == True: 
+                ingroup_ott_ids.add(otu_dict[otu_id].get(u"^ot:ottId"))
+        if None in ingroup_ott_ids:
+            ingroup_ott_ids.remove(None)
+        assert(len(ingroup_ott_ids)>=1)
+        ott_mrca = get_mrca_ott(ingroup_ott_ids)
     otu_newick = tree_obj.as_string(schema="newick")
     return physcraper.aligntreetax.AlignTreeTax(tree = otu_newick, otu_dict =otu_dict, alignment=alnfile, aln_schema = aln_schema, ingroup_mrca=ott_mrca, workdir=workdir, configfile=configfile)
     # newick should be bare, but alignment should be DNACharacterMatrix

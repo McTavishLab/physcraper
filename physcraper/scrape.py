@@ -938,6 +938,10 @@ class PhyscraperScrape(object):
                    preserve_underscores=True,
                    taxon_namespace = self.data.aln.taxon_namespace)
         aln_tax = [taxon.label for taxon in self.data.aln]
+        outgroup = [otu_id for otu_id in self.data.otu_dict if self.data.otu_dict[otu_id].get('^physcraper:ingroup', False) == False]
+        debug("rerooting tree using {} as outgroup".format(outgroup))
+        mrca = newtre.mrca(taxon_labels = outgroup)
+        newtre.reroot_at_node(mrca)
         for taxon in newtre.leaf_nodes():
             assert taxon.taxon.label in self.data.otu_dict, taxon.taxon.label
             assert taxon.taxon.label in aln_tax

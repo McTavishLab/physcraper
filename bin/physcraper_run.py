@@ -108,9 +108,10 @@ sys.stdout.write(conf.config_str()+"\n")
 study_id =  None
 if args.tree_link:
     linkl = args.tree_link.split("/")
-    assert(linkl[4]=="view")
-    study_id == linkl[5]
+    assert(linkl[5]=="view")
+    study_id = linkl[6]
     tree_id = linkl[-1].split("=")[1]
+
 
 if args.study_id or args.tree_id:
     try:

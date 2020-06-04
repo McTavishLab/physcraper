@@ -549,6 +549,7 @@ class AlignTreeTax(object):
         self.otu_dict[otu_id]["^physcraper:status"] = "query"
         self.otu_dict[otu_id]["^ot:ottTaxonName"] = ott_name
         self.otu_dict[otu_id]["^physcraper:last_blasted"] = None
+        self.otu_dict[otu_id]["^physcraper:ingroup"] = True
         if gb_id[:6] == "unpubl":
             self.otu_dict[otu_id]["^physcraper:status"] = "local seq"
             self.otu_dict[otu_id]["^ot:originalLabel"] = self.gb_dict[gb_id]["localID"]
@@ -665,7 +666,7 @@ class AlignTreeTax(object):
             alnpath = "{}/{}.fas".format(direc, filename)
         debug(treepath)
         assert label in ['^ot:ottTaxonName', '^user:TaxonName', '^physcraper:TaxonName',
-                         "^ot:originalLabel", "^ot:ottId", "^ncbi:taxon"]
+                         "^ot:originalLabel", "^ot:ottId", "^ncbi:taxon", 'name_and_id']
         tmp_newick = self.tre.as_string(schema="newick")
         tmp_tre = Tree.get(data=tmp_newick,
                            schema="newick",
@@ -681,8 +682,7 @@ class AlignTreeTax(object):
                 if self.otu_dict[taxon.label].get("^ot:originalLabel"):
                     new_label = "orig_{}".format(self.otu_dict[taxon.label]["^ot:originalLabel"])
                 else:
-                    new_label = "ncbi_{}_ottname_{}".format(self.otu_dict[taxon.label].get("^ncbi:taxon", "unk"),
-                                                            self.otu_dict[taxon.label].get('^physcraper:TaxonName', "unk"))
+                    new_label = taxon.label
             new_label = str(new_label).replace(' ', '_')
             if add_gb_id:
                 gb_id = self.otu_dict[taxon.label].get('^ncbi:accession')
@@ -694,7 +694,7 @@ class AlignTreeTax(object):
                     new_label = "_".join([new_label, str(sp_counter)])
                     sp_counter += 1
             else:
-                if new_label in new_names and norepeats:
+                if norepeats:
                     new_label = "_".join([new_label, taxon.label])
             taxon.label = new_label
             new_names.add(new_label)
@@ -726,7 +726,7 @@ class AlignTreeTax(object):
             #    all_keys.update(self.otu_dict[otu].keys())
             #keys = list(all_key)
             #keys.sort()
-            keys = ['^ot:ottTaxonName','^ot:ottId','^ncbi:taxon','^ncbi:accession','^ncbi:gi','^physcraper:last_blasted','^physcraper:status','^ot:originalLabel','^ncbi:title']
+            keys = ['^ot:ottTaxonName','^ot:ottId','^ncbi:taxon','^ncbi:accession','^ncbi:gi','^physcraper:last_blasted','^physcraper:ingroup','^physcraper:status','^ot:originalLabel','^ncbi:title']
             header = ["otu_id"] + keys
             with open("{}/{}_{}.csv".format(direc, filename, self.tag), "w") as outfile:
                 outfile.write("\t".join(header)+"\n")
