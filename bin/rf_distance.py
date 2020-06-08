@@ -7,6 +7,9 @@ import copy
 import physcraper
 from opentree import OT
 from dendropy.calculate import treecompare
+### Example
+# python ../physcraper/bin/rf_distance.py -t1 pg_238/inputs_pg_238tree109_RPB2/physcraper_pg_238tree109_RPB2.tre -t2 pg_238/outputs_pg_238tree109_RPB2/physcraper_pg_238tree109_RPB2.tre -otu pg_238/run_pg_238tree109_RPB2/otu_info_pg_238tree109_RPB2.json 
+
 
 
 parser = argparse.ArgumentParser()
@@ -89,12 +92,13 @@ def write_conflict_tree(inputtree, otu_dict):
                 node.label = "_nd{}_".format(i)
         return tmp_tree.as_string(schema="newick")
 
-treestr = write_conflict_tree(unpruned_tree2, otu_dict)
+treestr_updated = write_conflict_tree(unpruned_tree2, otu_dict)
+treestr_orig = write_conflict_tree(tree1, otu_dict)
 
 
-resp = OT.conflict_str(treestr, 'ott')
+resp_updated = OT.conflict_str(treestr_updated, 'ott')
+resp_orig = OT.conflict_str(treestr_orig, 'ott')
 
-print(resp.response_dict)
+print(resp_orig.response_dict)
 
-#curl -X POST 'https://api.opentreeoflife.org/v3/conflict/conflict-status' 
-#-d '{"tree1newick":"((('_nd3_ott318436':0.0039987231091762904,('_nd5_ott318436':0.002661502175610165,(('_nd8_ott114544':0.0013340236695662932,'_nd9_ott114544':0.0026693191584754605,'_nd10_ott114541':0.002671840407990468,'_nd11_ott114544':0.0026706831311005975,('_nd13_ott114544':0.0013300238194868471,'_nd14_ott688671':1.00000050002909e-06)'_nd12_':2.00000100005818e-06,'_nd15_ott114544':0.0013309288367575759)'_nd7_':0.004002067908182651,(('_nd18_ott318436':0.0013373360809382606,'_nd19_ott318436':0.0015450873265851193)'_nd17_':0.004000986236500289,((('_nd23_ott640718':2.00000100005818e-06,'_nd24_ott640718':0.00267032000532656,('_nd26_ott640718':0.001332519568352937,'_nd27_ott640718':0.0013325197242921294)'_nd25_':0.0013346423342407972)'_nd22_':0.0013296539242075864,'_nd28_ott640718':1.00000050002909e-06)'_nd21_':0.002661304633280725,('_nd30_ott688688':1.00000050002909e-06,'_nd31_ott688688':1.00000050002909e-06)'_nd29_':0.009389376977422134)'_nd20_':1.00000050002909e-06)'_nd16_':0.0013253295076721423)'_nd6_':0.0013402480338439555)'_nd4_':1.00000050002909e-06,'_nd32_ott318436':1.00000050002909e-06)'_nd2_':0.0;'","tree2":"synth"}'
+
