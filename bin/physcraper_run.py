@@ -14,6 +14,7 @@ parser.add_argument("-a","--alignment", help="path to alignment")
 parser.add_argument("-as","--aln_schema", help="alignment schema (nexus or fasta)")
 parser.add_argument("-db", "--blast_db", help="local download of blast database")
 parser.add_argument("-o","--output", help="path to output directory")
+parser.add_argument("-bs","--bootstrap_reps", help="number of bootstrap reps")
 parser.add_argument("-tx","--taxonomy", help="path to taxonomy")
 parser.add_argument("-c","--configfile", help="path to config file")
 parser.add_argument("-e","--email", help="email address for ncbi balst searches")
@@ -188,7 +189,12 @@ if args.reload_files:
     sys.stdout.write("Reloaded {} taxa in alignment and tree\n".format(len(scraper.data.aln)))
 
 
+if args.bootstrap_reps:
+    boot_reps = args.bootstrap_reps
+else:
+    boot_reps = 100
+
 if not args.no_estimate_tree:
 #scraper.read_blast_wrapper()
-    scraper.est_full_tree()
+    scraper.calculate_final_tree(boot_reps = boot_reps)
     scraper.data.write_labelled(label='^ot:ottTaxonName')

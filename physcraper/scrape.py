@@ -1165,13 +1165,13 @@ class PhyscraperScrape(object):
                                  # "raxmlHPC-PTHREADS", "-T", "{}".format(num_threads),
                                  "-m", "GTRCAT",
                                  "-s", alignment,
-                                 "-p", "1", "-f", "a", "-x", "1", "-#", num_reps,
+                                 "-p", "1", "-f", "a", "-x", "1", "-#", str(num_reps),
                                  "-n", "BOOT{}".format(self.date)])
             else:
                 subprocess.call([rax_ex, "-T", "{}".format(self.config.num_threads),
                                  "-m", "GTRCAT",
                                  "-s", alignment,
-                                 "-p", "1", "-b", "1", "-#", num_reps,
+                                 "-p", "1", "-b", "1", "-#", str(num_reps),
                                  "-n", "BOOT{}".format(self.date)])
         outpath = "{}/RAxML_bootstrap.BOOT{}".format(self.rundir,self.date)
         return(outpath)
@@ -1192,7 +1192,7 @@ class PhyscraperScrape(object):
 
 
 
-    def calculate_final_tree(self):
+    def calculate_final_tree(self, boot_reps = 100):
         """Calculates the final tree using a trimmed alignment.
 
         :return: final PS data
@@ -1202,7 +1202,7 @@ class PhyscraperScrape(object):
         self.data.prune_short()
         self.data.write_files(treefilename="physcraper_final_trim.tre", alnfilename="physcraper_final_trim.fas")
         besttreepath = self.est_full_tree()
-        bootpath = self.calculate_bootstrap()
+        bootpath = self.calculate_bootstrap(num_reps = boot_reps)
         sumtreepath = self.summarize_boot(besttreepath, bootpath)
         self.replace_tre(sumtreepath, schema="nexus")
         self.data.write_files(direc=self.outputsdir)

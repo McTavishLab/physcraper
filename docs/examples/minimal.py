@@ -60,7 +60,7 @@ aln_path1 = scraper.data.write_aln()
 
 sys.stdout.write("Running align_query_seqs()...\n")
 scraper.align_new_seqs()
-scraper.calculate_final_tree()
+scraper.calculate_final_tree(boot_reps=30)
 scraper.data.write_labelled(label="^ncbi:taxon", filename="updated_ncbi_id", norepeats=False, direc = scraper.outputsdir)
 
 
