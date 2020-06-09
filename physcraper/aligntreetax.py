@@ -11,7 +11,7 @@ from physcraper.opentree_helpers import get_mrca_ott
 from physcraper.helpers import standardize_label, to_string, debug
 
 _VERBOSE = 1
-_DEBUG = 0
+_DEBUG = 1
 
 def generate_ATT_from_files(workdir,
                             configfile,
@@ -20,7 +20,7 @@ def generate_ATT_from_files(workdir,
                             treefile,
                             otu_json,
                             tree_schema,
-                            ingroup_mrca=None):
+                            search_taxon=None):
     """Build an ATT object without phylesystem, use your own files instead.
 
     Spaces vs underscores kept being an issue, so all spaces are coerced to underscores when data are read in.
@@ -34,7 +34,7 @@ def generate_ATT_from_files(workdir,
     :param treefile: path to phylogeny
     :param otu_json: path to json file containing the translation of tip names to taxon names, generated with OtuJsonDict()
     :param tree_schema: a string defining the format of the input phylogeny
-    :param ingroup_mrca: optional - OToL ID of the mrca of the clade of interest. If no ingroup mrca ott_id is provided, will use all taxa in tree to calc mrca.
+    :param search_taxon: optional - OToL ID of the mrca of the clade of interest. If no search mrca ott_id is provided, will use all taxa in tree to calc mrca.
 
     :return: object of class ATT
     """
@@ -45,14 +45,14 @@ def generate_ATT_from_files(workdir,
         os.makedirs(workdir)
     # use replaced aln as input
     otu_dict = json.load(open(otu_json, "r"))
-    if ingroup_mrca:
-        mrca_ott = int(ingroup_mrca)
+    if search_taxon:
+        mrca_ott = int(search_taxon)
     else:
         ott_ids = [otu_dict[otu].get(u'^ot:ottId', ) for otu in otu_dict]
         ott_ids = filter(None, ott_ids)
         ott_ids = set(ott_ids)
         mrca_ott = get_mrca_ott(ott_ids)
-    return AlignTreeTax(treefile, otu_dict, alnfile, ingroup_mrca=mrca_ott, workdir=workdir,
+    return AlignTreeTax(treefile, otu_dict, alnfile, search_taxon=mrca_ott, workdir=workdir,
                         configfile=configfile, tree_schema=tree_schema)
 
 def generate_ATT_from_run(workdir, start_files='output', tag=None, configfile=None):
@@ -78,7 +78,7 @@ def generate_ATT_from_run(workdir, start_files='output', tag=None, configfile=No
         assert(os.path.exists(otu_json))
         otu_dict = json.load(open(otu_json, "r"))
         mrca_ott = mrca_ott = int(open("{}/mrca.txt".format(inputsdir)).readline().split()[-1])
-        return AlignTreeTax(tree = treefile, otu_dict= otu_dict, alignment = alnfi, ingroup_mrca=mrca_ott, workdir=workdir,
+        return AlignTreeTax(tree = treefile, otu_dict= otu_dict, alignment = alnfi, search_taxon=mrca_ott, workdir=workdir,
                     configfile=configfile, tag=tag, tree_schema='newick')
     except AssertionError:
         sys.stdout.write("No output files found in {}, loading files from {}\n".format(outputsdir, inputsdir))
@@ -90,7 +90,7 @@ def generate_ATT_from_run(workdir, start_files='output', tag=None, configfile=No
         assert(os.path.exists(otu_json)), otu_json
         otu_dict = json.load(open(otu_json, "r"))
         mrca_ott = mrca_ott = int(open("{}/mrca.txt".format(inputsdir)).readline().split()[-1])
-        return AlignTreeTax(tree = treefile, otu_dict= otu_dict, alignment = alnfi, ingroup_mrca=mrca_ott, workdir=workdir,
+        return AlignTreeTax(tree = treefile, otu_dict= otu_dict, alignment = alnfi, search_taxon=mrca_ott, workdir=workdir,
                 configfile=configfile, tag=tag, tree_schema='newick')
     #except AssertionError:
        #     sys.stdout.write("No run files found in {} or {}. Data not loaded\n".format(outputsdir, inputsdir))
@@ -129,7 +129,7 @@ class AlignTreeTax(object):
           * **newick**: dendropy.tre.as_string(schema=schema_trf) object
           * **otu_dict**: json file including the otu_dict information generated earlier
           * **alignment**: dendropy :class:`DnaCharacterMatrix <dendropy.datamodel.charmatrixmodel.DnaCharacterMatrix>` object
-          * **ingroup_mrca**: OToL identifier of the group of interest, either subclade as defined by user or of all tip labels in the phylogeny
+          * **search_taxon**: OToL identifier of the group of interest, either subclade as defined by user or of all tip labels in the phylogeny
           * **workdir**: the path to the corresponding working directory
           * **config_obj**: Config class
           * **schema**: optional argument to define tre file schema, if different from "newick"
@@ -194,7 +194,7 @@ class AlignTreeTax(object):
           * self.aln, self.tre and self.otu_dict, self.ps_otu, self.gi_dict
     """
 
-    def __init__(self, tree, otu_dict, alignment, ingroup_mrca, workdir, configfile=None,
+    def __init__(self, tree, otu_dict, alignment, search_taxon, workdir, configfile=None,
                  tree_schema='newick',aln_schema ='fasta',taxon_namespace=None, tag=None):
         debug("build ATT class")
         if tag == None:
@@ -231,8 +231,8 @@ class AlignTreeTax(object):
         self._reconcile()
         self._reconcile_names()
         
-        assert int(ingroup_mrca), ("your ingroup_mrca '%s' is not an integer." % ingroup_mrca)
-        self.mrca_ott = ingroup_mrca  # ott_ingroup mrca can be pulled directly from phylesystem
+        assert int(search_taxon), ("your search_taxon '%s' is not an integer." % search_taxon)
+        self.mrca_ott = search_taxon  # ott mrca can be pulled directly from phylesystem
         self.orig_seqlen = []  # will get filled in later...
         self.gb_dict = {}  # has all info about new blast seq
         self._reconciled = False
@@ -726,7 +726,7 @@ class AlignTreeTax(object):
             #    all_keys.update(self.otu_dict[otu].keys())
             #keys = list(all_key)
             #keys.sort()
-            keys = ['^ot:ottTaxonName','^ot:ottId','^ncbi:taxon','^ncbi:accession','^ncbi:gi','^physcraper:last_blasted','^physcraper:ingroup','^physcraper:status','^ot:originalLabel','^ncbi:title']
+            keys = ['^ot:ottTaxonName','^ot:ottId','^ncbi:taxon','^ncbi:accession','^physcraper:last_blasted','^physcraper:ingroup','^physcraper:status','^ot:originalLabel','^ncbi:title']
             header = ["otu_id"] + keys
             with open("{}/{}_{}.csv".format(direc, filename, self.tag), "w") as outfile:
                 outfile.write("\t".join(header)+"\n")

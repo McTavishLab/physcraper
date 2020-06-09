@@ -141,7 +141,7 @@ def generate_ATT_from_phylesystem(alnfile,
                                   study_id,
                                   tree_id,
                                   phylesystem_loc='api',
-                                  ingroup_mrca=None,
+                                  search_taxon=None,
                                   tip_label='^ot:originalLabel'):
     """gathers together tree, alignment, and study info - forces names to otu_ids.
 
@@ -155,7 +155,7 @@ def generate_ATT_from_phylesystem(alnfile,
     :param study_id: OToL study id of the corresponding phylogeny which shall be updated
     :param tree_id: OToL corresponding tree ID as some studies have several phylogenies
     :param phylesystem_loc: access the github version of the OpenTree data store, or a local clone
-    :param ingroup_mrca: optional.  OToL identifier of the mrca of the clade that shall be updated (can be subset of the phylogeny)
+    :param search_taxon: optional.  OToL identifier of the mrca of the clade that shall be updated (can be subset of the phylogeny)
     :return: object of class ATT
     """
     assert(tip_label in ['^ot:originalLabel', 'otu', "^ot:ottTaxonName", "^ot:ottId"])
@@ -196,12 +196,12 @@ def generate_ATT_from_phylesystem(alnfile,
         treed_taxa[orig] = otu_dict[otu_id].get(u"^ot:ottId")
     # need to prune tree to seqs and seqs to tree...
     ott_mrca = None
-    if ingroup_mrca:
-        if type(ingroup_mrca) == list:
-            ott_ids = set(ingroup_mrca)
+    if search_taxon:
+        if type(search_taxon) == list:
+            ott_ids = set(search_taxon)
             ott_mrca = get_mrca_ott(ott_ids)
         else:
-            ott_mrca = int(ingroup_mrca)
+            ott_mrca = int(search_taxon)
     if ott_mrca == None:
         ingroup_ott_ids = set()
         for otu_id in otu_dict:
@@ -212,7 +212,7 @@ def generate_ATT_from_phylesystem(alnfile,
         assert(len(ingroup_ott_ids)>=1)
         ott_mrca = get_mrca_ott(ingroup_ott_ids)
     otu_newick = tree_obj.as_string(schema="newick")
-    return physcraper.aligntreetax.AlignTreeTax(tree = otu_newick, otu_dict =otu_dict, alignment=alnfile, aln_schema = aln_schema, ingroup_mrca=ott_mrca, workdir=workdir, configfile=configfile)
+    return physcraper.aligntreetax.AlignTreeTax(tree = otu_newick, otu_dict =otu_dict, alignment=alnfile, aln_schema = aln_schema, search_taxon=ott_mrca, workdir=workdir, configfile=configfile)
     # newick should be bare, but alignment should be DNACharacterMatrix
 
 

@@ -42,7 +42,7 @@ data_obj = generate_ATT_from_files(alnfile=aln_fi,
                              treefile=tre_fi,
                              tree_schema = "newick", #schema_trf
                              otu_json=otu_jsonfi,
-                             ingroup_mrca=mrca)
+                             search_taxon=mrca)
 
 data_obj.tag = "minEx"
 
@@ -60,7 +60,7 @@ aln_path1 = scraper.data.write_aln()
 
 sys.stdout.write("Running align_query_seqs()...\n")
 scraper.align_new_seqs()
-scraper.est_full_tree()
+scraper.calculate_final_tree(boot_reps=30)
 scraper.data.write_labelled(label="^ncbi:taxon", filename="updated_ncbi_id", norepeats=False, direc = scraper.outputsdir)
 
 

@@ -21,7 +21,7 @@ def test_generate_ATT_from_files():
                                      treefile=treefile,
                                      tree_schema=schema_trf,
                                      otu_json=otu_jsonfi,
-                                     ingroup_mrca=None)
+                                     search_taxon=None)
 
     data_obj == True
 

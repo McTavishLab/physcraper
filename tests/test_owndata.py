@@ -41,7 +41,7 @@ def test_owndata():
 								 treefile=trfn,
 								 tree_schema = schema_trf,
 								 otu_json=otu_jsonfi,
-								 ingroup_mrca=None)
+								 search_taxon=None)
 
 
 	assert isinstance(data_obj, AlignTreeTax)

@@ -58,7 +58,7 @@ def cd(path):
                       # configfi='config.out',
                       # treefile='physcraper.tre',
                       # schema_trf='newick',
-                      # ingroup_mrca = 'mrca.txt'):
+                      # search_taxon = 'mrca.txt'):
                       
 
 def write_filterblast_db(workdir, seq_name, seq, fn):

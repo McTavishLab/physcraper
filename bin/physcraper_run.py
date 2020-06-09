@@ -14,6 +14,7 @@ parser.add_argument("-a","--alignment", help="path to alignment")
 parser.add_argument("-as","--aln_schema", help="alignment schema (nexus or fasta)")
 parser.add_argument("-db", "--blast_db", help="local download of blast database")
 parser.add_argument("-o","--output", help="path to output directory")
+parser.add_argument("-bs","--bootstrap_reps", help="number of bootstrap reps")
 parser.add_argument("-tx","--taxonomy", help="path to taxonomy")
 parser.add_argument("-c","--configfile", help="path to config file")
 parser.add_argument("-e","--email", help="email address for ncbi balst searches")
@@ -166,7 +167,7 @@ if study_id:
                                                 aln_schema = aln_schema,
                                                 workdir = workdir,
                                                 configfile = conf,
-                                                ingroup_mrca = ott_id)
+                                                search_taxon = ott_id)
         scraper = physcraper.PhyscraperScrape(data_obj, ids)
     else:
         scraper = scraper_from_opentree(study_id =study_id, 
@@ -176,11 +177,6 @@ if study_id:
                                         workdir = workdir,
                                         configfile = conf)
     sys.stdout.write("{} taxa in alignment and tree\n".format(len(scraper.data.aln)))
-    scraper.data.write_files()
-    scraper.data.write_files(treefilename = "before_otu_{}.tre".format(scraper.data.tag),
-                             alnfilename = "before_otu_{}.aln".format(scraper.data.tag))
-    scraper.data.write_labelled(filename="before_labelled_{}".format(scraper.data.tag), label='^ot:ottTaxonName')
-    scraper.data.write_otus(schema="json")
 
 if args.reload_files:
     if args.tag:
@@ -193,7 +189,12 @@ if args.reload_files:
     sys.stdout.write("Reloaded {} taxa in alignment and tree\n".format(len(scraper.data.aln)))
 
 
+if args.bootstrap_reps:
+    boot_reps = args.bootstrap_reps
+else:
+    boot_reps = 100
+
 if not args.no_estimate_tree:
 #scraper.read_blast_wrapper()
-    scraper.est_full_tree()
+    scraper.calculate_final_tree(boot_reps = boot_reps)
     scraper.data.write_labelled(label='^ot:ottTaxonName')
