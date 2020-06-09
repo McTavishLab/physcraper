@@ -71,7 +71,7 @@ def generate_ATT_from_run(workdir, start_files='output', tag=None, configfile=No
        configfile = "{}/run.config".format(rundir)
     try:
         alnfi = "{}/physcraper_{}.fas".format(outputsdir, tag)
-        treefile = "{}/physcraper_{}.tre".format(inputsdir, tag)
+        treefile = "{}/physcraper_{}.tre".format(outputsdir, tag)
         otu_json = "{}/otu_info_{}.json".format(rundir, tag)
         assert(os.path.exists(alnfi))
         assert(os.path.exists(treefile))
