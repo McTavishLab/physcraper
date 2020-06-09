@@ -11,7 +11,7 @@ from physcraper.opentree_helpers import get_mrca_ott
 from physcraper.helpers import standardize_label, to_string, debug
 
 _VERBOSE = 1
-_DEBUG = 0
+_DEBUG = 1
 
 def generate_ATT_from_files(workdir,
                             configfile,

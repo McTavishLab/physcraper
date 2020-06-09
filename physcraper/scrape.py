@@ -256,6 +256,7 @@ class PhyscraperScrape(object):
         debug("Today's date is {}".format(today))
         debug("run_blast_wrapper")
         debug(self.blast_subdir)
+        debug("current alignment length {}".format(len(self.data.aln)))
         self._blast_read = 0
         if not os.path.exists(self.blast_subdir):
             os.makedirs(self.blast_subdir)
@@ -535,7 +536,8 @@ class PhyscraperScrape(object):
         :param blast_dir: path to directory which contains blast files
         :return: fills different dictionaries with information from blast files
         """
-#        debug("read_blast_wrapper")
+        debug("read_blast_wrapper")
+        debug("current alignment length {}".format(len(self.data.aln)))
         if blast_dir:
             if _VERBOSE:
                 sys.stdout.write("blast dir is {}\n".format(blast_dir))
@@ -926,6 +928,7 @@ class PhyscraperScrape(object):
         newaln = DnaCharacterMatrix.get(path=filename, schema=schema)
         for taxon in newaln:
             assert taxon.label in self.data.otu_dict
+        debug("updating current alignment from file {}, with {} seqs.".format(filename, len(newaln)))
         self.data.aln = newaln
         self.new_seqs_otu_id = {}
         self._blasted = 0
@@ -950,6 +953,7 @@ class PhyscraperScrape(object):
 
 
     def run_muscle(self, input_aln_path = None, new_seqs_path = None, outname = 'all_align'):
+        debug("running muscle\n")
         outpath_ALL = "{}/{}_{}.fas".format(self.rundir, outname, self.data.tag)
         if os.path.exists(outpath_ALL):
             self.replace_aln(outpath_ALL)
@@ -1198,9 +1202,7 @@ class PhyscraperScrape(object):
         :return: final PS data
         """
         debug("calculate final tree")
-        self.data.write_files(treefilename="physcraper_final_notrim.tre", alnfilename="physcraper_final_notrim.fas")
-        self.data.prune_short()
-        self.data.write_files(treefilename="physcraper_final_trim.tre", alnfilename="physcraper_final_trim.fas")
+        debug("current alignment length {}".format(len(self.data.aln)))
         besttreepath = self.est_full_tree()
         bootpath = self.calculate_bootstrap(num_reps = boot_reps)
         sumtreepath = self.summarize_boot(besttreepath, bootpath)
