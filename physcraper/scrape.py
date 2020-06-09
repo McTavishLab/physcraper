@@ -386,9 +386,16 @@ class PhyscraperScrape(object):
         seq_path = "{}/{}.fasta".format(self.ids.full_seq_path, gb_id)
         if not os.path.exists(seq_path):
             db_path = "{}/nt".format(self.config.blastdb)
-            cmd1 = "blastdbcmd -db {}  -entry {} -outfmt %f -out {}".format(db_path, gb_id, seq_path)
-            # debug(cmd1)
-            os.system(cmd1)
+            try:
+                subprocess.check_call(["blastdbcmd",
+                                        "-db",  db_path,
+                                        "-entry", gb_id,
+                                        "-outfmt", "%f",
+                                        "-out", seq_path])
+        
+            except subprocess.CalledProcessError as grepexc:
+                sys.stderr.write("error code {}, {}".format(grepexc.returncode, grepexc.output))
+                sys.exit()
             # read in file to get full seq
         f = open(seq_path)
         seq = ""
