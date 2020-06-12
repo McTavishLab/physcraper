@@ -330,13 +330,13 @@ class AlignTreeTax(object):
                 del_aln.append(taxon)
             if taxon in treed_tax:
                 del_tre.append(taxon)
-        self.aln.remove_sequences(del_aln)
+#        self.aln.remove_sequences(del_aln)
         for tax in del_tre:
             assert(tax in treed_tax), tax
         self.tre.prune_taxa(del_tre)
-        for tax in prune:
+        for tax in del_tre:
             otu = tax.label
-            self.otu_dict[otu]['^physcraper:status'] = "deleted in reconciliation"
+            self.otu_dict[otu]['^physcraper:status'] = "deleted from tree in reconciliation"
             self.aln.taxon_namespace.remove_taxon(tax)
         assert self.aln.taxon_namespace == self.tre.taxon_namespace
 
