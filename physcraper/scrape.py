@@ -948,13 +948,19 @@ class PhyscraperScrape(object):
                    preserve_underscores=True,
                    taxon_namespace = self.data.aln.taxon_namespace)
         outgroup = [otu_id for otu_id in self.data.otu_dict if self.data.otu_dict[otu_id].get('^physcraper:ingroup', False) == False]
-        debug("rerooting tree using {} as outgroup".format(outgroup))
-        mrca = newtre.mrca(taxon_labels = outgroup)
-        newtre.reroot_at_node(mrca)
+        outgroup_in_tree = []
         aln_tax = [taxon.label for taxon in self.data.aln]
         for taxon in newtre.leaf_nodes():
             assert taxon.taxon.label in self.data.otu_dict, taxon.taxon.label
             assert taxon.taxon.label in aln_tax
+            if taxon.taxon.label in outgroup:
+                outgroup_in_tree.append(taxon.label)
+        debug("rerooting tree using {} as outgroup".format(outgroup_in_tree))
+        if len(outgroup_in_tree) == 0:
+            sys.stdout.write("No outgroup taxa found in tree, tree is unrooted\n")
+        else:
+            mrca = newtre.mrca(taxon_labels = outgroup_in_tree)
+            newtre.reroot_at_node(mrca)
         self.data.tre = newtre
 
 
