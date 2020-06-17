@@ -145,6 +145,7 @@ for node in induced_tree_of_taxa:
         print("root")
         break
 
+root_node = node
 children =root_node.child_nodes()
 
 representative_taxa = []
@@ -166,21 +167,16 @@ for tax in representative_taxa:
     phyloref.add(ott_id)
 
 tips_for_root = set()
-for otu in otu_dict:
-    if otu_dict[otu]['^ot:ottId'] in phyloref:
-        tips_for_root.add(otu)
+leaves = [leaf.taxon.label for leaf in unpruned_tree2.leaf_nodes()]
+for ottid in phyloref:
+    for otu in otu_dict:
+        if otu_dict[otu]['^ot:ottId'] in phyloref:
+            if  otu in leaves:           
+                tips_for_root.add(otu)
+                continue
 
-taxa_for_root = []
-for leaf in unpruned_tree2.leaf_nodes():
-    if leaf.taxon.label in tips_for_root:
-        taxa_for_root.append(leaf.taxon)
 
-
-mrca = None
-while mrca == None:
-    taxa_try = random.sample(taxa_for_root)
-    mrca = unpruned_tree2.mrca(taxa = taxa_try)
-
+mrca = unpruned_tree2.mrca(taxon_labels = tips_for_root)
 unpruned_tree2.reroot_at_node(mrca)
 
 unpruned_tree2.write(path = "{}/after_rooting.tre".format(comparisondir), schema="newick")
