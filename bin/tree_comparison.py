@@ -139,10 +139,11 @@ unpruned_tree2.write(path = "{}/before_rooting.tre".format(comparisondir), schem
 
 resp = OT.synth_induced_tree(ott_ids=list(new_spp))
 induced_tree_of_taxa = resp.tree
+resp.tree.write(path = "{}/induced_synth.tre".format(comparisondir), schema="newick")
+
 
 for node in induced_tree_of_taxa:
     if node.parent_node is None:
-        print("root")
         break
 
 root_node = node
@@ -158,7 +159,7 @@ for child in children:
         representative_taxa.append(child.leaf_nodes()[0].taxon.label)
 
 
-sys.stdout.write("Rooting updated tree based on taxon relationships in synthetic tree. Root will be MRCA of {}".format(", ".join(representative_taxa)))
+sys.stdout.write("Rooting updated tree based on taxon relationships in synthetic tree. Root will be MRCA of {}\n".format(", ".join(representative_taxa)))
 
 ## Get tips for those taxa:
 phyloref = set()
