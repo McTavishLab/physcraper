@@ -272,6 +272,9 @@ class PhyscraperScrape(object):
             else:
                 time_passed = abs((datetime.datetime.strptime(today, "%Y/%m/%d") - datetime.datetime.strptime(
                 last_blast, "%Y/%m/%d")).days)
+            if self.data.otu_dict[otu_id]["^physcraper:ingroup"] != True:
+                sys.stdout.write("tip {} not in ingroup. Will not blast, \n".format(fn_path))
+                continue
             if time_passed > delay:
                 query = seq.symbols_as_string().replace("-", "").replace("?", "")
                # tmpfile.write(query)
@@ -615,7 +618,8 @@ class PhyscraperScrape(object):
         should_add = True
         reason = 'new'
         i = 0
-        assert new_otu_label not in otu_list
+        if new_otu_label in otu_list: ##Whyy would we hit an otu twice?
+            return seq_dict
         for otu_lab in otu_list:
             #debug("old lab: {}".format(otu_lab))
             i += 1
@@ -934,7 +938,7 @@ class PhyscraperScrape(object):
     def replace_aln(self, filename, schema = 'fasta'):
         newaln = DnaCharacterMatrix.get(path=filename, schema=schema)
         for taxon in newaln:
-            assert taxon.label in self.data.otu_dict
+            assert taxon.label in self.data.otu_dict, taxon.label
         debug("updating current alignment from file {}, with {} seqs.".format(filename, len(newaln)))
         self.data.aln = newaln
         self.new_seqs_otu_id = {}
@@ -950,17 +954,22 @@ class PhyscraperScrape(object):
         outgroup = [otu_id for otu_id in self.data.otu_dict if self.data.otu_dict[otu_id].get('^physcraper:ingroup', False) == False]
         outgroup_in_tree = []
         aln_tax = [taxon.label for taxon in self.data.aln]
-        for taxon in newtre.leaf_nodes():
-            assert taxon.taxon.label in self.data.otu_dict, taxon.taxon.label
-            assert taxon.taxon.label in aln_tax
-            if taxon.taxon.label in outgroup:
-                outgroup_in_tree.append(taxon.label)
+        for leaf in newtre.leaf_nodes():
+            assert leaf.taxon.label in self.data.otu_dict, leaf.taxon.label
+            assert leaf.taxon.label in aln_tax
+            if leaf.taxon.label in outgroup:
+                outgroup_in_tree.append(leaf.taxon)
+            if leaf.taxon.label.replace(' ','_') in outgroup:
+                outgroup_in_tree.append(leaf.taxon)
         debug("rerooting tree using {} as outgroup".format(outgroup_in_tree))
         if len(outgroup_in_tree) == 0:
             sys.stdout.write("No outgroup taxa found in tree, tree is unrooted\n")
         else:
-            mrca = newtre.mrca(taxon_labels = outgroup_in_tree)
-            newtre.reroot_at_node(mrca)
+            try:
+                mrca = newtre.mrca(taxa = outgroup_in_tree)
+                newtre.reroot_at_node(mrca)
+            except:
+                sys.stdout.write("Problem rooting tree, tree is unrooted\n")
         self.data.tre = newtre
 
 
@@ -1238,7 +1247,7 @@ class PhyscraperScrape(object):
             acc = self.data.otu_dict[tax.label].get("^ncbi:accession")
             if gi_id in self.blacklist or acc in self.blacklist:
                 self.data.remove_taxa_aln_tre(tax.label)
-                self.data.otu_dict[tax.label]['^physcraper:status'] = "deleted, Genbank identifier is part of blacklist"
+                self.data.otu_dict[tax.label]['^physcraper:status'] = "deleted, Genbank identifier is part of blocklist"
         # this should not need to happen here: prune_short; instead...
         self.data.check_tre_in_aln()
         # self.data.prune_short()

@@ -271,6 +271,14 @@ def get_max_match_aln(tree, dataset, min_match = 3):
     else:
         return None
 
+def deconcatenate_aln(aln_obj, filename, direc):
+    #dna1 = dendropy.DnaCharacterMatrix.get(file=open("treebase_alns/M4358.nex"), schema="nexus")
+    for label in dna1.character_subsets.keys():
+        sys.stdout.write("deconcatenating {}".format(label))
+        submat = dna1.export_character_subset(label)
+        submat.write(path = "{}/{}_{}.fasta".format(direc, filename, label), schema = "fasta")
+
+
 def scraper_from_opentree(study_id, tree_id, alnfile, workdir, aln_schema, configfile=None):
     # Read in the configuration information
     data_obj = generate_ATT_from_phylesystem(alnfile=alnfile,

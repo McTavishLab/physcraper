@@ -262,7 +262,8 @@ class AlignTreeTax(object):
             else:
                 self.otu_dict[leaf.taxon.label] = {'^ot:originalLabel':leaf.taxon.label,
                                                  "^physcraper:status":"original",
-                                                  "^physcraper:last_blasted":None
+                                                  "^physcraper:last_blasted":None,
+                                                  "^physcraper:ingroup":'unknown'
                                                   }
  
     def read_in_aln(self, alignment, aln_schema, namespace=None):
@@ -310,7 +311,8 @@ class AlignTreeTax(object):
                 else:
                     self.otu_dict[tax.label] = {'^ot:originalLabel':tax.label,
                                                 "^physcraper:status":"original",
-                                                  "^physcraper:last_blasted":None
+                                                  "^physcraper:last_blasted":None,
+                                                  "^physcraper:ingroup":'unknown'
                                                  }
  
             assert tax.label in self.otu_dict, tax.label
@@ -331,6 +333,9 @@ class AlignTreeTax(object):
             if taxon in treed_tax:
                 del_tre.append(taxon)
 #        self.aln.remove_sequences(del_aln)
+        for tax in del_aln:
+            self.otu_dict[otu]['^physcraper:status'] = "in original alignment but not tree, taxon info unknown"
+            self.otu_dict[otu]['^physcraper:ingroup'] = "unkown"
         for tax in del_tre:
             assert(tax in treed_tax), tax
         self.tre.prune_taxa(del_tre)
@@ -521,6 +526,8 @@ class AlignTreeTax(object):
         otu_id = self.get_otu_for_acc(gb_id)
         if otu_id:
             return otu_id
+        while "otuPS{}".format(self.ps_otu) in self.otu_dict:
+            self.ps_otu += 1
         otu_id = "otuPS{}".format(self.ps_otu)
         self.ps_otu += 1
         ott_id = None

@@ -1,6 +1,7 @@
 import sys
 import os
 import json
+import subprocess
 import argparse
 import dendropy
 import copy
@@ -17,12 +18,17 @@ parser.add_argument("-d","--results_dir", help="results directory from run")
 parser.add_argument("-t1","--original_tree", help="Original tree")
 parser.add_argument("-t2","--updated_tree", help="Updated Tree")
 parser.add_argument("-otu", "--otu_info", help="File with taxon information JSON")
+parser.add_argument("-o", "--outputdir", help="Name for output directory")
+
 
 schema = "newick"
 
-
-
 args = parser.parse_args()
+
+comparisondir = args.outputdir
+if not os.path.exists(comparisondir):
+    os.mkdir(comparisondir)
+
 
 tns = dendropy.TaxonNamespace()
 
@@ -41,7 +47,7 @@ if args.results_dir:
     tree2_path = "{}/physcraper_{}.tre".format(outputsdir, tag)
 else:
     tree1_path = args.original_tree
-    tree2_path =- args.updated_tree
+    tree2_path = args.updated_tree
     otu_json_path = args.otu_info
 
 
@@ -60,14 +66,9 @@ otu_dict = json.load(open(otu_json_path, "r"))
 leaves_t1 = set([leaf.taxon for leaf in tree1.leaf_nodes()])
 leaves_t2 = set([leaf.taxon for leaf in tree2.leaf_nodes()])
 
-new_tips = len(leaves_t1) - len(leaves_t2)
-sys.stdout.write("{} new tips were added\n".format(new_tips))
-
-
 old_spp = set()
 new_spp = set()
 
-## Prune trees to same leaf set
 
 for leaf in leaves_t1:
     species = otu_dict[leaf.label]['^ot:ottId']
@@ -78,11 +79,38 @@ for leaf in leaves_t2:
     new_spp.add(species)
 
 
-sys.stdout.write("There were {} taxa in tree1, {} taxa in tree2\n".format(len(old_spp), len(new_spp)))
 
+new_tips = len(leaves_t2) - len(leaves_t1)
+sys.stdout.write("{} new tips were added\n".format(new_tips))
+
+## THIS SECTION LOOKS AT TAXA
+
+physcraper_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+synthfile = open("{}/taxonomy/ottids_in_synth.txt".format(physcraper_dir))
+ottids_in_synth = set()
+for lin in synthfile:
+    ottid = lin.lstrip('ott').strip()
+    if len(ottid) >= 1:
+        ottids_in_synth.add(int(ottid))
+
+
+sys.stdout.write("There were {} new taxa in the updated tree\n".format(len(new_spp) - len(old_spp)))
+sys.stdout.write("Of the {} taxa in original tree {} are not included in synthesis phylogenies,\n".format(len(old_spp), len(old_spp.difference(ottids_in_synth))))
+sys.stdout.write("Of the {} taxa in updated tree {} are not included in synthesis phylogenies \n".format(len(new_spp), len(new_spp.difference(ottids_in_synth))))
+
+
+ids = physcraper.IdDicts()
+sys.stdout.write("Taxa with only taxonomic information in the OpenTree synthetic tree (so far!) are:\n")
+for tax in new_spp.difference(ottids_in_synth):
+    taxname = ids.ott_to_name[tax]
+    sys.stdout.write("ott{}: {}\n".format(tax, taxname))
+
+## This section does tree comparison
+## Prune trees to same leaf set
 
 prune = leaves_t2.symmetric_difference(leaves_t1)
 
+unpruned_tree1 = copy.deepcopy(tree1)
 unpruned_tree2 = copy.deepcopy(tree2)
 tree2.prune_taxa(prune)
 
@@ -92,12 +120,72 @@ RF = dendropy.calculate.treecompare.unweighted_robinson_foulds_distance(tree1, t
 #Weighted RF
 weightedrf = dendropy.calculate.treecompare.weighted_robinson_foulds_distance(tree1, tree2)
 
-tree2.write(path = "pruned_updated.tre", schema="newick")
-sys.stdout.write("The RobinsonFoulds distance between these trees is {} and the weighted RF is {}".format(RF, weightedrf))
+
+for tax in tns:
+    if tax.label in otu_dict:
+        tax.label = tax.label + "_" + otu_dict[tax.label]['^ot:ottTaxonName']
+
+## write put with tip labels that have taxon names
+tree1.write(path = "{}/original.tre".format(comparisondir), schema="newick")
+tree2.write(path = "{}/pruned_updated.tre".format(comparisondir), schema="newick")
+
+sys.stdout.write("The RobinsonFoulds distance between these trees is {} and the weighted RF is {}\n".format(RF, weightedrf))
 
 
 ##Write out t2 for conflict with opentree
-workdir = os.getcwd()
+unpruned_tree2.write(path = "{}/before_rooting.tre".format(comparisondir), schema="newick")
+
+#CHECK ROOTING ON NEW TREE
+
+resp = OT.synth_induced_tree(ott_ids=list(new_spp))
+induced_tree_of_taxa = resp.tree
+
+for node in induced_tree_of_taxa:
+    if node.parent_node is None:
+        print("root")
+        break
+
+children =root_node.child_nodes()
+
+representative_taxa = []
+for child in children:
+    if len(child.child_nodes()) > 1:
+        subtre = child.extract_subtree()
+        tip = subtre.leaf_nodes()[0]
+        representative_taxa.append(tip.taxon.label)
+    else:
+        representative_taxa.append(child.leaf_nodes()[0].taxon.label)
+
+
+sys.stdout.write("Rooting updated tree based on taxon relationships in synthetic tree. Root will be MRCA of {}".format(", ".join(representative_taxa)))
+
+## Get tips for those taxa:
+phyloref = set()
+for tax in representative_taxa:
+    ott_id = int(tax.split()[-1].strip('ott_id'))
+    phyloref.add(ott_id)
+
+tips_for_root = set()
+for otu in otu_dict:
+    if otu_dict[otu]['^ot:ottId'] in phyloref:
+        tips_for_root.add(otu)
+
+taxa_for_root = []
+for leaf in unpruned_tree2.leaf_nodes():
+    if leaf.taxon.label in tips_for_root:
+        taxa_for_root.append(leaf.taxon)
+
+
+mrca = None
+while mrca == None:
+    taxa_try = random.sample(taxa_for_root)
+    mrca = unpruned_tree2.mrca(taxa = taxa_try)
+
+unpruned_tree2.reroot_at_node(mrca)
+
+unpruned_tree2.write(path = "{}/after_rooting.tre".format(comparisondir), schema="newick")
+
+workdir = comparisondir
 
 
 def conflict_tree(inputtree, otu_dict):
@@ -116,12 +204,39 @@ def conflict_tree(inputtree, otu_dict):
         return tmp_tree
 
 tree_updated = conflict_tree(unpruned_tree2, otu_dict)
-tree_orig = conflict_tree(tree1, otu_dict)
+tree_orig = conflict_tree(unpruned_tree1, otu_dict)
 
 
-resp_updated = OT.conflict_str(tree_updated.as_string(schema="newick"), 'ott')
 resp_orig = OT.conflict_str(tree_orig.as_string(schema="newick"), 'ott')
+resp_updated = OT.conflict_str(tree_updated.as_string(schema="newick"), 'ott')
+
+
+conflict_orig = resp_orig.response_dict
+
+
+orig_conf_taxa = set()
+for node in conflict_orig:
+    if conflict_orig[node]['status'] == 'conflicts_with':
+        witness = conflict_orig[node]['witness_name']
+        orig_conf_taxa.add(witness)
+
+sys.stdout.write("Original tree conflicts with {} taxa in the OpenTree taxonomy:\n".format(len(orig_conf_taxa)))
+for tax in orig_conf_taxa:
+    sys.stdout.write("{}\n".format(tax))
+
+
+
 conflict = resp_updated.response_dict
+
+updated_conf_taxa = set()
+for node in conflict:
+    if conflict[node]['status'] == 'conflicts_with':
+        witness = conflict[node]['witness_name']
+        updated_conf_taxa.add(witness)
+
+sys.stdout.write("Updated tree conflicts with {} taxa in the OpenTree taxonomy:\n".format(len(updated_conf_taxa)))
+for tax in updated_conf_taxa:
+    sys.stdout.write("{}\n".format(tax))
 
 for node in tree_updated:
     if node.taxon:
@@ -137,7 +252,7 @@ for node in tree_updated:
             new_label = "{} {}".format(conf_node['status'], conf_node['witness_name'])
             node.label = new_label
 
-tree_updated.write(path = "conflict_label.tre", schema="newick")
+tree_updated.write(path = "{}/conflict_label.tre".format(comparisondir), schema="newick")
 
 
 '''
