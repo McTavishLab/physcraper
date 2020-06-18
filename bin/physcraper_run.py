@@ -62,12 +62,13 @@ except AssertionError:
 if args.configfile:
     conf = physcraper.ConfigObj(args.configfile)
 elif args.reload_files:
-    files = [f for f in os.listdir(workdir)]
+    files = [f for f in os.listdir(args.reload_files)]
     for file in files:
         if file.startswith('run_'):
             tag = file.split('.')[0].replace('run_', '')
     configfile = "{}/run_{}/run.config".format(args.reload_files, tag)
     conf = physcraper.ConfigObj(configfile)
+    conf.workdir = args.output
 else:
     conf = physcraper.ConfigObj()
 
@@ -184,6 +185,7 @@ if args.reload_files:
     elif args.alignment:
         tag = args.alignment.split('/')[-1].split('.')[0]
     data_obj = generate_ATT_from_run(args.reload_files, configfile=conf)
+    data_obj.workdir = workdir
     ids = physcraper.IdDicts(conf)
     scraper = physcraper.PhyscraperScrape(data_obj, ids)
     sys.stdout.write("Reloaded {} taxa in alignment and tree\n".format(len(scraper.data.aln)))

@@ -32,7 +32,7 @@ def test_reconcile():
 
     for otu in data_obj.otu_dict:
         if data_obj.otu_dict[otu][u'^ot:originalLabel'] == '2029_doronicum':
-            assert data_obj.otu_dict[otu]['^physcraper:status'] == "deleted in reconciliation"
+            assert data_obj.otu_dict[otu]['^physcraper:status'] == "deleted from tree in reconciliation"
 
     #----------------------------------------------------
 
@@ -48,7 +48,7 @@ def test_reconcile():
 
     for otu in data_obj.otu_dict:
         if data_obj.otu_dict[otu][u'^ot:originalLabel'] == 'S_scopolii':
-            assert data_obj.otu_dict[otu]['^physcraper:status'] == "deleted in reconciliation"
+            assert data_obj.otu_dict[otu]['^physcraper:status'] == "in original alignment but not tree, taxon info unknown"
 
 
     # ----------------------------
@@ -72,7 +72,7 @@ def test_reconcile():
 
     for otu in data_obj.otu_dict:
         if data_obj.otu_dict[otu][u'^ot:originalLabel'] == '2029_doronicum':
-            assert data_obj.otu_dict[otu]['^physcraper:status'] == "deleted in reconciliation"
+            assert data_obj.otu_dict[otu]['^physcraper:status'] == "deleted from tree in reconciliation"
         if data_obj.otu_dict[otu][u'^ot:originalLabel'] == 'S_scopolii':
-            assert data_obj.otu_dict[otu]['^physcraper:status'] == "deleted in reconciliation"
+            assert data_obj.otu_dict[otu]['^physcraper:status'] == "in original alignment but not tree, taxon info unknown"
 
