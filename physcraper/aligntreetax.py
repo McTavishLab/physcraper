@@ -334,8 +334,12 @@ class AlignTreeTax(object):
                 del_tre.append(taxon)
 #        self.aln.remove_sequences(del_aln)
         for tax in del_aln:
+            if tax.label not in self.otu_dict:
+                otu = self.otu_rev[tax.label]
+            else:
+                otu = tax.label
             self.otu_dict[otu]['^physcraper:status'] = "in original alignment but not tree, taxon info unknown"
-            self.otu_dict[otu]['^physcraper:ingroup'] = "unkown"
+            self.otu_dict[otu]['^physcraper:ingroup'] = "unknown"
         for tax in del_tre:
             assert(tax in treed_tax), tax
         self.tre.prune_taxa(del_tre)
