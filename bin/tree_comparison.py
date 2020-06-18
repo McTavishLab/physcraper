@@ -7,7 +7,7 @@ import dendropy
 import copy
 import physcraper
 from opentree import OT
-from physcraper.opentree_helpers import root_tree_from_synth
+from physcraper.opentree_helpers import root_tree_from_synth, conflict_tree
 from dendropy.calculate import treecompare
 ### Example
 # python ../physcraper/bin/rf_distance.py -t1 pg_238/inputs_pg_238tree109_RPB2/physcraper_pg_238tree109_RPB2.tre -t2 pg_238/outputs_pg_238tree109_RPB2/physcraper_pg_238tree109_RPB2.tre -otu pg_238/run_pg_238tree109_RPB2/otu_info_pg_238tree109_RPB2.json 
@@ -145,20 +145,7 @@ unpruned_tree2.write(path = "{}/after_rooting.tre".format(comparisondir), schema
 workdir = comparisondir
 
 
-def conflict_tree(inputtree, otu_dict):
-        tmp_tree = copy.deepcopy(inputtree)
-        new_names = set()
-        i = 1
-        for node in tmp_tree:
-            i+=1
-            if node.taxon:
-                otu = otu_dict[node.taxon.label]
-                ottid = otu['^ot:ottId']
-                new_label = "_nd{}_ott{}".format(i, ottid)
-                node.taxon.label = new_label
-            else:
-                node.label = "_nd{}_".format(i)
-        return tmp_tree
+
 
 tree_updated = conflict_tree(unpruned_tree2, otu_dict)
 tree_orig = conflict_tree(unpruned_tree1, otu_dict)

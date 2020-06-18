@@ -1,5 +1,6 @@
 import requests
 import json
+import copy
 import sys
 import os
 import physcraper
@@ -33,8 +34,11 @@ phylesystemref = "McTavish EJ, Hinchliff CE, Allman JF, Brown JW, Cranston KA, H
 synthref = "Redelings BD, Holder MT. A supertree pipeline for summarizing phylogenetic and taxonomic information for millions of species. PeerJ. 2017;5:e3058. https://doi.org/10.7717/peerj.3058 \n"
 
 def root_tree_from_synth(tree, otu_dict):
-    leaves = [leaf.taxon.label for leaf in tree.leaf_nodes()]  
+    leaves = [leaf.taxon.label for leaf in tree.leaf_nodes()] 
     spp = [otu_dict[otu]['^ot:ottId'] for otu in leaves]
+    ## ONLY included SPP with phylo information.
+
+
     resp = OT.synth_induced_tree(ott_ids=spp)
     induced_tree_of_taxa = resp.tree
     for node in induced_tree_of_taxa:
@@ -151,7 +155,20 @@ def get_citations_from_json(synth_response, citations_file):
 # get_citation_for_study(study_id)
 # use append
 
-
+def conflict_tree(inputtree, otu_dict):
+        tmp_tree = copy.deepcopy(inputtree)
+        new_names = set()
+        i = 1
+        for node in tmp_tree:
+            i+=1
+            if node.taxon:
+                otu = otu_dict[node.taxon.label]
+                ottid = otu['^ot:ottId']
+                new_label = "_nd{}_ott{}".format(i, ottid)
+                node.taxon.label = new_label
+            else:
+                node.label = "_nd{}_".format(i)
+        return tmp_tree
 
 def get_tree_from_synth(ott_ids, label_format="name", citation="cites.txt"):
     synth_json = OT.synth_induced_tree(ott_ids = ott_ids, label_format=label_format)

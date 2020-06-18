@@ -140,6 +140,7 @@ class PhyscraperScrape(object):
         self.map_taxa_to_ncbi()
         assert self.mrca_ncbi
         self.write_mrca()
+        self.data.write_labelled(filename="taxonname", direc=self.inputsdir)
         self.data.write_otus(schema='table', direc=self.inputsdir)
         self.data.write_otus(schema='json', direc=self.rundir)
         self.threshold = self.config.spp_threshold
