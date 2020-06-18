@@ -22,6 +22,7 @@ def debug(msg):
     if _DEBUG == 1:
         print(msg)
 
+physcraper_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 
 
 if sys.version_info < (3,):
@@ -35,11 +36,18 @@ synthref = "Redelings BD, Holder MT. A supertree pipeline for summarizing phylog
 
 def root_tree_from_synth(tree, otu_dict):
     leaves = [leaf.taxon.label for leaf in tree.leaf_nodes()] 
+    synth_ids = ottids_in_synth()
     spp = [otu_dict[otu]['^ot:ottId'] for otu in leaves]
     ## ONLY included SPP with phylo information.
-
-
-    resp = OT.synth_induced_tree(ott_ids=spp)
+    synth_spp = set()
+    for sp in spp:
+        if sp in synth_ids:
+            synth_spp.add(sp)
+    if len(synth_spp) <= 3:
+            sys.stdout.write("Didn't find enough taxon matches in synth tree to root. Tree is unrooted\n")
+            return(tree)
+    print(synth_spp)
+    resp = OT.synth_induced_tree(ott_ids=synth_spp)
     induced_tree_of_taxa = resp.tree
     for node in induced_tree_of_taxa:
         if node.parent_node is None:
@@ -74,6 +82,15 @@ def root_tree_from_synth(tree, otu_dict):
     tree.reroot_at_node(mrca)
     return(tree)
 
+def ottids_in_synth(synthfile=None):
+    if synthfile == None:
+        synthfile = open("{}/taxonomy/ottids_in_synth.txt".format(physcraper_dir))
+    ottids_in_synth = set()
+    for lin in synthfile:
+        ottid = lin.lstrip('ott').strip()
+        if len(ottid) >= 1:
+            ottids_in_synth.add(int(ottid))
+    return(ottids_in_synth)
 
 def get_ottid_from_gbifid(gbif_id):
     """Returns a dictionary mapping gbif_ids to ott_ids.

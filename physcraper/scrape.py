@@ -301,6 +301,9 @@ class PhyscraperScrape(object):
                         self.run_web_blast_query(query, equery, fn_path)
                     self.data.otu_dict[otu_id]['^physcraper:last_blasted'] = today
                 else:
+                    t = os.path.getmtime(fn_path)
+                    filedate = datetime.date.fromtimestamp(t)
+                    self.data.otu_dict[otu_id]['^physcraper:last_blasted'] = str(filedate).replace("-", "/")
                     if _DEBUG:
                         sys.stdout.write("file {} exists in current blast run. Will not blast, "
                                          "delete file to force\n".format(fn_path))
