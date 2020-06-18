@@ -1,0 +1,75 @@
+
+
+Using BFGS method to optimize GTR rate parameters, to disable this specify "--no-bfgs" 
+
+
+
+This is RAxML version 8.2.12 released by Alexandros Stamatakis on May 2018.
+
+With greatly appreciated code contributions by:
+Andre Aberer      (HITS)
+Simon Berger      (HITS)
+Alexey Kozlov     (HITS)
+Kassian Kobert    (HITS)
+David Dao         (KIT and HITS)
+Sarah Lutteropp   (KIT and HITS)
+Nick Pattengale   (Sandia)
+Wayne Pfeiffer    (SDSC)
+Akifumi S. Tanabe (NRIFS)
+Charlie Taylor    (UF)
+
+
+Alignment has 374 distinct alignment patterns
+
+Proportion of gaps and completely undetermined characters in this alignment: 3.26%
+
+RAxML rapid hill-climbing mode
+
+Using 1 distinct models/data partitions with joint branch length optimization
+
+
+Executing 1 inferences on the original alignment using 1 user-specified trees
+
+All free model parameters will be estimated by RAxML
+ML estimate of 25 per site rate categories
+
+Likelihood of final tree will be evaluated and optimized under GAMMA
+
+GAMMA Model parameters will be estimated up to an accuracy of 0.1000000000 Log Likelihood units
+
+Partition: 0
+Alignment Patterns: 374
+Name: No Name Provided
+DataType: DNA
+Substitution Matrix: GTR
+
+
+
+
+RAxML was called as follows:
+
+/usr/bin/raxmlHPC-PTHREADS-AVX -T 2 -m GTRCAT -s /home/ejmctavish/projects/otapi/data_physcraper/pg_55/run_pg_55tree5864_ndhf/physcraper_pg_55tree5864_ndhf.fas -t /home/ejmctavish/projects/otapi/data_physcraper/pg_55/run_pg_55tree5864_ndhf/random_resolve.tre -p 1 -n 2020-06-18 
+
+
+Partition: 0 with name: No Name Provided
+Base frequencies: 0.285 0.156 0.174 0.385 
+
+You provided an incomplete starting tree 31 alignmnet has 39 taxa
+Inference[0]: Time 0.940128 CAT-based likelihood -5140.252583, best rearrangement setting 5
+alpha[0]: 1.000000 rates[0] ac ag at cg ct gt: 1.535751 2.085782 0.219821 1.283410 1.717816 1.000000 
+
+
+Conducting final model optimizations on all 1 trees under GAMMA-based models ....
+
+Inference[0] final GAMMA-based Likelihood: -5922.816481 tree written to file /home/ejmctavish/projects/otapi/data_physcraper/pg_55/run_pg_55tree5864_ndhf/RAxML_result.2020-06-18
+
+
+Starting final GAMMA-based thorough Optimization on tree 0 likelihood -5922.816481 .... 
+
+Final GAMMA-based Score of best tree -5922.816481
+
+Program execution info written to /home/ejmctavish/projects/otapi/data_physcraper/pg_55/run_pg_55tree5864_ndhf/RAxML_info.2020-06-18
+Best-scoring ML tree written to: /home/ejmctavish/projects/otapi/data_physcraper/pg_55/run_pg_55tree5864_ndhf/RAxML_bestTree.2020-06-18
+
+Overall execution time: 2.459335 secs or 0.000683 hours or 0.000028 days
+
