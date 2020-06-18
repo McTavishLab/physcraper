@@ -19,6 +19,7 @@ from physcraper.ids import IdDicts
 from physcraper.aligntreetax import AlignTreeTax
 from physcraper.helpers import cd, get_raxml_ex, write_filterblast_db
 from physcraper.ncbi_data_parser import get_gi_from_blast, get_acc_from_blast
+from physcraper.opentree_helpers import root_tree_from_synth
 
 from physcraper import ncbi_data_parser
 from physcraper import writeinfofiles
@@ -946,30 +947,13 @@ class PhyscraperScrape(object):
         self.blast_read = 0
 
 
+
     def replace_tre(self, filename, schema = 'newick'):
         newtre= Tree.get(path=filename,
                    schema=schema,
                    preserve_underscores=True,
                    taxon_namespace = self.data.aln.taxon_namespace)
-        outgroup = [otu_id for otu_id in self.data.otu_dict if self.data.otu_dict[otu_id].get('^physcraper:ingroup', False) == False]
-        outgroup_in_tree = []
-        aln_tax = [taxon.label for taxon in self.data.aln]
-        for leaf in newtre.leaf_nodes():
-            assert leaf.taxon.label in self.data.otu_dict, leaf.taxon.label
-            assert leaf.taxon.label in aln_tax
-            if leaf.taxon.label in outgroup:
-                outgroup_in_tree.append(leaf.taxon)
-            if leaf.taxon.label.replace(' ','_') in outgroup:
-                outgroup_in_tree.append(leaf.taxon)
-        debug("rerooting tree using {} as outgroup".format(outgroup_in_tree))
-        if len(outgroup_in_tree) == 0:
-            sys.stdout.write("No outgroup taxa found in tree, tree is unrooted\n")
-        else:
-            try:
-                mrca = newtre.mrca(taxa = outgroup_in_tree)
-                newtre.reroot_at_node(mrca)
-            except:
-                sys.stdout.write("Problem rooting tree, tree is unrooted\n")
+        rooted_tre = root_tree_from_synth(newtre, self.data.otu_dict)
         self.data.tre = newtre
 
 

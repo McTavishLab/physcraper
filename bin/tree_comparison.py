@@ -7,6 +7,7 @@ import dendropy
 import copy
 import physcraper
 from opentree import OT
+from physcraper.opentree_helpers import root_tree_from_synth
 from dendropy.calculate import treecompare
 ### Example
 # python ../physcraper/bin/rf_distance.py -t1 pg_238/inputs_pg_238tree109_RPB2/physcraper_pg_238tree109_RPB2.tre -t2 pg_238/outputs_pg_238tree109_RPB2/physcraper_pg_238tree109_RPB2.tre -otu pg_238/run_pg_238tree109_RPB2/otu_info_pg_238tree109_RPB2.json 
@@ -131,54 +132,13 @@ tree2.write(path = "{}/pruned_updated.tre".format(comparisondir), schema="newick
 
 sys.stdout.write("The RobinsonFoulds distance between these trees is {} and the weighted RF is {}\n".format(RF, weightedrf))
 
-
-##Write out t2 for conflict with opentree
 unpruned_tree2.write(path = "{}/before_rooting.tre".format(comparisondir), schema="newick")
 
+rooted = root_tree_from_synth(unpruned_tree2, otu_dict)
+##Write out t2 for conflict with opentree
+unpruned_tree2.write(path = "{}/rooting1.tre".format(comparisondir), schema="newick")
+
 #CHECK ROOTING ON NEW TREE
-
-resp = OT.synth_induced_tree(ott_ids=list(new_spp))
-induced_tree_of_taxa = resp.tree
-resp.tree.write(path = "{}/induced_synth.tre".format(comparisondir), schema="newick")
-
-
-for node in induced_tree_of_taxa:
-    if node.parent_node is None:
-        break
-
-root_node = node
-children =root_node.child_nodes()
-
-representative_taxa = []
-for child in children:
-    if len(child.child_nodes()) > 1:
-        subtre = child.extract_subtree()
-        tip = subtre.leaf_nodes()[0]
-        representative_taxa.append(tip.taxon.label)
-    else:
-        representative_taxa.append(child.leaf_nodes()[0].taxon.label)
-
-
-sys.stdout.write("Rooting updated tree based on taxon relationships in synthetic tree. Root will be MRCA of {}\n".format(", ".join(representative_taxa)))
-
-## Get tips for those taxa:
-phyloref = set()
-for tax in representative_taxa:
-    ott_id = int(tax.split()[-1].strip('ott_id'))
-    phyloref.add(ott_id)
-
-tips_for_root = set()
-leaves = [leaf.taxon.label for leaf in unpruned_tree2.leaf_nodes()]
-for ottid in phyloref:
-    for otu in otu_dict:
-        if otu_dict[otu]['^ot:ottId'] in phyloref:
-            if  otu in leaves:           
-                tips_for_root.add(otu)
-                continue
-
-
-mrca = unpruned_tree2.mrca(taxon_labels = tips_for_root)
-unpruned_tree2.reroot_at_node(mrca)
 
 unpruned_tree2.write(path = "{}/after_rooting.tre".format(comparisondir), schema="newick")
 

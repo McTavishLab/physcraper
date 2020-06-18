@@ -32,6 +32,45 @@ else:
 phylesystemref = "McTavish EJ, Hinchliff CE, Allman JF, Brown JW, Cranston KA, Holder MT,  Phylesystem: a gitbased data store for community curated phylogenetic estimates. Bioinformatics. 2015 31 2794-800. doi: 10.1093/bioinformatics/btv276\n"
 synthref = "Redelings BD, Holder MT. A supertree pipeline for summarizing phylogenetic and taxonomic information for millions of species. PeerJ. 2017;5:e3058. https://doi.org/10.7717/peerj.3058 \n"
 
+def root_tree_from_synth(tree, otu_dict):
+    leaves = [leaf.taxon.label for leaf in tree.leaf_nodes()]  
+    spp = [otu_dict[otu]['^ot:ottId'] for otu in leaves]
+    resp = OT.synth_induced_tree(ott_ids=spp)
+    induced_tree_of_taxa = resp.tree
+    for node in induced_tree_of_taxa:
+        if node.parent_node is None:
+            break
+    root_node = node
+    children = root_node.child_nodes()
+    representative_taxa = []
+    for child in children:
+        if len(child.child_nodes()) > 1:
+            subtre = child.extract_subtree()
+            tip = subtre.leaf_nodes()[0]
+            representative_taxa.append(tip.taxon.label)
+        else:
+            representative_taxa.append(child.leaf_nodes()[0].taxon.label)
+    sys.stdout.write("Rooting tree based on taxon relationships in synthetic tree. Root will be MRCA of {}\n".format(", ".join(representative_taxa)))
+
+    ## Get tips for those taxa:
+    phyloref = set()
+    for tax in representative_taxa:
+        ott_id = int(tax.split()[-1].strip('ott_id'))
+        phyloref.add(ott_id)
+
+    tips_for_root = set()
+
+    for ottid in phyloref:
+        for otu in otu_dict:
+            if otu_dict[otu]['^ot:ottId'] in phyloref:
+                if  otu in leaves:           
+                    tips_for_root.add(otu)
+                    continue
+    mrca = tree.mrca(taxon_labels = tips_for_root)
+    tree.reroot_at_node(mrca)
+    return(tree)
+
+
 def get_ottid_from_gbifid(gbif_id):
     """Returns a dictionary mapping gbif_ids to ott_ids.
     ott_id is set to 'None' if the gbif id is not found in the Open Tree Txanomy
