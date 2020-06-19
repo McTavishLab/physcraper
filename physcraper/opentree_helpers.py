@@ -34,21 +34,29 @@ else:
 phylesystemref = "McTavish EJ, Hinchliff CE, Allman JF, Brown JW, Cranston KA, Holder MT,  Phylesystem: a gitbased data store for community curated phylogenetic estimates. Bioinformatics. 2015 31 2794-800. doi: 10.1093/bioinformatics/btv276\n"
 synthref = "Redelings BD, Holder MT. A supertree pipeline for summarizing phylogenetic and taxonomic information for millions of species. PeerJ. 2017;5:e3058. https://doi.org/10.7717/peerj.3058 \n"
 
-def root_tree_from_synth(tree, otu_dict):
+def root_tree_from_synth(tree, otu_dict, base = 'ott'):
     leaves = [leaf.taxon.label for leaf in tree.leaf_nodes()] 
-    synth_ids = ottids_in_synth()
     spp = [otu_dict[otu]['^ot:ottId'] for otu in leaves]
+    assert(base in ['synth', 'ott'])
+    if base == 'synth':
     ## ONLY included SPP with phylo information.
-    synth_spp = set()
-    for sp in spp:
-        if sp in synth_ids:
-            synth_spp.add(sp)
-    if len(synth_spp) <= 3:
-            sys.stdout.write("Didn't find enough taxon matches in synth tree to root. Tree is unrooted\n")
-            return(tree)
-    print(synth_spp)
-    resp = OT.synth_induced_tree(ott_ids=synth_spp)
-    induced_tree_of_taxa = resp.tree
+        synth_ids = ottids_in_synth()
+        synth_spp = set()
+        for sp in spp:
+            if sp in synth_ids:
+                synth_spp.add(sp)
+        if len(synth_spp) <= 3:
+                sys.stdout.write("Didn't find enough taxon matches in synth tree to root. Tree is unrooted\n")
+                return(tree)
+        resp = OT.synth_induced_tree(ott_ids=synth_spp)
+        induced_tree_of_taxa = resp.tree
+    elif base == 'ott':
+        tax_mrca = OT.taxon_mrca(spp).response_dict['mrca']['ott_id']
+        print(tax_mrca)
+        resp = OT.taxon_subtree(tax_mrca)
+        taxleaves = [leaf.taxon.label for leaf in resp.tree.leaf_nodes()] 
+        matches = [label for label in taxleaves if int(label.split()[-1].strip('ott')) in spp]
+        induced_tree_of_taxa = resp.tree.extract_tree_with_taxa_labels(matches)
     for node in induced_tree_of_taxa:
         if node.parent_node is None:
             break
@@ -62,7 +70,7 @@ def root_tree_from_synth(tree, otu_dict):
             representative_taxa.append(tip.taxon.label)
         else:
             representative_taxa.append(child.leaf_nodes()[0].taxon.label)
-    sys.stdout.write("Rooting tree based on taxon relationships in synthetic tree. Root will be MRCA of {}\n".format(", ".join(representative_taxa)))
+    sys.stdout.write("Rooting tree based on taxon relationships in {}. Root will be MRCA of {}\n".format(base, ", ".join(representative_taxa)))
 
     ## Get tips for those taxa:
     phyloref = set()
@@ -78,6 +86,7 @@ def root_tree_from_synth(tree, otu_dict):
                 if  otu in leaves:           
                     tips_for_root.add(otu)
                     continue
+
     mrca = tree.mrca(taxon_labels = tips_for_root)
     tree.reroot_at_node(mrca)
     return(tree)

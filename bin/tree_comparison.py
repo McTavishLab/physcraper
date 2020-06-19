@@ -130,7 +130,7 @@ sys.stdout.write("The RobinsonFoulds distance between these trees is {} and the 
 
 unpruned_tree2.write(path = "{}/before_rooting.tre".format(comparisondir), schema="newick")
 
-rooted = root_tree_from_synth(unpruned_tree2, otu_dict)
+rooted = root_tree_from_synth(unpruned_tree2, otu_dict, base='ott')
 ##Write out t2 for conflict with opentree
 unpruned_tree2.write(path = "{}/rooting1.tre".format(comparisondir), schema="newick")
 
