@@ -140,6 +140,7 @@ class PhyscraperScrape(object):
         self.map_taxa_to_ncbi()
         assert self.mrca_ncbi
         self.write_mrca()
+        self.data.write_labelled(filename="taxonname", label='^ot:ottTaxonName', direc=self.inputsdir)
         self.data.write_otus(schema='table', direc=self.inputsdir)
         self.data.write_otus(schema='json', direc=self.rundir)
         self.threshold = self.config.spp_threshold
@@ -300,6 +301,9 @@ class PhyscraperScrape(object):
                         self.run_web_blast_query(query, equery, fn_path)
                     self.data.otu_dict[otu_id]['^physcraper:last_blasted'] = today
                 else:
+                    t = os.path.getmtime(fn_path)
+                    filedate = datetime.date.fromtimestamp(t)
+                    self.data.otu_dict[otu_id]['^physcraper:last_blasted'] = str(filedate).replace("-", "/")
                     if _DEBUG:
                         sys.stdout.write("file {} exists in current blast run. Will not blast, "
                                          "delete file to force\n".format(fn_path))

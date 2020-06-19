@@ -7,7 +7,7 @@ import dendropy
 import copy
 import physcraper
 from opentree import OT
-from physcraper.opentree_helpers import root_tree_from_synth
+from physcraper.opentree_helpers import root_tree_from_synth, conflict_tree, ottids_in_synth
 from dendropy.calculate import treecompare
 ### Example
 # python ../physcraper/bin/rf_distance.py -t1 pg_238/inputs_pg_238tree109_RPB2/physcraper_pg_238tree109_RPB2.tre -t2 pg_238/outputs_pg_238tree109_RPB2/physcraper_pg_238tree109_RPB2.tre -otu pg_238/run_pg_238tree109_RPB2/otu_info_pg_238tree109_RPB2.json 
@@ -88,11 +88,7 @@ sys.stdout.write("{} new tips were added\n".format(new_tips))
 
 physcraper_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 synthfile = open("{}/taxonomy/ottids_in_synth.txt".format(physcraper_dir))
-ottids_in_synth = set()
-for lin in synthfile:
-    ottid = lin.lstrip('ott').strip()
-    if len(ottid) >= 1:
-        ottids_in_synth.add(int(ottid))
+ottids_in_synth = ottids_in_synth()
 
 
 sys.stdout.write("There were {} new taxa in the updated tree\n".format(len(new_spp) - len(old_spp)))
@@ -145,20 +141,7 @@ unpruned_tree2.write(path = "{}/after_rooting.tre".format(comparisondir), schema
 workdir = comparisondir
 
 
-def conflict_tree(inputtree, otu_dict):
-        tmp_tree = copy.deepcopy(inputtree)
-        new_names = set()
-        i = 1
-        for node in tmp_tree:
-            i+=1
-            if node.taxon:
-                otu = otu_dict[node.taxon.label]
-                ottid = otu['^ot:ottId']
-                new_label = "_nd{}_ott{}".format(i, ottid)
-                node.taxon.label = new_label
-            else:
-                node.label = "_nd{}_".format(i)
-        return tmp_tree
+
 
 tree_updated = conflict_tree(unpruned_tree2, otu_dict)
 tree_orig = conflict_tree(unpruned_tree1, otu_dict)

@@ -1,5 +1,6 @@
 import requests
 import json
+import copy
 import sys
 import os
 import physcraper
@@ -21,6 +22,7 @@ def debug(msg):
     if _DEBUG == 1:
         print(msg)
 
+physcraper_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 
 
 if sys.version_info < (3,):
@@ -33,9 +35,19 @@ phylesystemref = "McTavish EJ, Hinchliff CE, Allman JF, Brown JW, Cranston KA, H
 synthref = "Redelings BD, Holder MT. A supertree pipeline for summarizing phylogenetic and taxonomic information for millions of species. PeerJ. 2017;5:e3058. https://doi.org/10.7717/peerj.3058 \n"
 
 def root_tree_from_synth(tree, otu_dict):
-    leaves = [leaf.taxon.label for leaf in tree.leaf_nodes()]  
+    leaves = [leaf.taxon.label for leaf in tree.leaf_nodes()] 
+    synth_ids = ottids_in_synth()
     spp = [otu_dict[otu]['^ot:ottId'] for otu in leaves]
-    resp = OT.synth_induced_tree(ott_ids=spp)
+    ## ONLY included SPP with phylo information.
+    synth_spp = set()
+    for sp in spp:
+        if sp in synth_ids:
+            synth_spp.add(sp)
+    if len(synth_spp) <= 3:
+            sys.stdout.write("Didn't find enough taxon matches in synth tree to root. Tree is unrooted\n")
+            return(tree)
+    print(synth_spp)
+    resp = OT.synth_induced_tree(ott_ids=synth_spp)
     induced_tree_of_taxa = resp.tree
     for node in induced_tree_of_taxa:
         if node.parent_node is None:
@@ -70,6 +82,15 @@ def root_tree_from_synth(tree, otu_dict):
     tree.reroot_at_node(mrca)
     return(tree)
 
+def ottids_in_synth(synthfile=None):
+    if synthfile == None:
+        synthfile = open("{}/taxonomy/ottids_in_synth.txt".format(physcraper_dir))
+    ottids_in_synth = set()
+    for lin in synthfile:
+        ottid = lin.lstrip('ott').strip()
+        if len(ottid) >= 1:
+            ottids_in_synth.add(int(ottid))
+    return(ottids_in_synth)
 
 def get_ottid_from_gbifid(gbif_id):
     """Returns a dictionary mapping gbif_ids to ott_ids.
@@ -151,7 +172,20 @@ def get_citations_from_json(synth_response, citations_file):
 # get_citation_for_study(study_id)
 # use append
 
-
+def conflict_tree(inputtree, otu_dict):
+        tmp_tree = copy.deepcopy(inputtree)
+        new_names = set()
+        i = 1
+        for node in tmp_tree:
+            i+=1
+            if node.taxon:
+                otu = otu_dict[node.taxon.label]
+                ottid = otu['^ot:ottId']
+                new_label = "_nd{}_ott{}".format(i, ottid)
+                node.taxon.label = new_label
+            else:
+                node.label = "_nd{}_".format(i)
+        return tmp_tree
 
 def get_tree_from_synth(ott_ids, label_format="name", citation="cites.txt"):
     synth_json = OT.synth_induced_tree(ott_ids = ott_ids, label_format=label_format)
