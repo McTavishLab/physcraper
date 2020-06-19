@@ -26,7 +26,7 @@ from physcraper import writeinfofiles
 from physcraper import AWSWWW
 
 _VERBOSE = 1
-_DEBUG = 1
+_DEBUG = 0
 def debug(msg):
     """short debugging command
     """

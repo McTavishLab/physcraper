@@ -204,13 +204,7 @@ if args.repeat:
     to_be_blasted = [otu.label for otu in scraper.data.aln if (scraper.data.otu_dict[otu.label]['^physcraper:ingroup'] == True and scraper.data.otu_dict[otu.label]['^physcraper:last_blasted']==None)]
     while len(to_be_blasted) >= 1:
         run += 1
-        prev_workdir = scraper.workdir()
-        new_workdir = "{}/run{}".format(workdir, run)
-        os.mkdir(new_workdir)
-        data_obj = generate_ATT_from_run(prev_workdir, configfile=conf)
-        data_obj.workdir = new_workdir
-        scraper = physcraper.PhyscraperScrape(data_obj, ids)
-        sys.stdout.write("Reloaded {} taxa in alignment and tree\n".format(len(scraper.data.aln)))
+        scraper.run_blast_wrapper()
         scraper.calculate_final_tree(boot_reps = boot_reps)
         to_be_blasted = [otu.label for otu in scraper.data.aln if (scraper.data.otu_dict[otu.label]['^physcraper:ingroup'] == True and scraper.data.otu_dict[otu.label]['^physcraper:last_blasted']==None)]
 elif not args.no_estimate_tree:
