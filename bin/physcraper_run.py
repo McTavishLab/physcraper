@@ -17,8 +17,9 @@ parser.add_argument("-o","--output", help="path to output directory")
 parser.add_argument("-bs","--bootstrap_reps", help="number of bootstrap reps")
 parser.add_argument("-tx","--taxonomy", help="path to taxonomy")
 parser.add_argument("-c","--configfile", help="path to config file")
-parser.add_argument("-e","--email", help="email address for ncbi balst searches")
+parser.add_argument("-e","--email", help="email address for ncbi blast searches")
 parser.add_argument("-re","--reload_files",  help="reload files and configureation from dir")
+parser.add_argument("-r","--repeat",  action='store_true', help="repeat search until no no sequences are found")
 parser.add_argument("-tag","--tag", help="gene name or other specifier")
 parser.add_argument("-tb","--treebase", action="store_true", help="download alignment from treebase")
 parser.add_argument("-no_est","--no_estimate_tree", action='store_true', help="don't estimate tree")
@@ -196,7 +197,24 @@ if args.bootstrap_reps:
 else:
     boot_reps = 100
 
-if not args.no_estimate_tree:
+
+run = 1
+if args.repeat:
+    scraper.calculate_final_tree(boot_reps = boot_reps)
+    to_be_blasted = [otu.label for otu in scraper.data.aln if (scraper.data.otu_dict[otu.label]['^physcraper:ingroup'] == True and scraper.data.otu_dict[otu.label]['^physcraper:last_blasted']==None)]
+    while len(to_be_blasted) >= 1:
+        run += 1
+        prev_workdir = scraper.workdir()
+        new_workdir = "{}/run{}".format(workdir, run)
+        os.mkdir(new_workdir)
+        data_obj = generate_ATT_from_run(prev_workdir, configfile=conf)
+        data_obj.workdir = new_workdir
+        scraper = physcraper.PhyscraperScrape(data_obj, ids)
+        sys.stdout.write("Reloaded {} taxa in alignment and tree\n".format(len(scraper.data.aln)))
+        scraper.calculate_final_tree(boot_reps = boot_reps)
+        to_be_blasted = [otu.label for otu in scraper.data.aln if (scraper.data.otu_dict[otu.label]['^physcraper:ingroup'] == True and scraper.data.otu_dict[otu.label]['^physcraper:last_blasted']==None)]
+elif not args.no_estimate_tree:
 #scraper.read_blast_wrapper()
     scraper.calculate_final_tree(boot_reps = boot_reps)
     scraper.data.write_labelled(label='^ot:ottTaxonName')
+    
