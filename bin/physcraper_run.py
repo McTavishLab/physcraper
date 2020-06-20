@@ -202,6 +202,10 @@ else:
 run = 1
 if args.repeat:
     rundir_path = scraper.rundir
+    blast_dir ="{}/blast_run_{}".format(workdir, scraper.data.tag)
+    if not os.path.exists(blast_dir):
+        os.mkdir(blast_dir)    
+    scraper.blast_subdir = blast_dir
     scraper.calculate_final_tree(boot_reps = boot_reps)
     to_be_blasted = [otu.label for otu in scraper.data.aln if ((scraper.data.otu_dict[otu.label]['^physcraper:ingroup'] == True) and (scraper.data.otu_dict[otu.label]['^physcraper:last_blasted']==None))]
     while len(to_be_blasted) >= 1:
