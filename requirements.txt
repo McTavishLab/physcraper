@@ -18,7 +18,6 @@ pytest
 pytest-cov
 pytest-xdist
 
-m2r
 recommonmark
 sphinx
 

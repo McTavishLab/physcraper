@@ -4,7 +4,7 @@ import os
 ON_RTD = os.environ.get('READTHEDOCS', None) == 'True'
 
 from recommonmark.parser import CommonMarkParser
-
+from m2r import MdInclude
 
 #
 # Configuration file for the Sphinx documentation builder.
@@ -46,7 +46,7 @@ release = ''
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    'm2r',
+    'recommonmark',    
     'sphinx.ext.autodoc',
     'sphinx.ext.doctest',
     'sphinx.ext.intersphinx',
