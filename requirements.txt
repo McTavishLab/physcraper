@@ -20,6 +20,7 @@ pytest-xdist
 
 m2r
 recommonmark
+sphinx
 
 #past
 future
