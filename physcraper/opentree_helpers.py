@@ -36,7 +36,9 @@ synthref = "Redelings BD, Holder MT. A supertree pipeline for summarizing phylog
 
 def root_tree_from_synth(tree, otu_dict, base = 'ott'):
     leaves = [leaf.taxon.label for leaf in tree.leaf_nodes()] 
-    spp = [otu_dict[otu]['^ot:ottId'] for otu in leaves]
+    spp = set([otu_dict[otu]['^ot:ottId'] for otu in leaves])
+    if None in spp:
+        spp.remove(None)
     assert(base in ['synth', 'ott'])
     if base == 'synth':
     ## ONLY included SPP with phylo information.
@@ -52,7 +54,6 @@ def root_tree_from_synth(tree, otu_dict, base = 'ott'):
         induced_tree_of_taxa = resp.tree
     elif base == 'ott':
         tax_mrca = OT.taxon_mrca(spp).response_dict['mrca']['ott_id']
-        print(tax_mrca)
         resp = OT.taxon_subtree(tax_mrca)
         taxleaves = [leaf.taxon.label for leaf in resp.tree.leaf_nodes()] 
         matches = [label for label in taxleaves if int(label.split()[-1].strip('ott')) in spp]
