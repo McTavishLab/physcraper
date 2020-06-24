@@ -88,7 +88,6 @@ class ConfigObj(object):
         self.spp_threshold = 5
         self.minlen = 0.8
         self.maxlen = 1.2
-        self.url_base = None
         self.taxonomy_dir = "{}/taxonomy".format(physcraper_dir)
         self.ott_ncbi = "{}/ott_ncbi".format(self.taxonomy_dir)
     def config_str(self):
