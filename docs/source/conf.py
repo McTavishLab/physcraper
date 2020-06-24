@@ -27,7 +27,7 @@ from recommonmark.parser import CommonMarkParser
 # -- Project information -----------------------------------------------------
 
 project = 'physcraper'
-copyright = '2018, McTavish Lab'
+copyright = '2020, McTavish Lab'
 author = 'McTavish Lab'
 
 # The short X.Y version
@@ -46,7 +46,6 @@ release = ''
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    'm2r',
     'sphinx.ext.autodoc',
     'sphinx.ext.doctest',
     'sphinx.ext.intersphinx',

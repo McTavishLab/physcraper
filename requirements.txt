@@ -18,7 +18,7 @@ pytest
 pytest-cov
 pytest-xdist
 
-m2r; python_version > '2.7.13'
+m2r
 recommonmark
 
 #past

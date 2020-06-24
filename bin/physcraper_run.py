@@ -198,15 +198,23 @@ else:
     boot_reps = 100
 
 
+
 run = 1
 if args.repeat:
+    rundir_path = scraper.rundir
+    blast_dir ="{}/blast_run_{}".format(workdir, scraper.data.tag)
+    if not os.path.exists(blast_dir):
+        os.mkdir(blast_dir)    
+    scraper.blast_subdir = blast_dir
     scraper.calculate_final_tree(boot_reps = boot_reps)
-    to_be_blasted = [otu.label for otu in scraper.data.aln if (scraper.data.otu_dict[otu.label]['^physcraper:ingroup'] == True and scraper.data.otu_dict[otu.label]['^physcraper:last_blasted']==None)]
+    to_be_blasted = [otu.label for otu in scraper.data.aln if ((scraper.data.otu_dict[otu.label]['^physcraper:ingroup'] == True) and (scraper.data.otu_dict[otu.label]['^physcraper:last_blasted']==None))]
     while len(to_be_blasted) >= 1:
         run += 1
+        os.rename(scraper.rundir, rundir_path+"_"+str(run))
+        os.mkdir(scraper.rundir)
         scraper.run_blast_wrapper()
         scraper.calculate_final_tree(boot_reps = boot_reps)
-        to_be_blasted = [otu.label for otu in scraper.data.aln if (scraper.data.otu_dict[otu.label]['^physcraper:ingroup'] == True and scraper.data.otu_dict[otu.label]['^physcraper:last_blasted']==None)]
+        to_be_blasted = [otu.label for otu in scraper.data.aln if ((scraper.data.otu_dict[otu.label]['^physcraper:ingroup'] == True) and (scraper.data.otu_dict[otu.label]['^physcraper:last_blasted']==None))]
 elif not args.no_estimate_tree:
 #scraper.read_blast_wrapper()
     scraper.calculate_final_tree(boot_reps = boot_reps)

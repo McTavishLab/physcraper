@@ -26,9 +26,25 @@ schema = "newick"
 
 args = parser.parse_args()
 
+
+try:
+    assert(args.outputdir)
+except AssertionError:
+    sys.stderr.write("ERROR: Output directory (-o) is required.\n")
+    sys.exit(-1)
+
+
 comparisondir = args.outputdir
 if not os.path.exists(comparisondir):
     os.mkdir(comparisondir)
+
+
+if args.results_dir:
+    assert(os.path_exists(args.results_dir)), "Results directory {} not found\n".format(args.results_dir)
+else:
+    assert(os.path_exists(args.original_tree)), "Original tree {} not found\n".format(args.original_tree)
+    assert(os.path_exists(args.updated_tree)), "Updated tree {} not found\n".format(args.updated_tree)
+    assert(os.path_exists(args.otu_info)), "Otu_info {} not found\n".format(args.otu_info)
 
 
 tns = dendropy.TaxonNamespace()
