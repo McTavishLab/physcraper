@@ -17,12 +17,11 @@ from Bio.Seq import Seq
 from physcraper.configobj import ConfigObj
 from physcraper.ids import IdDicts
 from physcraper.aligntreetax import AlignTreeTax
-from physcraper.helpers import cd, get_raxml_ex, write_filterblast_db
+from physcraper.helpers import cd, get_raxml_ex
 from physcraper.ncbi_data_parser import get_gi_from_blast, get_acc_from_blast
 from physcraper.opentree_helpers import root_tree_from_synth
 
 from physcraper import ncbi_data_parser
-from physcraper import writeinfofiles
 from physcraper import AWSWWW
 
 _VERBOSE = 1
