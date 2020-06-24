@@ -11,6 +11,7 @@ setup(name='Physcraper',
       author='Emily Jane McTavish',
       author_email='ejmctavish@gmail.com',
       packages=['physcraper'],
-      scripts=['bin/physcraper_run.py'],
+      scripts=['bin/physcraper_run.py',
+                'bin/tree_comparison.py'],
       install_requires=[]
      )
