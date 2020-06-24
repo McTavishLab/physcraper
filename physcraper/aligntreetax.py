@@ -100,7 +100,13 @@ def generate_ATT_from_run(workdir, start_files='output', tag=None, configfile=No
     # use replaced aln as input
    
     
+def generate_ATT_from_treetax(treetax, alnfi, workdir, start_files='output', tag=None, configfile=None):
+    """Build an ATT object without phylesystem, use your own files instead.
+    :return: object of class ATT
+    """
 
+    return AlignTreeTax(tree = treefile, otu_dict=treetax.otu_dict, alignment = alnfi, search_taxon=mrca_ott, workdir=workdir,
+                configfile=configfile, tag=tag, tree_schema='newick')
     
 
 

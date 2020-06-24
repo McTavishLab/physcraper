@@ -10,6 +10,8 @@
 
 This module provides code to work with the WWW version of BLAST
 provided by the NCBI. https://blast.ncbi.nlm.nih.gov/
+
+Modified by EJ McTavish to accept a URL for blast searches on AWS servers.
 """
 
 from __future__ import print_function
