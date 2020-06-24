@@ -124,11 +124,11 @@ class TreeTax(object):
                 gb_id = self.otu_dict[taxon.label].get('^ncbi:accession')
                 if gb_id is None:
                     gb_id = self.otu_dict[taxon.label].get("^ot:originalLabel")
-                new_label = "_".join([new_label, str(gb_id)])
+                new_label = "_".join([str(new_label), str(gb_id)])
                 sp_counter = 2
             else:
                 if norepeats:
-                    new_label = "_".join([new_label, taxon.label])
+                    new_label = "_".join([str(new_label), taxon.label])
             taxon.label = new_label
         tmp_tre.write(path=path,
                       schema="newick",

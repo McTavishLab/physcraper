@@ -17,7 +17,7 @@ def test_load_bulk():
 
 def test_tree_taxon():
     tt = TreeTax(otu_json="tests/data/treetaxon/main.json", treefrom=treefile )
-    tt.write_labelled(treeout, label = "^ot:ottId")
+    tt.write_labelled(path=treeout, label = "^ot:ottId", norepeats=False)
     assert os.path.isfile(treeout)
     assert filecmp.cmp(treeout, expected_tree)
     os.remove(treeout)
