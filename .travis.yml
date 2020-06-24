@@ -45,6 +45,7 @@ install:
   # install requirements of physcraper
   - pip install -r requirements.txt
   - python setup.py install
+  - pip install codecov
   
 script:  
   #- py.test tests/ --setup-only
@@ -52,5 +53,4 @@ script:
   - pytest tests
 
 after_success:
-  - curl -s https://codecov.io/bash | bash
-
+  - codecov 
