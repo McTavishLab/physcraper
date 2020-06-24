@@ -1,8 +1,8 @@
-<img align="left" width="250" src="https://cdn.rawgit.com/snacktavish/physcraper/master/docs/physcraper.svg">
+<img align="left" width="250" src="https://cdn.rawgit.com/snacktavish/physcraper/main/docs/physcraper.svg">
 
 # physcraper
 
-[![Build Status](https://travis-ci.org/McTavishLab/physcraper.svg?branch=master)](https://travis-ci.org/McTavishLab/physcraper)[![Documentation](https://readthedocs.org/projects/physcraper/badge/?version=latest&style=flat)](https://physcraper.readthedocs.io/en/latest/)[![codecov](https://codecov.io/gh/McTavishLab/physcraper/branch/dev/graph/badge.svg)](https://codecov.io/gh/McTavishLab/physcraper)
+[![Build Status](https://travis-ci.org/McTavishLab/physcraper.svg?branch=main)](https://travis-ci.org/McTavishLab/physcraper)[![Documentation](https://readthedocs.org/projects/physcraper/badge/?version=latest&style=flat)](https://physcraper.readthedocs.io/en/latest/)[![codecov](https://codecov.io/gh/McTavishLab/physcraper/branch/dev/graph/badge.svg)](https://codecov.io/gh/McTavishLab/physcraper)
 
 
 <p></p>
