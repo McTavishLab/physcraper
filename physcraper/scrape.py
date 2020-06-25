@@ -115,7 +115,7 @@ class PhyscraperScrape(object):
         self.config.write_file(self.rundir)
         self.new_seqs = {}  # all new seq after read_blast_wrapper
         self.new_seqs_otu_id = {}  # only new seq which passed remove_identical
-        self.blast_subdir = "{}/blast_run_{}".format(self.rundir, self.data.tag)
+        self.blast_subdir = "{}/blast_run_{}".format(self.workdir, self.data.tag)
 
         self.date = str(datetime.date.today())  # Date of the run - may lag behind real date!
         self.repeat = 1  # used to determine if we continue updating the tree
