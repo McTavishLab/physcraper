@@ -34,7 +34,18 @@ We have put example outputs from this command in docs/examples/pg_55
 ### Output stucture
 
 The analysis folder has several subdirectories.
-each folder is labelled with a 'tag', which by default is the alignment name, but can be set in teh physcraper_run.py arguments.
+each folder is labelled with a 'tag', which by default is the alignment name, but can be set in the physcraper_run.py arguments.
+
+The stucture constsins of 
+
+    -  inputs_tag
+        This conatins the input tree and alignemnt, and the mapping of teh labels to taxa saved as otu_info.csv
+    -  blast_run_tag
+    This directory contains the blast results for each tip in the tree
+    -  run_tag
+    This is where intermediate processing files are stored
+    - outputs_tag
+    The final tree and alignment are saved here
 
 the final inferences will be in 
 
@@ -50,9 +61,10 @@ The data associacted with each of these labels is described in human readable fo
 The canonical otu info is also stored in json format in 
 
 
-This same tree and alignemnt are also output with teh taxon names as ;labels, saves in outputs as 
+This same tree and alignment are also output with teh taxon names as labels, saves in outputs as updated_taxonname.tre and .fas.
 
 
+To further explore the data associated with the tips on this tree see DataExploration.md 
 
 
 

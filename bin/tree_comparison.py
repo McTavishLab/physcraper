@@ -98,7 +98,12 @@ for leaf in leaves_t2:
     species = otu_dict[leaf]['^ot:ottId']
     new_spp.add(species)
 
+if None in old_spp:
+    old_spp.remove(None)
 
+
+if None in new_spp:
+    new_spp.remove(None)
 
 new_tips = len(leaves_t2) - len(leaves_t1)
 sys.stdout.write("{} new tips were added\n".format(new_tips))
@@ -137,7 +142,7 @@ sys.stdout.write("Of the {} taxa in updated tree {} are not included in synthesi
 ids = physcraper.IdDicts()
 sys.stdout.write("Taxa with only taxonomic information in the OpenTree synthetic tree (so far!) are:\n")
 for tax in new_spp.difference(ottids_in_synth):
-    taxname = ids.ott_to_name[tax]
+    taxname = ids.ott_to_name.get(tax, '-')
     sys.stdout.write("ott{}: {}\n".format(tax, taxname))
 
 ## This section does tree comparison
@@ -158,7 +163,7 @@ weightedrf = dendropy.calculate.treecompare.weighted_robinson_foulds_distance(tr
 
 for tax in tns:
     if tax.label in otu_dict:
-        tax.label = tax.label + "_" + otu_dict[tax.label]['^ot:ottTaxonName']
+        tax.label = tax.label + "_" + str(otu_dict[tax.label].get('^ot:ottTaxonName'))
 
 ## write put with tip labels that have taxon names
 tree1.write(path = "{}/original.tre".format(comparisondir), schema="newick")
