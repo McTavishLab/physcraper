@@ -25,7 +25,7 @@ from physcraper import ncbi_data_parser
 from physcraper import AWSWWW
 
 _VERBOSE = 1
-_DEBUG = 1
+_DEBUG = 0
 def debug(msg):
     """short debugging command
     """
