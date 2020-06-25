@@ -57,11 +57,14 @@ parser.add_argument("-v","--verbose", help="OpenTree study id")
 #parser.add_argument("-tf", "--tree_file", help="path to your tree")
 #parser.add_argument("-l","--linker_file", help="path to .csv linking tip labels to taxon names")
 
+
+args = parser.parse_args()
+
+
 if args.verbose:
     physcraper.scrape.set_verbose()
 
 
-args = parser.parse_args()
 if len(sys.argv)==1:
     parser.print_help(sys.stderr)
     sys.exit(1)
