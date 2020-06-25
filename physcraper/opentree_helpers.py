@@ -13,9 +13,14 @@ from physcraper.helpers import cd, standardize_label, to_string
 
 
 
+_VERBOSE = 0
 
-_VERBOSE = 1
-_DEBUG = 1
+def set_verbose():
+    global _VERBOSE
+    _VERBOSE = 1
+
+_DEBUG = 0
+
 def debug(msg):
     """short debugging command
     """

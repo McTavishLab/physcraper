@@ -44,12 +44,14 @@ OR
 
   -tb, --treebase       download alignment from treebase
 
-Tree and alignment information are required. 
-After an analysis has been run, they can be reloaded from a directory from a previous run.
+Tree and alignment information are required.  
+After an analysis has been run, they can be reloaded from a directory from a previous run.  
 
   -re RELOAD_FILES, --reload_files RELOAD_FILES
                         reload files and configureation from dir
 
+
+REQUIRED:
 
   -o OUTPUT, --output OUTPUT
                         path to output directory
@@ -67,7 +69,7 @@ Optional:
 
 ### Configuration paramaters
 
-The configuration paramaters may be set in a config file, and then passed into teh analysis run. See example.config for an example.
+The configuration paramaters may be set in a config file, and then passed into the analysis run. See example.config for an example.
 
 
   -c CONFIGFILE, --configfile CONFIGFILE
@@ -101,6 +103,11 @@ To setup see doc/LocalDB.md
 
   -nt NUM_THREADS, --num_threads NUM_THREADS
                         number of threads to use in processing
+
+
+You can use your own blast database, for example set up on an AWS server.
+
+\
 ## Sequence filtering parameters
 
   -tp TRIM_PERC, --trim_perc TRIM_PERC

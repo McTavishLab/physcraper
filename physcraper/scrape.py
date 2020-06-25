@@ -24,7 +24,12 @@ from physcraper.opentree_helpers import root_tree_from_synth
 from physcraper import ncbi_data_parser
 from physcraper import AWSWWW
 
-_VERBOSE = 1
+_VERBOSE = 0
+
+def set_verbose():
+    global _VERBOSE
+    _VERBOSE = 1
+
 _DEBUG = 0
 def debug(msg):
     """short debugging command

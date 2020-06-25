@@ -34,7 +34,25 @@ We have put example outputs from this command in docs/examples/pg_55
 ### Output stucture
 
 The analysis folder has several subdirectories.
-each folder is labelled with a 'tag', whcih is the 
+each folder is labelled with a 'tag', which by default is the alignment name, but can be set in teh physcraper_run.py arguments.
+
+the final inferences will be in 
+
+output_directory/outputs_tag
+
+The key files are:
+
+The inferred tree, physcraper.tre and teh updated alignment, physcraper.tre.
+
+The tips on the tree and the alignemnt are labeled with unique identifiers as labels.
+
+The data associacted with each of these labels is described in human readable format in out_info.csv. 
+The canonical otu info is also stored in json format in 
+
+
+This same tree and alignemnt are also output with teh taxon names as ;labels, saves in outputs as 
+
+
 
 
 

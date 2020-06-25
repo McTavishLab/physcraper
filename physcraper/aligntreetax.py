@@ -10,8 +10,13 @@ from physcraper import ncbi_data_parser, ConfigObj
 from physcraper.opentree_helpers import get_mrca_ott
 from physcraper.helpers import standardize_label, to_string, debug
 
-_VERBOSE = 1
-_DEBUG = 1
+_VERBOSE = 0
+
+def set_verbose():
+    global _VERBOSE
+    _VERBOSE = 1
+
+_DEBUG = 0
 
 def generate_ATT_from_files(workdir,
                             configfile,
