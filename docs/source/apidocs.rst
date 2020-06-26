@@ -1,7 +1,7 @@
 
 .. _api:
 
-API Documentation
+Function Documentation
 =================
 
 .. automodule:: physcraper
