@@ -43,14 +43,19 @@ each folder is labeled with a 'tag', which by default is the alignment name, but
 The structure consists of:
 
 -  inputs
-    -- input tree and alignment
+    -- original tree and alignment
+
     -- the mapping of the labels to taxa saved as `otu_info.csv`
+
 -  blast_run
     -- blast results for each tip in both the tree and the alignment
+
 -  run
    -- This is where intermediate processing files, and the json formatted otu information are stored
+
 - outputs
    -- final tree and alignment
+   
    -- CSV file with information about sequences
 
 
