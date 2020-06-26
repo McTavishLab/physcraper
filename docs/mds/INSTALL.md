@@ -1,4 +1,4 @@
-## 1. Downloading `Physcraper`
+## Downloading `Physcraper`
 
 First step is to clone the repo into your computer:
 

@@ -11,7 +11,6 @@ Welcome to Physcraper's documentation!
    :maxdepth: 2
    :caption: Contents:
 
-   readme
    install
    how_to_start
    physcraper_run

@@ -9,7 +9,7 @@
 
 <p></p>
 
-<font size="6"> Continual gene tree updating!</font>
+<font size="5"> Continual gene tree updating!</font>
 
 Use a tree (from the literature, a synthetic tree from Open Tree of Life, or your own tree) and an alignment (of any size?) to find and add homologous sequences to (hopefully) improve and advance phylogenetic inference in a group.
 
