@@ -1,9 +1,9 @@
 How to run Physcraper using `physcraper_run.py`
 
 
-## Quick Start
+## Simple Run
 
-For a simple run you just need the study id and tree id from OpenTree (see how to get those in FindTrees.md),
+For the simplest `physcraper` run you just need the study id and tree id from OpenTree (see how to get those in FindTrees.md),
 and an alignment file that goes with that tree.
 
     physcraper_run.py -s <study_id> -t <tree_id> -a <alignment_file_path> -as <alignment_schema> -o <output_directory>

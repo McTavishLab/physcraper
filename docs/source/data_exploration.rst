@@ -1,4 +1,4 @@
-Data Exploration
+Explore the data
 ======
 
 .. mdinclude:: ../DataExploration.md
