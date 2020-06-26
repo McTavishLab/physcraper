@@ -1,6 +1,10 @@
 # Blast Utilities
 ## Create an NCBI API key
 
+Generating an NCBI API key will allow you you make more web blast searches faster.
+See (NCBI API keys for details)[https://ncbiinsights.ncbi.nlm.nih.gov/2017/11/02/new-api-keys-for-the-e-utilities/]
+
+
 
 
 ### To Update or download blast DB:

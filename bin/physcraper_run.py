@@ -30,6 +30,8 @@ parser.add_argument("-r","--repeat",  action='store_true', help="repeat search u
 parser.add_argument("-db", "--blast_db", help="local download of blast database")
 parser.add_argument("-u", "--blast_url", help="a URL for your own mirrored blast database")
 parser.add_argument("-e","--email", help="email address for ncbi blast searches")
+parser.add_argument("-ak","--api_key", help="ncbi api key")
+
 parser.add_argument("-ev","--eval", help="blast evalue cutoff")
 parser.add_argument("-hl","--hitlist_len", help="number of blast searches to save per taxon")
 
@@ -42,7 +44,7 @@ parser.add_argument("-bs","--bootstrap_reps", help="number of bootstrap reps")
 
 parser.add_argument("-tx","--taxonomy", help="path to taxonomy")
 
-parser.add_argument("-v","--verbose", help="OpenTree study id")
+parser.add_argument("-v","--verbose", action="store_true", help="OpenTree study id")
 
 
 
@@ -125,6 +127,9 @@ if args.delay:
 
 if args.email:
     conf.email = args.email
+
+if args.api_key:
+    conf.api_key = args.api_key
 
 sys.stdout.write("Configuration Settings\n")
 sys.stdout.write(conf.config_str()+"\n")

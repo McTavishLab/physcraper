@@ -203,6 +203,8 @@ class IdDicts(object):
         """
         tries = 10
         Entrez.email = self.config.email
+        if self.config.apikey:
+            Entrez.api_key = self.config.apikey
         handle = None
 
         # method needs delay because of ncbi settings
