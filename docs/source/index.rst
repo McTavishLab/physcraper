@@ -10,9 +10,10 @@ Welcome to Physcraper's documentation!
    :maxdepth: 2
    :caption: Contents:
 
-   apidocs
    readme
+   install
    how_to_start
-    physcraper_run
+   physcraper_run
    data_exploration
    setting_up_local_database
+   apidocs
