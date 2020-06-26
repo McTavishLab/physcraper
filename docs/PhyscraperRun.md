@@ -1,7 +1,7 @@
 How to run Physcraper using `physcraper_run.py`
 
 
-## QuickStart
+## Quick Start
 
 For a simple run you just need the study id and tree id from OpenTree (see how to get those in FindTrees.md),
 and an alignment file that goes with that tree.

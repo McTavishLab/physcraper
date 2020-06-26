@@ -1,8 +1,7 @@
-How to start
+Quick start
 ============
 
 
 TEST TEXT
 
 .. mdinclude:: ../Tutorial.md
-

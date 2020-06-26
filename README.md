@@ -1,6 +1,6 @@
 <img align="left" width="250" src="https://cdn.rawgit.com/snacktavish/physcraper/main/docs/physcraper.svg">
 
-# physcraper
+<span style="font-family:Papyrus; font-size:10em;">Physcraper</span>
 
 [![Build Status](https://travis-ci.org/McTavishLab/physcraper.svg?branch=main)](https://travis-ci.org/McTavishLab/physcraper)[![Documentation](https://readthedocs.org/projects/physcraper/badge/?version=latest&style=flat)](https://physcraper.readthedocs.io/en/latest/)[![codecov](https://codecov.io/gh/McTavishLab/physcraper/branch/main/graph/badge.svg)](https://codecov.io/gh/McTavishLab/physcraper)
 
@@ -9,9 +9,9 @@
 
 <p></p>
 
-### Continual gene tree updating!
+<span style="font-family:Papyrus; font-size:5em;">Continual gene tree updating!</span>
 
-Use a tree (from the literature, a synthetic tree from Open Tree of Life, or your own tree) and an alignment (of any size?) to find and add homologous sequences to (hopefully) improve and advance phylogenetic inference in a group. 
+Use a tree (from the literature, a synthetic tree from Open Tree of Life, or your own tree) and an alignment (of any size?) to find and add homologous sequences to (hopefully) improve and advance phylogenetic inference in a group.
 
 
 The tool is under current development in the McTavish Lab.
@@ -27,9 +27,3 @@ Developers:
 
   - [Documentation](https://physcraper.readthedocs.io/en/latest/)
   - [Tests](mds/testing.md)
-
-
-
-
-
-
