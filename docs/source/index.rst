@@ -9,7 +9,7 @@ Welcome to Physcraper's documentation!
 
 .. toctree::
    :maxdepth: 2
-   :caption: 
+   :caption: Content
 
    install
    how_to_start
