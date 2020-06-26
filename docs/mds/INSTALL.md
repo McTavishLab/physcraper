@@ -146,3 +146,5 @@ This is what you should do:
 [Previous: Back home](../../README.md)
 
 [Next: Running  `physcraper`](running.md)
+
+[Go to Documentation](https://physcraper.readthedocs.io/en/latest/)

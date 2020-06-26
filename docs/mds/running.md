@@ -43,3 +43,5 @@ If you want to use a tree that is not available on OpenTree, you will need to pr
 [Previous: Installation](INSTALL.md)
 
 [Next: Example runs](examples.md)
+
+[Go to Documentation](https://physcraper.readthedocs.io/en/latest/)

@@ -25,5 +25,5 @@ Users:
 
 Developers:
 
-  - [Documentation](https://physcraper.readthedocs.io/en/latest/)
   - [Tests](docs/mds/testing.md)
+  - [Documentation](https://physcraper.readthedocs.io/en/latest/)
