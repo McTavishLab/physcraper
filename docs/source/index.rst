@@ -7,12 +7,15 @@ Welcome to physcraper's documentation!
 ======================================
 
 .. toctree::
-   :maxdepth: 3 
+   :maxdepth: 2 
    :caption: Contents:
 
    apidocs
    readme
    how_to_start
+   physcraper_run
+   data_exploration
+   setting_up_local_database
 
 
 
