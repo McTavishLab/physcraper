@@ -1,9 +1,9 @@
-## Details on running using physcraper_run.py
+How to run Physcraper using `physcraper_run.py`
 
 
 ## QuickStart
 
-For a simple run you just need the study id and tree id from OpenTree (see more about searching in FindTrees.md),
+For a simple run you just need the study id and tree id from OpenTree (see how to get those in FindTrees.md),
 and an alignment file that goes with that tree.
 
     physcraper_run.py -s <study_id> -t <tree_id> -a <alignment_file_path> -as <alignment_schema> -o <output_directory>
@@ -21,7 +21,7 @@ https://tree.opentreeoflife.org/curator/study/view/ot_350/?tab=home&tree=Tr53296
 ## Configuration paramaters
 
 
-To see all the config paramaters, use `physcraper_run.py -h`  
+To see all the config paramaters, use `physcraper_run.py -h`
 
 
 ### Input Data
@@ -33,7 +33,7 @@ Tree information (required)
   -t TREE_ID, --tree_id TREE_ID
                         OpenTree tree id
 
-Alignment information (reuired)
+Alignment information (required)
 
   -a ALIGNMENT, --alignment ALIGNMENT
                         path to alignment
@@ -44,8 +44,8 @@ OR
 
   -tb, --treebase       download alignment from treebase
 
-Tree and alignment information are required.  
-After an analysis has been run, they can be reloaded from a directory from a previous run.  
+Tree and alignment information are required.
+After an analysis has been run, they can be reloaded from a directory from a previous run.
 
   -re RELOAD_FILES, --reload_files RELOAD_FILES
                         reload files and configureation from dir
@@ -121,7 +121,7 @@ You can use your own blast database, for example set up on an AWS server.
   -de DELAY, --delay DELAY
                         how long to wait before blasting the same sequence
                         again
- 
+
 #### Tree search parameters
   -no_est, --no_estimate_tree
                         don't estimate tree (default is False)
