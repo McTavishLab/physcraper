@@ -18,3 +18,5 @@ The tool is under current development in the McTavish Lab.
 Please contact ejmctavish@gmail if you need any help or have feedback.
 
 Please refer to Physcraper's [documentation](https://physcraper.readthedocs.io/en/latest/) for more details on how to install it and run!
+
+Now have some emojis :bowtie: :sparkles:
