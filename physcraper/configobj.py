@@ -87,6 +87,7 @@ class ConfigObj(object):
         self.delay = 90
         self.spp_threshold = 5
         self.minlen = 0.8
+        self.api_key = None
         self.maxlen = 1.2
         self.taxonomy_dir = "{}/taxonomy".format(physcraper_dir)
         self.ott_ncbi = "{}/ott_ncbi".format(self.taxonomy_dir)
