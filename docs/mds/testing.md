@@ -1,6 +1,6 @@
 # Testing `physcraper` code
 
-Code testing the major functionalities of `physcraper` can be found in [test](../tests/) and [ws-tests](../ws-tests/).
+Code testing the major functionalities of `physcraper` can be found in [test](../../tests/) and [ws-tests](../../ws-tests/).
 
 To run these tests locally (in your own computer), do
 

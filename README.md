@@ -19,11 +19,11 @@ Please contact ejmctavish@gmail if you need any help or have feedback.
 
 Users:
 
-  - [Installation](mds/INSTALL.md)
-  - [Run](mds/running.md)
-  - [More examples](mds/examples.md)
+  - [Installation](docs/mds/INSTALL.md)
+  - [Run](docs/mds/running.md)
+  - [More examples](docs/mds/examples.md)
 
 Developers:
 
   - [Documentation](https://physcraper.readthedocs.io/en/latest/)
-  - [Tests](mds/testing.md)
+  - [Tests](docs/mds/testing.md)

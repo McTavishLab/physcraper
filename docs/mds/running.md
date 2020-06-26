@@ -1,4 +1,4 @@
-[Back home](../README.md)
+[Back home](../../README.md)
 
 # Running physcraper
 
@@ -10,7 +10,7 @@ As input, you will minimally need a study and tree ids from a tree uploaded to t
 physcraper_run_py -s OPENTREE_STUDY_ID -t OPENTREE_TREE_ID -o OUTPUT_DIRECTORY_NAME/AND/OR/PATH
 ```
 
-If you do not specify an alignment, physcraper will try to get one of the gene alignments that generated the tree. Provide the gene alignment that you want to be updated using the `-a` command:   
+If you do not specify an alignment, physcraper will try to get one of the gene alignments that generated the tree. Provide the gene alignment that you want to be updated using the `-a` command:
 
 ```
 physcraper_run_py -s OPENTREE_STUDY_ID -t OPENTREE_TREE_ID -o OUTPUT/DIRECTORY/NAME/AND/OR/PATH -a PATH/TO/GENE/ALIGNMENT/NAME
@@ -35,7 +35,7 @@ Besides running `physcraper` directly from the terminal, you can also run it usi
 <!--You can find instructions on how to set a Jupyter notebook up in the section [installing physcraper](INSTALL.md).-->
 
 
-Default physcraper runs use the OpenTree and NCBI web services, and are slow. 
+Default physcraper runs use the OpenTree and NCBI web services, and are slow.
 They are best run on a server or a desktop.
 
 If you want to use a tree that is not available on OpenTree, you will need to provide a table linking the labels in your alignment and phylogeny to taxon names.

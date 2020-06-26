@@ -1,4 +1,4 @@
-[Back home](../README.md)
+[Back home](../../README.md)
 
 
 # I. Installing physcraper
@@ -10,10 +10,10 @@ git clone git@github.com:McTavishLab/physcraper.git
 ```
 
 ## 2A. Install using conda
-Install anaconda  
+Install anaconda
 
 ```
-   conda env create -f cond_env.yml 
+   conda env create -f cond_env.yml
    conda activate physcraper_env
    # This next step is temprary until opentree changes are uploaded to pypi
    pip install -e git+https://github.com/OpenTreeOfLife/python-opentree@get-tree#egg=opentree
@@ -28,7 +28,7 @@ Install anaconda
 Move (with `cd`) to the pyscraper folder, and create a new python virtual environment with:
 
 ```
-virtualenv -p python3 venv-physcraper  
+virtualenv -p python3 venv-physcraper
 ```
 
 
@@ -54,7 +54,7 @@ Note that you will have to activate the virtual environment every time you want 
 ### 3. Install `physcraper` inside the virtual environment
 
 ```
-pip install -r requirements.txt  
+pip install -r requirements.txt
 pip install -e  .
 ```
 
@@ -92,11 +92,11 @@ which raxmlHPC
 
 # III. Local Databases
 
-The BLAST tool can be run using local databases, which can be downloaded and updated from the National Center for Biotechnology Information ([NCBI](https://www.ncbi.nlm.nih.gov/)). 
+The BLAST tool can be run using local databases, which can be downloaded and updated from the National Center for Biotechnology Information ([NCBI](https://www.ncbi.nlm.nih.gov/)).
 
 ### 1. Installing BLAST command line tools
 
-To blast locally you will need to install blast command line tools first.  
+To blast locally you will need to install blast command line tools first.
 Find general instructions at
 https://www.ncbi.nlm.nih.gov/books/NBK279671/
 https://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/
@@ -106,9 +106,9 @@ e.g. installing BLAST command line tools on **linux**:
 
 ```
     wget https://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/LATEST/ncbi-blast-2.10.0+-x64-linux.tar.gz
-    tar -xzvf ncbi-blast-2.10.0+-x64-linux.tar.gz 
+    tar -xzvf ncbi-blast-2.10.0+-x64-linux.tar.gz
  ```
- 
+
 The binaries/scripts/executables will be installed in the `/bin` folder.
 
 Installing BLAST command line tools on **MAC OS** is easy, with the installer. Note, however, that the BLAST executables will be installed in `usr/local/ncbi/blast` and that you will have to add this to your path in order to be able to run the executables, by adding `export PATH=$PATH:"usr/local/ncbi/blast/bin"` to the .bash_profile
@@ -123,7 +123,7 @@ note that the download can take several hours, depending on your internet connec
 
 This is what you should do:
 
-``` 
+```
     mkdir local_blast_db  # create the folder to save the database
     cd local_blast_db  # move to the newly created folder
     update_blastdb nt  # download the NCBI nucleotide databases
@@ -138,11 +138,11 @@ This is what you should do:
 
 ```
     cd physcraper/taxonomy
-    wget 'ftp://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdump.tar.gz' 
+    wget 'ftp://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdump.tar.gz'
     gunzip -f -cd taxdump.tar.gz | (tar xvf - names.dmp nodes.dmp)
 ```
 
 
-[Previous: Back home](../README.md)
+[Previous: Back home](../../README.md)
 
 [Next: Running  `physcraper`](running.md)
