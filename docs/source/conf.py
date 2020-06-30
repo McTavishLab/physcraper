@@ -1,11 +1,4 @@
 # -*- coding: utf-8 -*-
-
-import os
-ON_RTD = os.environ.get('READTHEDOCS', None) == 'True'
-
-from recommonmark.parser import CommonMarkParser
-from m2r import MdInclude
-
 #
 # Configuration file for the Sphinx documentation builder.
 #
@@ -19,21 +12,21 @@ from m2r import MdInclude
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
-# import os
+import physcraper
 # import sys
 # sys.path.insert(0, os.path.abspath('.'))
 
 
 # -- Project information -----------------------------------------------------
 
-project = 'physcraper'
-copyright = '2020, McTavish Lab'
-author = 'McTavish Lab'
+project = u'Physcraper'
+copyright = u'2020, OpenTreeOfLife'
+author = u'OpenTreeOfLife'
 
 # The short X.Y version
-version = ''
+version = u''
 # The full version, including alpha/beta/rc tags
-release = ''
+release = u'0.1'
 
 
 # -- General configuration ---------------------------------------------------
@@ -46,22 +39,11 @@ release = ''
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    'recommonmark',    
+    'm2r',
     'sphinx.ext.autodoc',
-    'sphinx.ext.doctest',
     'sphinx.ext.intersphinx',
-    'sphinx.ext.mathjax',
-    'sphinx.ext.ifconfig',
     'sphinx.ext.viewcode',
-    'sphinx.ext.githubpages',
 ]
-
-source_parsers = {
-#    '.md': CommonMarkParser,
-}
-
-source_suffix = ['.rst', '.md']
-
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -69,8 +51,8 @@ templates_path = ['_templates']
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
 #
-# source_suffix = ['.rst', '.md']
-# source_suffix = '.rst'
+source_suffix = ['.rst', '.md']
+#source_suffix = '.rst'
 
 # The master toctree document.
 master_doc = 'index'
@@ -95,10 +77,8 @@ pygments_style = None
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-
 #
-if not ON_RTD:
-    html_theme = 'alabaster'
+html_theme = 'alabaster'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
@@ -125,7 +105,7 @@ html_static_path = ['_static']
 # -- Options for HTMLHelp output ---------------------------------------------
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'physcraperdoc'
+htmlhelp_basename = 'Physcraperdoc'
 
 
 # -- Options for LaTeX output ------------------------------------------------
@@ -152,8 +132,8 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'physcraper.tex', 'physcraper Documentation',
-     'McTavish Lab', 'manual'),
+    (master_doc, 'Physcraper.tex', u'Physcraper Documentation',
+     u'OPenTreeOfLife', 'manual'),
 ]
 
 
@@ -162,7 +142,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'physcraper', 'physcraper Documentation',
+    (master_doc, 'Physcraper', u'Physcraper Documentation',
      [author], 1)
 ]
 
@@ -173,8 +153,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'physcraper', 'physcraper Documentation',
-     author, 'physcraper', 'One line description of project.',
+    (master_doc, 'Physcraper', u'Physcraper Documentation',
+     author, 'Physcraper', 'One line description of project.',
      'Miscellaneous'),
 ]
 
@@ -202,5 +182,4 @@ epub_exclude_files = ['search.html']
 # -- Options for intersphinx extension ---------------------------------------
 
 # Example configuration for intersphinx: refer to the Python standard library.
-intersphinx_mapping = {'py': ('https://docs.python.org/',None),
-                       'dp': ('https://dendropy.org/', None)}
+intersphinx_mapping = {'https://docs.python.org/': None}

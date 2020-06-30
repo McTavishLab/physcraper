@@ -3,25 +3,17 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to physcraper's documentation!
+Welcome to Physcraper's documentation!
 ======================================
+.. mdinclude:: ../mds/intro.md
 
 .. toctree::
-   :maxdepth: 3 
-   :caption: Contents:
+   :maxdepth: 2
+   :caption: Documentation subjects:
 
-   apidocs
-   readme
+   install
    how_to_start
-
-
-
-
-
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+   physcraper_run
+   data_exploration
+   setting_up_local_database
+   apidocs

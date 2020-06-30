@@ -24,8 +24,13 @@ from physcraper.opentree_helpers import root_tree_from_synth
 from physcraper import ncbi_data_parser
 from physcraper import AWSWWW
 
-_VERBOSE = 1
-_DEBUG = 1
+_VERBOSE = 0
+
+def set_verbose():
+    global _VERBOSE
+    _VERBOSE = 1
+
+_DEBUG = 0
 def debug(msg):
     """short debugging command
     """
@@ -115,7 +120,7 @@ class PhyscraperScrape(object):
         self.config.write_file(self.rundir)
         self.new_seqs = {}  # all new seq after read_blast_wrapper
         self.new_seqs_otu_id = {}  # only new seq which passed remove_identical
-        self.blast_subdir = "{}/blast_run_{}".format(self.rundir, self.data.tag)
+        self.blast_subdir = "{}/blast_run_{}".format(self.workdir, self.data.tag)
 
         self.date = str(datetime.date.today())  # Date of the run - may lag behind real date!
         self.repeat = 1  # used to determine if we continue updating the tree
@@ -956,7 +961,10 @@ class PhyscraperScrape(object):
                    schema=schema,
                    preserve_underscores=True,
                    taxon_namespace = self.data.aln.taxon_namespace)
-        rooted_tre = root_tree_from_synth(newtre, self.data.otu_dict)
+        try:
+            rooted_tre = root_tree_from_synth(newtre, self.data.otu_dict)
+        except: 
+            sys.stderr.write("Tree not rooted, root before running conflict analyses.\n")
         self.data.tre = newtre
 
 

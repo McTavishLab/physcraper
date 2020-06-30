@@ -10,8 +10,13 @@ from physcraper import ncbi_data_parser, ConfigObj
 from physcraper.opentree_helpers import get_mrca_ott
 from physcraper.helpers import standardize_label, to_string, debug
 
-_VERBOSE = 1
-_DEBUG = 1
+_VERBOSE = 0
+
+def set_verbose():
+    global _VERBOSE
+    _VERBOSE = 1
+
+_DEBUG = 0
 
 def generate_ATT_from_files(workdir,
                             configfile,
@@ -100,7 +105,13 @@ def generate_ATT_from_run(workdir, start_files='output', tag=None, configfile=No
     # use replaced aln as input
    
     
+def generate_ATT_from_treetax(treetax, alnfi, workdir, start_files='output', tag=None, configfile=None):
+    """Build an ATT object without phylesystem, use your own files instead.
+    :return: object of class ATT
+    """
 
+    return AlignTreeTax(tree = treefile, otu_dict=treetax.otu_dict, alignment = alnfi, search_taxon=mrca_ott, workdir=workdir,
+                configfile=configfile, tag=tag, tree_schema='newick')
     
 
 

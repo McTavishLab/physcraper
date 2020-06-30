@@ -10,7 +10,7 @@ from physcraper.helpers import debug
 
 
 
-_DEBUG = 1
+_DEBUG = 0
 
 
 def get_acc_from_blast(query_string):

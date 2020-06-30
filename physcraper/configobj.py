@@ -88,7 +88,6 @@ class ConfigObj(object):
         self.spp_threshold = 5
         self.minlen = 0.8
         self.maxlen = 1.2
-        self.url_base = None
         self.taxonomy_dir = "{}/taxonomy".format(physcraper_dir)
         self.ott_ncbi = "{}/ott_ncbi".format(self.taxonomy_dir)
     def config_str(self):
@@ -130,7 +129,7 @@ max_length = {maxlen}
         # read in blast settings
         self.email = config["blast"]["Entrez.email"]
         if not "@" in self.email:
-            sys.stderr.write("your email `%s` does not have an @ sign. NCBI blast requests an email address." % self.email)
+            sys.stderr.write("your email `%s` does not have an @ sign. NCBI blast requests an email address.\n" % self.email)
         
         self.e_value_thresh = config["blast"]["e_value_thresh"]
         assert is_number(self.e_value_thresh), (

@@ -14,7 +14,7 @@ from Bio import Entrez
 from physcraper import ncbi_data_parser, ConfigObj  # is the ncbi data parser class and associated functions
 from physcraper.helpers import debug
 
-_DEBUG = 1
+_DEBUG = 0
 
 
 

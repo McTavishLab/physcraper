@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import sys
 import argparse
 from opentree import OT
 
@@ -12,21 +13,44 @@ parser.add_argument("-o","--output", help="Output file path")
 args = parser.parse_args()
 
 
+args = parser.parse_args()
+if len(sys.argv)==1:
+    parser.print_help(sys.stderr)
+    sys.exit(1)
+
+
+assert(args.taxon_name or args.ottid), "A taxon name or an OTT id are required for search."
+
 if args.taxon_name:
     try:
         ottid = OT.get_ottid_from_name(args.taxon_name)
     except:
-        sys.stdout.write("no match to taxon name. Try finding your taxon on tree.opentreeoflife.org and inputting the taxon id using -ott")
+        sys.stdout.write("no match to taxon name. Try finding your taxon on tree.opentreeoflife.org and inputting the taxon id using -ott\n")
+        sys.exit()
 
 
-#sys.stdout.write("OTT id of {}")
+if args.ott_id:
+    ottid = args.ott_id
+
+sys.stdout.write("OTT id {}\n".format(ottid))
 phylesystem_studies_resp = OT.find_trees(ottid, search_property ='ot:ottId')
+
+
+
+cites_phyl = "Members of {} present in the following studies in the OpenTree Phylesystem\n".format(args.taxon_name)
+
+
+if args.treebase:
+    cites_phyl = cites_phyl + "Only returning studies with TreeBase links\n"
 
 
 studies = dict()
 trees = dict()
 treebase_studies = set()
+sys.stdout.write("Gathering references (slow)\n")
 for study in phylesystem_studies_resp.response_dict['matched_studies']:
+    sys.stdout.write('.')
+    sys.stdout.flush()
     study_id = study['ot:studyId']
     studies[study_id] = dict()
     study_info = OT.get_study(study_id)
@@ -46,21 +70,13 @@ for study in phylesystem_studies_resp.response_dict['matched_studies']:
     studies[study_id]['opentree_url'] = "https://tree.opentreeoflife.org/curator/study/view/{}".format(study_id)
     studies[study_id]['reference'] = nexson['nexml'].get('^ot:studyPublicationReference', 'no ref') 
     studies[study_id]['doi'] = nexson['nexml'].get('^ot:studyPublication', 'no study pub')
-
-
-cites_phyl = "Members of {} present in the following studies in the OpenTree Phylesystem\n".format(args.taxon_name)
-
-
-if args.treebase:
-    cites_phyl = cites_phyl + "Only returning studies with TreeBase links\n"
-
-for study_id in studies:
     if args.treebase and study_id not in treebase_studies:
             continue
     cites_phyl = cites_phyl + "\nStudy {} tree(s) {}\n".format(study_id, ', '.join(trees[study_id]))
     cites_phyl = cites_phyl + "OpenTreeUrl: " + studies[study_id]['opentree_url'] + '\n'
     cites_phyl = cites_phyl + "Reference: " + studies[study_id]['reference'] + '\n'
     cites_phyl = cites_phyl + "Data Deposit URL: " + studies[study_id]['data_deposit_url'] + '\n'
+
 
 
 if args.output:

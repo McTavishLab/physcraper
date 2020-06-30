@@ -1,5 +1,4 @@
-How to start
+Quick start
 ============
 
 .. mdinclude:: ../Tutorial.md
-

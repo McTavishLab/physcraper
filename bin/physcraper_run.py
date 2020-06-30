@@ -9,34 +9,46 @@ from physcraper.aligntreetax import generate_ATT_from_run
 parser = argparse.ArgumentParser()
 parser.add_argument("-s","--study_id", help="OpenTree study id")
 parser.add_argument("-t","--tree_id", help="OpenTree tree id")
-parser.add_argument("-tl", "--tree_link", help="Link to tree to update on OpenTree")
 parser.add_argument("-a","--alignment", help="path to alignment")
 parser.add_argument("-as","--aln_schema", help="alignment schema (nexus or fasta)")
-parser.add_argument("-db", "--blast_db", help="local download of blast database")
 parser.add_argument("-o","--output", help="path to output directory")
-parser.add_argument("-bs","--bootstrap_reps", help="number of bootstrap reps")
-parser.add_argument("-tx","--taxonomy", help="path to taxonomy")
 parser.add_argument("-c","--configfile", help="path to config file")
-parser.add_argument("-e","--email", help="email address for ncbi blast searches")
-parser.add_argument("-re","--reload_files",  help="reload files and configureation from dir")
-parser.add_argument("-r","--repeat",  action='store_true', help="repeat search until no no sequences are found")
-parser.add_argument("-tag","--tag", help="gene name or other specifier")
 parser.add_argument("-tb","--treebase", action="store_true", help="download alignment from treebase")
-parser.add_argument("-no_est","--no_estimate_tree", action='store_true', help="don't estimate tree")
-parser.add_argument("-ev","--eval", help="blast evalue cutoff")
-parser.add_argument("-hl","--hitlist_len", help="number of blast searches to save per taxon")
-parser.add_argument("-tp","--trim_perc", help="minimum percentage of seqs end of alignemnts")
-parser.add_argument("-rl","--relative_length", help="max relative length of added seqs, compared to input aln len")
-parser.add_argument("-spn","--species_number", help="max number of seqs to include per species")
-parser.add_argument("-nt","--num_threads", help="number of threads to use in processing")
-parser.add_argument("-de","--delay", help="how long to wait before blasting the same sequence again")
+parser.add_argument("-re","--reload_files",  help="reload files and configuration from dir")
+
+
+
+parser.add_argument("-tag","--tag", help="gene name or other specifier")
 parser.add_argument("-st","--search_taxon", help="taxonomic id to constrain blast search. format ott:123 or ncbi:123. Deafult will use ingroup of tree on OpenTree, or MRCA of input tips ")
 
+parser.add_argument("-spn","--species_number", help="max number of seqs to include per species")
+parser.add_argument("-tp","--trim_perc", help="minimum percentage of seqs end of alignemnts")
+parser.add_argument("-rlmax","--relative_length_max", help="max relative length of added seqs, compared to input seq len")
+parser.add_argument("-rlmin","--relative_length_min", help="min relative length of added seqs, compared to input seq len")
 
+parser.add_argument("-r","--repeat",  action='store_true', help="repeat search until no no sequences are found")
+parser.add_argument("-db", "--blast_db", help="local download of blast database")
+parser.add_argument("-u", "--blast_url", help="a URL for your own mirrored blast database")
+parser.add_argument("-e","--email", help="email address for ncbi blast searches")
+parser.add_argument("-ev","--eval", help="blast evalue cutoff")
+parser.add_argument("-hl","--hitlist_len", help="number of blast searches to save per taxon")
+
+parser.add_argument("-nt","--num_threads", help="number of threads to use in processing")
+parser.add_argument("-de","--delay", help="how long to wait before blasting the same sequence again")
+
+parser.add_argument("-no_est","--no_estimate_tree", action='store_true', help="don't estimate tree")
+
+parser.add_argument("-bs","--bootstrap_reps", help="number of bootstrap reps")
+
+parser.add_argument("-tx","--taxonomy", help="path to taxonomy")
+
+parser.add_argument("-v","--verbose", help="OpenTree study id")
 
 
 
 #Not yet implemented
+#parser.add_argument("-tl", "--tree_link", help="Link to tree to update on OpenTree")
+
 #parser.add_argument("-bl","--blast_sequence", action='store_true', help="run blast search, and align but do not estimate tree")
 #parser.add_argument("-d","--download_data", action='store_true', help="write out tree and alignment, without blasting")
 #parser.add_argument("-bs","--bootstrap", help="number of bootstrap reps")
@@ -47,6 +59,12 @@ parser.add_argument("-st","--search_taxon", help="taxonomic id to constrain blas
 
 
 args = parser.parse_args()
+
+
+if args.verbose:
+    physcraper.scrape.set_verbose()
+
+
 if len(sys.argv)==1:
     parser.print_help(sys.stderr)
     sys.exit(1)
@@ -90,8 +108,11 @@ if args.hitlist_len:
 if args.trim_perc:
     conf.trim_perc = args.trim_perc
 
-if args.relative_length:
-    conf.maxlen = args.relative_length
+if args.relative_length_max:
+    conf.maxlen = args.relative_length_max
+
+if args.relative_length_min:
+    conf.minlen = args.relative_length_min
 
 if args.species_number:
     conf.spp_threshold = int(args.species_number)
@@ -109,11 +130,11 @@ sys.stdout.write("Configuration Settings\n")
 sys.stdout.write(conf.config_str()+"\n")
 
 study_id =  None
-if args.tree_link:
-    linkl = args.tree_link.split("/")
-    assert(linkl[5]=="view")
-    study_id = linkl[6]
-    tree_id = linkl[-1].split("=")[1]
+#if args.tree_link:
+#    linkl = args.tree_link.split("/")
+#    assert(linkl[5]=="view")
+#    study_id = linkl[6]
+#    tree_id = linkl[-1].split("=")[1]
 
 
 if args.study_id or args.tree_id:
@@ -198,23 +219,20 @@ else:
     boot_reps = 100
 
 
-
 run = 1
 if args.repeat:
-    rundir_path = scraper.rundir
-    blast_dir ="{}/blast_run_{}".format(workdir, scraper.data.tag)
-    if not os.path.exists(blast_dir):
-        os.mkdir(blast_dir)    
-    scraper.blast_subdir = blast_dir
-    scraper.calculate_final_tree(boot_reps = boot_reps)
-    to_be_blasted = [otu.label for otu in scraper.data.aln if ((scraper.data.otu_dict[otu.label]['^physcraper:ingroup'] == True) and (scraper.data.otu_dict[otu.label]['^physcraper:last_blasted']==None))]
+    to_be_blasted = ['first_pass']
     while len(to_be_blasted) >= 1:
         run += 1
-        os.rename(scraper.rundir, rundir_path+"_"+str(run))
-        os.mkdir(scraper.rundir)
+        print(scraper.blast_subdir)
         scraper.run_blast_wrapper()
-        scraper.calculate_final_tree(boot_reps = boot_reps)
+        besttreepath = scraper.est_full_tree()
+        scraper.replace_tre(besttreepath)
+        scraper.data.write_labelled(filename="run_{}".format(run), label='^ot:ottTaxonName', direc=scraper.outputsdir)        
+        scraper.data.write_otus(schema='table', direc=scraper.inputsdir)
+        scraper.data.write_otus(schema='json', direc=scraper.rundir)  
         to_be_blasted = [otu.label for otu in scraper.data.aln if ((scraper.data.otu_dict[otu.label]['^physcraper:ingroup'] == True) and (scraper.data.otu_dict[otu.label]['^physcraper:last_blasted']==None))]
+    scraper.calculate_final_tree(boot_reps = boot_reps)
 elif not args.no_estimate_tree:
 #scraper.read_blast_wrapper()
     scraper.calculate_final_tree(boot_reps = boot_reps)

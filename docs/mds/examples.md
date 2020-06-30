@@ -1,4 +1,4 @@
-[Back home](../README.md)
+[Back home](../../README.md)
 
 # Example runs
 
@@ -21,3 +21,5 @@ python -i docs/examples/minimal.py
 [Previous: Running physcraper](running.md)
 
 [Next: Running the tests](testing.md)
+
+[Go to Documentation](https://physcraper.readthedocs.io/en/latest/)
