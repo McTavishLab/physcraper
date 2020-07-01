@@ -1,4 +1,4 @@
 Quick start
 ============
 
-.. mdinclude:: ../Tutorial.md
+.. mdinclude:: ../mds/Tutorial.md
