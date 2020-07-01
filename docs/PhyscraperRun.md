@@ -154,19 +154,19 @@ Example commands:
 
 The simplest (but slowest) run is to choose a tree from opentree, and `physcraper` gets the alignment for you from treebase (argument `-tb`), using web blast:  
 
-    physcraper_run.py -s pg_55 -t tree5864 -tb -o output_pg55_treebase 
+    physcraper_run.py -s pg_55 -t tree5864 -tb -o pg55_treebase 
 
 
-The fastest run is to choose a tree from opentree, give the path to the corresponding downloaded alignment (argument `-a`) and a local blast directory (argument `-db`):  
+The fastest way is to choose a tree from opentree, give the path to the corresponding downloaded alignment (argument `-a`) and a local blast directory (argument `-db`). To set up the local blast DB see [Local DB](setting_up_local_database):  
 
-    physcraper_run.py -s pg_55 -t tree5864 -a treebase_alns/pg_55tree5864_ndhf.aln -as "nexus" -db ~/ncbi/localblastdb/ -o output_pg55_local
+    physcraper_run.py -s ot_350 -t Tr53297 -a docs/examples/ot_350Tr53297.aln -as "nexus" -db ~/ncbi/localblastdb/ -o ot_350
 
 
 To check tree download and the matching of names across tree and alignment without running the blast and tree estimation steps, use the flag (-no_est):  
   
-    physcraper_run.py -s ot_1919 -t Tr115925 --treebase -db ~/ncbi/localblastdb/ -no_est -o output_test
+    physcraper_run.py -s pg_55-t tree5864 --treebase -db ~/ncbi/localblastdb/ -no_est -o pg55_C
 
-  Take a look at the tree, teh alignemnt and the out_info csv file. It will list all taxa by their unique idetifiers.
+  Take a look at the tree, the alignemnt and the out_info csv file. It will list all taxa by their unique identifiers.
 
 
 To then run a blast search and estimate an updated tree from that tree and alignemnt, you can re-load from that directory. It will use your same config settings (which weere automatically written out to outputdir/run.config).
@@ -174,18 +174,17 @@ To then run a blast search and estimate an updated tree from that tree and align
 If the run completed, re-run will use the final output ree and alignment. If the run was not compelte, it will reload the input files.
 
 
-    physcraper_run.py -re output_test/ -o output_test
+    physcraper_run.py -re pg_55_C -o pg_55_C
 
 
 To re-run with a different configuration file, 
 
-    physcraper_run.py -re output_test/ -c alt_config -o output_test
-
+    physcraper_run.py -re  pg_55_C/ -c alt_config -o  pg_55_D
 
 
 Configuration parameters can be either set in a cofniguration file using -c (e.g. data.config)
 
-    physcraper_run.py -s pg_55 -t tree5864 -a treebase_alns/pg_55tree5864_ndhf.aln -nt 8 -spn 3 -hl 20 -as "nexus" -c data.config -o output4
+    physcraper_run.py -s ot_350 -t Tr53297 -a ot_350Tr53297.aln -nt 8 -spn 3 -hl 20 -as "nexus" -c data.config -o output4
 
 
 Or they can be modified in the command line arguments. If you combine a configuration file with command line configuration paratemeters, the command line arguments will be used.
@@ -193,12 +192,12 @@ Or they can be modified in the command line arguments. If you combine a configur
     physcraper_run.py -s pg_55 -t tree5864 -a treebase_alns/pg_55tree5864_ndhf.aln -nt 8 -spn 3 -hl 20 -as "nexus" -db ~/ncbi/localblastdb/ -o output4
 
 
-To run on local files, not on trees in Open Tree, you need to match the labels to taxa using https://tree.opentreeoflife.org/curator/tnrs/
+To run on local files, not on trees in Open Tree, you need to match the labels to taxa using https://tree.opentreeoflife.org/curator/tnrs/  
 
     physcraper_run.py -tf tests/data/tiny_test_example/test.tre -tfs newick -a tests/data/tiny_test_example/test.fas --taxon_info tests/data/tiny_test_example/main.json -as fasta -o owndata
 
 
-The current copnfiguration settings are written to standard out, and saved in the output directory as run.config
+The current configuration settings are written to standard out, and saved in the output directory as run.config
 e.g. 
 
     [blast]
@@ -214,6 +213,7 @@ e.g.
     spp_threshold = 3
     seq_len_perc = 0.8
     trim_perc = 0.8
+    min_len = 0.8
     max_len = 1.2
     taxonomy_path = /home/ejmctavish/projects/otapi/physcraper/taxonomy
 
