@@ -7,10 +7,9 @@
 
 <p></p>
 
-<font size="5"> Continual gene tree updating!</font>
+<font size="5"> Automated gene tree updating!</font>
 
-Use a tree (from the literature, a synthetic tree from Open Tree of Life, or your own tree) and an alignment (of any size?) to find and add homologous sequences to (hopefully) improve and advance phylogenetic inference in a group.
+Use a tree and a single locus alignment to find and add homologous sequences to (hopefully) improve and advance phylogenetic inference in a group.
 
-
-The tool is under current development in the McTavish Lab.
-Please contact ejmctavish@gmail if you need any help or have feedback.
+The tool is under current development in the McTavish Lab.   
+Please post an issue at https://github.com/McTavishLab/physcraper/issues or contact ejmctavish@ucmerced.edu if you need any help or have feedback.

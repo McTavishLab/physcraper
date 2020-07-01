@@ -14,8 +14,8 @@
 Use a tree (from the literature, a synthetic tree from Open Tree of Life, or your own tree) and a single locus alignment to find and add homologous sequences to (hopefully) improve and advance phylogenetic inference in a group.
 
 
-The tool is under current development in the McTavish Lab.
-Please contact ejmctavish@gmail if you need any help or have feedback.
+The tool is under current development in the McTavish Lab.   
+Please post an issue at https://github.com/McTavishLab/physcraper/issues or contact ejmctavish@ucmerced.edu if you need any help or have feedback.
 
 This is the code repository, please refer to Physcraper's [documentation website](https://physcraper.readthedocs.io/en/latest/) for more details on how to install it and run!
 
