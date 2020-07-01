@@ -33,6 +33,17 @@ Tree information (required)
   -t TREE_ID, --tree_id TREE_ID
                         OpenTree tree id
 
+OR 
+
+  -tf TREE_FILE, --tree_file TREE_FILE
+                        a path to a tree file
+  -tfs TREE_SCHEMA, --tree_schema TREE_SCHEMA
+                        tree file format schema
+  -ti TAXON_INFO, --taxon_info TAXON_INFO
+                        taxon info file from OpenTree TNRS 
+
+
+
 Alignment information (required)
 
   -a ALIGNMENT, --alignment ALIGNMENT
@@ -135,3 +146,77 @@ You can use your own blast database, for example set up on an AWS server.
 
   -tx TAXONOMY, --taxonomy TAXONOMY
                         path to taxonomy
+
+
+Example commands:
+
+
+
+The simplest (but slowest) run is to choose a tree from opentree, and `physcraper` gets the alignment for you from treebase (argument `-tb`), using web blast:  
+
+    physcraper_run.py -s pg_55 -t tree5864 -tb -o output_pg55_treebase 
+
+
+The fastest run is to choose a tree from opentree, give the path to the corresponding downloaded alignment (argument `-a`) and a local blast directory (argument `-db`):  
+
+    physcraper_run.py -s pg_55 -t tree5864 -a treebase_alns/pg_55tree5864_ndhf.aln -as "nexus" -db ~/ncbi/localblastdb/ -o output_pg55_local
+
+
+To check tree download and the matching of names across tree and alignment without running the blast and tree estimation steps, use the flag (-no_est):  
+  
+    physcraper_run.py -s ot_1919 -t Tr115925 --treebase -db ~/ncbi/localblastdb/ -no_est -o output_test
+
+  Take a look at the tree, teh alignemnt and the out_info csv file. It will list all taxa by their unique idetifiers.
+
+
+To then run a blast search and estimate an updated tree from that tree and alignemnt, you can re-load from that directory. It will use your same config settings (which weere automatically written out to outputdir/run.config).
+
+If the run completed, re-run will use the final output ree and alignment. If the run was not compelte, it will reload the input files.
+
+
+    physcraper_run.py -re output_test/ -o output_test
+
+
+To re-run with a different configuration file, 
+
+    physcraper_run.py -re output_test/ -c alt_config -o output_test
+
+
+
+Configuration parameters can be either set in a cofniguration file using -c (e.g. data.config)
+
+    physcraper_run.py -s pg_55 -t tree5864 -a treebase_alns/pg_55tree5864_ndhf.aln -nt 8 -spn 3 -hl 20 -as "nexus" -c data.config -o output4
+
+
+Or they can be modified in the command line arguments. If you combine a configuration file with command line configuration paratemeters, the command line arguments will be used.
+
+    physcraper_run.py -s pg_55 -t tree5864 -a treebase_alns/pg_55tree5864_ndhf.aln -nt 8 -spn 3 -hl 20 -as "nexus" -db ~/ncbi/localblastdb/ -o output4
+
+
+To run on local files, not on trees in Open Tree, you need to match the labels to taxa using https://tree.opentreeoflife.org/curator/tnrs/
+
+    physcraper_run.py -tf tests/data/tiny_test_example/test.tre -tfs newick -a tests/data/tiny_test_example/test.fas --taxon_info tests/data/tiny_test_example/main.json -as fasta -o owndata
+
+
+The current copnfiguration settings are written to standard out, and saved in the output directory as run.config
+e.g. 
+
+    [blast]
+    Entrez.email = None
+    e_value_thresh = 1e-05
+    hitlist_size = 20
+    location = local
+    localblastdb = /home/ejmctavish/ncbi/localblastdb/
+    url_base = None
+    num_threads = 8
+    delay = 90
+    [physcraper]
+    spp_threshold = 3
+    seq_len_perc = 0.8
+    trim_perc = 0.8
+    max_len = 1.2
+    taxonomy_path = /home/ejmctavish/projects/otapi/physcraper/taxonomy
+
+
+
+

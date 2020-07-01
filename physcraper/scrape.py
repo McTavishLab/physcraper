@@ -278,7 +278,7 @@ class PhyscraperScrape(object):
             else:
                 time_passed = abs((datetime.datetime.strptime(today, "%Y/%m/%d") - datetime.datetime.strptime(
                 last_blast, "%Y/%m/%d")).days)
-            if self.data.otu_dict[otu_id].get("^physcraper:ingroup") != True:
+            if self.data.otu_dict[otu_id].get("^physcraper:ingroup") == False:
                 sys.stdout.write("tip {} not in ingroup. Will not blast, \n".format(otu_id))
                 continue
             if time_passed > delay:
