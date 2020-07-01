@@ -2,6 +2,15 @@ Blast Utilities
 
 ## Create an NCBI API key
 
+Generating an NCBI API key will speed up downloading full sequences following blast searches.
+See (NCBI API keys for details)[https://ncbiinsights.ncbi.nlm.nih.gov/2017/11/02/new-api-keys-for-the-e-utilities/]
+
+You can add your api key to your config using
+
+    Entrez.api_key = <apikey>
+
+or as a flag in your physcraper_run script --api_key 
+
 
 
 ### To Update or download blast DB:
