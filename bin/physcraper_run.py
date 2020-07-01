@@ -3,8 +3,8 @@ import argparse
 import os
 import sys
 import physcraper
-from physcraper.opentree_helpers import get_tree_from_study, scraper_from_opentree, get_max_match_aln, count_match_tree_to_aln, generate_ATT_from_phylesystem
-from physcraper.aligntreetax import generate_ATT_from_run
+from physcraper.opentree_helpers import get_tree_from_study, scraper_from_opentree, get_max_match_aln, count_match_tree_to_aln, generate_ATT_from_phylesystem, bulk_tnrs_load
+from physcraper.aligntreetax import generate_ATT_from_run, generate_ATT_from_files
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-s","--study_id", help="OpenTree study id")
@@ -15,6 +15,10 @@ parser.add_argument("-o","--output", help="path to output directory")
 parser.add_argument("-c","--configfile", help="path to config file")
 parser.add_argument("-tb","--treebase", action="store_true", help="download alignment from treebase")
 parser.add_argument("-re","--reload_files",  help="reload files and configuration from dir")
+
+parser.add_argument("-tf","--tree_file", help="a path to a tree file")
+parser.add_argument("-tfs","--tree_schema", help="tree file format schema")
+parser.add_argument("-ti","--taxon_info", help="taxon info file from OpenTree TNRS")
 
 
 
@@ -200,6 +204,34 @@ if study_id:
                                         workdir = workdir,
                                         configfile = conf)
     sys.stdout.write("{} taxa in alignment and tree\n".format(len(scraper.data.aln)))
+
+
+if args.tree_file:
+    treefile = args.tree_file
+    assert(args.tree_schema), "When passing in a treefile, a tree schema is required\n"
+    assert(args.taxon_info), "When passing in a treefile, a taxon mapping from from https://tree.opentreeoflife.org/curator/tnrs/ is required\n"
+    assert(args.taxon_info.split('.')[-1]=='json'), "JSON format file required for taxon info from https://tree.opentreeoflife.org/curator/tnrs/\n"
+    if args.tag:
+        tag = args.tag
+    elif args.alignment:
+        tag = args.alignment.split('/')[-1].split('.')[0]
+    otu_dict = bulk_tnrs_load(args.taxon_info)
+    if args.search_taxon:
+        search_taxon = args.search_taxon
+    else:
+        search_taxon = None
+    data_obj = generate_ATT_from_files(workdir= workdir,
+                                        configfile=conf,
+                                        alnfile = alnfile,
+                                        aln_schema = aln_schema,
+                                        treefile = treefile,
+                                        otu_json = otu_dict,
+                                        tree_schema = args.tree_schema,
+                                        search_taxon=search_taxon)
+    ids = physcraper.IdDicts(conf)
+    scraper = physcraper.PhyscraperScrape(data_obj, ids)
+#    sys.stdout.write("Read in tree {} taxa in alignment and tree\n".format(len(scraper.data.aln)))
+
 
 if args.reload_files:
     if args.tag:

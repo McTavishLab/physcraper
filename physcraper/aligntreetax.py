@@ -49,7 +49,16 @@ def generate_ATT_from_files(workdir,
     if not os.path.exists(workdir):
         os.makedirs(workdir)
     # use replaced aln as input
-    otu_dict = json.load(open(otu_json, "r"))
+    if isinstance(otu_json, dict):
+            otu_dict = otu_json
+    elif isinstance(otu_json, str):
+        assert os.path.exists(otu_json)
+        with open(otu_json) as data_file:
+            input_dict = json.load(data_file)
+            if input_dict.keys() == set(['mappingHints', 'names', 'metadata']):
+                otu_dict = bulk_tnrs_load(otu_json)
+            else:
+                otu_dict = input_dict
     if search_taxon:
         mrca_ott = int(search_taxon)
     else:

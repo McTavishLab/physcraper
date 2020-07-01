@@ -133,7 +133,7 @@ def bulk_tnrs_load(filename, ids_obj = None):
         input_dict = json.load(data_file)
     for name in input_dict["names"]:
         i = 1
-        otu = "Otu" + name['id']
+        otu = "Otu" + name['id'].strip('name')
         while otu in otu_dict.keys():
             otu = "{}_{}".format(otu, i)
             i+=1
@@ -151,6 +151,7 @@ def bulk_tnrs_load(filename, ids_obj = None):
     for otu in otu_dict:
         otu_dict[otu]["^physcraper:status"] = "original"
         otu_dict[otu]["^physcraper:last_blasted"] = None
+        otu_dict[otu]["^physcraper:ingroup"] = "unknown"
     return otu_dict
 
 
