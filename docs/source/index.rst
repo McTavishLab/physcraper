@@ -17,3 +17,4 @@ Welcome to Physcraper's documentation!
    data_exploration
    setting_up_local_database
    apidocs
+   find_trees
