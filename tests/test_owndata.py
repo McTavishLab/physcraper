@@ -26,6 +26,7 @@ def test_owndata():
     if not os.path.exists("{}".format(workdir)):
         os.makedirs("{}".format(workdir))
 
+    ids = IdDicts()
     if os.path.exists(otu_jsonfi):
         print("load json")
         otu_json = json.load(open(otu_jsonfi))
