@@ -203,7 +203,7 @@ class IdDicts(object):
         """
         tries = 10
         Entrez.email = self.config.email
-        if self.config.apikey:
+        if self.config.api_key:
             Entrez.api_key = self.config.apikey
         handle = None
 
