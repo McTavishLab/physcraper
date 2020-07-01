@@ -128,10 +128,13 @@ max_length = {maxlen}
         config.read_file(open(configfi))
         
         # read in blast settings
-        self.email = config["blast"]["Entrez.email"]
+        self.email = config["blast"].get("Entrez.email")
         if not "@" in self.email:
             sys.stderr.write("your email `%s` does not have an @ sign. NCBI blast requests an email address.\n" % self.email)
-        
+        if config["blast"].get("Entrez.api_key"):
+            self.api_key = config["blast"]["Entrez.api_key"]
+        else:
+            self.api_key = None
         self.e_value_thresh = config["blast"]["e_value_thresh"]
         assert is_number(self.e_value_thresh), (
                 "value `%s` does not exists" % self.e_value_thresh
