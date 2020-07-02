@@ -166,7 +166,7 @@ def write_labelled_tree(treetax, label, filepath, schema = "newick", norepeats=T
             else:
                 if norepeats:
                     new_label = "_".join([new_label, taxon.label])
-            new_label = new_label.replace(' ','_')
+            new_label = str(new_label).replace(' ','_')
             taxon.label = new_label
         tmp_tre.write(path=filepath,
                       schema=schema,
@@ -209,7 +209,7 @@ def write_labelled_aln(aligntreetax, label, filepath, schema = "fasta", norepeat
             else:
                 if norepeats:
                     new_label = "_".join([new_label, taxon.label])
-            new_label = new_label.replace(' ','_')
+            new_label = str(new_label).replace(' ','_')
             taxon.label = new_label
         tmp_aln.write(path=filepath,
                       schema=schema)
