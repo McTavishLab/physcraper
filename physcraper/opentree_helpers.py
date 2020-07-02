@@ -133,7 +133,7 @@ def bulk_tnrs_load(filename, ids_obj = None):
         input_dict = json.load(data_file)
     for name in input_dict["names"]:
         i = 1
-        otu = "Otu" + name['id'].strip('name')
+        otu = "otu" + name['id'].strip('name')
         while otu in otu_dict.keys():
             otu = "{}_{}".format(otu, i)
             i+=1
