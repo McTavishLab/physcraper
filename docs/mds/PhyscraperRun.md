@@ -118,7 +118,7 @@ To setup see doc/LocalDB.md
 
 You can use your own blast database, for example set up on an AWS server.
 
-\
+
 ## Sequence filtering parameters
 
   -tp TRIM_PERC, --trim_perc TRIM_PERC
