@@ -127,6 +127,37 @@ You need an alignment (single locus) and a tree. The taxon labels in these two f
 
 You also need a file linking the labels in your tree and alignment to broader taxonomy. This can be easily generated vis OPenTrees Bulk Taxonomic Name Resolution Service. [Bulk TNRS](https://tree.opentreeoflife.org/curator/tnrs/)
 
-Example names:
+### Mapping names to taxa
+
+Map your tip names to unique identifiers using the Open Tree TNRS bulk upload tool https://tree.opentreeoflife.org/curator/tnrs/
+
+(This is a brand new beta-version of this functionality, so some parts are a bit finicky).
+
+Save your tip labels in a .txt file. 
+
+*Try this*
+  * Click on "add names", and upload the names file.  
+  * In the mapping options section,
+    - select a taxonomic group to narrow down the possibilities and speed up mapping
+  * Click "Map selected names"
+
+Exact matches will show up in green, and can be accepted by clicking "accept exact matches".
+
+Some taxa may show several suggested names. Click through to the taxonomy, and select the one that you think is correct based on the phylogenetic context. 
+
+Once you have accepted names for each of the taxa, click "save nameset".
+
+*Make sure your mappings were saved! If you don't 'accept' matches, they don't download.*
+
+Download it to your laptop.
+Extract the files.
+Take a look at the human readable version (output/main.csv). You will see that this file also links to NCBI and GBIF identifiers for your taxa!
+
+
+main.json contains the the same data in a more computer readable format.
+
+By passing the location of the main.json file, physcraper can link your sequences to their correct taxonomic context.
+
+Example run on own files using test data:
 
     physcraper_run.py -tf tests/data/tiny_test_example/test.tre -tfs newick -a tests/data/tiny_test_example/test.fas --taxon_info tests/data/tiny_test_example/main.json -as fasta -o owndata
