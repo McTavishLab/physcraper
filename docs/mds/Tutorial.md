@@ -4,15 +4,11 @@
 If you have access to a single gene alignment, and a tree, you can automate adding homologous data into your tree by searching GenBank.
 
 While genome scale data is increasing rapidly - there are still large quantities of gene-sequence data being uploaded to NCBI GenBank.
-
-<img src="img/seq_data.png" alt="drawing" width="400"/>  
-
-
-These data are often appropriate for looking at phylogenetic relationships.
+These data are often appropriate for looking at phylogenetic relationships, and have the advantage of being homologous to the sequences in existing trees,
 
 Using Physcraper we can use Blast to search for loci that are likely to be homologous to sequences in an existing alignment.
 
-By using a starting tree and alignment, Physcraper, takes advantage of loci that previous researchers have assessed and deemed appropriate for the phylogentic scope.
+By using a starting tree and alignment, Physcraper, takes advantage of loci that previous researchers have assessed and deemed appropriate for the phylogenetic scope.
 The sequences added in the search are limited to a user specified taxon or monophyletic group, or within the taxonomic scope of the in-group of the starting tree.
 
 These automated tree can provide a quick inference or potential relationships, of problems in the taxonomic assignments of sequences, and flag areas of potential systematic interest.
@@ -31,6 +27,7 @@ However, only around 90,000 of those taxa are represented by phylogenetic estima
 https://opentreeoflife.github.io/browse/
 
 
+** Insert numbers on how many taxa are in genbank but not in synth**  
 
 ## Updating a tree from OpenTree of Life
 
