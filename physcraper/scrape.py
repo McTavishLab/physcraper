@@ -270,6 +270,7 @@ class PhyscraperScrape(object):
             log.write("Blast run {} \n".format(datetime.date.today()))
         #try:
         for taxon, seq in self.data.aln.items():
+            sys.stdout.write("Blasting {}\n".format(taxon))
             otu_id = taxon.label
             assert otu_id in self.data.otu_dict
             last_blast = self.data.otu_dict[otu_id].get('^physcraper:last_blasted')
@@ -292,8 +293,6 @@ class PhyscraperScrape(object):
                 # if _DEBUG:
                 #     sys.stdout.write("attempting to write {}\n".format(fn_path))
                 if not os.path.isfile(fn_path):
-                    if _VERBOSE:
-                        sys.stdout.write("blasting seq {}\n".format(taxon.label))
                     if self.config.blast_loc == 'local':
                         self.run_local_blast_cmd(query, taxon.label, fn_path)
                     if self.config.blast_loc == 'remote':

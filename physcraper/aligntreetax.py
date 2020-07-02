@@ -111,33 +111,106 @@ def generate_ATT_from_run(workdir, start_files='output', tag=None, configfile=No
 
 
 
-    # use replaced aln as input
-   
-    
-def generate_ATT_from_treetax(treetax, alnfi, workdir, start_files='output', tag=None, configfile=None):
-    """Build an ATT object without phylesystem, use your own files instead.
-    :return: object of class ATT
-    """
-
-    return AlignTreeTax(tree = treefile, otu_dict=treetax.otu_dict, alignment = alnfi, search_taxon=mrca_ott, workdir=workdir,
-                configfile=configfile, tag=tag, tree_schema='newick')
-    
-
-
-
-#def concatenate_ATTs(att_list, number_per_taxon='max', level='spp'):
-#    """concatenate aligenmnts from multiple runs
-#    :return: object of class ATT
-#    """
-#    taxon_dict = {} #
-#    for i, att in att_list:
-#        for otu in att.otu_dict:
-#            tax = att.otu_dict["^ot:ottId"]
-#            if tax not in taxon_dict:
-#                taxon_dict[tax] = []
+def write_otu_file(treetax, filepath, schema="table"):
+    """Writes out OTU dict as json or table.
+        :param treetax: eitehr a treetaxon object or an alignment tree taxon object
+        :param filename: filename
+        :param schema: either table or json format
+        :return: writes out otu_dict to file
+        """
+    if schema == "json":
+        with open(filepath, "w") as outfile:
+            json.dump(treetax.otu_dict, outfile)
+    if schema == "table":
+        keys = ['^ot:ottTaxonName','^ot:ottId','^ncbi:taxon','^ncbi:accession','^physcraper:last_blasted','^physcraper:ingroup','^physcraper:status','^ot:originalLabel','^ncbi:title']
+        header = ["otu_id"] + keys
+        with open(filepath, "w") as outfile:
+            outfile.write("\t".join(header)+"\n")
+            for otu in treetax.otu_dict:
+                vals = [str(treetax.otu_dict[otu].get(key, "-")) for key in keys]
+                outfile.write("\t".join([to_string(otu)]+vals)+"\n")
 
 
+def write_labelled_tree(treetax, label, filepath, schema = "newick", norepeats=True, add_gb_id=False):
+        """output tree and alignment with human readable labels
+        Jumps through a bunch of hoops to make labels unique.
 
+        NOT MEMORY EFFICIENT AT ALL
+
+        Has different options available for different desired outputs
+
+        :param label: which information shall be displayed in labelled files: possible options:
+                    '^ot:ottTaxonName', '^user:TaxonName', "^ot:originalLabel", "^ot:ottId", "^ncbi:taxon"
+        :param treepath: optional: full file name (including path) for phylogeny
+        :param alnpath:  optional: full file name (including path) for alignment
+        :param norepeats: optional: if there shall be no duplicate names in the labelled output files
+        :param add_gb_id: optional, to supplement tiplabel with corresponding GenBank sequence identifier
+        :return: writes out labelled phylogeny and alignment to file
+        """
+        #debug("write labelled files")
+        assert label in ['^ot:ottTaxonName', '^user:TaxonName', '^physcraper:TaxonName',
+                         "^ot:originalLabel", "^ot:ottId", "^ncbi:taxon"]
+        tmp_newick = treetax.tre.as_string(schema="newick")
+        tmp_tre = Tree.get(data=tmp_newick,
+                           schema="newick",
+                           preserve_underscores=True)
+        for taxon in tmp_tre.taxon_namespace:
+            new_label = treetax.otu_dict[taxon.label].get(label, None)
+            if new_label is None:
+                new_label = taxon.label
+            if add_gb_id:
+                gb_id = treetax.otu_dict[taxon.label].get('^ncbi:accession')
+                if gb_id is None:
+                    gb_id = treetax.otu_dict[taxon.label].get("^ot:originalLabel")
+                new_label = "_".join([new_label, str(gb_id)])
+            else:
+                if norepeats:
+                    new_label = "_".join([new_label, taxon.label])
+            taxon.label = new_label
+        tmp_tre.write(path=filepath,
+                      schema=schema,
+                      unquoted_underscores=True,
+                      suppress_edge_lengths=False)
+
+
+
+def write_labelled_aln(aligntreetax, label, filepath, schema = "fasta", norepeats=True, add_gb_id=False):
+        """output tree and alignment with human readable labels
+        Jumps through a bunch of hoops to make labels unique.
+
+        NOT MEMORY EFFICIENT AT ALL
+
+        Has different options available for different desired outputs
+
+        :param label: which information shall be displayed in labelled files: possible options:
+                    '^ot:ottTaxonName', '^user:TaxonName', "^ot:originalLabel", "^ot:ottId", "^ncbi:taxon"
+        :param treepath: optional: full file name (including path) for phylogeny
+        :param alnpath:  optional: full file name (including path) for alignment
+        :param norepeats: optional: if there shall be no duplicate names in the labelled output files
+        :param add_gb_id: optional, to supplement tiplabel with corresponding GenBank sequence identifier
+        :return: writes out labelled phylogeny and alignment to file
+        """
+        #debug("write labelled files")
+        assert label in ['^ot:ottTaxonName', '^user:TaxonName', '^physcraper:TaxonName',
+                         "^ot:originalLabel", "^ot:ottId", "^ncbi:taxon"]
+        tmp_fasta = aligntreetax.aln.as_string(schema="fasta")
+        tmp_aln = DnaCharacterMatrix.get(data=tmp_fasta,
+                                         schema="fasta")
+        for taxon in tmp_aln.taxon_namespace:
+            new_label = aligntreetax.otu_dict[taxon.label].get(label, None)
+            if new_label is None:
+                new_label = taxon.label
+            if add_gb_id:
+                gb_id = aligntreetax.otu_dict[taxon.label].get('^ncbi:accession')
+                if gb_id is None:
+                    gb_id = aligntreetax.otu_dict[taxon.label].get("^ot:originalLabel")
+                new_label = "_".join([new_label, str(gb_id)])
+            else:
+                if norepeats:
+                    new_label = "_".join([new_label, taxon.label])
+            taxon.label = new_label
+        tmp_aln.write(path=filepath,
+                      schema=schema)
 
 
 class AlignTreeTax(object):
@@ -221,7 +294,8 @@ class AlignTreeTax(object):
             self.tag = alignment.split('/')[-1].split('.')[0]
         else:
             self.tag = tag
-        print("alignment tag is {}".format(self.tag))
+        if _VERBOSE:
+            sys.stdout.write("alignment tag is {}".format(self.tag))
         self.workdir = os.path.abspath(workdir)
         if not os.path.exists(self.workdir):
             os.makedirs(self.workdir)
@@ -369,6 +443,12 @@ class AlignTreeTax(object):
             self.aln.taxon_namespace.remove_taxon(tax)
         assert self.aln.taxon_namespace == self.tre.taxon_namespace
 
+    def _get_path(self, direc):
+        if direc == 'workdir':
+            direc = self.workdir
+        else:
+            assert(os.path.exists(direc))
+        return(direc)
 
     def _reconcile_names(self):
         """It rewrites some tip names, which kept being an issue when it starts with a number at the beginning.
@@ -431,8 +511,6 @@ class AlignTreeTax(object):
             self.otu_dict[tax.label]["^physcraper:status"] = "deleted in prune short"
         self.check_tre_in_aln()
         self._reconciled = 1
-
-
 
     def check_tre_in_aln(self):
         """Makes sure that everything which is in tre is also found in aln.
@@ -581,13 +659,8 @@ class AlignTreeTax(object):
         self.otu_dict[otu_id]["^ot:ottTaxonName"] = ott_name
         self.otu_dict[otu_id]["^physcraper:last_blasted"] = None
         self.otu_dict[otu_id]["^physcraper:ingroup"] = True
-        if gb_id[:6] == "unpubl":
-            self.otu_dict[otu_id]["^physcraper:status"] = "local seq"
-            self.otu_dict[otu_id]["^ot:originalLabel"] = self.gb_dict[gb_id]["localID"]
-            self.otu_dict[otu_id]['^user:TaxonName'] = self.gb_dict[gb_id][u'^user:TaxonName']
-        else:
-            self.otu_dict[otu_id]["^ncbi:gi"] = self.gb_dict[gb_id]["^ncbi:gi"]
-            self.otu_dict[otu_id]["^ncbi:accession"] = gb_id
+        self.otu_dict[otu_id]["^ncbi:gi"] = self.gb_dict[gb_id]["^ncbi:gi"]
+        self.otu_dict[otu_id]["^ncbi:accession"] = gb_id
         # get a name for the OTU, no matter from which source
         if tax_name is not None:
             self.otu_dict[otu_id]["^physcraper:TaxonName"] = tax_name
@@ -619,10 +692,7 @@ class AlignTreeTax(object):
     def write_random_resolve_tre(self, treefilename='random_resolve.tre', direc='workdir'):
         self.tre.resolve_polytomies()
         self.tre.deroot()
-        if direc == 'workdir':
-            direc = self.workdir
-        else:
-            assert(os.path.exists(direc))
+        direc = self._get_path(direc)       
         treepath= "{}/{}".format(direc, treefilename)
         tmptre = self.tre.as_string(schema="newick",
                                     unquoted_underscores=True,
@@ -635,10 +705,7 @@ class AlignTreeTax(object):
         return treepath
 
     def write_aln(self, filename=None, alnschema="fasta", direc='workdir'):
-        if direc == 'workdir':
-            direc = self.workdir
-        else:
-            assert(os.path.exists(direc))
+        direc = self._get_path(direc)       
         if filename == None:
             filename = "physcraper_{}.fas".format(self.tag)
         alnpath = "{}/{}".format(direc, filename)
@@ -650,10 +717,7 @@ class AlignTreeTax(object):
         """Outputs both the streaming files, labeled with OTU ids.
         Can be mapped to original labels using otu_dict.json or otu_seq_info.csv"""
         #debug("write_files")
-        if direc == 'workdir':
-            direc = self.workdir
-        else:
-            assert(os.path.exists(direc))
+        direc = self._get_path(direc)       
         if treefilename == None:
             treepath = "{}/physcraper_{}.tre".format(direc, self.tag)
         else:
@@ -666,8 +730,26 @@ class AlignTreeTax(object):
                        schema=treeschema, unquoted_underscores=True)
         self.aln.write(path=alnpath,
                        schema=alnschema)
-
         return(treepath, alnpath)
+
+    def write_labelled_tree(self, label, filename = "labelled", direc='workdir', norepeats=True, add_gb_id=False):
+        direc = self._get_path(direc)       
+        if filename == "labelled":
+            treepath = "{}/{}_{}.tre".format(direc, filename, self.tag)
+            alnpath = "{}/{}_{}.fas".format(direc, filename, self.tag)
+        else:
+            treepath = "{}/{}.tre".format(direc, filename)
+            alnpath = "{}/{}.fas".format(direc, filename)
+        write_labelled_tree(self, label, filepath = treepath, norepeats=norepeats, add_gb_id=add_gb_id)
+
+
+    def write_labelled_aln(self, label, filename = "labelled", direc='workdir', norepeats=True, add_gb_id=False):
+        direc = self._get_path(direc)       
+        if filename == "labelled":
+            alnpath = "{}/{}_{}.fas".format(direc, filename, self.tag)
+        else:
+            alnpath = "{}/{}.fas".format(direc, filename)
+        write_labelled_aln(self, label, filepath = alnpath, norepeats=norepeats, add_gb_id=add_gb_id)
 
 
     def write_labelled(self, label, filename = "labelled", direc='workdir', norepeats=True, add_gb_id=False):
@@ -687,92 +769,17 @@ class AlignTreeTax(object):
         :return: writes out labelled phylogeny and alignment to file
         """
         #debug("write labelled files")
-        if direc == 'workdir':
-            direc = self.workdir
-        if filename == "labelled":
-            treepath = "{}/{}_{}.tre".format(direc, filename, self.tag)
-            alnpath = "{}/{}_{}.fas".format(direc, filename, self.tag)
-        else:
-            treepath = "{}/{}.tre".format(direc, filename)
-            alnpath = "{}/{}.fas".format(direc, filename)
-        debug(treepath)
-        assert label in ['^ot:ottTaxonName', '^user:TaxonName', '^physcraper:TaxonName',
-                         "^ot:originalLabel", "^ot:ottId", "^ncbi:taxon", 'name_and_id']
-        tmp_newick = self.tre.as_string(schema="newick")
-        tmp_tre = Tree.get(data=tmp_newick,
-                           schema="newick",
-                           preserve_underscores=True)
-        tmp_fasta = self.aln.as_string(schema="fasta")
-        tmp_aln = DnaCharacterMatrix.get(data=tmp_fasta,
-                                         schema="fasta",
-                                         taxon_namespace=tmp_tre.taxon_namespace)
-        new_names = set()
-        for taxon in tmp_tre.taxon_namespace:
-            new_label = self.otu_dict[taxon.label].get(label, None)
-            if new_label is None:
-                if self.otu_dict[taxon.label].get("^ot:originalLabel"):
-                    new_label = "orig_{}".format(self.otu_dict[taxon.label]["^ot:originalLabel"])
-                else:
-                    new_label = taxon.label
-            new_label = str(new_label).replace(' ', '_')
-            if add_gb_id:
-                gb_id = self.otu_dict[taxon.label].get('^ncbi:accession')
-                if gb_id is None:
-                    gb_id = self.otu_dict[taxon.label].get("^ot:originalLabel")
-                new_label = "_".join([new_label, str(gb_id)])
-                sp_counter = 2
-                if new_label in new_names and norepeats:
-                    new_label = "_".join([new_label, str(sp_counter)])
-                    sp_counter += 1
-            else:
-                if norepeats:
-                    new_label = "_".join([new_label, taxon.label])
-            taxon.label = new_label
-            new_names.add(new_label)
-        tmp_tre.write(path=treepath,
-                      schema="newick",
-                      unquoted_underscores=True,
-                      suppress_edge_lengths=False)
-        tmp_aln.write(path=alnpath,
-                      schema="fasta")
+        self.write_labelled_aln(label, filename = filename, direc=direc, norepeats  = norepeats, add_gb_id=add_gb_id)
+        self.write_labelled_tree(label, filename = filename, direc=direc, norepeats = norepeats, add_gb_id=add_gb_id)
 
+    
     def write_otus(self, filename = "otu_info", schema="table", direc='workdir'):
-        """Writes out OTU dict as json or table.
-
-        :param filename: filename
-        :param schema: either table or json format
-        :return: writes out otu_dict to file
-        """
-        if direc == 'workdir':
-            direc = self.workdir
-        else:
-            assert(os.path.exists(direc))
+        direc = self._get_path(direc)       
         assert schema in ["table", "json"]
         if schema == "json":
-            with open("{}/{}_{}.json".format(direc, filename, self.tag), "w") as outfile:
-                json.dump(self.otu_dict, outfile)
+             otu_path = "{}/{}_{}.json".format(direc, filename, self.tag)
         if schema == "table":
-            #all_keys =  set()
-            #for otu in self.otu_dict:
-            #    all_keys.update(self.otu_dict[otu].keys())
-            #keys = list(all_key)
-            #keys.sort()
-            keys = ['^ot:ottTaxonName','^ot:ottId','^ncbi:taxon','^ncbi:accession','^physcraper:last_blasted','^physcraper:ingroup','^physcraper:status','^ot:originalLabel','^ncbi:title']
-            header = ["otu_id"] + keys
-            with open("{}/{}_{}.csv".format(direc, filename, self.tag), "w") as outfile:
-                outfile.write("\t".join(header)+"\n")
-                for otu in self.otu_dict:
-                    vals = [str(self.otu_dict[otu].get(key, "-")) for key in keys]
-                    outfile.write("\t".join([to_string(otu)]+vals)+"\n")
+            otu_path = "{}/{}_{}.csv".format(direc, filename, self.tag)
+        write_otu_file(self, filepath = otu_path, schema = schema)
 
-
-    def dump(self, filename=None):
-        """writes pickled files from att class"""
-        if filename:
-            if not os.path.exists(os.path.dirname(filename)):
-                os.makedirs(os.path.dirname(filename))
-            ofi = open(filename, "wb")
-        else:
-            ofi = open("{}/att_checkpoint.p".format(self.workdir), "wb")
-        pickle.dump(self, ofi)
 
