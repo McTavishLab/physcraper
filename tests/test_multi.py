@@ -384,3 +384,10 @@ def test_write_labelled():
     assert filecmp.cmp(alnpath_ottid, expected_aln_path_ottid)
     os.remove(treepath_ottid)
     os.remove(alnpath_ottid)
+
+    data_obj.write_otus(schema='table', direc='tests/data/tmp/')
+    data_obj.write_otus(schema='json', direc='tests/data/tmp/') 
+    assert os.path.isfile('tests/data/tmp/otu_info_test.json')
+    assert os.path.isfile('tests/data/tmp/otu_info_test.csv')
+    os.remove('tests/data/tmp/otu_info_test.json')
+    os.remove('tests/data/tmp/otu_info_test.csv')
