@@ -77,7 +77,7 @@ class PhyscraperScrape(object):
           * **self.date**: Date of the run - may lag behind real date!
           * **self.repeat**: either 1 or 0, it is used to determine if we continue updating the tree, no new seqs found = 0
           * **self.newseqs_acc**: list of all gi_ids that were passed into remove_identical_seq(). Used to speed up adding process
-          * **self.blacklist**: list of gi_id of sequences that shall not be added or need to be removed. Supplied by user.
+          * **self.blocklist**: list of gi_id of sequences that shall not be added or need to be removed. Supplied by user.
           * **self.seq_filter**: list of words that may occur in otu_dict.status and which shall not be used in the building of FilterBlast.sp_d (that's the main function), but it is also used as assert statement to make sure unwanted seqs are not added.
           * **self.unpublished**: True/False. Used to look for local unpublished seq that shall be added if True.
           * **self.path_to_local_seq:** Usually False, contains path to unpublished sequences if option is used.
@@ -727,9 +727,8 @@ class PhyscraperScrape(object):
                     tmp_dict = self.seq_dict_build(seq, otu_id, tmp_dict)
             else:
                 lr = open("{}/seqlen_mismatch.txt".format(self.outputsdir),"a")
-                tax_name = self.acc_tax_seq_dict[gb_id]["taxname"]
-                ncbi_id = self.acc_tax_seq_dict[gb_id]["^ncbi:"]
-                lr.write("taxon:{}, ncbi:{}, acc: {}, len: {}\n".format(tax_name, ncbi_id, gb_id, len(seq)))
+                taxid,taxname, seq = self.ids.get_tax_seq_acc(gb_id)
+                lr.write("taxon: {}, ncbi: {}, acc: {}, len: {}\n".format(taxname, taxid, gb_id, len(seq)))
                 lr.close()
                 debug("\nlen {}:{} was not between {} and {}\n".format(gb_id, len(seq), seq_len_min, seq_len_max))
         otu_in_aln = set([taxon.label for taxon in self.data.aln])

@@ -142,7 +142,7 @@ class IdDicts(object):
             #try:
             assert(header.split()[1].startswith('taxname:'))
             tax_name = header.split()[1].strip('taxname:')
-            ncbi_id = header.split()[2].strip('ncbi_id:')
+            ncbi_id = header.split()[2].strip('ncbi:')
             seq = "".join(fi.readlines())
 #            except IndexError:
  #               print("IndexError")
@@ -204,7 +204,7 @@ class IdDicts(object):
         tries = 10
         Entrez.email = self.config.email
         if self.config.api_key:
-            Entrez.api_key = self.config.apikey
+            Entrez.api_key = self.config.api_key
         handle = None
 
         # method needs delay because of ncbi settings
