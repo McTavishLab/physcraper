@@ -150,7 +150,7 @@ class PhyscraperScrape(object):
         self.threshold = self.config.spp_threshold
 #markers for status
 #holders for new data
-        self.blacklist = []
+        self.blocklist = []
 
     def map_taxa_to_ncbi(self):
         for otu in self.data.otu_dict:
@@ -719,7 +719,7 @@ class PhyscraperScrape(object):
 #            debug("gb_id is {}".format(gb_id) )
             assert seq
             if seq_len_min < len(seq) < seq_len_max:
-                if self.blacklist is not None and gb_id in self.blacklist:
+                if self.blocklist is not None and gb_id in self.blocklist:
                     debug("gb_id {} in blocklist, not added".format(gb_id))
                     pass
                 else:
@@ -1207,8 +1207,8 @@ class PhyscraperScrape(object):
 
 
 
-    def remove_blacklistitem(self):
-        """This removes items from aln, and tree, if the corresponding Genbank identifer were added to the blacklist.
+    def remove_blocklistitem(self):
+        """This removes items from aln, and tree, if the corresponding Genbank identifer were added to the blocklist.
 
         Note, that seq that were not added because they were similar to the one being removed here, are lost
         (that should not be a major issue though, as in a new blast_run, new seqs from the taxon can be added.)
@@ -1216,7 +1216,7 @@ class PhyscraperScrape(object):
         for tax in self.data.aln.taxon_namespace:
             gi_id = self.data.otu_dict[tax.label].get("^ncbi:gi")
             acc = self.data.otu_dict[tax.label].get("^ncbi:accession")
-            if gi_id in self.blacklist or acc in self.blacklist:
+            if gi_id in self.blocklist or acc in self.blocklist:
                 self.data.remove_taxa_aln_tre(tax.label)
                 self.data.otu_dict[tax.label]['^physcraper:status'] = "deleted, Genbank identifier is part of blocklist"
         # this should not need to happen here: prune_short; instead...
