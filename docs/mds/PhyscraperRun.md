@@ -123,9 +123,13 @@ You can use your own blast database, for example set up on an AWS server.
 
   -tp TRIM_PERC, --trim_perc TRIM_PERC
                         minimum percentage of seqs end of alignemnts
-  -rl RELATIVE_LENGTH, --relative_length RELATIVE_LENGTH
+  -rlmax RELATIVE_LENGTH_MAX, --relative_length_max RELATIVE_LENGTH_MAX
                         max relative length of added seqs, compared to input
+                        aln len (blast matches not within lenegth cutoffs stored in outputs/seqlen_mismatch.txt)
+  -rlmin RELATIVE_LENGTH_MIN, --relative_length_min RELATIVE_LENGTH_MIN
+                        min relative length of added seqs, compared to input
                         aln len
+                        (blast matches not within lenegth cutoffs stored in outputs/seqlen_mismatch.txt)
   -spn SPECIES_NUMBER, --species_number SPECIES_NUMBER
                         max number of seqs to include per species
 

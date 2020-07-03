@@ -26,6 +26,8 @@ parser.add_argument("-tag","--tag", help="gene name or other specifier")
 parser.add_argument("-st","--search_taxon", help="taxonomic id to constrain blast search. format ott:123 or ncbi:123. Deafult will use ingroup of tree on OpenTree, or MRCA of input tips ")
 
 parser.add_argument("-spn","--species_number", help="max number of seqs to include per species")
+parser.add_argument("-bl","--block_list", nargs='+', help="ncbi accession numbers to exclude")
+
 parser.add_argument("-tp","--trim_perc", help="minimum percentage of seqs end of alignemnts")
 parser.add_argument("-rlmax","--relative_length_max", help="max relative length of added seqs, compared to input seq len")
 parser.add_argument("-rlmin","--relative_length_min", help="min relative length of added seqs, compared to input seq len")
@@ -254,6 +256,11 @@ if args.bootstrap_reps:
     boot_reps = args.bootstrap_reps
 else:
     boot_reps = 100
+
+if args.block_list:
+    for acc in args.block_list:
+        scraper.blocklist.append(acc)
+        sys.stdout.write("Excluding accession numbers {}\n".format(','.join(scraper.blocklist)))
 
 
 run = 1

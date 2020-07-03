@@ -90,13 +90,14 @@ The structure consists of:
     -- blast results for each tip in both the tree and the alignment
 
 -  run
-   -- This is where intermediate processing files, and the json formatted otu information are stored
+   -- This is where intermediate processing files, and the json formatted otu information are stored. Many fo tehse files are re-used ifthe crashes and is restarted. Make sure you use a new output directory or otherwise empty this folder if you want to change run parameters.
 
 - outputs
    -- final tree and alignment
    
    -- CSV file with information about each sequence
 
+   -- By default sequences less than 80% or greater than 120% (these values are configurable) of the average input sequence length are not added to the alignment, as they can cause alignment errors. The acession numbers, taxa, and sequence lengths are written out to seqlen_mismatch.txt.
 
 
 ### Compare your new tree to existing relationships

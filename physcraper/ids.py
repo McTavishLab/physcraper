@@ -122,7 +122,6 @@ class IdDicts(object):
 
 
  #removed function find_tax_id because it wasn't being used
-   
     def get_tax_seq_acc(self, acc):
         if not os.path.exists(self.full_seq_path):
             os.makedirs(self.full_seq_path)
