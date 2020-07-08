@@ -26,7 +26,7 @@ Open Tree of Life aims to construct a comprehensive, dynamic and digitally-avail
 Currently the tree comprises 2.3 million tips. 
 However, only around 90,000 of those taxa are represented by phylogenetic estimates - the rest are placed in the tree based on their taxonomic names.
 
-![](../img/synthtreeleg.png) 
+![](../img/synthtreeleg.svg) 
 
 (figure from [Hinchliff et al. 2015](https://www.pnas.org/content/112/41/12764.short))  
 For more information on OpenTree see https://opentreeoflife.github.io
