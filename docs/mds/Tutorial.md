@@ -1,5 +1,17 @@
+- [Physcraper framework](#physcraper-framework)
+- [The Open Tree of Life](#the-open-tree-of-life)
+- [Updating a tree from OpenTree of Life](#updating-a-tree-from-opentree-of-life)
+  * [Find a starting tree with your taxon of interest](#find-a-starting-tree-with-your-taxon-of-interest)
+  * [Run the auto update](#run-the-auto-update)
+- [Using your own tree and alignment](#using-your-own-tree-and-alignment)
+  * [Mapping names to taxa](#mapping-names-to-taxa)
+- [Output files](#output-files)
+  * [Compare your new tree to existing relationships](#compare-your-new-tree-to-existing-relationships)
 
-### Updating gene trees
+<small><i><a href='http://ecotrust-canada.github.io/markdown-toc/'>Table of contents generated with markdown-toc</a></i></small>
+
+
+## Physcraper framework
 
 ![](../img/schematic.svg)  
 
@@ -30,7 +42,6 @@ However, only around 90,000 of those taxa are represented by phylogenetic estima
 
 (figure from [Hinchliff et al. 2015](https://www.pnas.org/content/112/41/12764.short))  
 For more information on OpenTree see https://opentreeoflife.github.io
-
 
 
 ## Updating a tree from OpenTree of Life
@@ -157,7 +168,7 @@ The structure consists of:
    
    -- CSV file with information about each sequence
 
-   -- By default sequences less than 80% or greater than 120% (these values are configurable) of the average input sequence length are not added to the alignment, as they can cause alignment errors. The acession numbers, taxa, and sequence lengths are written out to seqlen_mismatch.txt.
+   -- The acession numbers, taxa, and sequence lengths of matches that didn't meet the sequence length cutoffs are written out to seqlen_mismatch.txt.
 
 
 ### Compare your new tree to existing relationships
@@ -174,3 +185,4 @@ Detailed explanation of that script, and more ways to explore the data are descr
     tree_comparison.py -d docs/examples/pg_55/ -og otu376420 otu376439 otu376452 -o pg_55_comparison
 
 
+The taxonomic name mapping makes comparisons across trees straightforward.  

@@ -8,13 +8,13 @@ Welcome to Physcraper's documentation!
 .. mdinclude:: ../mds/intro.md
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
    :caption: Documentation subjects:
 
    install
    how_to_start
    physcraper_run
-   data_exploration
    setting_up_local_database
-   apidocs
    find_trees
+   data_exploration
+   apidocs

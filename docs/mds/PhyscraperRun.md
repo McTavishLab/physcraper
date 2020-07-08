@@ -1,4 +1,4 @@
-# Quickstart
+## Example commands
 
 The easiest way to run physcraper is using the command line tools. This way, you can directly specify arguments, and a config file will be written down for the sake of reproducibility.
 
@@ -23,7 +23,7 @@ physcraper_run_py -s OPENTREE_STUDY_ID -t OPENTREE_TREE_ID -o OUTPUT/DIRECTORY/N
 ```
 
 
-e.g.  
+e.g.  to update this tree [Crous et al. 2012](https://tree.opentreeoflife.org/curator/study/view/ot_350/?tab=home&tree=Tr53296) using an alignment already downloaded from treebase.
 ```
 physcraper_run.py -s ot_350 -t Tr53297 -a docs/examples/ot_350Tr53297.aln -as "nexus" -o ot_350
 ```
@@ -38,7 +38,6 @@ physcraper_run.py -tf TREE_FILE -tfs TREEFILE_SCHEMA -a ALIGNMENT_FILE -as ALIGN
 physcraper_run.py -tf tests/data/tiny_test_example/test.tre -tfs newick -a tests/data/tiny_test_example/test.fas --taxon_info tests/data/tiny_test_example/main.json -as fasta -o owndata
 ```
 
-## Detailed explanation
 
 For the simplest `physcraper` run you just need the study id and tree id from OpenTree (
 and an alignment file that goes with that tree.
@@ -46,10 +45,6 @@ and an alignment file that goes with that tree.
     physcraper_run.py -s <study_id> -t <tree_id> -a <alignment_file_path> -as <alignment_schema> -o <output_directory>
 
 
-To update this tree
-[Crous et al. 2012](https://tree.opentreeoflife.org/curator/study/view/ot_350/?tab=home&tree=Tr53296)
-
-(alignment already downloaded from treebase)
 
 
     physcraper_run.py -s ot_350 -t Tr53297 -a docs/examples/ot_350Tr53297.aln -as nexus -o ot_350_analysis
@@ -84,7 +79,6 @@ OR
 
 Alignment information (required)  
 
-
   -a ALIGNMENT, --alignment ALIGNMENT
                         path to alignment
   -as ALN_SCHEMA, --aln_schema ALN_SCHEMA
@@ -117,7 +111,7 @@ Optional:
 
 
 
-### Configuration paramaters
+## Configuration paramaters
 
 The configuration paramaters may be set in a config file, and then passed into the analysis run. See example.config for an example.  
 
@@ -127,7 +121,7 @@ The configuration paramaters may be set in a config file, and then passed into t
 If a config file input is combined with comand line configuration parameters, the command line values will ovverride those in the config file.
 
 
-## Blast search paramaters  
+### Blast search paramaters  
 
   -e EMAIL, --email EMAIL
                         email address for ncbi blast searches
@@ -157,7 +151,7 @@ To setup see [setting_up_local database](setting_up_local_database))
 You can use your own blast database, for example set up on an AWS server.
 
 
-## Sequence filtering parameters
+### Sequence filtering parameters
 
   -tp TRIM_PERC, --trim_perc TRIM_PERC
                         minimum percentage of seqs end of alignemnts
@@ -175,7 +169,7 @@ You can use your own blast database, for example set up on an AWS server.
                         how long to wait before blasting the same sequence
                         again
 
-#### Tree search parameters
+### Tree search parameters
   -no_est, --no_estimate_tree
                         don't estimate tree (default is False)
 
@@ -183,14 +177,14 @@ You can use your own blast database, for example set up on an AWS server.
                         number of bootstrap reps
 
 
-#### Internal arguments
+### Internal arguments
 
 
   -tx TAXONOMY, --taxonomy TAXONOMY
                         path to taxonomy
 
 
-Example commands:
+## Example commands:
 
 
 
