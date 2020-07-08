@@ -3,6 +3,7 @@
 
 If you have access to a single gene alignment, and a tree, you can automate adding homologous data into your tree by searching GenBank.
 
+![](../img/schematic.svg)  
 
 While genome scale data is increasing rapidly - there are still large quantities of gene-sequence data being uploaded to NCBI [GenBank](https://www.ncbi.nlm.nih.gov/genbank/statistics/).
 These data are often appropriate for looking at phylogenetic relationships, and have the advantage of being homologous to the sequences in existing trees,
@@ -41,7 +42,7 @@ and assessing regions of the tree of life which are lacking available phylogenet
 There is a lot of sequence data available that has never been incorporated into any phylogenetic estimates.
 
 
-### Find a study with your taxon of interest
+### Find a starting tree with your taxon of interest
 
 
 For this example we'll use find a tree that is already in the OpenTree of Life database. (More search information at [Finding Data](https://physcraper.readthedocs.io/en/latest/find_trees.html).
@@ -65,7 +66,6 @@ Lets take a look at how recent data affect our inferences of relationships, and 
 
 ### Run the auto update
 
-
 The script `physcraper_run.py` wraps together linking the tree and alignment, blasting, aligning sequences, and inferring an updated tree.
 Detailed explanation of the inputs needed can be found at [running physcraper](https://physcraper.readthedocs.io/en/latest/physcraper_run.html).
 
@@ -77,7 +77,53 @@ The blast search part of updating trees takes a long time (for example, this ana
 
 We have put example outputs from this command in `docs/examples/pg_55`, so that you can explore the outputs without waiting for the searches to complete.
 
-### Output files
+## Using your own tree and alignment
+
+You can upload your own tree to OpenTree to update it, and that way it will be included in the synthetic tree!
+See [Submitting-phylogenies-to-Open-Tree-of-Life](https://github.com/OpenTreeOfLife/opentree/wiki/Submitting-phylogenies-to-Open-Tree-of-Life)
+
+If you aren't ready to share your tree publicly, you can update it without posting to OpenTree.
+
+You need an alignment (single locus) and a tree. The taxon labels in these two files should be the same.  
+
+You also need a file linking the labels in your tree and alignment to broader taxonomy. This can be easily generated vis OPenTrees Bulk Taxonomic Name Resolution Service. [Bulk TNRS](https://tree.opentreeoflife.org/curator/tnrs/)
+
+### Mapping names to taxa
+
+Map your tip names to unique identifiers using the Open Tree TNRS bulk upload tool https://tree.opentreeoflife.org/curator/tnrs/
+
+(This is a brand new beta-version of this functionality, so some parts are a bit finicky).
+
+Save your tip labels in a .txt file. 
+
+*Try this*
+  * Click on "add names", and upload the names file.  
+  * In the mapping options section,
+    - select a taxonomic group to narrow down the possibilities and speed up mapping
+  * Click "Map selected names"
+
+Exact matches will show up in green, and can be accepted by clicking "accept exact matches".
+
+Some taxa may show several suggested names. Click through to the taxonomy, and select the one that you think is correct based on the phylogenetic context. 
+
+Once you have accepted names for each of the taxa, click "save nameset".
+
+*Make sure your mappings were saved! If you don't 'accept' matches, they don't download.*
+
+Download it to your laptop.
+Extract the files.
+Take a look at the human readable version (output/main.csv). You will see that this file also links to NCBI and GBIF identifiers for your taxa!
+
+main.json contains the the same data in a more computer readable format.
+
+By passing the location of the main.json file, physcraper can link your sequences to their correct taxonomic context.
+
+Example run on your own files using test data:
+
+    physcraper_run.py -tf tests/data/tiny_test_example/test.tre -tfs newick -a tests/data/tiny_test_example/test.fas --taxon_info tests/data/tiny_test_example/main.json -as fasta -o owndata
+
+
+## Output files
 
 The analysis folder has several sub directories.
 each folder is labeled with a 'tag', which by default is the alignment name, but can be set in the `physcraper_run.py` arguments.
@@ -117,48 +163,3 @@ Detailed explanation of that script, and more ways to explore the data are descr
     tree_comparison.py -d docs/examples/pg_55/ -og otu376420 otu376439 otu376452 -o pg_55_comparison
 
 
-## Using your own tree and alignment
-
-You can upload your own tree to OpenTree to update it, and that way it will be included in the synthetic tree!
-See [Submitting-phylogenies-to-Open-Tree-of-Life](https://github.com/OpenTreeOfLife/opentree/wiki/Submitting-phylogenies-to-Open-Tree-of-Life)
-
-If you aren't ready to share your tree publicly, you can update it without posting to OpenTree.
-
-You need an alignment (single locus) and a tree. The taxon labels in these two files should be the same.  
-
-You also need a file linking the labels in your tree and alignment to broader taxonomy. This can be easily generated vis OPenTrees Bulk Taxonomic Name Resolution Service. [Bulk TNRS](https://tree.opentreeoflife.org/curator/tnrs/)
-
-### Mapping names to taxa
-
-Map your tip names to unique identifiers using the Open Tree TNRS bulk upload tool https://tree.opentreeoflife.org/curator/tnrs/
-
-(This is a brand new beta-version of this functionality, so some parts are a bit finicky).
-
-Save your tip labels in a .txt file. 
-
-*Try this*
-  * Click on "add names", and upload the names file.  
-  * In the mapping options section,
-    - select a taxonomic group to narrow down the possibilities and speed up mapping
-  * Click "Map selected names"
-
-Exact matches will show up in green, and can be accepted by clicking "accept exact matches".
-
-Some taxa may show several suggested names. Click through to the taxonomy, and select the one that you think is correct based on the phylogenetic context. 
-
-Once you have accepted names for each of the taxa, click "save nameset".
-
-*Make sure your mappings were saved! If you don't 'accept' matches, they don't download.*
-
-Download it to your laptop.
-Extract the files.
-Take a look at the human readable version (output/main.csv). You will see that this file also links to NCBI and GBIF identifiers for your taxa!
-
-
-main.json contains the the same data in a more computer readable format.
-
-By passing the location of the main.json file, physcraper can link your sequences to their correct taxonomic context.
-
-Example run on own files using test data:
-
-    physcraper_run.py -tf tests/data/tiny_test_example/test.tre -tfs newick -a tests/data/tiny_test_example/test.fas --taxon_info tests/data/tiny_test_example/main.json -as fasta -o owndata
