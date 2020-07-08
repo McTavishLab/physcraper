@@ -94,17 +94,29 @@ Map your tip names to unique identifiers using the Open Tree TNRS bulk upload to
 
 (This is a brand new beta-version of this functionality, so some parts are a bit finicky).
 
-Save your tip labels in a .txt file. 
+Save your tip labels in a .txt file. There is an example file in docs/examples/example_tiplabels.txt
 
-*Try this*
-  * Click on "add names", and upload the names file.  
-  * In the mapping options section,
-    - select a taxonomic group to narrow down the possibilities and speed up mapping
+To match your labels to taxonomic names:
+
+Click on "add names", and upload the names file.  
+
+![](../img/TNRS1.png)
+
+In the mapping options section, you can select a taxonomic group to narrow down the possibilities and speed up mapping.  
+You can use regular expression to replace  or remove parts of labels for mapping
+
+
+![](../img/TNRS2.png)
+
   * Click "Map selected names"
+
+
 
 Exact matches will show up in green, and can be accepted by clicking "accept exact matches".
 
 Some taxa may show several suggested names. Click through to the taxonomy, and select the one that you think is correct based on the phylogenetic context. 
+
+![](../img/TNRS3.png)
 
 Once you have accepted names for each of the taxa, click "save nameset".
 
@@ -116,7 +128,7 @@ Take a look at the human readable version (output/main.csv). You will see that t
 
 main.json contains the the same data in a more computer readable format.
 
-By passing the location of the main.json file, physcraper can link your sequences to their correct taxonomic context.
+By passing in the the main.json file, physcraper can link your sequences to their correct taxonomic context.
 
 Example run on your own files using test data:
 
