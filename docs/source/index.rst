@@ -8,7 +8,7 @@ Welcome to Physcraper's documentation!
 .. mdinclude:: ../mds/intro.md
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: Documentation subjects:
 
    install

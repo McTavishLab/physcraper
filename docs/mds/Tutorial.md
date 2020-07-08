@@ -17,7 +17,7 @@ These automated tree can provide a quick inference or potential relationships, o
 ## The Open Tree of Life
 
 The Open Tree of Life (https://opentreeoflife.github.io/) is a project that unites phylogenetic inferences and taxonomy to provide a synthetic estimate of species relationships across the entire tree of life.  
-![](img/otol_logo.png)  
+![](../img/otol_logo.png)  
 
 
 Open Tree of Life aims to construct a comprehensive, dynamic and digitally-available tree of life by synthesizing published phylogenetic trees along with taxonomic data.  

@@ -1,16 +1,33 @@
 How to run Physcraper using `physcraper_run.py`
 
+# Running physcraper
+
+The easiest way to run physcraper is using the command line tools. This way, you can directly specify arguments, and a config file will be written down for the sake of reproducibility.
+
+As input, you will minimally need a study and tree ids from a tree uploaded to the Open Tree of Life website:
+
+```
+physcraper_run_py -s OPENTREE_STUDY_ID -t OPENTREE_TREE_ID -o OUTPUT_DIRECTORY_NAME/AND/OR/PATH
+```
+
+If you do not specify an alignment, physcraper will try to get one of the gene alignments that generated the tree. Provide the gene alignment that you want to be updated using the `-a` command:
+
+```
+physcraper_run_py -s OPENTREE_STUDY_ID -t OPENTREE_TREE_ID -o OUTPUT/DIRECTORY/NAME/AND/OR/PATH -a PATH/TO/GENE/ALIGNMENT/NAME
+```
+
+You can also run `physcraper` from a file using python with the command:
 
 ## Simple Run
 
-For the simplest `physcraper` run you just need the study id and tree id from OpenTree (see how to get those in FindTrees.md),
+For the simplest `physcraper` run you just need the study id and tree id from OpenTree (
 and an alignment file that goes with that tree.
 
     physcraper_run.py -s <study_id> -t <tree_id> -a <alignment_file_path> -as <alignment_schema> -o <output_directory>
 
 
 To update this tree
-https://tree.opentreeoflife.org/curator/study/view/ot_350/?tab=home&tree=Tr53296
+[Crous et al. 2012](https://tree.opentreeoflife.org/curator/study/view/ot_350/?tab=home&tree=Tr53296)
 
 (alignment already downloaded from treebase)
 
@@ -168,7 +185,7 @@ The fastest way is to choose a tree from opentree, give the path to the correspo
 
 To check tree download and the matching of names across tree and alignment without running the blast and tree estimation steps, use the flag (-no_est):  
   
-    physcraper_run.py -s pg_55-t tree5864 --treebase -db ~/ncbi/localblastdb/ -no_est -o pg55_C
+    physcraper_run.py -s pg_55 -t tree5864 --treebase -no_est -o pg55_C
 
   Take a look at the tree, the alignemnt and the out_info csv file. It will list all taxa by their unique identifiers.
 
