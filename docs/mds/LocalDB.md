@@ -42,7 +42,7 @@ This is what you should do:
     gunzip -cd taxdb.tar.gz | (tar xvf - )  # unzip the taxonomy database
 ```
 
-### Downloading the nodes and names into the physcraper/taxonomy directory
+#### Downloading the nodes and names into the physcraper/taxonomy directory
 
 ```
     cd physcraper/taxonomy
@@ -51,12 +51,12 @@ This is what you should do:
 ```
 
 
-## Setting up an AWS blast db
+### Setting up an AWS blast db
 
 To run blast searches without NCBI's required time delays, you can set up your own server on AWS (for $).
 See instructions at (AWS marketplace NCBI blast)[https://aws.amazon.com/marketplace/pp/NCBI-NCBI-BLAST/B00N44P7L6]
 
-## Create an NCBI API key
+### Create an NCBI API key
 
 Generating an NCBI API key will speed up downloading full sequences following blast searches.
 See (NCBI API keys for details)[https://ncbiinsights.ncbi.nlm.nih.gov/2017/11/02/new-api-keys-for-the-e-utilities/]
