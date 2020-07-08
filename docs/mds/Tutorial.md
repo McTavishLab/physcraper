@@ -1,9 +1,9 @@
 
 ### Updating gene trees
 
-If you have access to a single gene alignment, and a tree, you can automate adding homologous data into your tree by searching GenBank.
-
 ![](../img/schematic.svg)  
+
+If you have access to a single gene alignment, and a tree, you can automate adding homologous data into your tree by searching GenBank.
 
 While genome scale data is increasing rapidly - there are still large quantities of gene-sequence data being uploaded to NCBI [GenBank](https://www.ncbi.nlm.nih.gov/genbank/statistics/).
 These data are often appropriate for looking at phylogenetic relationships, and have the advantage of being homologous to the sequences in existing trees,
@@ -108,8 +108,7 @@ You can use regular expression to replace  or remove parts of labels for mapping
 
 ![](../img/TNRS2.png)
 
-  * Click "Map selected names"
-
+Click "Map selected names"
 
 
 Exact matches will show up in green, and can be accepted by clicking "accept exact matches".
@@ -130,7 +129,7 @@ main.json contains the the same data in a more computer readable format.
 
 By passing in the the main.json file, physcraper can link your sequences to their correct taxonomic context.
 
-Example run on your own files using test data:
+Example run on local files using test data:
 
     physcraper_run.py -tf tests/data/tiny_test_example/test.tre -tfs newick -a tests/data/tiny_test_example/test.fas --taxon_info tests/data/tiny_test_example/main.json -as fasta -o owndata
 
