@@ -20,9 +20,7 @@ Then, create a conda environment
 ```
    conda env create -f cond_env.yml
    conda activate physcraper_env
-   # This next step is temprary until opentree changes are uploaded to pypi
-   pip install -e git+https://github.com/OpenTreeOfLife/python-opentree@get-tree#egg=opentree
-
+   pip install -e .
 ```
 
 You're done with the installation with conda!
@@ -31,7 +29,7 @@ You're done with the installation with conda!
 
 First, create a python virtual environment
 
-Remeber you need to be in the pyscraper folder, once there do:
+Remeber you need to be in the physcraper folder, once there do:
 
 ```
 virtualenv -p python3 venv-physcraper

@@ -5,6 +5,7 @@
   * [Run the auto update](#run-the-auto-update)
 - [Using your own tree and alignment](#using-your-own-tree-and-alignment)
   * [Mapping names to taxa](#mapping-names-to-taxa)
+  * [Run the auto update on your tree](#run-the-auto-update-on-your-tree)
 - [Output files](#output-files)
   * [Compare your new tree to existing relationships](#compare-your-new-tree-to-existing-relationships)
 
@@ -80,7 +81,7 @@ Lets take a look at how recent data affect our inferences of relationships, and 
 The script `physcraper_run.py` wraps together linking the tree and alignment, blasting, aligning sequences, and inferring an updated tree.
 Detailed explanation of the inputs needed can be found at [running physcraper](https://physcraper.readthedocs.io/en/latest/physcraper_run.html).
 
-The blast search part of updating trees takes a long time (for example, this analysis took around 12 hours!).
+The blast search part of updating trees takes a long time (for example, this analysis took around 12 hours!). The `-r` flag repeats the search on new sequences until no additional sequences are found.
 
 
     $ physcraper_run.py -s pg_55 -t tree5864 -tb -r -o pg_55
@@ -140,6 +141,7 @@ main.json contains the the same data in a more computer readable format.
 
 By passing in the the main.json file, physcraper can link your sequences to their correct taxonomic context.
 
+### Run the auto-update on your tree
 Example run on local files using test data:
 
     physcraper_run.py -tf tests/data/tiny_test_example/test.tre -tfs newick -a tests/data/tiny_test_example/test.fas --taxon_info tests/data/tiny_test_example/main.json -as fasta -o owndata
