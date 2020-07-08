@@ -121,13 +121,18 @@ def write_otu_file(treetax, filepath, schema="table"):
     if schema == "json":
         with open(filepath, "w") as outfile:
             json.dump(treetax.otu_dict, outfile)
+    leaves =[tax.label for tax, seq in treetax.aln.items()]
     if schema == "table":
         keys = ['^ot:ottTaxonName','^ot:ottId','^ncbi:taxon','^ncbi:accession','^physcraper:last_blasted','^physcraper:ingroup','^physcraper:status','^ot:originalLabel','^ncbi:title']
-        header = ["otu_id"] + keys
+        header = ["otu_id"] + keys + ['^physcraper:in_current_aln']
         with open(filepath, "w") as outfile:
             outfile.write("\t".join(header)+"\n")
             for otu in treetax.otu_dict:
                 vals = [str(treetax.otu_dict[otu].get(key, "-")) for key in keys]
+                if otu in leaves:
+                    vals.append('True')
+                else:
+                    vals.append('False')
                 outfile.write("\t".join([to_string(otu)]+vals)+"\n")
 
 
@@ -149,7 +154,7 @@ def write_labelled_tree(treetax, label, filepath, schema = "newick", norepeats=T
         """
         #debug("write labelled files")
         assert label in ['^ot:ottTaxonName', '^user:TaxonName', '^physcraper:TaxonName',
-                         "^ot:originalLabel", "^ot:ottId", "^ncbi:taxon"]
+                         "^ot:originalLabel", "^ot:ottId", "^ncbi:taxon", '^ncbi:accession']
         tmp_newick = treetax.tre.as_string(schema="newick")
         tmp_tre = Tree.get(data=tmp_newick,
                            schema="newick",
@@ -193,7 +198,7 @@ def write_labelled_aln(aligntreetax, label, filepath, schema = "fasta", norepeat
         """
         #debug("write labelled files")
         assert label in ['^ot:ottTaxonName', '^user:TaxonName', '^physcraper:TaxonName',
-                         "^ot:originalLabel", "^ot:ottId", "^ncbi:taxon"]
+                         "^ot:originalLabel", "^ot:ottId", "^ncbi:taxon", '^ncbi:accession']
         tmp_fasta = aligntreetax.aln.as_string(schema="fasta")
         tmp_aln = DnaCharacterMatrix.get(data=tmp_fasta,
                                          schema="fasta")

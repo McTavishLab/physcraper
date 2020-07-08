@@ -122,7 +122,6 @@ class IdDicts(object):
 
 
  #removed function find_tax_id because it wasn't being used
-   
     def get_tax_seq_acc(self, acc):
         if not os.path.exists(self.full_seq_path):
             os.makedirs(self.full_seq_path)
@@ -142,7 +141,7 @@ class IdDicts(object):
             #try:
             assert(header.split()[1].startswith('taxname:'))
             tax_name = header.split()[1].strip('taxname:')
-            ncbi_id = header.split()[2].strip('ncbi_id:')
+            ncbi_id = header.split()[2].strip('ncbi:')
             seq = "".join(fi.readlines())
 #            except IndexError:
  #               print("IndexError")
@@ -204,7 +203,7 @@ class IdDicts(object):
         tries = 10
         Entrez.email = self.config.email
         if self.config.api_key:
-            Entrez.api_key = self.config.apikey
+            Entrez.api_key = self.config.api_key
         handle = None
 
         # method needs delay because of ncbi settings

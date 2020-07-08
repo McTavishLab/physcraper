@@ -77,7 +77,7 @@ class PhyscraperScrape(object):
           * **self.date**: Date of the run - may lag behind real date!
           * **self.repeat**: either 1 or 0, it is used to determine if we continue updating the tree, no new seqs found = 0
           * **self.newseqs_acc**: list of all gi_ids that were passed into remove_identical_seq(). Used to speed up adding process
-          * **self.blacklist**: list of gi_id of sequences that shall not be added or need to be removed. Supplied by user.
+          * **self.blocklist**: list of gi_id of sequences that shall not be added or need to be removed. Supplied by user.
           * **self.seq_filter**: list of words that may occur in otu_dict.status and which shall not be used in the building of FilterBlast.sp_d (that's the main function), but it is also used as assert statement to make sure unwanted seqs are not added.
           * **self.unpublished**: True/False. Used to look for local unpublished seq that shall be added if True.
           * **self.path_to_local_seq:** Usually False, contains path to unpublished sequences if option is used.
@@ -150,7 +150,7 @@ class PhyscraperScrape(object):
         self.threshold = self.config.spp_threshold
 #markers for status
 #holders for new data
-        self.blacklist = []
+        self.blocklist = []
 
     def map_taxa_to_ncbi(self):
         for otu in self.data.otu_dict:
@@ -719,13 +719,17 @@ class PhyscraperScrape(object):
 #            debug("gb_id is {}".format(gb_id) )
             assert seq
             if seq_len_min < len(seq) < seq_len_max:
-                if self.blacklist is not None and gb_id in self.blacklist:
-                    debug("gb_id {} in blacklist, not added".format(gb_id))
+                if self.blocklist is not None and gb_id in self.blocklist:
+                    debug("gb_id {} in blocklist, not added".format(gb_id))
                     pass
                 else:
                     otu_id = self.data.add_otu(gb_id, self.ids)
                     tmp_dict = self.seq_dict_build(seq, otu_id, tmp_dict)
             else:
+                lr = open("{}/seqlen_mismatch.txt".format(self.outputsdir),"a")
+                taxid,taxname, seq = self.ids.get_tax_seq_acc(gb_id)
+                lr.write("taxon: {}, ncbi: {}, acc: {}, len: {}\n".format(taxname, taxid, gb_id, len(seq)))
+                lr.close()
                 debug("\nlen {}:{} was not between {} and {}\n".format(gb_id, len(seq), seq_len_min, seq_len_max))
         otu_in_aln = set([taxon.label for taxon in self.data.aln])
         for otu in otu_in_aln:
@@ -781,6 +785,8 @@ class PhyscraperScrape(object):
         for otu in tmp_dict:
             if otu in selected_otus:
                 filtered_dict[otu] = tmp_dict[otu]
+            else:
+                self.data.otu_dict[otu]['^physcraper:status'] = "removed in sampling down to {} per spp.".format(self.threshold)
         return filtered_dict
 
 
@@ -851,13 +857,9 @@ class PhyscraperScrape(object):
             lens.append(len(seq_dict[otu]))
         lens.sort(reverse=True)
         cutoff = lens[count]
-#        debug("cutoff is {}".format(cutoff))
-#        debug("lengths is {}".format(lens))
         selected_otus = []
         for otu in otu_len_dict:
-#            debug("otu {} has len {}".format(otu, otu_len_dict[otu]))
             if otu_len_dict[otu] >= cutoff:
-#                debug("selected!")
                 selected_otus.append(otu)
                 if len(selected_otus) == count:
                     return selected_otus
@@ -883,31 +885,6 @@ class PhyscraperScrape(object):
         sample_count = min(count, len(otu_list))
         selected_otus = random.sample(otu_list, sample_count)
         return selected_otus
-
-
-
-#    def pickle_dump(self, filename=None, recursion=100000):
-#        """writes out class to pickle file.
-#        We need to increase the recursion depth here, as it currently fails with the standard run.
-#
-#        :param filename: optional filename
-#        :param recursion: pickle often failed with recursion depth, that's why it's increased here
-#        :return: writes out file
-#        """
-#        current = sys.getrecursionlimit()
-#        sys.setrecursionlimit(recursion)#
-#
-#        if filename:
-#            ofi = open(filename, "wb")
-#        else:
-#            ofi = open("{}/scrape_checkpoint.p".format(self.workdir), "wb")
-#        pickle.dump(self, ofi, pickle.HIGHEST_PROTOCOL)
-#        sys.setrecursionlimit(current)
-
-    def dump(self):
-        self.data.write_otus('otu_dict.json')
-        with open("{}/{}".format(self.rundir, 'config.json'), "w") as outfile:
-                json.dump(self.config.__dict__, outfile)
 
 
     def write_new_seqs(self, filename='date'):
@@ -1230,8 +1207,8 @@ class PhyscraperScrape(object):
 
 
 
-    def remove_blacklistitem(self):
-        """This removes items from aln, and tree, if the corresponding Genbank identifer were added to the blacklist.
+    def remove_blocklistitem(self):
+        """This removes items from aln, and tree, if the corresponding Genbank identifer were added to the blocklist.
 
         Note, that seq that were not added because they were similar to the one being removed here, are lost
         (that should not be a major issue though, as in a new blast_run, new seqs from the taxon can be added.)
@@ -1239,7 +1216,7 @@ class PhyscraperScrape(object):
         for tax in self.data.aln.taxon_namespace:
             gi_id = self.data.otu_dict[tax.label].get("^ncbi:gi")
             acc = self.data.otu_dict[tax.label].get("^ncbi:accession")
-            if gi_id in self.blacklist or acc in self.blacklist:
+            if gi_id in self.blocklist or acc in self.blocklist:
                 self.data.remove_taxa_aln_tre(tax.label)
                 self.data.otu_dict[tax.label]['^physcraper:status'] = "deleted, Genbank identifier is part of blocklist"
         # this should not need to happen here: prune_short; instead...

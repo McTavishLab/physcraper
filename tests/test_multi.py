@@ -117,6 +117,26 @@ def test_remove_identical_seqs():
     assert len(scraper.new_seqs_otu_id) == 14
     #Now that we are pulling the full remote sequences, we don'thave any identical seuqnces in the test.
 
+
+def test_blocklist():
+    ids = copy.deepcopy(ids_base)
+    data_obj = copy.deepcopy(data_obj_base)
+    # print("start")
+    scraper = PhyscraperScrape(data_obj, ids)
+    scraper.blocklist.append('JX895264.1')
+    scraper._blasted = 1
+    blast_dir = "tests/data/precooked/fixed/tte_blast_files"
+    #scraper.gi_list_mrca = pickle.load(open("tests/data/precooked/gi_list_mrca.p", 'rb'))
+    scraper.read_blast_wrapper(blast_dir=blast_dir)
+    #print scraper.ncbi_mrca
+    assert(len(scraper.new_seqs) == 0)
+    assert(len(scraper.data.aln) == 5)
+    assert len(scraper.new_seqs_otu_id) == 13
+    aln_path1 = scraper.data.write_aln()
+    scraper.align_new_seqs()
+    assert len(scraper.data.aln) == 18
+    os.remove(aln_path1)
+
 #TODO find an example where we do get identical sequences and need to discard them
 
 
@@ -142,9 +162,7 @@ def test_remove_identical_seqs():
  #       status = scraper.data.otu_dict[taxon.label].get(u'^physcraper:status')
  #       assert(status in ('original', 'query'))
 
-    aln_path1 = scraper.data.write_aln()
-    scraper.align_new_seqs()
-    assert len(scraper.data.aln) == 19
+  
 
 
 
@@ -277,7 +295,7 @@ def test_run_align():
     # scraper.generate_streamed_alignment()
     #assert os.path.exists("{}/RAxML_bestTree.{}".format(scraper.workdir, scraper.date))
 
-test_run_align()
+
 
 @mark.xfail
 def test_mpi():
@@ -391,3 +409,4 @@ def test_write_labelled():
     assert os.path.isfile('tests/data/tmp/otu_info_test.csv')
     os.remove('tests/data/tmp/otu_info_test.json')
     os.remove('tests/data/tmp/otu_info_test.csv')
+
