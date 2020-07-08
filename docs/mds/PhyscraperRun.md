@@ -1,24 +1,44 @@
-How to run Physcraper using `physcraper_run.py`
-
-# Running physcraper
+# Quickstart
 
 The easiest way to run physcraper is using the command line tools. This way, you can directly specify arguments, and a config file will be written down for the sake of reproducibility.
 
-As input, you will minimally need a study and tree ids from a tree uploaded to the Open Tree of Life website:
+As input, you will minimally need a study and tree ids from a tree uploaded to the Open Tree of Life website. The 'treebase' flag will automatically download an alignment for that tree from treebase.
 
 ```
-physcraper_run_py -s OPENTREE_STUDY_ID -t OPENTREE_TREE_ID -o OUTPUT_DIRECTORY_NAME/AND/OR/PATH
+physcraper_run_py -s OPENTREE_STUDY_ID -t OPENTREE_TREE_ID --treebase -o OUTPUT_DIRECTORY_NAME/AND/OR/PATH
 ```
 
-If you do not specify an alignment, physcraper will try to get one of the gene alignments that generated the tree. Provide the gene alignment that you want to be updated using the `-a` command:
+e.g. 
+
 
 ```
-physcraper_run_py -s OPENTREE_STUDY_ID -t OPENTREE_TREE_ID -o OUTPUT/DIRECTORY/NAME/AND/OR/PATH -a PATH/TO/GENE/ALIGNMENT/NAME
+physcraper_run.py -s pg_55 -t tree5864 -tb -o pg55_treebase 
 ```
 
-You can also run `physcraper` from a file using python with the command:
+Alternately, you can provide the gene alignment that you want to be updated using the `-a` command:
 
-## Simple Run
+```
+physcraper_run_py -s OPENTREE_STUDY_ID -t OPENTREE_TREE_ID -o OUTPUT/DIRECTORY/NAME/AND/OR/PATH -a PATH/TO/GENE/ALIGNMENT/NAME -as ALIGNMENT_SCHEMA
+
+```
+
+
+e.g.  
+```
+physcraper_run.py -s ot_350 -t Tr53297 -a docs/examples/ot_350Tr53297.aln -as "nexus" -o ot_350
+```
+If the tree you want to update is not posted to the OpenTree website, you need to match the labels the labels on your tree to taxa using [OpenTree Bulk Taxonomic Name Resolution](https://tree.opentreeoflife.org/curator/tnrs/). Download your matched names, unzip the folder, and pass the .json file as a physcraper argument.
+
+```    
+physcraper_run.py -tf TREE_FILE -tfs TREEFILE_SCHEMA -a ALIGNMENT_FILE -as ALIGNMENT_SCHEMA --taxon_info TAXON_INFO_JSONFILE  -o OUTPUT_DIRECTORY_NAME
+```
+
+
+```    
+physcraper_run.py -tf tests/data/tiny_test_example/test.tre -tfs newick -a tests/data/tiny_test_example/test.fas --taxon_info tests/data/tiny_test_example/main.json -as fasta -o owndata
+```
+
+## Detailed explanation
 
 For the simplest `physcraper` run you just need the study id and tree id from OpenTree (
 and an alignment file that goes with that tree.
@@ -45,6 +65,7 @@ To see all the config paramaters, use `physcraper_run.py -h`
 
 
 Tree information (required)
+
   -s STUDY_ID, --study_id STUDY_ID
                         OpenTree study id
   -t TREE_ID, --tree_id TREE_ID
@@ -61,30 +82,31 @@ OR
 
 
 
-Alignment information (required)
+Alignment information (required)  
+
 
   -a ALIGNMENT, --alignment ALIGNMENT
                         path to alignment
   -as ALN_SCHEMA, --aln_schema ALN_SCHEMA
                         alignment schema (nexus or fasta)
 
-OR
+OR  
 
   -tb, --treebase       download alignment from treebase
 
-Tree and alignment information are required.
-After an analysis has been run, they can be reloaded from a directory from a previous run.
+Tree and alignment information are required.  
+After an analysis has been run, they can be reloaded from a directory from a previous run.  
 
   -re RELOAD_FILES, --reload_files RELOAD_FILES
                         reload files and configureation from dir
 
 
-REQUIRED:
+REQUIRED:  
 
   -o OUTPUT, --output OUTPUT
                         path to output directory
 
-Optional:
+Optional:  
 
   -st SEARCH_TAXON, --search_taxon SEARCH_TAXON
                         taxonomic id to constrain blast search. format ott:123
@@ -97,8 +119,7 @@ Optional:
 
 ### Configuration paramaters
 
-The configuration paramaters may be set in a config file, and then passed into the analysis run. See example.config for an example.
-
+The configuration paramaters may be set in a config file, and then passed into the analysis run. See example.config for an example.  
 
   -c CONFIGFILE, --configfile CONFIGFILE
                         path to config file
@@ -106,7 +127,7 @@ The configuration paramaters may be set in a config file, and then passed into t
 If a config file input is combined with comand line configuration parameters, the command line values will ovverride those in the config file.
 
 
-## Blast search paramaters
+## Blast search paramaters  
 
   -e EMAIL, --email EMAIL
                         email address for ncbi blast searches
@@ -121,7 +142,7 @@ If a config file input is combined with comand line configuration parameters, th
 
 
 You can use a local blast database:
-To setup see doc/LocalDB.md
+To setup see [setting_up_local database](setting_up_local_database))
 
   -db BLAST_DB, --blast_db BLAST_DB
                         local download of blast database

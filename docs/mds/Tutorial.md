@@ -3,10 +3,11 @@
 
 If you have access to a single gene alignment, and a tree, you can automate adding homologous data into your tree by searching GenBank.
 
-While genome scale data is increasing rapidly - there are still large quantities of gene-sequence data being uploaded to NCBI GenBank.
+
+While genome scale data is increasing rapidly - there are still large quantities of gene-sequence data being uploaded to NCBI [GenBank](https://www.ncbi.nlm.nih.gov/genbank/statistics/).
 These data are often appropriate for looking at phylogenetic relationships, and have the advantage of being homologous to the sequences in existing trees,
 
-Using Physcraper we can use Blast to search for loci that are likely to be homologous to sequences in an existing alignment.
+Using Physcraper we can use [Blast](https://blast.ncbi.nlm.nih.gov/Blast.cgi) to search for loci that are likely to be homologous to sequences in an existing alignment.
 
 By using a starting tree and alignment, Physcraper, takes advantage of loci that previous researchers have assessed and deemed appropriate for the phylogenetic scope.
 The sequences added in the search are limited to a user specified taxon or monophyletic group, or within the taxonomic scope of the in-group of the starting tree.
@@ -24,10 +25,12 @@ Open Tree of Life aims to construct a comprehensive, dynamic and digitally-avail
 Currently the tree comprises 2.3 million tips. 
 However, only around 90,000 of those taxa are represented by phylogenetic estimates - the rest are placed in the tree based on their taxonomic names.
 
-https://opentreeoflife.github.io/browse/
+![](../img/synthtreeleg.png) 
+
+(figure from [Hinchliff et al. 2015](https://www.pnas.org/content/112/41/12764.short))  
+For more information on OpenTree see https://opentreeoflife.github.io
 
 
-** Insert numbers on how many taxa are in genbank but not in synth**  
 
 ## Updating a tree from OpenTree of Life
 
@@ -35,13 +38,13 @@ The Open Tree of Life data store, [Phylesystem](https://academic.oup.com/bioinfo
 The tips in these trees are mapped a unified taxonomy, which makes these data searchable in a phylogenetically explicit way.
 This is a great place to start of finding existing estimates of phylogenetic relationships, 
 and assessing regions of the tree of life which are lacking available phylogenetic estimates.
-There is a lot of sequence data that has been generated, but has never been incorporated into any phylogenetic estimates.
+There is a lot of sequence data available that has never been incorporated into any phylogenetic estimates.
 
 
 ### Find a study with your taxon of interest
 
 
-For this example we'll use find a tree that is already in the OpenTree of Life database.
+For this example we'll use find a tree that is already in the OpenTree of Life database. (More search information at [Finding Data](https://physcraper.readthedocs.io/en/latest/find_trees.html).
 Search on OpenTree of life using your taxon of interest, e.g. 'Malvaceae'
 
     $ find_trees.py --taxon_name "Malvaceae"
@@ -64,7 +67,7 @@ Lets take a look at how recent data affect our inferences of relationships, and 
 
 
 The script `physcraper_run.py` wraps together linking the tree and alignment, blasting, aligning sequences, and inferring an updated tree.
-Detailed explanation of the inputs needed can be found at [PhyscraperRun](./PhyscraperRun.md).
+Detailed explanation of the inputs needed can be found at [running physcraper](https://physcraper.readthedocs.io/en/latest/physcraper_run.html).
 
 The blast search part of updating trees takes a long time (for example, this analysis took around 12 hours!).
 
@@ -108,7 +111,7 @@ this root can be unreliable, especially if taxonomy is a poor fit to true evolut
 
 There is a simple tree comparison script, `tree_comparison.py`
 
-Detailed explanation of that script, and more ways to explore the data are described in [DataExploration](./DataExploration.md)
+Detailed explanation of that script, and more ways to explore the data are described in [data exploration](https://physcraper.readthedocs.io/en/latest/data_exploration.html)
 
 
     tree_comparison.py -d docs/examples/pg_55/ -og otu376420 otu376439 otu376452 -o pg_55_comparison

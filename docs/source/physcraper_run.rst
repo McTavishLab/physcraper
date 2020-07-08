@@ -1,4 +1,4 @@
-Running an analysis
-======
+Running physcraper
+==================
 
 .. mdinclude:: ../mds/PhyscraperRun.md
