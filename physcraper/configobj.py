@@ -3,6 +3,7 @@ import os
 import datetime
 import configparser
 import shutil
+import wget
 
 from physcraper import ncbi_data_parser  # is the ncbi data parser class and associated functions
 
@@ -89,8 +90,8 @@ class ConfigObj(object):
         self.minlen = 0.8
         self.api_key = None
         self.maxlen = 1.2
-        self.taxonomy_dir = "{}/taxonomy".format(physcraper_dir)
-        self.ott_ncbi = "{}/ott_ncbi".format(self.taxonomy_dir)
+        self.taxonomy_dir = ''
+        self.check_taxonomy()
     def config_str(self):
         config_text='''[blast]
 Entrez.email = {email}
@@ -116,6 +117,23 @@ max_length = {maxlen}
                                     perc=self.minlen,
                                     maxlen=self.maxlen)
         return(config_text)
+    def check_taxonomy(self):
+        if os.path.exists(self.taxonomy_dir):
+            pass
+        elif os.path.exists("{}/taxonomy".format(physcraper_dir)):
+            self.taxonomy_dir = "{}/taxonomy".format(physcraper_dir)
+        else:
+            if not os.path.exists('taxonomy'):
+                os.mkdir("taxonomy")
+            self.taxonomy_dir = os.path.abspath('taxonomy')
+            sys.stdout.write("Using {} as taxonomy dir.".format(self.taxonomy_dir))
+        self.ott_ncbi = "{}/ott_ncbi".format(self.taxonomy_dir)
+        if not os.path.exists(self.ott_ncbi):
+            sys.stdout.write("downloading taxonomy from https://raw.githubusercontent.com/McTavishLab/physcraper/main/taxonomy/ott_ncbi")
+            wget.download('https://raw.githubusercontent.com/McTavishLab/physcraper/main/taxonomy/ott_ncbi', out=self.taxonomy_dir)
+        assert os.path.isfile(self.ott_ncbi), (
+                "file `%s` does not exist" % self.ott_ncbi
+        )
     def write_file(self, direc, filename = "run.config"):
         config_text = self.config_str()
         fi = open("{}/{}".format(direc, filename),"w")
@@ -149,13 +167,7 @@ max_length = {maxlen}
         # read in settings for internal Physcraper processes
         if "taxonomy_path" in config["physcraper"].keys():
             self.taxonomy_dir = config["physcraper"]["taxonomy_path"]
-        else:
-            self.taxonomy_dir = "{}/taxonomy".format(physcraper_dir)
-
-        self.ott_ncbi = "{}/ott_ncbi".format(self.taxonomy_dir)
-        assert os.path.isfile(self.ott_ncbi), (
-                "file `%s` does not exists" % self.ott_ncbi
-        )
+        self.check_taxonomy()
         self.blast_loc = config["blast"]["location"]
         assert self.blast_loc in ["local", "remote"], (
                 "your blast location `%s` is not remote or local" % self.email
