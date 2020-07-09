@@ -21,3 +21,7 @@ This is the code repository, please refer to Physcraper's [documentation website
 
 
 :hamster: :palm_tree: :frog: :ear_of_rice: :panda_face: :tulip: :octopus: :blossom: :whale: :mushroom: :ant: :cactus: :fish: :maple_leaf: :water_buffalo: 🦠 :shell: :bug: :octocat:
+
+Physcraper relies on:
+Dendropy
+Sukumaran, J and MT Holder. 2010. DendroPy: a Python library for phylogenetic computing. Bioinformatics 26: 1569-1571.      
