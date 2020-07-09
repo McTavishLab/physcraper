@@ -1,7 +1,3 @@
-[Back home](../../README.md)
-
-# Testing `physcraper` code
-
 Code testing the major functionalities of `physcraper` can be found in [test](../../tests/) and [ws-tests](../../ws-tests/).
 
 To run these tests locally (in your own computer), do
@@ -20,9 +16,3 @@ For example, you can do:
 ```
 python test/test_multi.py
 ```
-
-[Back home](../../README.md)
-
-[Previous: Example runs](examples.md)
-
-[Go to Documentation](https://physcraper.readthedocs.io/en/latest/)

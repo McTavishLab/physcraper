@@ -1,4 +1,4 @@
-## Downloading `Physcraper`
+## Downloading Physcraper
 
 First step is to clone the Physcraper repo to your computer:
 
@@ -11,7 +11,7 @@ or dowload the repo from https://github.com/McTavishLab/physcraper.git
 Then move to the newly created physcraper directory (cd physcraper) and choose a type
 of installation, using conda or a python virtual environment.
 
-### Option 1: Install `Physcraper` using conda
+### Option 1: Install Physcraper using conda
 
 First, install [anaconda](https://www.anaconda.com/products/individual)
 
@@ -25,7 +25,7 @@ Then, create a conda environment
 
 You're done with the installation with conda!
 
-### Option 2: Install `Physcraper` using a python virtual environment
+### Option 2: Install Physcraper using a python virtual environment
 
 First, create a python virtual environment
 
