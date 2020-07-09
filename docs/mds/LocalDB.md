@@ -65,4 +65,4 @@ You can add your api key to your config using
 
     Entrez.api_key = <apikey>
 
-or as a flag in your physcraper_run script --api_key 
+or as a flag in your physcraper_run script `--api_key` 

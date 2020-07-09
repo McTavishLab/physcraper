@@ -17,3 +17,5 @@ Welcome to Physcraper's documentation!
    find_trees
    data_exploration
    apidocs
+   CONTRIBUTING
+   CONTRIBUTORS
