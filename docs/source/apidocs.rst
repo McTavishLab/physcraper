@@ -2,7 +2,7 @@
 .. _api:
 
 Function Documentation
-=================
+======================
 
 .. automodule:: physcraper
    :members:
@@ -25,5 +25,5 @@ Function Documentation
 .. automodule:: physcraper.ncbi_data_parser
    :members:
 
-.. automodule:: physcraper.treetaxon.py
+.. automodule:: physcraper.treetaxon
    :members:

@@ -1,4 +1,4 @@
-The Physcraper runs
-======
+Running Physcraper
+==================
 
 .. mdinclude:: ../mds/PhyscraperRun.md

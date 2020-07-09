@@ -1,34 +1,35 @@
-## Downloading `Physcraper`
+## Downloading Physcraper
 
-First step is to clone the repo into your computer:
+First step is to clone the Physcraper repo to your computer:
 
 ```
-git clone git@github.com:McTavishLab/physcraper.git
+git clone https://github.com/McTavishLab/physcraper.git
 ```
-Then move to the newly created physcraper directory (cd phscraper) and choose a type
+
+or dowload the repo from https://github.com/McTavishLab/physcraper.git
+
+Then move to the newly created physcraper directory (cd physcraper) and choose a type
 of installation, using conda or a python virtual environment.
 
-### Option 1: Install `Physcraper` using conda
+### Option 1: Install Physcraper using conda
 
-First, install anaconda
+First, install [anaconda](https://www.anaconda.com/products/individual)
 
 Then, create a conda environment
 
 ```
    conda env create -f cond_env.yml
    conda activate physcraper_env
-   # This next step is temprary until opentree changes are uploaded to pypi
-   pip install -e git+https://github.com/OpenTreeOfLife/python-opentree@get-tree#egg=opentree
-
+   pip install -e .
 ```
 
 You're done with the installation with conda!
 
-### Option 2: Install `Physcraper` using a python virtual environment
+### Option 2: Install Physcraper using a python virtual environment
 
 First, create a python virtual environment
 
-Remeber you need to be in the pyscraper folder, once there do:
+Remeber you need to be in the physcraper folder, once there do:
 
 ```
 virtualenv -p python3 venv-physcraper
@@ -44,7 +45,7 @@ source venv-physcraper/bin/activate
 You will stay in the virtual environment even if you change directories and `physcraper` should run from anywhere, while the virtual environment is activated.
 
 
-**Note** that you will have to activate the virtual environment every time you want to run `physcraper` ;)
+**Note** that you will have to activate the virtual environment every time you want to run `physcraper`
 
 
 Finally, install `physcraper` inside the virtual environment:

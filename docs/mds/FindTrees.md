@@ -1,7 +1,7 @@
-# Searching for studies
+## Searching for studies
 
 To search for trees on OpenTree with your taxon of interest, you can use
-find_trees.py  
+find_trees.py
 
 
 usage: find_trees.py [-h] [-t TAXON_NAME] [-ott OTT_ID] [-tb] [-o OUTPUT]
