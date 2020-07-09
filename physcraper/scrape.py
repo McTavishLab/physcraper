@@ -567,6 +567,7 @@ class PhyscraperScrape(object):
                 os.mkdir(self.blast_subdir)
         if not self._blasted:
                 self.run_blast_wrapper()
+        sys.stdout.write("reading blast data\n")
         assert os.path.exists(self.blast_subdir)
         for taxon in self.data.aln:
                 # debug(self.config.blast_loc)

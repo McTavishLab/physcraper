@@ -81,12 +81,12 @@ Lets take a look at how recent data affect our inferences of relationships, and 
 The script `physcraper_run.py` wraps together linking the tree and alignment, blasting, aligning sequences, and inferring an updated tree.
 Detailed explanation of the inputs needed can be found at [running physcraper](https://physcraper.readthedocs.io/en/latest/physcraper_run.html).
 
-The blast search part of updating trees takes a long time (for example, this analysis took around 12 hours!). The `-r` flag repeats the search on new sequences until no additional sequences are found.
+The blast search part of updating trees takes a long time (for example, this analysis took around 12 hours!). We recommend running it on a cluster or other remote computing option.
 
 
     $ physcraper_run.py -s pg_55 -t tree5864 -tb -r -o pg_55
 
-
+The `-r` flag repeats the search on new sequences until no additional sequences are found.
 We have put example outputs from this command in `docs/examples/pg_55`, so that you can explore the outputs without waiting for the searches to complete.
 
 ## Using your own tree and alignment

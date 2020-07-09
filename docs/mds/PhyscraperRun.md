@@ -34,8 +34,7 @@ physcraper_run.py -tf TREE_FILE -tfs TREEFILE_SCHEMA -a ALIGNMENT_FILE -as ALIGN
 ```
 
 
-```
-physcraper_run.py -tf tests/data/tiny_test_example/test.tre -tfs newick -a tests/data/tiny_test_example/test.fas --taxon_info tests/data/tiny_test_example/main.json -as fasta -o owndata
+physcraper_run.py -tf tests/data/tiny_test_example/test.tre -tfs newick -a tests/data/tiny_test_example/test.fas  -as fasta --taxon_info tests/data/tiny_test_example/main.json -o owndata
 ```
 
 
