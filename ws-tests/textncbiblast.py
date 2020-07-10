@@ -19,7 +19,7 @@ result_handle.close()
 
 
 ncbi_id = 147538
-equery = equery + "txid{}[orgn]) ".format(ncbi_id)
+query = query + "txid{}[orgn]) ".format(ncbi_id)
 
 
 

@@ -65,6 +65,7 @@ def check_otu_dict():
 
 
 
+
 def test_add_all():
     threshold = 2
     conf = copy.deepcopy(conf_base)
@@ -137,32 +138,7 @@ def test_blocklist():
     assert len(scraper.data.aln) == 18
     os.remove(aln_path1)
 
-#TODO find an example where we do get identical sequences and need to discard them
 
-
-#    seqset = set()
-#    for otu in scraper.new_seqs_otu_id:
-#        seq = scraper.new_seqs_otu_id[otu]
-#        if seq in seqset:
-#            print otu
-#        seqset.add(seq)
-
-#check that every new sequence is unique in the new seqs set, and is not a substring of another sequence.
-##    for otu in scraper.new_seqs_otu_id:
- #       qseq = scraper.new_seqs_otu_id[otu]
- #       count = 0
- #       for seq in seqset:
- #           if qseq in seq:
- #               count += 1
- #       assert count == 1
-
-
-##    for taxon in scraper.data.tre.taxon_namespace:
- #       assert(taxon.label in scraper.data.otu_dict)
- #       status = scraper.data.otu_dict[taxon.label].get(u'^physcraper:status')
- #       assert(status in ('original', 'query'))
-
-  
 
 
 
