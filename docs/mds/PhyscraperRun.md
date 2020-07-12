@@ -229,7 +229,7 @@ Or they can be modified in the command line arguments. If you combine a configur
 
 To run on local files, not on trees in Open Tree, you need to match the labels to taxa using https://tree.opentreeoflife.org/curator/tnrs/
 
-    physcraper_run.py -tf tests/data/tiny_test_example/test.tre -tfs newick -a tests/data/tiny_test_example/test.fas --taxon_info tests/data/tiny_test_example/main.json -as fasta -o owndata
+    physcraper_run.py -tf tests/data/tiny_test_example/test.tre -tfs newick -a tests/data/tiny_test_example/test.fas -as fasta --taxon_info tests/data/tiny_test_example/main.json -o owndata
 
 
 The current configuration settings are written to standard out, and saved in the output directory as run.config

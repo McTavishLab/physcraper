@@ -209,6 +209,7 @@ max_length = {maxlen}
     def set_local(self):
         self.ncbi_nodes = "{}/nodes.dmp".format(self.taxonomy_dir)
         self.ncbi_names = "{}/names.dmp".format(self.taxonomy_dir)
+        assert(self.blastdb), "No blast db location set"
         if not os.path.isdir(self.blastdb):
             sys.stderr.write("Local Blast DB not found at {}, please use a remote search, or update as described in 'taxonomy/update_blast_db'\n".format(self.blastdb))
             sys.exit()

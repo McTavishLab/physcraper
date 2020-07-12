@@ -187,7 +187,8 @@ orig_conf_taxa = set()
 for node in conflict_orig:
     if conflict_orig[node]['status'] == 'conflicts_with':
         witness = conflict_orig[node]['witness_name']
-        orig_conf_taxa.add(witness)
+        for tax in witness:
+            orig_conf_taxa.add(tax)
 
 sys.stdout.write("\nOriginal tree conflicts with {} taxa in the OpenTree taxonomy:\n".format(len(orig_conf_taxa)))
 for tax in orig_conf_taxa:
@@ -201,9 +202,10 @@ updated_conf_taxa = set()
 for node in conflict:
     if conflict[node]['status'] == 'conflicts_with':
         witness = conflict[node]['witness_name']
-        updated_conf_taxa.add(witness)
+        for tax in witness:
+            updated_conf_taxa.add(tax)
 
-sys.stdout.write("Updated tree conflicts with {} taxa in the OpenTree taxonomy:\n".format(len(updated_conf_taxa)))
+sys.stdout.write("\nUpdated tree conflicts with {} taxa in the OpenTree taxonomy:\n".format(len(updated_conf_taxa)))
 for tax in updated_conf_taxa:
     sys.stdout.write("{}\n".format(tax))
 
