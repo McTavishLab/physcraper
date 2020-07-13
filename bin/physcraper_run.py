@@ -50,7 +50,7 @@ parser.add_argument("-bs","--bootstrap_reps", help="number of bootstrap reps")
 
 parser.add_argument("-tx","--taxonomy", help="path to taxonomy")
 
-parser.add_argument("-v","--verbose", action="store_true", help="OpenTree study id")
+parser.add_argument("-v","--verbose", action="store_true", help="verbose")
 
 
 
@@ -108,28 +108,28 @@ if args.blast_db:
     conf.set_local()
 
 if args.eval:
-    conf.e_value_thresh = args.eval
+    conf.e_value_thresh = float(args.eval)
 
 if args.hitlist_len:
-    conf.hitlist_size = args.hitlist_len
+    conf.hitlist_size = int(args.hitlist_len)
 
 if args.trim_perc:
-    conf.trim_perc = args.trim_perc
+    conf.trim_perc = float(args.trim_perc)
 
 if args.relative_length_max:
-    conf.maxlen = args.relative_length_max
+    conf.maxlen = float(args.relative_length_max)
 
 if args.relative_length_min:
-    conf.minlen = args.relative_length_min
+    conf.minlen = float(args.relative_length_min)
 
 if args.species_number:
     conf.spp_threshold = int(args.species_number)
 
 if args.num_threads:
-   conf.num_threads = args.num_threads
+   conf.num_threads = int(args.num_threads)
 
 if args.delay:
-    conf.delay = args.delay
+    conf.delay = int(args.delay)
 
 if args.email:
     conf.email = args.email
@@ -185,23 +185,26 @@ if args.treebase:
     else:
         sys.stdout.write("Using alignment file found at {}.\n".format(alnfile))
 
+search_ott_id = None
+if args.search_taxon:
+    ids = physcraper.IdDicts(conf)
+    if args.search_taxon.startswith('ott'):
+        search_ott_id = args.search_taxon.split(':')[1]
+    elif args.search_taxon.startswith('ncbi'):
+        ncbi_id = inst(args.search_taxon.split(':')[1])
+        search_ott_id = ids.ncbi_ott[ncbi_id]
+    else:
+        sys.stderr.write("search taxon id must be in format ott:123 or ncbi:123\n")
+
 if study_id:
-    if args.search_taxon:
-        ids = physcraper.IdDicts(conf)
-        if args.search_taxon.startswith('ott'):
-            ott_id = args.search_taxon.split(':')[1]
-        elif args.search_taxon.startswith('ncbi'):
-            ncbi_id = inst(args.search_taxon.split(':')[1])
-            ott_id = ids.ncbi_ott[ncbi_id]
-        else:
-            sys.stderr.write("search taxon id must be in format ott:123 or ncbi:123\n")
+    if search_ott_id:
         data_obj = generate_ATT_from_phylesystem(study_id =study_id, 
                                                 tree_id = tree_id, 
                                                 alnfile = alnfile, 
                                                 aln_schema = aln_schema,
                                                 workdir = workdir,
                                                 configfile = conf,
-                                                search_taxon = ott_id)
+                                                search_taxon = search_ott_id)
         scraper = physcraper.PhyscraperScrape(data_obj, ids)
     else:
         scraper = scraper_from_opentree(study_id =study_id, 
@@ -234,7 +237,7 @@ if args.tree_file:
                                         treefile = treefile,
                                         otu_json = otu_dict,
                                         tree_schema = args.tree_schema,
-                                        search_taxon=search_taxon)
+                                        search_taxon=search_ott_id)
     ids = physcraper.IdDicts(conf)
     scraper = physcraper.PhyscraperScrape(data_obj, ids)
 #    sys.stdout.write("Read in tree {} taxa in alignment and tree\n".format(len(scraper.data.aln)))
