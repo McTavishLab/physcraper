@@ -5,6 +5,8 @@
 
 Welcome to Physcraper's documentation!
 ======================================
+.. mdinclude:: ../mds/intro-header.md
+
 .. mdinclude:: ../mds/intro.md
 
 .. toctree::
