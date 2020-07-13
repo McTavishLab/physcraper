@@ -27,3 +27,6 @@ physcraper_example_minimal/
 scrape_ot_350_compact/
 physcraper_example_ot_350/
 taxonomy/full_seqs/
+*.fas
+taxonomy/*.dmp
+taxonomy/*.tar*
