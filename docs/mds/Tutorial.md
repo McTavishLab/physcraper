@@ -21,7 +21,7 @@ If you have access to a single gene alignment, and a tree, you can automate addi
 While genome scale data is increasing rapidly - there are still large quantities of gene-sequence data being uploaded to NCBI [GenBank](https://www.ncbi.nlm.nih.gov/genbank/statistics/).
 These data are often appropriate for looking at phylogenetic relationships, and have the advantage of being homologous to the sequences in existing trees,
 
-Using Physcraper we can use [Blast](https://blast.ncbi.nlm.nih.gov/Blast.cgi) to search for loci that are likely to be homologous to sequences in an existing alignment.
+With Physcraper we can use [Blast](https://blast.ncbi.nlm.nih.gov/Blast.cgi) to search for loci that are likely to be homologous to sequences in an existing alignment.
 
 By using a starting tree and alignment, Physcraper, takes advantage of loci that previous researchers have assessed and deemed appropriate for the phylogenetic scope.
 The sequences added in the search are limited to a user specified taxon or monophyletic group, or within the taxonomic scope of the in-group of the starting tree.
@@ -79,7 +79,7 @@ Lets take a look at how recent data affect our inferences of relationships, and 
 ### Run the auto update
 
 The script `physcraper_run.py` wraps together linking the tree and alignment, blasting, aligning sequences, and inferring an updated tree.
-Detailed explanation of the inputs needed can be found at [running physcraper](https://physcraper.readthedocs.io/en/latest/physcraper_run.html).
+Detailed explanation of the inputs needed can be found at [running Physcraper](https://physcraper.readthedocs.io/en/latest/physcraper_run.html).
 
 The blast search part of updating trees takes a long time (for example, this analysis took around 12 hours!). We recommend running it on a cluster or other remote computing option.
 
@@ -135,13 +135,14 @@ Once you have accepted names for each of the taxa, click "save nameset".
 
 Download it to your laptop.
 Extract the files.
-Take a look at the human readable version (output/main.csv). You will see that this file also links to NCBI and GBIF identifiers for your taxa!
+Take a look at the human readable version at `output/main.csv`. You will see that this file also links to NCBI and GBIF identifiers for your taxa!
 
-main.json contains the the same data in a more computer readable format.
+`output/main.json` contains the same data in a more computer readable format.
 
-By passing in the the main.json file, physcraper can link your sequences to their correct taxonomic context.
+By passing in the `main.json` file, Physcraper can link your sequences to their correct taxonomic context.
 
 ### Run the auto-update on your tree
+
 Example run on local files using test data:
 
     physcraper_run.py -tf tests/data/tiny_test_example/test.tre -tfs newick -a tests/data/tiny_test_example/test.fas --taxon_info tests/data/tiny_test_example/main.json -as fasta -o owndata
