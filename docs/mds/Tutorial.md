@@ -1,17 +1,3 @@
-- [Physcraper framework](#physcraper-framework)
-- [The Open Tree of Life](#the-open-tree-of-life)
-- [Updating a tree from OpenTree of Life](#updating-a-tree-from-opentree-of-life)
-  * [Find a starting tree with your taxon of interest](#find-a-starting-tree-with-your-taxon-of-interest)
-  * [Run the auto update](#run-the-auto-update)
-- [Using your own tree and alignment](#using-your-own-tree-and-alignment)
-  * [Mapping names to taxa](#mapping-names-to-taxa)
-  * [Run the auto update on your tree](#run-the-auto-update-on-your-tree)
-- [Output files](#output-files)
-  * [Compare your new tree to existing relationships](#compare-your-new-tree-to-existing-relationships)
-
-<small><i><a href='http://ecotrust-canada.github.io/markdown-toc/'>Table of contents generated with markdown-toc</a></i></small>
-
-
 ## The Physcraper framework
 
 ![](../img/schematic.svg)
