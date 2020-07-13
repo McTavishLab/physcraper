@@ -1,6 +1,6 @@
 import os
 import filecmp
-from physcraper import opentree_helpers
+from physcraper import opentree_helpers, treetaxon
 from physcraper import TreeTax
 
 
@@ -29,4 +29,8 @@ def test_get_synth_tree():
 
 def test_get_phyle_tree():
     tr = opentree_helpers.get_tree_from_study(study_id='pg_1144', tree_id='tree2324', label_format="name")
+
+
+def test_get_from_run():
+    tr = treetaxon.generate_TreeTax_from_run(workdir="tests/data/precooked/ot_350")
 
