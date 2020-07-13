@@ -1,4 +1,4 @@
-Quick start
+Quick intro
 ===========
 
 .. mdinclude:: ../mds/Tutorial.md
