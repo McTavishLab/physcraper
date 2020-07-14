@@ -87,3 +87,18 @@ def test_reroot():
     tr = treetaxon.generate_TreeTax_from_run(workdir="tests/data/precooked/ot_350")
     opentree_helpers.root_tree_from_synth(tree=tr.tre, otu_dict=tr.otu_dict)
 
+
+def test_find_trees():
+    subprocess.check_call(["python", "bin/find_trees.py",
+                            "--taxon_name", "Malvaceae",
+                            "--treebase",
+                            "-o", "tests/tmp/malvacea.txt"])
+    assert(os.path.exists("tests/tmp/malvacea.txt"))
+    subprocess.check_call(["python", "bin/find_trees.py",
+                            "--ott_id", "124219",
+                            "--treebase",
+                            "-o", "tests/tmp/orcinus.txt"])
+    assert(os.path.exists("tests/tmp/orcinus.txt"))
+
+
+
