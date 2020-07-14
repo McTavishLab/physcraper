@@ -163,35 +163,6 @@ class IdDicts(object):
 
 
 
-
-    def find_name_otu(self, otu_dict_entry=None):
-        """ Find the taxon name in the  otu_dict entry or of a Genbank accession number.
-        If not already known it will ask ncbi using the accession number
-
-        :param otu_dict_entry: otu_dict entry
-        :param acc: Genbank accession number
-        :return: ncbi taxon name
-        """
-        # debug("find_name")
-        inputinfo = False
-        if otu_dict_entry is not None:
-            inputinfo = True
-        assert inputinfo is True
-        tax_name = None
-        ncbi_id = None
-        if otu_dict_entry:
-            # debug(otu_dict_entry)
-            if "^physcraper:TaxonName" in otu_dict_entry:
-                tax_name = otu_dict_entry["^physcraper:TaxonName"]
-            elif "^ot:ottTaxonName" in otu_dict_entry:
-                tax_name = otu_dict_entry["^ot:ottTaxonName"]
-            elif "^user:TaxonName" in otu_dict_entry:
-                tax_name = otu_dict_entry["^user:TaxonName"]
-        assert tax_name is not None
-        tax_name = tax_name.replace(" ", "_")
-        return tax_name
-
-
     def entrez_efetch(self, gb_id):
         """ Wrapper function around efetch from ncbi to get taxonomic information if everything else is failing.
             Also used when the local blast files have redundant information to access the taxon info of those sequences.
@@ -247,12 +218,3 @@ class IdDicts(object):
         read_handle = Entrez.read(handle)
         handle.close()
         return read_handle
-
-
-    def dump(self, filename=None):
-        if filename:
-            ofi = open(filename, "wb")
-        else:
-            ofi = open("id_pickle.p", "wb")
-        pickle.dump(self, ofi)
-
