@@ -133,7 +133,7 @@ class IdDicts(object):
         ncbi_id = tax_name = seq = None
         if gb_id in self.acc_tax_seq_dict:
             tax_name = self.acc_tax_seq_dict[gb_id]["taxname"]
-            ncbi_id = self.acc_tax_seq_dict[gb_id]["^ncbi:"]
+            ncbi_id = self.acc_tax_seq_dict[gb_id]["^ncbi:taxon"]
             seq = self.acc_tax_seq_dict[gb_id]["seq"]
         elif os.path.exists(seq_path):
             fi = open(seq_path)
