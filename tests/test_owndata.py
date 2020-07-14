@@ -54,29 +54,8 @@ def test_owndata():
 import physcraper
 from dendropy import DnaCharacterMatrix
 
-@web
-def test_opentree():
-    # Use OpenTree phylesystem identifiers to get study and tree
-    study_id = "pg_873"
-    tree_id = "tree1679"
-    seqaln = "tests/data/minitest.fas"
-    mattype = "fasta"
-    workdir = "tests/output/opentree"
-    configfi = "tests/data/remotencbi.config"
 
-    sys.stdout.write("\nTesting 'opentree scrape (1 round)'\n")
-    conf = physcraper.ConfigObj(configfi, interactive=False)
-    # print "1. {}".format(conf.email)
-          
-    aln = DnaCharacterMatrix.get(path=seqaln, schema=mattype)
-    data_obj = physcraper.generate_ATT_from_phylesystem(alnfile=aln,
-                                                        workdir=workdir,
-                                                        configfile=conf,
-                                                        study_id=study_id,
-                                                        tree_id=tree_id)
-    assert isinstance(data_obj, AlignTreeTax)
-
-def load_json():
+def test_load_json():
     inputfi = "tests/data/bulk_tnrs.json"
     otu_dict = bulk_tnrs_load(inputfi)
     assert len(otu_dict) == 16
@@ -117,3 +96,26 @@ def test_owndata_bulktnrs():
 
 
 test_owndata_bulktnrs()
+
+
+def test_add_all_local():
+    treefile = "tests/data/tiny_test_example/test.tre"
+    tree_schema = "newick"
+    alnfile =  "tests/data/tiny_test_example/oneseq.fas"
+    aln_schema = "fasta"
+     otu_json = "tests/data/tiny_test_example/main.json"
+    workdir = "tests/data/precooked/tiny_local"
+    data_obj = generate_ATT_from_files(workdir= workdir,
+                                        configfile=conf,
+                                        alnfile = alnfile,
+                                        aln_schema = aln_schema,
+                                        treefile = treefile,
+                                        otu_json = otu_dict,
+                                        tree_schema = args.tree_schema,
+                                        search_taxon=search_ott_id)
+    ids = physcraper.IdDicts()
+    scraper = physcraper.PhyscraperScrape(data_obj, ids)
+    scraper.blast_loc = "local"
+    scraper.read_blast_wrapper(blast_dir="tests/data/precooked/fixed/tiny_local/blast_run_test")
+    scraper.remove_identical_seqs()
+    assert(len(scraper.new_seqs)==17)

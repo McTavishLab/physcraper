@@ -126,11 +126,8 @@ class PhyscraperScrape(object):
         self.repeat = 1  # used to determine if we continue updating the tree
         self.newseqs_acc = []  # all ever added Genbank accession numbers during any PhyScraper run, used to speed up adding process
         self.seq_filter = ['deleted', 'subsequence,', 'not', "removed", "deleted,",
-                           "local"]  # TODO MK: try to move completely to FilterBlast class
+                           "local"] 
         self.reset_markers()
-        self.unpublished = False  # used to look for local unpublished seq that shall be added.
-        self.path_to_local_seq = False  # path to unpublished seq.
-        self.backbone = False
         self.gb_not_added = []  # list of blast seqs not added
         self.del_superseq = set()  # items that were deleted bc they are superseqs, needed for assert statement
         self.mrca_ott = data_obj.mrca_ott
@@ -161,7 +158,6 @@ class PhyscraperScrape(object):
                     self.data.otu_dict[otu]["^ncbi:taxon"]=self.ids.ott_to_ncbi.get(ottid,0)
 
 
-    # TODO is this the right place for this? MK: According to PEP8, no...
     def reset_markers(self):
         self._blasted = 0
         self._blast_read = 0
@@ -194,7 +190,6 @@ class PhyscraperScrape(object):
         # this format (6) allows to get the taxonomic information at the same time
         outfmt = "6 sseqid staxids sscinames pident evalue bitscore sseq salltitles sallseqid"
         # outfmt = " -outfmt 5"  # format for xml file type
-        # TODO query via stdin
         blastcmd = ["blastn",
                     "-query",
                     "{}/tmp.fas".format(abs_blastdir),
@@ -251,7 +246,7 @@ class PhyscraperScrape(object):
         result_handle.close()
         save_file.close()
 
-    def run_blast_wrapper(self):  # TODO Should this be happening elsewhere?
+    def run_blast_wrapper(self): 
         """generates the blast queries and saves them depending on the blasting method to different file formats
 
         It runs blast if the sequences was not blasted since the user defined threshold in the config file (delay).
@@ -335,7 +330,7 @@ class PhyscraperScrape(object):
                 if gb_acc == None:
                     continue
                 gi_id = get_gi_from_blast(sseqid)
-                sseq = sseq.replace("-", "") #TODO here is where we want to grab the full sequence MK: I wrote a batch query for the seqs we are interested. Makes it faster.
+                sseq = sseq.replace("-", "") 
                 taxname = sscinames.replace(" ", "_").replace("/", "_")
                 pident = float(pident)
                 evalue = float(evalue)
@@ -737,7 +732,6 @@ class PhyscraperScrape(object):
         for otu in otu_in_aln:
             del tmp_dict[otu]
         filter_dict = self.filter_seqs(tmp_dict, type='random', threshold = self.config.spp_threshold)
-        ##EJM TODO add to notes in OTU_DICT
         self.new_seqs_otu_id = filter_dict  # renamed new seq to their otu_ids from GI's, but all info is in self.otu_dict
         self.new_seqs = {} #Wipe clean
 #        debug("len new seqs otu dict after remove identical{}".format(len(self.new_seqs_otu_id)))
@@ -752,7 +746,7 @@ class PhyscraperScrape(object):
     def filter_seqs(self, tmp_dict, type="random", threshold=None):
         if threshold == None:
             threshold = int(self.config.spp_threshold)
-        assert type in ['length','random'], "type {} not recognized, please filter by 'length' or 'random'".format(type)
+        assert type in ['random'], "type {} not recognized, please filter by 'length' or 'random'".format(type)
         selected_otus = set()
         filtered_dict = {}
         new_sp_d = self.make_sp_dict(tmp_dict.keys())
@@ -778,8 +772,6 @@ class PhyscraperScrape(object):
                 else:
                     if type == 'random':
                         tax_otus = self.select_seq_at_random(otu_list, count)
-                    if type == 'length':
-                        tax_otus = self.select_seq_by_length(otu_list, tmp_dict, count)
                 debug("passing on {} otus for tax id {}".format(len(tax_otus), tax_id))
                 assert isinstance(selected_otus, set), 'why not set?!?!'
                 assert isinstance(tax_otus, list), 'why not list?!?!'
@@ -793,9 +785,8 @@ class PhyscraperScrape(object):
 
 
 
-    def make_sp_dict(self, otu_list=[], downtorank=None):
+    def make_sp_dict(self, otu_list=[]):
         """Mkaes dict of OT_ids by species"""
-        self.downtorank = downtorank
         if otu_list == []:
             otu_list = self.new_seqs_otu_id.keys()
         debug("make sp_dict")
@@ -805,29 +796,6 @@ class PhyscraperScrape(object):
                 tax_id = self.data.otu_dict[otu_id].get('^ncbi:taxon')
                 if tax_id == None:
                     tax_id = "X"
-                if self.downtorank is not None:
-                    downtorank_name = None
-                    downtorank_id = None
-                    if self.config.blast_loc == 'remote':
-                        sys.stderr.write("Filtering by taxon ranks not functional for remote ncbi searches yet.")
-                        sys.exit(-7)
-                        #tax_id = self.ids.get_rank_info_from_web(taxon_name=tax_name)
-                        #lineage2ranks = self.ids.otu_rank[tax_id]["rank"]
-                        #ncbi = NCBITaxa()
-                        #if lineage2ranks == 'unassigned':
-                        #    downtorank_id = tax_id
-                        #    downtorank_name = tax_name
-                        #else:
-                        #    for key_rank, val in lineage2ranks.items():
-                        #        if val == downtorank:
-                        #            downtorank_id = key_rank
-                        #            value_d = ncbi.get_taxid_translator([downtorank_id])
-                        #            downtorank_name = value_d[int(downtorank_id)]
-                    else:
-                        downtorank_id = self.ids.ncbi_parser.get_downtorank_id(tax_id, self.downtorank)
-                        downtorank_name = self.ids.ncbi_parser.get_name_from_id(downtorank_id)
-                    tax_name = downtorank_name
-                    tax_id = downtorank_id
                 if tax_id in sp_d:
                     sp_d[tax_id].append(otu_id)
                 else:
@@ -835,37 +803,6 @@ class PhyscraperScrape(object):
             else:
                 sys.stdout.write("Removing {},{}".format(otu_id,self.data.otu_dict[otu_id]['^physcraper:status']))
         return sp_d
-
-    def select_seq_by_length(self, otu_list, seq_dict, count):
-        """This is another mode to filter the sequences, if there are more than the threshold.
-
-        This one selects new sequences by length instead of by score values. It is selected by "selectby='length'".
-        Count is the return value from self.count_num_seq(tax_id)["seq_present"], that tells the program how many
-        sequences for the taxon are already available in the aln.
-
-        !!! sometimes the only seq in seq_w_maxlen is the original seq,
-        then this is the one to be added, but it will be removed,
-        later as it is no new seq! thus no new seq for that species is added
-
-        :param taxon_id: key from self.sp_seq_d
-        :param count: self.count_num_seq(tax_id)["seq_present"]
-        :return: self.filtered_seq
-        """
-        debug("select_seq_by_length")
-        lens = []
-        otu_len_dict = {}
-        for otu in otu_list:
-            otu_len_dict[otu] = len(seq_dict[otu])
-            lens.append(len(seq_dict[otu]))
-        lens.sort(reverse=True)
-        cutoff = lens[count]
-        selected_otus = []
-        for otu in otu_len_dict:
-            if otu_len_dict[otu] >= cutoff:
-                selected_otus.append(otu)
-                if len(selected_otus) == count:
-                    return selected_otus
-        return selected_otus
 
 
     def select_seq_at_random(self, otu_list, count):
@@ -1000,107 +937,9 @@ class PhyscraperScrape(object):
         return(outpath_ALL)
 
 
-    def run_papara(self, papara_runname="extended"):
-        """runs papara on the tree, the alignment and the new query sequences
-
-        :param papara_runname: possible file extension name for papara
-        :return: writes out files after papara run/aligning seqs
-        """
-        cwd = os.getcwd()
-        if not self._query_seqs_written:
-            self.write_query_seqs()
-        for filename in glob.glob('{}/papara*'.format(self.rundir)):
-            os.rename(filename, "{}/{}_tmp".format(self.rundir, filename.split("/")[-1]))
-        if _VERBOSE:
-            sys.stdout.write("aligning query sequences \n")
-        self.data._reconcile()  # I think reconcile is what was needed here...instead of alien hack
-        # note: sometimes there are still sp in any of the aln/tre
-        # hack for the alien taxa thing
-        self.data.write_papara_files()
-        os.chdir(self.rundir)  # Clean up dir moving
-        # with cd(self.workdir):
-        assert self.data.aln.taxon_namespace == self.data.tre.taxon_namespace
-        try:
-            subprocess.check_call(["papara",
-                                   "-t", "random_resolve.tre",
-                                   "-s", "aln_ott.phy",
-                                   #  "-j", "{}".format(self.config.num_threads),  # FIXME: Does not work on some machines
-                                   "-q", self.newseqs_file,
-                                   "-n", papara_runname])  # FIXME directory ugliness
-            if _VERBOSE:
-                sys.stdout.write("Papara done")
-        except subprocess.CalledProcessError as grepexc:
-            sys.stderr.write("error code {}, {}".format(grepexc.returncode, grepexc.output))
-        except OSError as e:
-            if e.errno == os.errno.ENOENT:
-                sys.stderr.write("failed running papara. Is it installed?\n")
-                sys.exit(-5)
-            # handle file not found error.
-            else:
-                # Something else went wrong while trying to run `wget`
-                raise
-        path = "{}/papara_alignment.{}".format(self.rundir, papara_runname)
-        assert os.path.exists(path), "{path} does not exists".format(path=path)
-        os.chdir(cwd)
-        aln = DnaCharacterMatrix.get(path="{}/papara_alignment."
-                                                    "{}".format(self.rundir, papara_runname), schema="phylip")
-        self.data.aln.taxon_namespace.is_mutable = True  # Was too strict...
-        if _VERBOSE:
-            sys.stdout.write("Papara done")
-        lfd = "{}/logfile".format(self.rundir)
-        with open(lfd, "a") as log:
-            log.write("Following papara alignment, aln has {} seqs \n".format(len(self.data.aln)))
-        return aln
-        self._query_seqs_aligned = 1
-
-
-
-    def place_query_seqs(self, alignment = None, query = None, tree = "random_resolve.tre"):
-        """runs raxml on the tree, and the combined alignment including the new query seqs.
-        Just for placement, to use as starting tree."""
-        if self.backbone is True:
-            with cd(self.rundir):
-                backbonetre = Tree.get(path="{}/backbone.tre".format(self.rundir),
-                                       schema="newick",
-                                       preserve_underscores=True)
-
-                backbonetre.resolve_polytomies()
-                backbonetre.write(path="random_resolve.tre", schema="newick", unquoted_underscores=True)
-
-        if os.path.exists("RAxML_labelledTree.PLACE"):
-            os.rename("RAxML_labelledTree.PLACE", "RAxML_labelledTreePLACE.tmp")
-        if _VERBOSE:
-            sys.stdout.write("placing query sequences \n")
-        rac_ex = get_raxml_ex()
-        with cd(self.rundir):
-            try:
-                debug("try")
-                subprocess.call([rax_ex,
-                                 "-m", "GTRCAT",
-                                 "-f", "v",
-                                 "-s", alignment,
-                                 "-t", tree,
-                                 "-n", "PLACE"])
-                placetre = Tree.get(path="RAxML_labelledTree.PLACE",
-                                    schema="newick",
-                                    preserve_underscores=True)
-            except OSError as e:
-                    if e.errno == os.errno.ENOENT:
-                        sys.stderr.write("failed running raxmlHPC. Is it installed?")
-                        sys.exit(-6)
-                    # handle file not
-                    # handle file not found error.
-                    else:
-                        raise
-            placetre.resolve_polytomies()
-            placetre.write(path="place_resolve.tre", schema="newick", unquoted_underscores=True)
-        self._query_seqs_placed = 1
-
-
-    def est_full_tree(self, alignment = None, startingtree = None, backbone = False, method = "raxml"):
+    def est_full_tree(self, alignment = None, startingtree = None, method = "raxml"):
         """Full raxml run from the placement tree as starting tree.
         The PTHREAD version is the faster one, hopefully people install it. if not it falls back to the normal raxml.
-        the backbone options allows to fix the sceleton of the starting tree and just newly estimates the other parts.
         """
         cwd = os.getcwd()
         if alignment == None:
@@ -1115,11 +954,7 @@ class PhyscraperScrape(object):
             os.rename(filename, "{}/treest_prev".format(self.rundir))
         num_threads = int(self.config.num_threads)
         label = "{}".format(self.date)
-        if self.backbone:
-            cmd= [rax_ex, "-m", "GTRCAT", "-s", alignment, "-r", "backbone.tre", "-p", "1", "-n", label]
-
-        else:
-            cmd= [rax_ex, "-m", "GTRCAT", "-s", alignment, "-t", startingtree, "-p", "1", "-n", label]
+        cmd= [rax_ex, "-m", "GTRCAT", "-s", alignment, "-t", startingtree, "-p", "1", "-n", label]
         process = subprocess.Popen(cmd)
         process.wait()
         if _VERBOSE:
@@ -1204,7 +1039,6 @@ class PhyscraperScrape(object):
         self.replace_tre(sumtreepath, schema="nexus")
         self.data.write_files(direc=self.outputsdir)
         self.data.write_labelled(filename='updated_taxonname',label='^ot:ottTaxonName', direc = self.outputsdir)
-
 
 
 
