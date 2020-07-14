@@ -4,11 +4,15 @@ import json
 from physcraper import generate_ATT_from_files, AlignTreeTax, OtuJsonDict, ConfigObj, IdDicts
 from pytest import mark
 from physcraper.opentree_helpers import bulk_tnrs_load
-
+from physcraper.helpers import cd
 
 
 web = mark.web
 
+def test_cd():
+    workdir="tests/output/"
+    with cd(workdir):
+        assert(os.getcwd() == os.path.abspath(workdir))
 
 def test_owndata():
     seqaln= "tests/data/tiny_test_example/test.fas"
