@@ -1,0 +1,215 @@
+otu_id	^ot:ottTaxonName	^ot:ottId	^ncbi:taxon	^ncbi:accession	^physcraper:last_blasted	^physcraper:ingroup	^physcraper:status	^ot:originalLabel	^ncbi:title	^physcraper:in_current_aln
+Tl805473	Infundibulomyces cupulata	751650	415312	-	2020/06/08	True	original	Infundibulomyces_cupulata_EF113979	-	True
+Tl805456	Tainosphaeria crassiparies	368152	197737	-	2020/06/08	True	original	Tainosphaeria_crassiparies_AF466089	-	True
+Tl805444	Dinemasporium decipiens	878252	1196447	-	2020/06/08	True	original	Dinemasporium_decipiens_CBS_592.73	-	True
+Tl805443	Dinemasporium pseudostrigosum	509897	1196448	-	2020/06/08	True	original	Dinemasporium_pseudostrigosum_CBS_825.91	-	True
+Tl805445	Phomatospora dinemasporium	3707055	1196449	-	2020/06/08	True	original	Dinemasporium_strigosum_CBS_828.84	-	True
+Tl805424	Dinemasporium americana	1029188	1196450	-	2020/06/08	True	original	Dinemasporium_americana_CBS_127127	-	True
+Tl805447	Dinemasporium polygonum	1029184	1196451	-	2020/06/08	True	original	Dinemasporium_polygonum_CBS_516.95	-	True
+Tl805442	Dinemasporium morbidum	637763	1196453	-	2020/06/08	True	original	Dinemasporium_morbidum_CBS_995.97	-	True
+Tl805436	Dinemasporium morbidum	637763	1196453	-	2020/06/08	True	original	Dinemasporium_morbidum_CBS_129.66	-	True
+Tl805432	Dinemasporium pseudoindicum	1029200	1196452	-	2020/06/08	True	original	Dinemasporium_pseudoindicum_CBS_127402	-	True
+Tl805431	Dinemasporium pseudostrigosum	509897	1196448	-	2020/06/08	True	original	Dinemasporium_pseudostrigosum_CBS_717.85	-	True
+Tl805450	Phomatospora dinemasporium	3707055	1196449	-	2020/06/08	True	original	Dinemasporium_strigosum_CBS_520.78	-	True
+Tl805452	Phomatospora dinemasporium	3707055	1196449	-	2020/06/08	True	original	Dinemasporium_strigosum_CPC_18898	-	True
+Tl805470	Rattania setulifera	63948	858408	-	2020/06/08	True	original	Rattania_setulifera_HM171322	-	True
+Tl805467	Chaetosphaeria vermicularioides	597718	2082110	-	2020/06/08	True	original	Melanopsammella_vermicularioides_AF466087	-	True
+Tl805455	Melanopsammella gonytrichii	368155	2571400	-	2020/06/08	True	original	Melanopsammella_gonytrichii_AF466085	-	True
+Tl805469	Melanochaeta aotearoae	368150	1293526	-	2020/06/08	True	original	Melanochaeta_aotearoae_AF466082	-	True
+Tl805463	Melanochaeta hemipsila	368149	1866870	-	2020/06/08	True	original	Melanochaeta_hemipsila_AY346292	-	True
+Tl805448	Pyrigemmula aurantiaca	910985	871251	-	2020/06/08	True	original	Pyrigemmula_aurantiaca_HM241692	-	True
+Tl805453	Lecythothecium duriligni	1026131	156755	-	2020/06/08	True	original	Lecythothecium_duriligni_AF261071	-	True
+Tl805475	Ellisembia brachypus	1008023	2571403	-	2020/06/08	True	original	Ellisembia_brachypus_DQ408563	-	True
+Tl805454	Chaetosphaeria luquillensis	943806	197725	-	2020/06/08	True	original	Chaetosphaeria_luquillensis_AF466074	-	True
+Tl805474	Chaetosphaeria innumera	250265	2082109	-	2020/06/08	True	original	Chaetosphaeria_innumera_AY017375	-	True
+Tl805468	Chloridium lignicola	300282	139962	-	2020/06/08	True	original	Chloridium_lignicola_AF178544	-	True
+Tl805458	Chaetosphaeria tropicalis	368151	197730	-	2020/06/08	True	original	Chaetosphaeria_tropicalis_AF466080	-	True
+Tl805464	Chaetosphaeria capitata	418010	197718	-	2020/06/08	True	original	Chaetosphaeria_capitata_AF466061	-	True
+Tl805471	Umbrinosphaeria caesariata	1026125	156753	-	2020/06/08	True	original	Umbrinosphaeria_caesariata_AF261069	-	True
+Tl805477	Chaetosphaeria conirostris	943809	197720	-	2020/06/08	True	original	Chaetosphaeria_conirostris_AF466066	-	True
+Tl805478	Chaetosphaeria fuegiana	1088172	426109	-	2020/06/08	True	original	Chaetosphaeria_fuegiana_EF063574	-	True
+Tl805466	Chaetosphaeria callimorpha	250260	139944	-	2020/06/08	True	original	Chaetosphaeria_callimorpha_AF466062	-	True
+Tl805457	Chaetosphaeria preussii	773202	139952	-	2020/06/08	True	original	Chaetosphaeria_preussii_AF178561	-	True
+Tl805476	Striatosphaeria codinaeaphora	773196	0	-	2020/06/08	True	original	Striatosphaeria_codinaeophora_AF466088	-	True
+Tl805441	Dendrophoma cytisporoides	590921	1196583	-	2020/06/08	True	original	Dendrophoma_cytisporoides_CBS_223.95	-	True
+Tl805465	Chaetosphaeria ovoidea	301828	1296267	-	2020/06/08	True	original	Chaetosphaeria_ovoidea_AF064641	-	True
+Tl805459	Chaetosphaeria ciliata	420569	796322	-	2020/06/08	True	original	Chaetosphaeria_ciliata_GU180637	-	True
+Tl805462	Chaetosphaeria pulviscula	773200	2075150	-	2020/06/08	True	original	Zignoella_pulviscula_AF466091	-	True
+Tl805460	Chaetosphaeria pulviscula	773200	2075150	-	2020/06/08	True	original	Zignoella_pulviscula_AF466090	-	True
+Tl805433	Dictyochaetopsis gonytrichoides	300280	139964	-	2020/06/08	True	original	Codinaeopsis_gonytrichoides_AF178556	-	True
+Tl805440	Pseudolachnea fraxini	1029202	1196455	-	2020/06/08	True	original	Pseudolachnea_fraxini_CBS_113701	-	True
+Tl805434	Brunneodinemasporium brasiliense	209299	1196445	-	2020/06/08	True	original	Brunneodinemasporium_brasiliense_CBS_112007	-	True
+Tl805461	Thozetella nivea	169746	557972	-	2020/06/08	True	original	Thozetella_nivea_EU825200	-	True
+Tl805472	Saccharomyces cerevisiae	908549	0	-	None	False	original	Saccharomyces_cerevisiae_Z73326	-	True
+otuPS1	Pseudaleuria quinaultiana	195804	353015	EU669428.1	None	True	new	-	gi|193297248|gb|EU669428.1| Pseudaleuria quinaultiana isolate p712L internal transcribed spacer 2 and 28S ribosomal RNA gene, partial sequence	True
+otuPS2	Galiella rufa	64977	61507	AY789368.1	None	True	new	-	gi|60418404|gb|AY789368.1| Galiella rufa strain ZW-Geo064-Clark 25S large subunit ribosomal RNA gene, partial sequence	True
+otuPS3	Strumella coryneoidea	814632	201881	MH878321.1	None	True	new	-	gi|1473265377|gb|MH878321.1| Strumella coryneoidea strain CBS 920.72 large subunit ribosomal RNA gene, partial sequence	True
+otuPS4	Galiella rufa	64977	61507	AY945850.1	None	True	new	-	gi|62955850|gb|AY945850.1| Galiella rufa voucher mh 101 (FH) 25S large subunit ribosomal RNA gene, partial sequence	True
+otuPS5	Melastiza contorta	181983	269390	AY500539.1	None	True	new	-	gi|46277444|gb|AY500539.1| Melastiza contorta voucher KH 01.06 (C) 28S ribosomal RNA gene, partial sequence	True
+otuPS6	Plectania melastoma	37941	1280572	MH872322.1	None	True	new	-	gi|1473259378|gb|MH872322.1| Plectania melastoma strain CBS 918.72 large subunit ribosomal RNA gene, partial sequence	True
+otuPS7	Umbilicaria antarctica	1011701	87272	EF489938.1	None	True	new	-	gi|150416727|gb|EF489938.1| Umbilicaria antarctica strain HUR ANT050868 28S ribosomal RNA gene, partial sequence	True
+otuPS8	Chaetosphaeria jonesii	7517254	2040582	NG_067549.1	None	True	new	-	gi|1806593669|ref|NG_067549.1| Chaetosphaeria jonesii MFLUCC 15-1015 28S rRNA gene, partial sequence; from TYPE material	True
+otuPS9	Chaetosphaeria jonesii	7517254	2040582	KY212761.1	None	True	identical and/or subsequence of otuPS8, not added	-	gi|1215379315|gb|KY212761.1| Chaetosphaeria jonesii 28S large subunit RNA gene, partial sequence	False
+otuPS10	Zanclospora iberica	5695223	2016446	KY853545.1	None	True	new	-	gi|1214147734|gb|KY853545.1| Zanclospora iberica strain FMR_12186 28S ribosomal RNA gene, partial sequence	True
+otuPS11	Zanclospora novae-zelandiae	4060464	2082564	MH877214.1	None	True	new	-	gi|1473264270|gb|MH877214.1| Zanclospora novae-zelandiae strain CBS 130280 large subunit ribosomal RNA gene, partial sequence	True
+otuPS12	Chaetosphaeria lateriphiala	943811	197722	AF466071.1	None	True	new	-	gi|31621178|gb|AF466071.1| Chaetosphaeria lateriphiala strain SMH 3294 large subunit ribosomal RNA gene, partial sequence	True
+otuPS13	Chaetosphaeria lateriphiala	943811	197722	AF466070.1	None	True	new	-	gi|31621177|gb|AF466070.1| Chaetosphaeria lateriphiala strain SMH 2629-1 large subunit ribosomal RNA gene, partial sequence	True
+otuPS14	Zanclospora iberica	5695223	2016446	KY853544.1	None	True	new	-	gi|1214147733|gb|KY853544.1| Zanclospora iberica strain FMR_11584 28S ribosomal RNA gene, partial sequence	True
+otuPS15	Chaetosphaeria lateriphiala	943811	197722	AF466072.1	None	True	new	-	gi|31621179|gb|AF466072.1| Chaetosphaeria lateriphiala strain SMH 3320 large subunit ribosomal RNA gene, partial sequence	True
+otuPS16	Chaetosphaeria minuta	943807	197726	AF466075.1	None	True	new	-	gi|31621182|gb|AF466075.1| Chaetosphaeria minuta large subunit ribosomal RNA gene, partial sequence	True
+otuPS17	Chaetosphaeria dilabens	722573	139939	MH873395.1	None	True	new	-	gi|1473260451|gb|MH873395.1| Chaetosphaeria dilabens strain CBS 734.83 large subunit ribosomal RNA gene, partial sequence	True
+otuPS18	Chaetosphaeria fuegiana	1088172	426109	NG_066268.1	None	True	new	-	gi|1740134254|ref|NG_066268.1| Chaetosphaeria fuegiana CBS 114553 28S rRNA gene, partial sequence; from TYPE material	True
+otuPS19	Chaetosphaeria fuegiana	1088172	426109	MH874528.1	None	True	identical and/or subsequence of otuPS18, not added	-	gi|1473261584|gb|MH874528.1| Chaetosphaeria fuegiana strain CBS 114553 large subunit ribosomal RNA gene, partial sequence	False
+otuPS20	Dictyochaeta fuegiana	3700052	2016440	KY853500.1	None	True	new seq added; identical and/or subsequence of otuPS18, but different taxon	-	gi|1214147689|gb|KY853500.1| Dictyochaeta fuegiana strain FMR_13126 28S ribosomal RNA gene, partial sequence	True
+otuPS21	Chaetosphaeria callimorpha	250260	139944	AF466062.1	None	True	seq otuPS21 is supersequence of otuPS20, but different taxon 	-	gi|31621169|gb|AF466062.1| Chaetosphaeria callimorpha large subunit ribosomal RNA gene, partial sequence	True
+otuPS22	Cryptophiale udagawae	4059760	2302999	MH758211.1	None	True	new	-	gi|1450315140|gb|MH758211.1| Cryptophiale udagawae voucher MFLU:18-1497 large subunit ribosomal RNA gene, partial sequence	True
+otuPS23	Cryptophiale udagawae	4059760	2302999	MH758210.1	None	True	identical and/or subsequence of otuPS22, not added	-	gi|1450315139|gb|MH758210.1| Cryptophiale udagawae voucher MFLU:18-1498 large subunit ribosomal RNA gene, partial sequence	False
+otuPS24	Kionochaeta ivoriensis	561682	74400	MH872758.1	None	True	new	-	gi|1473259814|gb|MH872758.1| Kionochaeta ivoriensis strain CBS 374.76 large subunit ribosomal RNA gene, partial sequence	True
+otuPS25	Chaetosphaeria luquillensis	943806	197725	AF466074.1	None	True	seq otuPS25 is supersequence of original seq Tl805454, both kept in alignment 	-	gi|31621181|gb|AF466074.1| Chaetosphaeria luquillensis large subunit ribosomal RNA gene, partial sequence	True
+otuPS26	Chaetosphaeria conirostris	943809	197720	AF466066.1	None	True	seq otuPS26 is supersequence of original seq Tl805477, both kept in alignment 	-	gi|31621173|gb|AF466066.1| Chaetosphaeria conirostris large subunit ribosomal RNA gene, partial sequence	True
+otuPS27	None	None	139949	AY017375.1	None	True	seq otuPS27 is supersequence of original seq Tl805474, both kept in alignment 	-	gi|18460922|gb|AY017375.1| Chaetosphaeria innumera 28S ribosomal RNA gene, partial sequence	True
+otuPS28	None	None	2081989	MH878530.1	None	True	new	-	gi|1473265586|gb|MH878530.1| Chloridium botryoideum var. botryoideum strain CBS 259.76 large subunit ribosomal RNA gene, partial sequence	True
+otuPS29	None	None	2074847	MH877338.1	None	True	new	-	gi|1473264394|gb|MH877338.1| Chloridium botryoideum strain CBS 131270 large subunit ribosomal RNA gene, partial sequence	True
+otuPS30	None	None	2081989	MH878531.1	None	True	new	-	gi|1473265587|gb|MH878531.1| Chloridium botryoideum var. botryoideum strain CBS 246.76 large subunit ribosomal RNA gene, partial sequence	True
+otuPS31	Chaetosphaeria mangrovei	7517255	2419686	MG813820.1	None	True	new	-	gi|1483693861|gb|MG813820.1| Chaetosphaeria mangrovei voucher MCD 069 28S ribosomal RNA gene, partial sequence	True
+otuPS32	Chaetosphaeria pygmaea	773199	139954	AF466077.1	None	True	new	-	gi|31621184|gb|AF466077.1| Chaetosphaeria pygmaea large subunit ribosomal RNA gene, partial sequence	True
+otuPS33	Chaetosphaeria myriocarpa	773203	139951	AF466076.1	None	True	new	-	gi|31621183|gb|AF466076.1| Chaetosphaeria myriocarpa large subunit ribosomal RNA gene, partial sequence	True
+otuPS34	Chaetosphaeria biapiculata	418031	197716	AF466065.1	None	True	new	-	gi|31621172|gb|AF466065.1| Chaetosphaeria biapiculata large subunit ribosomal RNA gene, partial sequence	True
+otuPS35	Chaetosphaeria capitata	418010	197718	AF466061.1	None	True	seq otuPS35 is supersequence of original seq Tl805464, both kept in alignment 	-	gi|31621168|gb|AF466061.1| Chaetosphaeria capitata large subunit ribosomal RNA gene, partial sequence	True
+otuPS36	Phaeostalagmus cyclosporus	4054609	2081390	MH872661.1	None	True	new	-	gi|1473259717|gb|MH872661.1| Phaeostalagmus cyclosporus strain CBS 312.75 large subunit ribosomal RNA gene, partial sequence	True
+otuPS37	Chaetosphaeria hebetiseta	250255	139940	AF466069.1	None	True	new	-	gi|31621176|gb|AF466069.1| Chaetosphaeria hebetiseta large subunit ribosomal RNA gene, partial sequence	True
+otuPS38	Chloridium lignicola	300282	139962	MH868806.1	None	True	new	-	gi|1473255862|gb|MH868806.1| Chloridium lignicola strain CBS 143.54 large subunit ribosomal RNA gene, partial sequence	True
+otuPS39	None	None	197717	AF466060.1	None	True	new	-	gi|31621167|gb|AF466060.1| Chaetosphaeria caesariata large subunit ribosomal RNA gene, partial sequence	True
+otuPS40	Chaetosphaeria chlorotunicata	418009	197719	AF466064.1	None	True	new	-	gi|31621171|gb|AF466064.1| Chaetosphaeria chlorotunicata large subunit ribosomal RNA gene, partial sequence	True
+otuPS41	Chaetosphaeria lignomollis	943812	197723	AF466073.1	None	True	new	-	gi|31621180|gb|AF466073.1| Chaetosphaeria lignomollis large subunit ribosomal RNA gene, partial sequence	True
+otuPS42	Chaetosphaeria chalaroides	352348	153155	AY017372.1	None	True	new	-	gi|18460919|gb|AY017372.1| Chaetosphaeria chalaroides 28S ribosomal RNA gene, partial sequence	True
+otuPS43	Chaetosphaeria chalaroides	352348	153155	AF466063.1	None	True	new	-	gi|31621170|gb|AF466063.1| Chaetosphaeria chalaroides large subunit ribosomal RNA gene, partial sequence	True
+otuPS44	Chaetosphaeria decastyla	352345	153157	AY017374.1	None	True	new	-	gi|18460921|gb|AY017374.1| Chaetosphaeria decastyla 28S ribosomal RNA gene, partial sequence	True
+otuPS45	Chaetosphaeria raciborskii	167287	197727	AF466078.1	None	True	new	-	gi|31621185|gb|AF466078.1| Chaetosphaeria raciborski large subunit ribosomal RNA gene, partial sequence	True
+otuPS46	Umbrinosphaeria caesariata	1026125	156753	AF261069.1	None	True	identical and/or subsequence of Tl805471, not added	-	gi|13661552|gb|AF261069.1|AF261069 Umbrinosphaeria caesariata large subunit ribosomal RNA gene, partial sequence	False
+otuPS47	Chaetosphaeria decastyla	352345	153157	AF466068.1	None	True	new	-	gi|31621175|gb|AF466068.1| Chaetosphaeria decastyla large subunit ribosomal RNA gene, partial sequence	True
+otuPS48	Chaetosphaeria curvispora	95328	260530	MH875199.1	None	True	new	-	gi|1473262255|gb|MH875199.1| Chaetosphaeria curvispora strain CBS 125782 large subunit ribosomal RNA gene, partial sequence	True
+otuPS49	Chaetosphaeria curvispora	95328	260530	MH875040.1	None	True	new	-	gi|1473262096|gb|MH875040.1| Chaetosphaeria curvispora strain CBS 125555 large subunit ribosomal RNA gene, partial sequence	True
+otuPS50	Nawawia filiformis	7517308	2303000	MH758206.1	None	True	new	-	gi|1450315135|gb|MH758206.1| Nawawia filiformis voucher MFLU:18-1501 large subunit ribosomal RNA gene, partial sequence	True
+otuPS51	Chaetosphaeria cubensis	943810	197721	AF466067.1	None	True	new	-	gi|31621174|gb|AF466067.1| Chaetosphaeria cubensis large subunit ribosomal RNA gene, partial sequence	True
+otuPS52	Chaetosphaeria cylindrospora	1013774	153156	AY017373.1	None	True	new	-	gi|18460920|gb|AY017373.1| Chaetosphaeria cylindrospora 28S ribosomal RNA gene, partial sequence	True
+otuPS53	Chaetosphaeria myriocarpa	773203	139951	MH868672.1	None	True	new	-	gi|1473255728|gb|MH868672.1| Chaetosphaeria myriocarpa strain CBS 141.53 large subunit ribosomal RNA gene, partial sequence	True
+otuPS54	Phialophora phaeophora	7514865	108020	MH878532.1	None	True	new	-	gi|1473265588|gb|MH878532.1| Phialophora phaeophora strain CBS 260.76 large subunit ribosomal RNA gene, partial sequence	True
+otuPS55	Chaetosphaeria myriocarpa	773203	139951	MH869208.1	None	True	new	-	gi|1473256264|gb|MH869208.1| Chaetosphaeria myriocarpa strain CBS 116.57 large subunit ribosomal RNA gene, partial sequence	True
+otuPS56	Chaetosphaeria myriocarpa	773203	139951	MH872648.1	None	True	removed in sampling down to 5 per spp.	-	gi|1473259704|gb|MH872648.1| Chaetosphaeria myriocarpa strain CBS 241.75B large subunit ribosomal RNA gene, partial sequence	True
+otuPS57	Chaetosphaeria myriocarpa	773203	139951	MK835836.1	None	True	new	-	gi|1624683601|gb|MK835836.1| Chaetosphaeria myriocarpa voucher HKAS:92985 large subunit ribosomal RNA gene, partial sequence	True
+otuPS58	Chaetosphaeria myriocarpa	773203	139951	MH871784.1	None	True	new	-	gi|1473258840|gb|MH871784.1| Chaetosphaeria myriocarpa strain CBS 878.70 large subunit ribosomal RNA gene, partial sequence	False
+otuPS59	Chaetosphaeria myriocarpa	773203	139951	MH107931.1	None	True	identical and/or subsequence of otuPS53, not added	-	gi|1387668202|gb|MH107931.1| Chaetosphaeria myriocarpa culture CBS:143389 28S ribosomal RNA gene, partial sequence	False
+otuPS60	Phaeostalagmus cyclosporus	4054609	2081390	MH871680.1	None	True	new	-	gi|1473258736|gb|MH871680.1| Phaeostalagmus cyclosporus strain CBS 663.70 large subunit ribosomal RNA gene, partial sequence	True
+otuPS61	Sporendocladia fumosa	3704003	2075396	MH874085.1	None	True	new	-	gi|1473261141|gb|MH874085.1| Sporendocladia fumosa strain CBS 518.93 large subunit ribosomal RNA gene, partial sequence	True
+otuPS62	Melanopsammella gonytrichii	368155	2571400	AF466085.1	None	True	seq otuPS62 is supersequence of original seq Tl805455, both kept in alignment 	-	gi|31621192|gb|AF466085.1| Chloridium gonytrichii strain SMH 3785 large subunit ribosomal RNA gene, partial sequence	True
+otuPS63	None	None	557720	MH876574.1	None	True	new	-	gi|1473263630|gb|MH876574.1| Chloridium virescens strain CBS 128850 large subunit ribosomal RNA gene, partial sequence	True
+otuPS64	Chloridium sp. KW-2019a	7517266	2501414	MK372067.1	None	True	new	-	gi|1548884466|gb|MK372067.1| Chloridium sp. KW-2019a isolate HGUP1805 large subunit ribosomal RNA gene, partial sequence	True
+otuPS65	None	None	197735	AF466087.1	None	True	seq otuPS65 is supersequence of original seq Tl805467, both kept in alignment 	-	gi|31621194|gb|AF466087.1| Melanopsammella vermicularioides strain FC 404 large subunit ribosomal RNA gene, partial sequence	True
+otuPS66	Melanopsammella gonytrichii	368155	2571400	MK835821.1	None	True	identical and/or subsequence of otuPS62, not added	-	gi|1624683586|gb|MK835821.1| Chloridium gonytrichii voucher S-360 large subunit ribosomal RNA gene, partial sequence	False
+otuPS67	Melanopsammella gonytrichii	368155	2571400	MK835820.1	None	True	new	-	gi|1624683584|gb|MK835820.1| Chloridium gonytrichii voucher HKAS:93031 large subunit ribosomal RNA gene, partial sequence	True
+otuPS68	Melanopsammella gonytrichii	368155	2571400	MK835822.1	None	True	new	-	gi|1624683587|gb|MK835822.1| Chloridium gonytrichii voucher HKAS:93053 large subunit ribosomal RNA gene, partial sequence	True
+otuPS69	None	None	197735	AF466086.1	None	True	new	-	gi|31621193|gb|AF466086.1| Melanopsammella vermicularioides strain SMH 3883 large subunit ribosomal RNA gene, partial sequence	True
+otuPS70	None	None	2070765	MG775648.1	None	True	new	-	gi|1326172991|gb|MG775648.1| Chaetosphaeria sp. DMH-2018b isolate IFRDCC 3044 large subunit ribosomal RNA gene, partial sequence	True
+otuPS71	None	None	2585238	MN017890.1	None	True	new	-	gi|1678196694|gb|MN017890.1| Chloridium salinicola voucher GJ084 large subunit ribosomal RNA gene, partial sequence	True
+otuPS72	None	None	2585238	MN420685.1	None	True	identical and/or subsequence of otuPS71, not added	-	gi|1735416707|gb|MN420685.1| Chloridium salinicola voucher MFLUCC 15-0382 large subunit ribosomal RNA gene, partial sequence	False
+otuPS73	None	None	557720	MH876080.1	None	True	new	-	gi|1473263136|gb|MH876080.1| Chloridium virescens strain CBS 127627 large subunit ribosomal RNA gene, partial sequence	True
+otuPS74	Chloridium aseptatum	7517264	2283192	NG_067562.1	None	True	new	-	gi|1806593682|ref|NG_067562.1| Chloridium aseptatum MFLU 11-1051 28S rRNA gene, partial sequence; from TYPE material	True
+otuPS75	Chloridium aseptatum	7517264	2283192	MH476568.1	None	True	identical and/or subsequence of otuPS74, not added	-	gi|1434151081|gb|MH476568.1| Chloridium aseptatum isolate MFLU11-1051 28S ribosomal RNA gene, partial sequence	False
+otuPS76	Chaetosphaeria vermicularioides	597718	2082110	MH868805.1	None	True	new	-	gi|1473255861|gb|MH868805.1| Chloridium virescens var. caudigerum strain CBS 141.54 large subunit ribosomal RNA gene, partial sequence	True
+otuPS77	Chaetosphaeria vermicularioides	597718	2082110	MH868678.1	None	True	new	-	gi|1473255734|gb|MH868678.1| Chloridium virescens var. caudigerum strain CBS 152.53 large subunit ribosomal RNA gene, partial sequence	True
+otuPS78	None	None	2082111	MH878291.1	None	True	new	-	gi|1473265347|gb|MH878291.1| Chloridium virescens var. virescens strain CBS 239.75B large subunit ribosomal RNA gene, partial sequence	True
+otuPS79	None	None	92900	AF064644.1	None	True	new	-	gi|4741738|gb|AF064644.1|AF064644 Chaetosphaeria vermicularioides large subunit ribosomal RNA, partial sequence	True
+otuPS80	None	None	409260	MH875525.1	None	True	new	-	gi|1473262581|gb|MH875525.1| Chloridium virescens var. chlamydosporum strain CBS 126074 large subunit ribosomal RNA gene, partial sequence	True
+otuPS81	Chloridium sp.	5708479	1715223	MK372068.1	None	True	new	-	gi|1548884467|gb|MK372068.1| Chloridium sp. isolate HGUP1806 large subunit ribosomal RNA gene, partial sequence	True
+otuPS82	Melanops sp. O2b_PD002	449017	698436	GU188583.1	None	True	new	-	gi|270312276|gb|GU188583.1| Melanops sp. O2b_PD002 28S ribosomal RNA gene, partial sequence	True
+otuPS83	None	None	409260	NG_067351.1	None	True	new	-	gi|1804071977|ref|NG_067351.1| Chloridium virescens var. chlamydosporum CBS 114.41 28S rRNA gene, partial sequence; from TYPE material	True
+otuPS84	Phialocephala humicola	17790	1095343	MH870560.1	None	True	new	-	gi|1473257616|gb|MH870560.1| Phialocephala humicola strain CBS 601.66 large subunit ribosomal RNA gene, partial sequence	True
+otuPS85	None	None	409260	MH867576.1	None	True	identical and/or subsequence of otuPS83, not added	-	gi|1473254632|gb|MH867576.1| Chloridium virescens var. chlamydosporum strain CBS 114.41 large subunit ribosomal RNA gene, partial sequence	False
+otuPS86	Chaetosphaeria vermicularioides	597718	2082110	MH875524.1	None	True	new	-	gi|1473262580|gb|MH875524.1| Chloridium virescens var. caudigerum strain CBS 126073 large subunit ribosomal RNA gene, partial sequence	True
+otuPS87	None	None	557720	MH875954.1	None	True	new	-	gi|1473263010|gb|MH875954.1| Chloridium virescens strain CBS 127310 large subunit ribosomal RNA gene, partial sequence	True
+otuPS88	None	None	409260	MH870689.1	None	True	new	-	gi|1473257745|gb|MH870689.1| Chloridium virescens var. chlamydosporum strain CBS 345.67 large subunit ribosomal RNA gene, partial sequence	True
+otuPS89	None	None	409260	MH869557.1	None	True	new	-	gi|1473256613|gb|MH869557.1| Chloridium virescens var. chlamydosporum strain CBS 142.61 large subunit ribosomal RNA gene, partial sequence	True
+otuPS90	Melanochaeta hemipsila	368149	1866870	AY346292.1	None	True	seq otuPS90 is supersequence of original seq Tl805463, both kept in alignment 	-	gi|37992284|gb|AY346292.1| Melanochaeta hemipsila strain SMH2125 28S large subunit ribosomal RNA gene, partial sequence	False
+otuPS91	Melanochaeta hemipsila	368149	1866870	KF833362.1	None	True	new	-	gi|604181171|gb|KF833362.1| Sporoschisma hemipsilum isolate PE 0177-21a teleo 28S large subunit ribosomal RNA gene, partial sequence	True
+otuPS92	Melanochaeta hemipsila	368149	1866870	EU583218.1	None	True	removed in sampling down to 5 per spp.	-	gi|190684000|gb|EU583218.1| Melanochaeta hemipsila strain GKM1247 large subunit ribosomal RNA gene, partial sequence	True
+otuPS93	Melanochaeta hemipsila	368149	1866870	EU583217.1	None	True	removed in sampling down to 5 per spp.	-	gi|190683999|gb|EU583217.1| Melanochaeta hemipsila strain GKM1112 large subunit ribosomal RNA gene, partial sequence	True
+otuPS94	Melanochaeta hemipsila	368149	1866870	AF466083.1	None	True	identical and/or subsequence of otuPS90, not added	-	gi|31621190|gb|AF466083.1| Melanochaeta hemipsila strain SMH 2125 large subunit ribosomal RNA gene, partial sequence	False
+otuPS95	Melanochaeta hemipsila	368149	1866870	AF466084.1	None	True	new	-	gi|31621191|gb|AF466084.1| Melanochaeta hemipsila strain SMH 3251 large subunit ribosomal RNA gene, partial sequence	True
+otuPS96	Melanochaeta taitensis	3700133	1962432	EU583220.1	None	True	new	-	gi|190684002|gb|EU583220.1| Melanochaeta sp. KGM-2008 strain GKM156N large subunit ribosomal RNA gene, partial sequence	True
+otuPS97	Melanochaeta taitensis	3700133	1962432	EU583219.1	None	True	identical and/or subsequence of otuPS96, not added	-	gi|190684001|gb|EU583219.1| Melanochaeta sp. KGM-2008 strain GKM150N large subunit ribosomal RNA gene, partial sequence	False
+otuPS98	None	None	1482348	MH869677.1	None	True	new	-	gi|1473256733|gb|MH869677.1| Sporoschisma saccardoi strain CBS 414.61 large subunit ribosomal RNA gene, partial sequence	True
+otuPS99	None	None	197731	AF466082.1	None	True	seq otuPS99 is supersequence of original seq Tl805469, both kept in alignment 	-	gi|31621189|gb|AF466082.1| Melanochaeta aotearoae strain SMH 3551 large subunit ribosomal RNA gene, partial sequence	True
+otuPS100	Melanochaeta hemipsila	368149	1866870	MK835818.1	None	True	removed in sampling down to 5 per spp.	-	gi|1624683580|gb|MK835818.1| Sporoschisma hemipsilum strain S-627 large subunit ribosomal RNA gene, partial sequence	False
+otuPS101	Melanochaeta hemipsila	368149	1866870	KX358074.1	None	True	identical and/or subsequence of otuPS91, not added	-	gi|1041722368|gb|KX358074.1| Sporoschisma hemipsila strain MFLUCC15-0615 28S ribosomal RNA gene, partial sequence	False
+otuPS102	Melanochaeta hemipsila	368149	1866870	KX455862.1	None	True	identical and/or subsequence of otuPS91, not added	-	gi|1151124924|gb|KX455862.1| Sporoschisma hemipsilum strain DLUCC 0700 28S ribosomal RNA gene, partial sequence	False
+otuPS103	Melanochaeta hemipsila	368149	1866870	KX455861.1	None	True	new	-	gi|1151124923|gb|KX455861.1| Sporoschisma hemipsilum strain KUMCC 15-0489 28S ribosomal RNA gene, partial sequence	False
+otuPS104	Melanochaeta hemipsila	368149	1866870	KX358076.1	None	True	identical and/or subsequence of Tl805463, not added	-	gi|1041722370|gb|KX358076.1| Sporoschisma hemipsila strain MFLUCC16-0177 28S ribosomal RNA gene, partial sequence	False
+otuPS105	Melanochaeta hemipsila	368149	1866870	KX455860.1	None	True	removed in sampling down to 5 per spp.	-	gi|1151124922|gb|KX455860.1| Sporoschisma hemipsilum strain DLUCC 0544 28S ribosomal RNA gene, partial sequence	False
+otuPS106	Sporoschisma longicatenatum	6379441	1866871	NG_059700.1	None	True	new	-	gi|1395446813|ref|NG_059700.1| Sporoschisma longicatenatum MFLU 16-1325 28S rRNA gene, partial sequence; from TYPE material	True
+otuPS107	Sporoschisma longicatenatum	6379441	1866871	KX358077.1	None	True	identical and/or subsequence of otuPS106, not added	-	gi|1041722371|gb|KX358077.1| Sporoschisma sp. JY-2016a 28S ribosomal RNA gene, partial sequence	False
+otuPS108	Sporoschisma longicatenatum	6379441	1866871	MN511738.1	None	True	new	-	gi|1751371690|gb|MN511738.1| Sporoschisma longicatenatum voucher MFLU 19-0540 large subunit ribosomal RNA gene, partial sequence	True
+otuPS109	Sporoschisma sp. ZL-2017	7517295	1962431	KX455857.1	None	True	new	-	gi|1151124919|gb|KX455857.1| Sporoschisma sp. ZL-2017 strain KUMCC 15-0311 28S ribosomal RNA gene, partial sequence	True
+otuPS110	None	None	197731	AF466081.1	None	True	new	-	gi|31621188|gb|AF466081.1| Melanochaeta aotearoae strain SMH 1655 large subunit ribosomal RNA gene, partial sequence	True
+otuPS111	Sporoschisma aquaticum	7517293	1962430	KX455856.1	None	True	new	-	gi|1151124918|gb|KX455856.1| Sporoschisma aquaticum strain DLUCC 0628 28S ribosomal RNA gene, partial sequence	True
+otuPS112	Lecythothecium duriligni	1026131	156755	AF261071.1	None	True	new	-	gi|13661554|gb|AF261071.1|AF261071 Lecythothecium duriligni large subunit ribosomal RNA gene, partial sequence	True
+otuPS113	None	None	375413	DQ408563.1	None	True	new seq added; identical and/or subsequence of Tl805475, but different taxon	-	gi|89355902|gb|DQ408563.1| Ellisembia brachypus 28S ribosomal RNA gene, partial sequence	True
+otuPS114	Pyrigemmula sp.	7517292	2107962	MH250050.1	None	True	new	-	gi|1382280255|gb|MH250050.1| Pyrigemmula sp. strain BCC28210 large subunit ribosomal RNA gene, partial sequence	True
+otuPS115	Pseudolachnea fraxini	1029202	1196455	NG_057956.1	None	True	identical and/or subsequence of Tl805440, not added	-	gi|1393511074|ref|NG_057956.1| Pseudolachnea fraxini 28S rRNA gene, partial sequence; from TYPE material	False
+otuPS116	Pseudolachnea fraxini	1029202	1196455	JQ889301.1	None	True	identical and/or subsequence of Tl805440, not added	-	gi|390133105|gb|JQ889301.1| Pseudolachnea fraxini 28S ribosomal RNA gene, partial sequence	False
+otuPS117	Bahusutrabeeja dwaya	1077272	926720	MH872829.1	None	True	new	-	gi|1473259885|gb|MH872829.1| Bahusutrabeeja dwaya strain CBS 261.77 internal transcribed spacer 2 and large subunit ribosomal RNA gene, partial sequence	True
+otuPS118	Dendrophoma cytisporoides	590921	1196583	NG_059108.1	None	True	identical and/or subsequence of Tl805441, not added	-	gi|1393629769|ref|NG_059108.1| Dendrophoma cytisporoides CBS 223.95 28S rRNA gene, partial sequence; from TYPE material	False
+otuPS119	Dendrophoma cytisporoides	590921	1196583	JQ889289.1	None	True	identical and/or subsequence of Tl805441, not added	-	gi|390133093|gb|JQ889289.1| Dendrophoma cytisporoides strain CBS 223.95 28S ribosomal RNA gene, partial sequence	False
+otuPS120	Brunneodinemasporium brasiliense	209299	1196445	NG_058655.1	None	True	identical and/or subsequence of Tl805434, not added	-	gi|1393545181|ref|NG_058655.1| Brunneodinemasporium brasiliense CBS 112007 28S rRNA gene, partial sequence; from TYPE material	False
+otuPS121	Brunneodinemasporium brasiliense	209299	1196445	JQ889288.1	None	True	identical and/or subsequence of Tl805434, not added	-	gi|390133092|gb|JQ889288.1| Brunneodinemasporium brasiliense strain CBS 112007 28S ribosomal RNA gene, partial sequence	False
+otuPS122	Ellisembia sp. NN43946	1008026	375416	DQ408568.1	None	True	new	-	gi|89355907|gb|DQ408568.1| Ellisembia sp. NN43946 28S ribosomal RNA gene, partial sequence	True
+otuPS123	Nawawia filiformis	7517308	2303000	MH758209.1	None	True	identical and/or subsequence of otuPS50, not added	-	gi|1450315138|gb|MH758209.1| Nawawia filiformis voucher MFLU:18-1500 large subunit ribosomal RNA gene, partial sequence	False
+otuPS124	None	None	139953	AF466091.1	None	True	seq otuPS124 is supersequence of original seq Tl805462, both kept in alignment 	-	gi|31621198|gb|AF466091.1| Zignoella pulviscula strain SMH 3289 large subunit ribosomal RNA gene, partial sequence	True
+otuPS125	None	None	139953	AF466090.1	None	True	seq otuPS125 is supersequence of original seq Tl805460, both kept in alignment 	-	gi|31621197|gb|AF466090.1| Zignoella pulviscula strain MUCL 15710 large subunit ribosomal RNA gene, partial sequence	True
+otuPS126	Chaetosphaeria ciliata	420569	796322	NG_067452.1	None	True	new	-	gi|1804072078|ref|NG_067452.1| Chaetosphaeria ciliata CBS 122131 28S rRNA gene, partial sequence; from TYPE material	True
+otuPS127	Chaetosphaeria ciliata	420569	796322	MH874726.1	None	True	identical and/or subsequence of otuPS126, not added	-	gi|1473261782|gb|MH874726.1| Chaetosphaeria ciliata strain CBS 122131 large subunit ribosomal RNA gene, partial sequence	False
+otuPS128	Chaetosphaeria pulviscula	773200	2075150	MH870750.1	None	True	new	-	gi|1473257806|gb|MH870750.1| Menispora caesia strain CBS 483.67 large subunit ribosomal RNA gene, partial sequence	True
+otuPS129	None	None	92899	AF064641.1	None	True	seq otuPS129 is supersequence of original seq Tl805465, both kept in alignment 	-	gi|4741735|gb|AF064641.1|AF064641 Chaetosphaeria ovoidea large subunit ribosomal RNA, partial sequence	True
+otuPS130	Menispora ciliata	579603	522903	MH871802.1	None	True	new	-	gi|1473258858|gb|MH871802.1| Menispora ciliata strain CBS 984.70 large subunit ribosomal RNA gene, partial sequence	True
+otuPS131	Chaetosphaeria pulviscula	773200	2075150	MH878402.1	None	True	new	-	gi|1473265458|gb|MH878402.1| Menispora caesia strain CBS 585.73 large subunit ribosomal RNA gene, partial sequence	True
+otuPS132	Menispora tortuosa	824706	139972	MH869135.1	None	True	new	-	gi|1473256191|gb|MH869135.1| Menispora tortuosa strain CBS 214.56 large subunit ribosomal RNA gene, partial sequence	True
+otuPS133	Chaetosphaeria ovoidea	301828	1296267	MH871716.1	None	True	new	-	gi|1473258772|gb|MH871716.1| Menispora glauca strain CBS 729.70 large subunit ribosomal RNA gene, partial sequence	True
+otuPS134	Dinemasporium pseudoindicum	1029200	1196452	JQ889293.1	None	True	identical and/or subsequence of Tl805432, not added	-	gi|390133097|gb|JQ889293.1| Dinemasporium pseudoindicum strain CBS 127402 28S ribosomal RNA gene, partial sequence	False
+otuPS135	Phomatospora dinemasporium	3707055	1196449	JQ889299.1	None	True	identical and/or subsequence of Tl805445, not added	-	gi|390133103|gb|JQ889299.1| Dinemasporium strigosum strain CBS 828.84 28S ribosomal RNA gene, partial sequence	True
+otuPS136	Dinemasporium morbidum	637763	1196453	NG_059110.1	None	True	identical and/or subsequence of Tl805436, not added	-	gi|1393629771|ref|NG_059110.1| Dinemasporium morbidum CBS 129.66 28S rRNA gene, partial sequence; from TYPE material	False
+otuPS137	Dinemasporium morbidum	637763	1196453	JQ889296.1	None	True	identical and/or subsequence of Tl805436, not added	-	gi|390133100|gb|JQ889296.1| Dinemasporium morbidum strain CBS 129.66 28S ribosomal RNA gene, partial sequence	False
+otuPS138	Phomatospora dinemasporium	3707055	1196449	JQ889298.1	None	True	identical and/or subsequence of Tl805445, not added	-	gi|390133102|gb|JQ889298.1| Dinemasporium strigosum strain CBS 520.78 28S ribosomal RNA gene, partial sequence	False
+otuPS139	Dinemasporium polygonum	1029184	1196451	NG_059109.1	None	True	identical and/or subsequence of Tl805447, not added	-	gi|1393629770|ref|NG_059109.1| Dinemasporium polygonum CBS 516.95 28S rRNA gene, partial sequence; from TYPE material	False
+otuPS140	Dinemasporium morbidum	637763	1196453	JQ889297.1	None	True	identical and/or subsequence of Tl805442, not added	-	gi|390133101|gb|JQ889297.1| Dinemasporium morbidum 28S ribosomal RNA gene, partial sequence	False
+otuPS141	Dinemasporium pseudostrigosum	509897	1196448	JQ889294.1	None	True	identical and/or subsequence of Tl805431, not added	-	gi|390133098|gb|JQ889294.1| Dinemasporium pseudostrigosum strain CBS 717.85 28S ribosomal RNA gene, partial sequence	False
+otuPS142	Dinemasporium polygonum	1029184	1196451	JQ889292.1	None	True	identical and/or subsequence of Tl805447, not added	-	gi|390133096|gb|JQ889292.1| Dinemasporium polygonum strain CBS 516.95 28S ribosomal RNA gene, partial sequence	False
+otuPS143	Phomatospora dinemasporium	3707055	1196449	JQ889300.1	None	True	identical and/or subsequence of Tl805445, not added	-	gi|390133104|gb|JQ889300.1| Dinemasporium strigosum strain CPC 18898 28S ribosomal RNA gene, partial sequence	False
+otuPS144	Dinemasporium pseudostrigosum	509897	1196448	JQ889295.1	None	True	identical and/or subsequence of Tl805443, not added	-	gi|390133099|gb|JQ889295.1| Dinemasporium pseudostrigosum strain CBS 825.91 28S ribosomal RNA gene, partial sequence	False
+otuPS145	Dictyochaeta siamensis	7517274	2015262	NG_059142.1	None	True	new	-	gi|1393629803|ref|NG_059142.1| Dictyochaeta siamensis MFLU 15-1149 28S rRNA gene, partial sequence; from TYPE material	True
+otuPS146	Dictyochaeta siamensis	7517274	2015262	KX609952.1	None	True	identical and/or subsequence of otuPS145, not added	-	gi|1211132522|gb|KX609952.1| Dictyochaeta siamensis strain MFLUCC 15-0614 28S ribosomal RNA gene, partial sequence	False
+otuPS147	Dinemasporium americana	1029188	1196450	JQ889290.1	None	True	identical and/or subsequence of Tl805424, not added	-	gi|390133094|gb|JQ889290.1| Dinemasporium americana strain CBS 127127 28S ribosomal RNA gene, partial sequence	False
+otuPS148	Dinemasporium decipiens	878252	1196447	JQ889291.1	None	True	identical and/or subsequence of Tl805444, not added	-	gi|390133095|gb|JQ889291.1| Dinemasporium decipiens strain CBS 592.73 28S ribosomal RNA gene, partial sequence	False
+otuPS149	Thozetella lithocarpi	7517301	2306441	NG_067834.1	None	True	new	-	gi|1813056895|ref|NG_067834.1| Thozetella lithocarpi MFLU 16-1068 28S rRNA gene, partial sequence; from TYPE material >gi|1465405591|gb|MH810432.1| Thozetella lithocarpi large subunit ribosomal RNA gene, partial sequence	True
+otuPS150	Brunneodinemasporium jonesii	7514661	1912273	KY026055.1	None	True	new	-	gi|1091542937|gb|KY026055.1| Brunneodinemasporium sp. YZL-2016a strain GZCC 16-0050 large subunit ribosomal RNA gene, partial sequence	True
+otuPS151	Striatosphaeria codinaeophora	7517296	139957	AF466088.1	None	True	seq otuPS151 is supersequence of original seq Tl805476, both kept in alignment 	-	gi|31621195|gb|AF466088.1| Striatosphaeria codinaeophora large subunit ribosomal RNA gene, partial sequence	True
+otuPS152	Dinemasporium sp. MFLU 15-1295	6380432	1843292	KX163087.1	None	True	new seq added; identical and/or subsequence of Tl805424, but different taxon	-	gi|1042510231|gb|KX163087.1| Dinemasporium sp. MFLU 15-1295 28S ribosomal RNA gene, partial sequence	True
+otuPS153	Phomatospora dinemasporium	3707055	1196449	MH877479.1	None	True	new	-	gi|1473264535|gb|MH877479.1| Dinemasporium strigosum strain CBS 132487 large subunit ribosomal RNA gene, partial sequence	True
+otuPS154	Dinemasporium pseudoindicum	1029200	1196452	MH876021.1	None	True	new	-	gi|1473263077|gb|MH876021.1| Dinemasporium pseudoindicum strain CBS 127402 large subunit ribosomal RNA gene, partial sequence	True
+otuPS155	Dinemasporium nelloi	5695343	1662102	KP711363.1	None	True	new	-	gi|827355070|gb|KP711363.1| Dinemasporium nelloi culture-collection MFLU:14 C0811 28S ribosomal RNA gene, partial sequence	True
+otuPS156	Dinemasporium trichophoricola	5695335	1508229	MH878130.1	None	True	new	-	gi|1473265186|gb|MH878130.1| Dinemasporium trichophoricola strain CBS 136772 large subunit ribosomal RNA gene, partial sequence	True
+otuPS157	Phialoarthrobotryum triseptatum	4087540	2081314	MH873417.1	None	True	new	-	gi|1473260473|gb|MH873417.1| Phialoarthrobotryum triseptatum strain CBS 120.84 large subunit ribosomal RNA gene, partial sequence	True
+otuPS158	Tainosphaeria crassiparies	368152	197737	AF466089.1	None	True	seq otuPS158 is supersequence of original seq Tl805456, both kept in alignment 	-	gi|31621196|gb|AF466089.1| Tainosphaeria crassiparies large subunit ribosomal RNA gene, partial sequence	True
+otuPS159	Dictyochaeta mimusopis	7517272	2175273	MH107935.1	None	True	new	-	gi|1387668206|gb|MH107935.1| Dictyochaeta mimusopis culture CBS:143435 28S ribosomal RNA gene, partial sequence	True
+otuPS160	Calvolachnella guaviyunis	5694567	1940706	NG_058879.1	None	True	new	-	gi|1393564651|ref|NG_058879.1| Calvolachnella guaviyunis 28S rRNA gene, partial sequence; from TYPE material	True
+otuPS161	Calvolachnella guaviyunis	5694567	1940706	KJ834525.1	None	True	identical and/or subsequence of otuPS160, not added	-	gi|641804231|gb|KJ834525.1| Pseudolachnella guaviyunis strain CBS 134695 28S ribosomal RNA gene, partial sequence	False
+otuPS162	Thozetella nivea	169746	557972	EU825200.1	None	True	identical and/or subsequence of Tl805461, not added	-	gi|203285486|gb|EU825200.1| Thozetella nivea 28S ribosomal RNA gene, partial sequence	False
+otuPS163	Thozetella fabacearum	7517300	2015176	NG_059767.1	None	True	new	-	gi|1395446880|ref|NG_059767.1| Thozetella fabacearum MFLU 16-1021 28S rRNA gene, partial sequence; from TYPE material	True
+otuPS164	Thozetella fabacearum	7517300	2015176	KY212762.1	None	True	identical and/or subsequence of otuPS163, not added	-	gi|1215379318|gb|KY212762.1| Thozetella fabacearum 28S large subunit RNA gene, partial sequence	False
+otuPS165	Thozetella pinicola	321608	557967	EU825195.1	None	True	new	-	gi|203285479|gb|EU825195.1| Thozetella sp. RJ-2008 28S ribosomal RNA gene, partial sequence	True
+otuPS166	Thozetella pandanicola	7517303	2485546	MH376740.1	None	True	new	-	gi|1518371096|gb|MH376740.1| Thozetella pandanicola voucher MFLUCC 16-0253 28S large subunit ribosomal RNA gene, partial sequence	True
+otuPS167	Thozetella tocklaiensis	3699973	2075422	MH869349.1	None	True	new	-	gi|1473256405|gb|MH869349.1| Thozetella tocklaiensis strain CBS 378.58 large subunit ribosomal RNA gene, partial sequence	True
+otuPS168	Dictyochaeta simplex	824703	139970	MH878418.1	None	True	new	-	gi|1473265474|gb|MH878418.1| Dictyochaeta simplex strain CBS 623.68 large subunit ribosomal RNA gene, partial sequence	True
+otuPS169	Thozetella neonivea	7517302	2588912	NG_067896.1	None	True	new	-	gi|1813057156|ref|NG_067896.1| Thozetella neonivea CBS 145534 28S rRNA gene, partial sequence; from TYPE material >gi|1682069142|gb|MK876451.1| Thozetella neonivea culture CBS:145534 28S ribosomal RNA gene, partial sequence	True
+otuPS170	Polynema podocarpi	7518406	2339087	MH327833.1	None	True	new	-	gi|1482012570|gb|MH327833.1| Polynema podocarpi culture CPC:32761 28S ribosomal RNA gene, partial sequence	True
+otuPS171	Dictyochaeta sp. ZLL-2019b	8006114	2571409	MK835827.1	None	True	new	-	gi|1624683592|gb|MK835827.1| Dictyochaeta ellipsoidea voucher S-304 large subunit ribosomal RNA gene, partial sequence	True
+otuPS172	Codinaea sp. ZLL-2019a	8006109	2571404	MK835823.1	None	True	new	-	gi|1624683588|gb|MK835823.1| Codinaea yunnanensis voucher MFLU:18-1611 large subunit ribosomal RNA gene, partial sequence	True
