@@ -146,7 +146,8 @@ class PhyscraperScrape(object):
         self.write_mrca()
         self.data.write_labelled(filename="taxonname", label='^ot:ottTaxonName', direc=self.inputsdir)
         self.data.write_otus(schema='table', direc=self.inputsdir)
-#        self.data.write_otus(schema='json', direc=self.rundir)
+        if not os.path.exists("{}/otu_info.json".format(self.rundir)):
+            self.data.write_otus(schema='json', direc=self.rundir)
         self.threshold = self.config.spp_threshold
 #markers for status
 #holders for new data
