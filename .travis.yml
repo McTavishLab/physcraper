@@ -8,47 +8,32 @@ before_install:
   - sudo apt-get update
   
 install:
-  ### install blast+
-  # this fails often with connection errors
-  #- sudo apt-get install ncbi-blast+
-  - sudo apt-get install muscle
-
-
-  #### install papara
-  #- wget 'https://sco.h-its.org/exelixis/resource/download/software/papara_nt-2.5-static_x86_64.tar.gz'
-  #- gunzip  -cd papara_nt-2.5-static_x86_64.tar.gz | (tar xvf - )
-  #- mv papara_static_x86_64 papara
-  #- export PATH="$PATH:$(pwd)"
-  #- papara
-
-  ##### to use RAXML we need conda
   - wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
   - chmod +x miniconda.sh
   - bash miniconda.sh -b -p $HOME/miniconda
   - export PATH="$HOME/miniconda/bin:$PATH"
   - conda config --set always_yes yes --set changeps1 no
   - conda update -q conda
-  - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION
-  - source activate test-environment
-  - conda install -c bioconda raxml
-  - conda install -c bioconda blast
+  - conda env create -f cond_env.yml
+  - conda activate physcraper_env
+  - pip install -r requirements.txt
+  - pip install -e .
+  
+  - export PYTHONPATH=$PYTHONPATH:$(pwd)
+  # install requirements for testing
+  - pip install codecov
+  - pip install pytest pytest-cov
+  
 
 
   
-# command to run tests
 
   - wget 'https://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdump.tar.gz'
   - gunzip  -cd taxdump.tar.gz | (tar xvf - names.dmp nodes.dmp)
   - mv *.dmp taxonomy/
 
 
-  - export PYTHONPATH=$PYTHONPATH:$(pwd)
-  # install requirements of physcraper
-  - pip install -r requirements.txt
-  - python setup.py install
-  - pip install codecov
-  - pip install pytest pytest-cov
-  
+
 script:  
   #- py.test tests/ --setup-only
   #- sh tests/run_tests.sh

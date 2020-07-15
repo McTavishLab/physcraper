@@ -21,6 +21,7 @@ Then, create a conda environment
 ```
    conda env create -f cond_env.yml
    conda activate physcraper_env
+   pip install -r requirements.txt
    pip install -e .
 ```
 
