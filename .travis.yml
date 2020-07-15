@@ -15,7 +15,7 @@ install:
   - conda config --set always_yes yes --set changeps1 no
   - conda update -q conda
   - conda env create -f cond_env.yml
-  - activate physcraper_env
+  - source activate physcraper_env
   - pip install -r requirements.txt
   - pip install -e .
 
