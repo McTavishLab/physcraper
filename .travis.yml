@@ -15,10 +15,10 @@ install:
   - conda config --set always_yes yes --set changeps1 no
   - conda update -q conda
   - conda env create -f cond_env.yml
-  - conda activate physcraper_env
+  - activate physcraper_env
   - pip install -r requirements.txt
   - pip install -e .
-  
+
   - export PYTHONPATH=$PYTHONPATH:$(pwd)
   # install requirements for testing
   - pip install codecov
