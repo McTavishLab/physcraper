@@ -81,8 +81,10 @@ def test_add_all_local():
     ids = IdDicts()
     ids.ncbi_parser = ncbi_data_parser.Parser(names_file="taxonomy/names.dmp",
                                                nodes_file="taxonomy/nodes.dmp")
+    ids.full_seq_path = "tests/data/precooked/fullseqs"
     scraper = PhyscraperScrape(data_obj, ids)
     scraper.config.blast_loc = "local"
     scraper._blasted = 1
+    scraper.taxonomy = "tests/data/taxonomy_test"
     scraper.read_blast_wrapper(blast_dir="tests/data/precooked/tiny_local/blast_run_test")
     assert(len(scraper.new_seqs_otu_id)==17)
