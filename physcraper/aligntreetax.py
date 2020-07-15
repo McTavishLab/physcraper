@@ -7,7 +7,7 @@ import shutil
 import dendropy
 from dendropy import Tree, DnaCharacterMatrix, DataSet, datamodel
 from physcraper import ncbi_data_parser, ConfigObj
-from physcraper.opentree_helpers import get_mrca_ott
+from physcraper.opentree_helpers import get_mrca_ott, bulk_tnrs_load
 from physcraper.helpers import standardize_label, to_string, debug
 
 _VERBOSE = 0

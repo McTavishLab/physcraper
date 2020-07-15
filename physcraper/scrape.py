@@ -615,7 +615,7 @@ class PhyscraperScrape(object):
                 pass
             else:
                 #debug("local: otu {} is NOT within mrca".format(new_otu_label))
-                self.data.otu_dict[new_otu_label]['^physcraper:status'] = "Not within requesdted MRCA ncbi:{}".format(self.mrca_ncbi)
+                self.data.otu_dict[new_otu_label]['^physcraper:status'] = "Not within requested MRCA ncbi:{}".format(self.mrca_ncbi)
                 return seq_dict
         #debug("otu {} has tax_id {}".format(new_otu_label, tax_new_seq))
         new_seq = seq.replace("-", "").lower()
