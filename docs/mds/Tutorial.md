@@ -1,27 +1,13 @@
-- [Physcraper framework](#physcraper-framework)
-- [The Open Tree of Life](#the-open-tree-of-life)
-- [Updating a tree from OpenTree of Life](#updating-a-tree-from-opentree-of-life)
-  * [Find a starting tree with your taxon of interest](#find-a-starting-tree-with-your-taxon-of-interest)
-  * [Run the auto update](#run-the-auto-update)
-- [Using your own tree and alignment](#using-your-own-tree-and-alignment)
-  * [Mapping names to taxa](#mapping-names-to-taxa)
-  * [Run the auto update on your tree](#run-the-auto-update-on-your-tree)
-- [Output files](#output-files)
-  * [Compare your new tree to existing relationships](#compare-your-new-tree-to-existing-relationships)
+## The Physcraper framework
 
-<small><i><a href='http://ecotrust-canada.github.io/markdown-toc/'>Table of contents generated with markdown-toc</a></i></small>
-
-
-## Physcraper framework
-
-![](../img/schematic.svg)  
+![](../img/schematic.svg)
 
 If you have access to a single gene alignment, and a tree, you can automate adding homologous data into your tree by searching GenBank.
 
 While genome scale data is increasing rapidly - there are still large quantities of gene-sequence data being uploaded to NCBI [GenBank](https://www.ncbi.nlm.nih.gov/genbank/statistics/).
 These data are often appropriate for looking at phylogenetic relationships, and have the advantage of being homologous to the sequences in existing trees,
 
-Using Physcraper we can use [Blast](https://blast.ncbi.nlm.nih.gov/Blast.cgi) to search for loci that are likely to be homologous to sequences in an existing alignment.
+With Physcraper we can use [Blast](https://blast.ncbi.nlm.nih.gov/Blast.cgi) to search for loci that are likely to be homologous to sequences in an existing alignment.
 
 By using a starting tree and alignment, Physcraper, takes advantage of loci that previous researchers have assessed and deemed appropriate for the phylogenetic scope.
 The sequences added in the search are limited to a user specified taxon or monophyletic group, or within the taxonomic scope of the in-group of the starting tree.
@@ -31,25 +17,25 @@ These automated tree can provide a quick inference or potential relationships, o
 
 ## The Open Tree of Life
 
-The Open Tree of Life (https://opentreeoflife.github.io/) is a project that unites phylogenetic inferences and taxonomy to provide a synthetic estimate of species relationships across the entire tree of life.  
-![](../img/otol_logo.png)  
+The Open Tree of Life (https://opentreeoflife.github.io/) is a project that unites phylogenetic inferences and taxonomy to provide a synthetic estimate of species relationships across the entire tree of life.
+![](../img/otol_logo.png)
 
 
-Open Tree of Life aims to construct a comprehensive, dynamic and digitally-available tree of life by synthesizing published phylogenetic trees along with taxonomic data.  
-Currently the tree comprises 2.3 million tips. 
+Open Tree of Life aims to construct a comprehensive, dynamic and digitally-available tree of life by synthesizing published phylogenetic trees along with taxonomic data.
+Currently the tree comprises 2.3 million tips.
 However, only around 90,000 of those taxa are represented by phylogenetic estimates - the rest are placed in the tree based on their taxonomic names.
 
-![](../img/synthtreeleg.svg) 
+![](../img/synthtreeleg.svg)
 
-(figure from [Hinchliff et al. 2015](https://www.pnas.org/content/112/41/12764.short))  
+(figure from [Hinchliff et al. 2015](https://www.pnas.org/content/112/41/12764.short))
 For more information on OpenTree see https://opentreeoflife.github.io
 
 
 ## Updating a tree from OpenTree of Life
 
-The Open Tree of Life data store, [Phylesystem](https://academic.oup.com/bioinformatics/article/31/17/2794/183373), contains more than 4,500 phylogenetic trees from published studies.  
+The Open Tree of Life data store, [Phylesystem](https://academic.oup.com/bioinformatics/article/31/17/2794/183373), contains more than 4,500 phylogenetic trees from published studies.
 The tips in these trees are mapped a unified taxonomy, which makes these data searchable in a phylogenetically explicit way.
-This is a great place to start of finding existing estimates of phylogenetic relationships, 
+This is a great place to start of finding existing estimates of phylogenetic relationships,
 and assessing regions of the tree of life which are lacking available phylogenetic estimates.
 There is a lot of sequence data available that has never been incorporated into any phylogenetic estimates.
 
@@ -68,7 +54,7 @@ This prints a bunch of studies out to the screen. We will need an alignment to u
 
 There are a bunch of options!
 
-Lets update Wilkie et al (2006). 
+Lets update Wilkie et al (2006).
 You can view the study on the OpenTree database: [Wilkie2006](https://tree.opentreeoflife.org/curator/study/view/pg_55)
 
 While this study was focussed on the family "Sterculiacea",
@@ -79,14 +65,14 @@ Lets take a look at how recent data affect our inferences of relationships, and 
 ### Run the auto update
 
 The script `physcraper_run.py` wraps together linking the tree and alignment, blasting, aligning sequences, and inferring an updated tree.
-Detailed explanation of the inputs needed can be found at [running physcraper](https://physcraper.readthedocs.io/en/latest/physcraper_run.html).
+Detailed explanation of the inputs needed can be found at [running Physcraper](https://physcraper.readthedocs.io/en/latest/physcraper_run.html).
 
-The blast search part of updating trees takes a long time (for example, this analysis took around 12 hours!). The `-r` flag repeats the search on new sequences until no additional sequences are found.
+The blast search part of updating trees takes a long time (for example, this analysis took around 12 hours!). We recommend running it on a cluster or other remote computing option.
 
 
     $ physcraper_run.py -s pg_55 -t tree5864 -tb -r -o pg_55
 
-
+The `-r` flag repeats the search on new sequences until no additional sequences are found.
 We have put example outputs from this command in `docs/examples/pg_55`, so that you can explore the outputs without waiting for the searches to complete.
 
 ## Using your own tree and alignment
@@ -96,7 +82,7 @@ See [Submitting-phylogenies-to-Open-Tree-of-Life](https://github.com/OpenTreeOfL
 
 If you aren't ready to share your tree publicly, you can update it without posting to OpenTree.
 
-You need an alignment (single locus) and a tree. The taxon labels in these two files should be the same.  
+You need an alignment (single locus) and a tree. The taxon labels in these two files should be the same.
 
 You also need a file linking the labels in your tree and alignment to broader taxonomy. This can be easily generated vis OPenTrees Bulk Taxonomic Name Resolution Service. [Bulk TNRS](https://tree.opentreeoflife.org/curator/tnrs/)
 
@@ -110,11 +96,11 @@ Save your tip labels in a .txt file. There is an example file in docs/examples/e
 
 To match your labels to taxonomic names:
 
-Click on "add names", and upload the names file.  
+Click on "add names", and upload the names file.
 
 ![](../img/TNRS1.png)
 
-In the mapping options section, you can select a taxonomic group to narrow down the possibilities and speed up mapping.  
+In the mapping options section, you can select a taxonomic group to narrow down the possibilities and speed up mapping.
 You can use regular expression to replace  or remove parts of labels for mapping
 
 
@@ -125,7 +111,7 @@ Click "Map selected names"
 
 Exact matches will show up in green, and can be accepted by clicking "accept exact matches".
 
-Some taxa may show several suggested names. Click through to the taxonomy, and select the one that you think is correct based on the phylogenetic context. 
+Some taxa may show several suggested names. Click through to the taxonomy, and select the one that you think is correct based on the phylogenetic context.
 
 ![](../img/TNRS3.png)
 
@@ -135,56 +121,14 @@ Once you have accepted names for each of the taxa, click "save nameset".
 
 Download it to your laptop.
 Extract the files.
-Take a look at the human readable version (output/main.csv). You will see that this file also links to NCBI and GBIF identifiers for your taxa!
+Take a look at the human readable version at `output/main.csv`. You will see that this file also links to NCBI and GBIF identifiers for your taxa!
 
-main.json contains the the same data in a more computer readable format.
+`output/main.json` contains the same data in a more computer readable format.
 
-By passing in the the main.json file, physcraper can link your sequences to their correct taxonomic context.
+By passing in the `main.json` file, Physcraper can link your sequences to their correct taxonomic context.
 
 ### Run the auto-update on your tree
+
 Example run on local files using test data:
 
     physcraper_run.py -tf tests/data/tiny_test_example/test.tre -tfs newick -a tests/data/tiny_test_example/test.fas --taxon_info tests/data/tiny_test_example/main.json -as fasta -o owndata
-
-
-## Output files
-
-The analysis folder has several sub directories.
-each folder is labeled with a 'tag', which by default is the alignment name, but can be set in the `physcraper_run.py` arguments.
-
-The structure consists of:
-
--  inputs
-    -- original tree and alignment
-
-    -- the mapping of the labels to taxa saved as `otu_info.csv`
-
--  blast_run
-    -- blast results for each tip in both the tree and the alignment
-
--  run
-   -- This is where intermediate processing files, and the json formatted otu information are stored. Many fo tehse files are re-used ifthe crashes and is restarted. Make sure you use a new output directory or otherwise empty this folder if you want to change run parameters.
-
-- outputs
-   -- final tree and alignment
-   
-   -- CSV file with information about each sequence
-
-   -- The acession numbers, taxa, and sequence lengths of matches that didn't meet the sequence length cutoffs are written out to seqlen_mismatch.txt.
-
-
-### Compare your new tree to existing relationships
-
-A correctly rooted phylogeny is needed to compare taxonomic groups.
-Rooting phylogenies can be tricky. While physcraper places a suggested root based on the taxonomic relationships in OpenTree, 
-this root can be unreliable, especially if taxonomy is a poor fit to true evolutionary relationships.
-
-There is a simple tree comparison script, `tree_comparison.py`
-
-Detailed explanation of that script, and more ways to explore the data are described in [data exploration](https://physcraper.readthedocs.io/en/latest/data_exploration.html)
-
-
-    tree_comparison.py -d docs/examples/pg_55/ -og otu376420 otu376439 otu376452 -o pg_55_comparison
-
-
-The taxonomic name mapping makes comparisons across trees straightforward.  

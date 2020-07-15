@@ -1,5 +1,6 @@
 ## Downloading Physcraper
 
+In order to easily access the example data and ancillary files, we recommend downloading the physcraper repo from GitHub and installing lcoally.  
 First step is to clone the Physcraper repo to your computer:
 
 ```
@@ -20,6 +21,7 @@ Then, create a conda environment
 ```
    conda env create -f cond_env.yml
    conda activate physcraper_env
+   pip install -r requirements.txt
    pip install -e .
 ```
 

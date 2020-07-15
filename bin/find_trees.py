@@ -19,7 +19,7 @@ if len(sys.argv)==1:
     sys.exit(1)
 
 
-assert(args.taxon_name or args.ottid), "A taxon name or an OTT id are required for search."
+assert(args.taxon_name or args.ott_id), "A taxon name or an OTT id are required for search."
 
 if args.taxon_name:
     try:

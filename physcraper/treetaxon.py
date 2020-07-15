@@ -24,7 +24,7 @@ def generate_TreeTax_from_run(workdir, start_files='output', tag=None, configfil
         assert(os.path.exists(treefile))
         assert(os.path.exists(otu_json))
         otu_dict = json.load(open(otu_json, "r"))
-        mrca_ott = mrca_ott = int(open("{}/mrca.txt".format(inputsdir)).readline().split()[-1])
+        mrca_ott = int(open("{}/mrca.txt".format(inputsdir)).readline().split()[-1])
     except AssertionError:
         sys.stdout.write("No output files found in {}, loading files from {}\n".format(outputsdir, inputsdir))
         treefile = "{}/physcraper_{}.tre".format(inputsdir, tag)
@@ -85,7 +85,7 @@ class TreeTax(object):
                         found_label = 1
                 if found_label == 0:
                     sys.stderr.write("could not match tiplabel {} or {} to an OTU\n".format(tax.label, newname))
-                    otulab = "otu"+tax.label
+                    otulab = tax.label
                     self.otu_dict[otulab]["^ot:originalLabel"] = tax.label
                     tax.label = otu_lab
         for tax in self.tre.taxon_namespace:

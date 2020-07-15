@@ -51,7 +51,7 @@ def root_tree_from_synth(tree, otu_dict, base = 'ott'):
         synth_spp = set()
         for sp in spp:
             if sp in synth_ids:
-                synth_spp.add(sp)
+                synth_spp.add(int(sp))
         if len(synth_spp) <= 3:
                 sys.stdout.write("Didn't find enough taxon matches in synth tree to root. Tree is unrooted\n")
                 return(tree)

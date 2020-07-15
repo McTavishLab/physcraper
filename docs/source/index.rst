@@ -5,7 +5,23 @@
 
 Welcome to Physcraper's documentation!
 ======================================
+.. mdinclude:: ../mds/intro-header.md
+
 .. mdinclude:: ../mds/intro.md
+
+.. mdinclude:: ../mds/intro-dendropy.md
+
+|
+|
+|
+|
+|
+|
+|
+|
+|
+|
+
 
 .. toctree::
    :maxdepth: 3
@@ -17,3 +33,5 @@ Welcome to Physcraper's documentation!
    find_trees
    data_exploration
    apidocs
+   CONTRIBUTING
+   CONTRIBUTORS

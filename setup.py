@@ -6,7 +6,7 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setup(name='Physcraper',
-      version='0.1',
+      version='0.31',
       description='Physcraper',
       author='Emily Jane McTavish',
       author_email='ejmctavish@gmail.com',
@@ -14,5 +14,17 @@ setup(name='Physcraper',
       scripts=['bin/physcraper_run.py',
                'bin/tree_comparison.py',
                'bin/find_trees.py'],
-      install_requires=[]
+      include_package_data=True,
+      install_requires=['argparse',
+                        'biopython==1.76',
+                        'configparser',
+                        'DendroPy',
+                        'DateTime',
+                        'opentree',
+                        'pandas',
+                        'requests',
+                        'sh',
+                        'urllib3>=1.23',
+                        'numpy',
+                        'wget']
      )
