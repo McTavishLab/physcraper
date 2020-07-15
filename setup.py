@@ -6,7 +6,7 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setup(name='Physcraper',
-      version='0.31',
+      version='0.4',
       description='Physcraper',
       author='Emily Jane McTavish',
       author_email='ejmctavish@gmail.com',
