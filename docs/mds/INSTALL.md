@@ -1,6 +1,7 @@
 ## Downloading Physcraper
 
-In order to easily access the example data and ancillary files, we recommend downloading the physcraper repo from GitHub and installing lcoally.  
+While physcraper can be install via pip,
+in order to easily access the example data and ancillary files, we recommend downloading the physcraper repo from GitHub and installing locally.  
 First step is to clone the Physcraper repo to your computer:
 
 ```

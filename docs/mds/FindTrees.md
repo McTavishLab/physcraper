@@ -15,3 +15,9 @@ optional arguments:
   -tb, --treebase       Rturn studies with treebase data only
   -o OUTPUT, --output OUTPUT
                         Output file path
+
+e.g.
+
+    find_trees.py --taxon_name Malvaceae --treebase -o malvacea.txt
+
+    find_trees.py --ott_id 124219 -o orcinus.txt
