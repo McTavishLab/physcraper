@@ -1,5 +1,5 @@
 
-<!-- README.md is generated from README.Rmd; please edit the .Rmd file -->
+<!-- README.md is generated from README.Rmd; please edit the .Rmd file and then from R do rmarkdown::render("README.Rmd")-->
 
 <img align="left" width="250" src="https://raw.githubusercontent.com/McTavishLab/physcraper/main/docs/physcraper.svg">
 
@@ -36,6 +36,13 @@ details\!
 :octopus: :blossom: :whale: :mushroom: :ant: :cactus: :fish:
 :maple\_leaf: :water\_buffalo: 🦠 :shell: :bug: :octocat:
 
-Physcraper relies on Dendropy: *Sukumaran, J and MT Holder. 2010.
-DendroPy: a Python library for phylogenetic computing. Bioinformatics
-26: 1569-1571*.
+Physcraper relies on
+
+  - Dendropy: *Sukumaran, J and MT Holder. 2010. DendroPy: a Python
+    library for phylogenetic computing. Bioinformatics 26: 1569-1571*.
+
+  - [The Open Tree of Life Project](oentreeoflife.org): *Open Tree of
+    Life, Benjamin Redelings, Luna Luisa Sanchez Reyes, Karen A.
+    Cranston, Jim Allman, Mark T. Holder, & Emily Jane McTavish. (2019).
+    Open Tree of Life Synthetic Tree (Version 12.3). Zenodo.
+    <https://doi.org/10.5281/zenodo.3937741>*

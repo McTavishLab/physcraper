@@ -2,7 +2,7 @@
 output: github_document
 ---
 
-<!-- README.md is generated from README.Rmd; please edit the .Rmd file -->
+<!-- README.md is generated from README.Rmd; please edit the .Rmd file and then from R do rmarkdown::render("README.Rmd")-->
 
 ```{r setup, include = FALSE}
 knitr::opts_chunk$set(
