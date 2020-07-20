@@ -28,14 +28,16 @@ Lab](https://mctavishlab.github.io/). Please post a GitHub issue
 
 This is the code repository. Please refer to Physcraper’s [documentation
 website](https://physcraper.readthedocs.io/en/latest/) for more details
-on [installation
-instructions](https://physcraper.readthedocs.io/en/latest/install.html),
-[function
-usage](https://physcraper.readthedocs.io/en/latest/apidocs.html),
+on
+[installation](https://physcraper.readthedocs.io/en/latest/install.html)
+instructions,
+[function](https://physcraper.readthedocs.io/en/latest/apidocs.html)
+usage, running
 [tutorials](https://physcraper.readthedocs.io/en/latest/physcraper_run.html),
+real life
 [examples](https://physcraper.readthedocs.io/en/latest/data_exploration.html),
-and [tools for
-developers](https://physcraper.readthedocs.io/en/latest/CONTRIBUTING.html).
+and tools for
+[developers](https://physcraper.readthedocs.io/en/latest/CONTRIBUTING.html).
 
 :hamster: :palm\_tree: :frog: :ear\_of\_rice: :panda\_face: :tulip:
 :octopus: :blossom: :whale: :mushroom: :ant: :cactus: :fish:
@@ -43,11 +45,11 @@ developers](https://physcraper.readthedocs.io/en/latest/CONTRIBUTING.html).
 
 Physcraper relies on:
 
-· [Dendropy](https://dendropy.org/primer/index.html) *Sukumaran, J and
+• [Dendropy](https://dendropy.org/primer/index.html) *Sukumaran, J and
 MT Holder. 2010. DendroPy: a Python library for phylogenetic computing.
 Bioinformatics 26: 1569-1571*.
 
-· [The Open Tree of Life
+• [The Open Tree of Life
 Project](https://tree.opentreeoflife.org/opentree/argus/opentree12.3@ott93302)
 *Open Tree of Life, Benjamin Redelings, Luna Luisa Sanchez Reyes, Karen
 A. Cranston, Jim Allman, Mark T. Holder, & Emily Jane McTavish. (2019).

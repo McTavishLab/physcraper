@@ -36,11 +36,11 @@ IS_README <- TRUE
 
 This is the code repository.
 Please refer to Physcraper's [documentation website](https://physcraper.readthedocs.io/en/latest/) for more details
-on [installation instructions](https://physcraper.readthedocs.io/en/latest/install.html),
-[function usage](https://physcraper.readthedocs.io/en/latest/apidocs.html),
-[tutorials](https://physcraper.readthedocs.io/en/latest/physcraper_run.html),
-[examples](https://physcraper.readthedocs.io/en/latest/data_exploration.html),
-and [tools for developers](https://physcraper.readthedocs.io/en/latest/CONTRIBUTING.html).
+on [installation](https://physcraper.readthedocs.io/en/latest/install.html) instructions,
+[function](https://physcraper.readthedocs.io/en/latest/apidocs.html) usage,
+running [tutorials](https://physcraper.readthedocs.io/en/latest/physcraper_run.html),
+real life [examples](https://physcraper.readthedocs.io/en/latest/data_exploration.html),
+and tools for [developers](https://physcraper.readthedocs.io/en/latest/CONTRIBUTING.html).
 
 
 
