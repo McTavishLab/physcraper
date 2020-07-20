@@ -26,11 +26,16 @@ Lab](https://mctavishlab.github.io/). Please post a GitHub issue
 [here](https://github.com/McTavishLab/physcraper/issues) or contact
 <ejmctavish@ucmerced.edu> if you need any help or have feedback.
 
-This is the code repository. For an introduction to the tool,
-installation and function usage instructions, tutorials and examples,
-and tools for developers, please refer to Physcraper’s [documentation
-website](https://physcraper.readthedocs.io/en/latest/) for more
-details\!
+This is the code repository. Please refer to Physcraper’s [documentation
+website](https://physcraper.readthedocs.io/en/latest/) for more details
+on [installation
+instructions](https://physcraper.readthedocs.io/en/latest/install.html),
+[function
+usage](https://physcraper.readthedocs.io/en/latest/apidocs.html),
+[tutorials](https://physcraper.readthedocs.io/en/latest/physcraper_run.html),
+[examples](https://physcraper.readthedocs.io/en/latest/data_exploration.html),
+and [tools for
+developers](https://physcraper.readthedocs.io/en/latest/CONTRIBUTING.html).
 
 :hamster: :palm\_tree: :frog: :ear\_of\_rice: :panda\_face: :tulip:
 :octopus: :blossom: :whale: :mushroom: :ant: :cactus: :fish:
