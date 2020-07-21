@@ -1,7 +1,7 @@
 import sys
 import os
 import json
-import physcraper 
+import physcraper
 
 sys.stdout.write("\ntests prune_short\n")
 
@@ -19,7 +19,7 @@ def test_prune_short():
     if not os.path.exists("{}".format(workdir)):
             os.makedirs("{}".format(workdir))
 
-    conf = physcraper.ConfigObj(configfi, interactive=False)
+    conf = physcraper.ConfigObj(configfi)
     conf.blast_loc='remote' #saves time over loading names and nodes, and they aren't used here
 
     ids = physcraper.IdDicts(configfi)
@@ -31,8 +31,8 @@ def test_prune_short():
         json.dump(otu_json, open(otu_jsonfi,"w"))
 
 
-    data_obj = physcraper.generate_ATT_from_files(alnfile=seqaln, 
-                                                 aln_schema=mattype, 
+    data_obj = physcraper.generate_ATT_from_files(alnfile=seqaln,
+                                                 aln_schema=mattype,
                                                  workdir=workdir,
                                                  configfile=configfi,
                                                  treefile=treefile,
