@@ -63,7 +63,6 @@ class IdDicts(object):
 
               * depending on blasting method:
                * self.ncbi_parser: for local blast, initializes the ncbi_parser class, that contains information about rank and identifiers
-               * self.otu_rank: for remote blast to store the rank information
     """
 
     def __init__(self, configfile = None, workdir=None):
@@ -78,7 +77,7 @@ class IdDicts(object):
             sys.stderr.write("Error reading config file\n".format(configfile))
             sys.exit()
         assert self.config
-        self.ott_to_ncbi = {} 
+        self.ott_to_ncbi = {}
         self.ncbi_to_ott = {}  # used to get ott_id for new Genbank query taxa
         self.ott_to_name = {}  # used in add_otu to get name from otuId
         self.acc_ncbi_dict = {}  # filled by ncbi_parser (by subprocess in earlier versions of the code).
@@ -86,7 +85,7 @@ class IdDicts(object):
         self.ncbiid_to_spn = {} #TODO when is this generated? MK: well, here. it is filled with information from genbank to speed up translation between ncbi_taxon_ids and names. similar to  acc_ncbi_dict and spn_to_ncbiid.
         tax_folder = self.config.taxonomy_dir
         fi = open(self.config.ott_ncbi)  # This is in the taxonomy folder of the repo, needs to be updated by devs when OpenTree taxonomy changes.
-        for lin in fi:  
+        for lin in fi:
             lii = lin.split(",")
             self.ott_to_ncbi[int(lii[0])] = int(lii[1])
             self.ncbi_to_ott[int(lii[1])] = int(lii[0])
@@ -97,7 +96,6 @@ class IdDicts(object):
         assert len(self.ncbi_to_ott) > 1000
         if self.config.blast_loc == 'remote':
             debug("Config remote {}".format(self.config.blast_loc))
-            self.otu_rank = {}  # used only for web queries - contains taxonomic hierarchy information
         else:  # ncbi parser contains information about spn, tax_id, and ranks
             debug("Config not remote {}".format(self.config.blast_loc))
             self.ncbi_parser = ncbi_data_parser.Parser(names_file=self.config.ncbi_names,
@@ -151,7 +149,7 @@ class IdDicts(object):
             tax_name = ncbi_data_parser.get_ncbi_tax_name(read_handle)
             ncbi_id =  ncbi_data_parser.get_ncbi_tax_id(read_handle)
             seq = read_handle[0][u'GBSeq_sequence']
-            tax_name = tax_name.replace(" ","_") #TODO check that searches are using names without spaces 
+            tax_name = tax_name.replace(" ","_") #TODO check that searches are using names without spaces
             self.ncbiid_to_spn[ncbi_id] = tax_name
             self.acc_ncbi_dict[gb_id] = ncbi_id
             self.acc_tax_seq_dict[gb_id] = {'taxname':tax_name, "^ncbi:taxon":ncbi_id, 'seq':seq} #This is going to be a memory hog...
