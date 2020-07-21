@@ -225,6 +225,38 @@ class Parser:
             rank = nodes[nodes["tax_id"] == tax_id]["rank"].values[0]
         return rank
 
+    def get_downtorank_id(self, tax_id, downtorank="species"):
+        """ Recursive function to find the parent id of a taxon as defined by downtorank.
+        """
+        #        debug("get downtorank")
+        if nodes is None:
+            self.initialize()
+        if type(tax_id) != int:
+           # sys.stdout.write(
+           #     "WARNING: tax_id {} is no integer. Will convert value to int\n".format(
+           #         tax_id
+           #     )
+           # )
+            tax_id = int(tax_id)
+        # debug(downtorank)
+        # following statement is to get id of taxa if taxa is higher ranked than specified
+        if nodes[nodes["tax_id"] == tax_id]["rank"].values[0] != "species":
+            if downtorank == "species":
+                if (
+                    nodes[nodes["tax_id"] == tax_id]["rank"].values[0] != "varietas"
+                    and nodes[nodes["tax_id"] == tax_id]["rank"].values[0]
+                    != "subspecies"
+                ):
+                    return tax_id
+        if nodes[nodes["tax_id"] == tax_id]["rank"].values[0] == downtorank:
+            # debug("found right rank")
+            return tax_id
+        elif nodes[nodes["tax_id"] == tax_id]["rank"].values[0] == "superkingdom":
+            tax_id = 0
+            return tax_id
+        else:
+            parent_id = int(nodes[nodes["tax_id"] == tax_id]["parent_tax_id"].values[0])
+            return self.get_downtorank_id(parent_id, downtorank)
 
     def match_id_to_mrca(self, tax_id, mrca_id):
         """ Recursive function to find out if tax_id is part of mrca_id.
