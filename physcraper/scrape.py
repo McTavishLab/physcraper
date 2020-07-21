@@ -451,54 +451,6 @@ class PhyscraperScrape():
                     log.write("acc {}, rcomp\n".format(gb_id))
                 return(str(dna_rcomp))
 
-
-    def read_unpublished_blast_query(self):
-        """
-        Reads in the blast files generated during local_blast_for_unpublished() and adds seq to self.data.gb_dict and
-        self.new_seqs.
-
-        """
-        debug("read unpublished blast query")
-        output_blast = "output_tst_fn.xml"
-        gb_counter = 1
-        general_wd = os.getcwd()
-        os.chdir(os.path.join(self.rundir, "blast"))
-        # with cd(os.path.join(self.workdir, "blast")):
-        xml_file = open(output_blast)
-        os.chdir(general_wd)
-        blast_out = NCBIXML.parse(xml_file)
-        fn = open("{}/not_added_local_seq.csv".format(self.rundir), "a")
-        fn.write("not_added_local_seq")
-        for blast_record in blast_out:
-            for alignment in blast_record.alignments:
-                for hsp in alignment.hsps:
-                    local_id = alignment.title.split("|")[-1].split(" ")[-1]
-                    if float(hsp.expect) < float(self.config.e_value_thresh):
-                        if local_id not in self.data.gb_dict:  # skip ones we already have
-                            unpbl_local_id = "unpubl_{}".format(local_id)
-                            self.new_seqs[unpbl_local_id] = hsp.sbjct
-                            # debug(self.new_seqs[unpbl_local_id])
-                            self.data.gb_dict[unpbl_local_id] = {'title': "unpublished", 'localID': local_id}
-                            # debug(self.data.unpubl_otu_json)
-                            # debug(local_id)
-                            # debug(type(local_id))
-                            # debug('otu{}'.format(local_id.replace("_", "").replace("-", "")))
-                            self.data.gb_dict[unpbl_local_id].update(
-                                self.data.unpubl_otu_json['otu{}'.format(local_id.replace("_", "").replace("-", ""))])
-                            gb_counter += 1
-                            # debug(self.data.gb_dict[unpbl_local_id])
-                            # debug(some)
-                    else:
-                        fn.write("{}: {}".format(alignment.title.split("|")[-1].split(" ")[-1], hsp.expect))
-                        # if local_id not in self.gb_not_added:
-                        #     self.gb_not_added.append(local_id)
-                        writeinfofiles.write_not_added_info(self, local_id, "threshold not passed")
-                        # needs to be deleted from gb_dict,
-                        # maybe we find a better fitting blast query seq and then it might get added
-                        del self.data.gb_dict[unpbl_local_id]  # print(some)
-        with open(self.logfile, "a") as log:
-            log.write("{} new sequences added from unpublished database\n".format(len(self.new_seqs)))
-
     def read_webbased_blast_query(self, fn_path):
         """ Implementation to read in results of web blast searches.
 
@@ -534,13 +486,9 @@ class PhyscraperScrape():
                                 self.new_seqs[gb_id] = seq
 
                         else:
-                            # if gb_id not in self.gb_not_added:
-                            #     self.gb_not_added.append(gb_id)
-                            #     writeinfofiles.write_not_added_info(self, gb_id, "threshold not passed")
-                            writeinfofiles.write_not_added_info(self, gb_id, "evalue threshold not passed")
-                            # needs to be deleted from gb_dict,
-                            # maybe we find a better fitting blast query seq and then it might get added
-                            #del self.data.gb_dict[gb_id]
+                            fi = open("{}/below_eval_thresh.txt".format(self.rundir), 'a')
+                            fi.write("{}, {}\n".format(gb_id, hsp.expect))
+
         except ValueError:
             sys.stderr.write("Problem reading {}, skipping\n".format(fn_path))
 
