@@ -331,7 +331,7 @@ class AlignTreeTax(object):
         self.ps_otu = 1  # iterator for new otu IDs
         self._reconcile()
         self._reconcile_names()
-        
+
         assert int(search_taxon), ("your search_taxon '%s' is not an integer." % search_taxon)
         self.mrca_ott = search_taxon  # ott mrca can be pulled directly from phylesystem
         self.orig_seqlen = []  # will get filled in later...
@@ -366,7 +366,7 @@ class AlignTreeTax(object):
                                                   "^physcraper:last_blasted":None,
                                                   "^physcraper:ingroup":'unknown'
                                                   }
- 
+
     def read_in_aln(self, alignment, aln_schema, namespace=None):
         assert isinstance(alignment, str)
         assert os.path.exists(alignment)
@@ -415,7 +415,7 @@ class AlignTreeTax(object):
                                                   "^physcraper:last_blasted":None,
                                                   "^physcraper:ingroup":'unknown'
                                                  }
- 
+
             assert tax.label in self.otu_dict, tax.label
         prune = treed_tax ^ aln_tax
         missing = [i.label for i in prune]
@@ -613,7 +613,7 @@ class AlignTreeTax(object):
             sys.stdout.write("trimmed alignment ends to < {} missing taxa, "
                              "start {}, stop {}\n".format(min_taxon_perc, start, stop))
         return
-    
+
     def get_otu_for_acc(self, gb_id):
         if gb_id in set([self.otu_dict[otu].get("^ncbi:accession",'UNK') for otu in self.otu_dict]):
             for otu in self.otu_dict:
@@ -641,7 +641,7 @@ class AlignTreeTax(object):
         self.ps_otu += 1
         ott_id = None
         #debug("trying to add an otu with accesion {}".format(gb_id))
-        ncbi_id, tax_name = ncbi_data_parser.get_tax_info_from_acc(gb_id, self, ids_obj)
+        ncbi_id, tax_name = ncbi_data_parser.get_tax_info_from_acc(gb_id, ids_obj)
         if ncbi_id == None:
             debug("DID NOT ADD accession {} ncbi_id {}".format(gb_id, ncbi_id, tax_name))
             return None
@@ -699,7 +699,7 @@ class AlignTreeTax(object):
     def write_random_resolve_tre(self, treefilename='random_resolve.tre', direc='workdir'):
         self.tre.resolve_polytomies()
         self.tre.deroot()
-        direc = self._get_path(direc)       
+        direc = self._get_path(direc)
         treepath= "{}/{}".format(direc, treefilename)
         tmptre = self.tre.as_string(schema="newick",
                                     unquoted_underscores=True,
@@ -712,7 +712,7 @@ class AlignTreeTax(object):
         return treepath
 
     def write_aln(self, filename=None, alnschema="fasta", direc='workdir'):
-        direc = self._get_path(direc)       
+        direc = self._get_path(direc)
         if filename == None:
             filename = "physcraper_{}.fas".format(self.tag)
         alnpath = "{}/{}".format(direc, filename)
@@ -724,7 +724,7 @@ class AlignTreeTax(object):
         """Outputs both the streaming files, labeled with OTU ids.
         Can be mapped to original labels using otu_dict.json or otu_seq_info.csv"""
         #debug("write_files")
-        direc = self._get_path(direc)       
+        direc = self._get_path(direc)
         if treefilename == None:
             treepath = "{}/physcraper_{}.tre".format(direc, self.tag)
         else:
@@ -740,7 +740,7 @@ class AlignTreeTax(object):
         return(treepath, alnpath)
 
     def write_labelled_tree(self, label, filename = "labelled", direc='workdir', norepeats=True, add_gb_id=False):
-        direc = self._get_path(direc)       
+        direc = self._get_path(direc)
         if filename == "labelled":
             treepath = "{}/{}_{}.tre".format(direc, filename, self.tag)
             alnpath = "{}/{}_{}.fas".format(direc, filename, self.tag)
@@ -751,7 +751,7 @@ class AlignTreeTax(object):
 
 
     def write_labelled_aln(self, label, filename = "labelled", direc='workdir', norepeats=True, add_gb_id=False):
-        direc = self._get_path(direc)       
+        direc = self._get_path(direc)
         if filename == "labelled":
             alnpath = "{}/{}_{}.fas".format(direc, filename, self.tag)
         else:
@@ -779,9 +779,9 @@ class AlignTreeTax(object):
         self.write_labelled_aln(label, filename = filename, direc=direc, norepeats  = norepeats, add_gb_id=add_gb_id)
         self.write_labelled_tree(label, filename = filename, direc=direc, norepeats = norepeats, add_gb_id=add_gb_id)
 
-    
+
     def write_otus(self, filename = "otu_info", schema="table", direc='workdir'):
-        direc = self._get_path(direc)       
+        direc = self._get_path(direc)
         assert schema in ["table", "json"]
         if schema == "json":
              otu_path = "{}/{}_{}.json".format(direc, filename, self.tag)

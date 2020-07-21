@@ -39,18 +39,19 @@ def get_gi_from_blast(query_string):
     :return: gb_id if available
     """
     if len(query_string.split("|")) >= 3:
-        gb_id = query_string.split("|")[1]
-    else:
-        return None
-    assert len(gb_id.split(".")) < 2, (len(gb_id.split(".")), gb_id)
-    assert gb_id.isdigit() is True
+        gb_gi = query_string.split("|")[1]
+        assert len(gb_gi.split(".")) < 2, (len(gb_gi.split(".")), gb_gi)
+        assert gb_gi.isdigit() is True
+        return gb_gi
+    return None
 
-def get_tax_info_from_acc(gb_id, data_obj, ids_obj):
+
+def get_tax_info_from_acc(gb_id, ids_obj):
     '''takes an accession number and returns the ncbi_id and the taxon name'''
 #    debug("Getting tax info from acc {}".format(gb_id))
     ncbi_id = ids_obj.get_ncbiid_from_acc(gb_id)
     tax_name = ids_obj.ncbiid_to_spn.get(ncbi_id)
-    if ncbi_id == None:
+    if ncbi_id is None:
         sys.stderr.write("Failed to get information for sequence with accession number {}".format(gb_id))
     return ncbi_id, tax_name
 
@@ -94,13 +95,12 @@ nodes = None
 names = None
 
 
-def strip(input):
+def strip(inputstr):
     """ Strips of blank characters from string in pd dataframe.
     """
-    if isinstance(input, str):
-        return input.strip()
-    else:
-        return input
+    if isinstance(inputstr, str):
+        return inputstr.strip()
+    return inputstr
 
 
 def load_nodes(nodes_file):
@@ -202,9 +202,9 @@ class Parser:
         # self.initialize()
 
     def initialize(self):
-        """ The data itself are not stored in __init__, as then the information will be pickled (which results in
-        gigantic pickle file sizes).
-        Instead every time the function is loaded after loading a pickle file, it will be 'initialized'.
+        """ The data itself are not stored in __init__, as then results in
+        gigantic file sizes).
+        Instead every time the function is loaded it will be 'initialized'.
         """
         sys.stdout.write("Reading in local NCBI taxonomy information")
         global nodes
@@ -219,7 +219,7 @@ class Parser:
         """
         if nodes is None:
             self.initialize()
-        if tax_id == None:
+        if tax_id is None:
             rank = "unassigned"
         else:
             rank = nodes[nodes["tax_id"] == tax_id]["rank"].values[0]
@@ -267,9 +267,7 @@ class Parser:
                 tax_name = tax_name.values[0].replace(" ", "_")
                 tax_name = tax_name.strip()
         except IndexError:
-            sys.stdout.write(
-                    "tax_id {} unknown by ncbi_parser files (names.dmp)\n".format(tax_id)
-                )
+            sys.stdout.write("tax_id {} unknown by ncbi_parser files (names.dmp)\n".format(tax_id))
             tax_name = "unknown_{}".format(tax_id)
             if os.path.exists("ncbi_id_unknown.err"):
                 fn = open("ncbi_id_unknown.err", "a")
@@ -341,5 +339,3 @@ class Parser:
                     fn.write("{}".format(tax_id))
                     fn.close()
         return tax_id
-
-
