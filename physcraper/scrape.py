@@ -39,7 +39,7 @@ def debug(msg):
 
 
 
-class PhyscraperScrape(object):
+class PhyscraperScrape():
     """
     This is the class that does the perpetual updating
 
