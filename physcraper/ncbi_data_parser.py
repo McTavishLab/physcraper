@@ -206,7 +206,7 @@ class Parser:
         gigantic file sizes).
         Instead every time the function is loaded it will be 'initialized'.
         """
-        sys.stdout.write("Reading in local NCBI taxonomy information")
+        sys.stdout.write("Reading in local NCBI taxonomy information\n")
         global nodes
         nodes = load_nodes(self.nodes_file)
         global names
@@ -281,7 +281,7 @@ class Parser:
                 try:
                     current_id = int(nodes[nodes["tax_id"] == current_id]["parent_tax_id"].values[0])
                 except:
-                    sys.stderr.write("no parent found for ncbi:id {}".format(current_id))
+                    sys.stderr.write("no parent found for ncbi:id {}\n".format(current_id))
                     return False
 #                debug("parent id is: {}".format(current_id))
 

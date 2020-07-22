@@ -80,6 +80,8 @@ if len(sys.argv)==1:
 try:
     assert(args.output)
     workdir = args.output
+    if not os.path.exists(workdir):
+        os.makedirs(workdir)
 except AssertionError:
     sys.stderr.write("ERROR: Output directory (-o) is required.\n")
     sys.exit(-1)
@@ -172,13 +174,10 @@ if args.alignment:
 if args.treebase:
     aln_schema = "nexus"
     alnfile = "{}/{}{}.aln".format(workdir, study_id, tree_id)
-    if not os.path.exists(workdir):
-        os.makedirs(workdir)
-
     tre, cite = get_tree_from_study(study_id, tree_id)
-    tre.write(path="{}/{}{}.tre".format(workdir, study_id, tree_id), schema="nexus")
+    tre.write(path="{}/OpenTree_{}{}.tre".format(workdir, study_id, tree_id), schema="nexus")
     if not os.path.exists(alnfile):
-        sys.stdout.write("downloading best match alignment from treebase\n")
+        sys.stdout.write("downloading best match alignment from treebase to {}\n".format(alnfile))
         dataset = physcraper.opentree_helpers.get_dataset_from_treebase(study_id)
         aln = get_max_match_aln(tre, dataset)
         aln.write(path=alnfile, schema = aln_schema)
@@ -197,19 +196,21 @@ if args.search_taxon:
         sys.stderr.write("search taxon id must be in format ott:123 or ncbi:123\n")
 
 if study_id:
+    tre, cite = get_tree_from_study(study_id, tree_id)
+    tre.write(path="{}/OpenTree_{}{}.tre".format(workdir, study_id, tree_id), schema="nexus")
     if search_ott_id:
-        data_obj = generate_ATT_from_phylesystem(study_id =study_id, 
-                                                tree_id = tree_id, 
-                                                alnfile = alnfile, 
-                                                aln_schema = aln_schema,
-                                                workdir = workdir,
-                                                configfile = conf,
-                                                search_taxon = search_ott_id)
+        data_obj = generate_ATT_from_phylesystem(study_id =study_id,
+                                                 tree_id = tree_id,
+                                                 alnfile = alnfile,
+                                                 aln_schema = aln_schema,
+                                                 workdir = workdir,
+                                                 configfile = conf,
+                                                 search_taxon = search_ott_id)
         scraper = physcraper.PhyscraperScrape(data_obj, ids)
     else:
-        scraper = scraper_from_opentree(study_id =study_id, 
-                                        tree_id = tree_id, 
-                                        alnfile = alnfile, 
+        scraper = scraper_from_opentree(study_id =study_id,
+                                        tree_id = tree_id,
+                                        alnfile = alnfile,
                                         aln_schema = aln_schema,
                                         workdir = workdir,
                                         configfile = conf)
@@ -275,13 +276,12 @@ if args.repeat:
         scraper.run_blast_wrapper()
         besttreepath = scraper.est_full_tree()
         scraper.replace_tre(besttreepath)
-        scraper.data.write_labelled(filename="run_{}".format(run), label='^ot:ottTaxonName', direc=scraper.outputsdir)        
+        scraper.data.write_labelled(filename="run_{}".format(run), label='^ot:ottTaxonName', direc=scraper.outputsdir)
         scraper.data.write_otus(schema='table', direc=scraper.inputsdir)
-        scraper.data.write_otus(schema='json', direc=scraper.rundir)  
+        scraper.data.write_otus(schema='json', direc=scraper.rundir)
         to_be_blasted = [otu.label for otu in scraper.data.aln if ((scraper.data.otu_dict[otu.label]['^physcraper:ingroup'] == True) and (scraper.data.otu_dict[otu.label]['^physcraper:last_blasted']==None))]
     scraper.calculate_final_tree(boot_reps = boot_reps)
 elif not args.no_estimate_tree:
 #scraper.read_blast_wrapper()
     scraper.calculate_final_tree(boot_reps = boot_reps)
-    scraper.data.write_labelled(label='^ot:ottTaxonName')
-    
+    scraper.data.write_labelled(label='^ot:ottTaxonName',  direc=scraper.outputsdir)

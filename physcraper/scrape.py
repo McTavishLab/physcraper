@@ -365,7 +365,7 @@ class PhyscraperScrape():
 
                     else:
                         fn = open("{}/blast_threshold_not_passed.csv".format(self.rundir), "a+")
-                        fn.write("blast_threshold_not_passed: {}, {}, {}\n".format(sscinames, gb_acc, gi_id))
+                        fn.write("blast_threshold_not_passed: {}, {}, {}, {}\n".format(sscinames, gb_acc, gi_id, evalue))
                         fn.close()
                 else:
                     pass
@@ -486,9 +486,9 @@ class PhyscraperScrape():
                                 self.new_seqs[gb_id] = seq
 
                         else:
-                            fi = open("{}/below_eval_thresh.txt".format(self.rundir), 'a')
+                            fi = open("{}/blast_threshold_not_passed.csv".format(self.rundir), "a+")
                             fi.write("{}, {}\n".format(gb_id, hsp.expect))
-
+                            fi.close()
         except ValueError:
             sys.stderr.write("Problem reading {}, skipping\n".format(fn_path))
 
@@ -704,7 +704,7 @@ class PhyscraperScrape():
         aln_sp_d = self.make_sp_dict(aln_otus)
         debug("There are {} taxa in aln".format(len(aln_sp_d)))
         alltax = set(new_sp_d.keys()).union(aln_sp_d.keys())
-        sys.stdout.write("taxa in orginal alignment; {} taxa in updated alignemnt {}, keeping max {} seq per taxon\n".format(len(aln_sp_d), len(alltax), threshold))
+        sys.stdout.write("{} taxa in orginal alignment; {} taxa in updated alignemnt, keeping max {} seq per taxon\n".format(len(aln_sp_d), len(alltax), threshold))
         for tax_id in new_sp_d:
             debug(" {} new seqs for taxon {}".format(len(new_sp_d[tax_id]), tax_id))
             tax_otus = []
