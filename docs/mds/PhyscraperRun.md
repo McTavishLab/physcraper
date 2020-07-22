@@ -25,7 +25,7 @@ physcraper_run_py -s OPENTREE_STUDY_ID -t OPENTREE_TREE_ID -o OUTPUT/DIRECTORY/N
 
 e.g.  to update this tree [Crous et al. 2012](https://tree.opentreeoflife.org/curator/study/view/ot_350/?tab=home&tree=Tr53296) using an alignment already downloaded from treebase.
 ```
-physcraper_run.py -s ot_350 -t Tr53297 -a docs/examples/ot_350Tr53297.aln -as "nexus" -o ot_350
+physcraper_run.py -s ot_350 -t Tr53297 -a docs/examples/inputdata/ot_350Tr53297.aln -as "nexus" -o ot_350
 ```
 If the tree you want to update is not posted to the OpenTree website, you need to match the labels the labels on your tree to taxa using [OpenTree Bulk Taxonomic Name Resolution](https://tree.opentreeoflife.org/curator/tnrs/). Download your matched names, unzip the folder, and pass the .json file as a physcraper argument.
 
@@ -46,7 +46,7 @@ and an alignment file that goes with that tree.
 
 
 
-    physcraper_run.py -s ot_350 -t Tr53297 -a docs/examples/ot_350Tr53297.aln -as nexus -o ot_350_analysis
+    physcraper_run.py -s ot_350 -t Tr53297 -a docs/examples/inputdata/ot_350Tr53297.aln -as nexus -o ot_350_analysis
 
 
 ## Configuration paramaters
@@ -194,7 +194,7 @@ The simplest (but slowest) run is to choose a tree from opentree, and `physcrape
 
 The fastest way is to choose a tree from opentree, give the path to the corresponding downloaded alignment (argument `-a`) and a local blast directory (argument `-db`). To set up the local blast DB see [Local DB](setting_up_local_database):
 
-    physcraper_run.py -s ot_350 -t Tr53297 -a docs/examples/ot_350Tr53297.aln -as "nexus" -db ~/ncbi/localblastdb/ -o ot_350
+    physcraper_run.py -s ot_350 -t Tr53297 -a docs/examples/inputdata/ot_350Tr53297.aln -as "nexus" -db ~/ncbi/localblastdb/ -o ot_350
 
 
 To check tree download and the matching of names across tree and alignment without running the blast and tree estimation steps, use the flag (-no_est):
