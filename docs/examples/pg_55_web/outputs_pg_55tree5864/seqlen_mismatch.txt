@@ -1,0 +1,15 @@
+taxon: Firmiana_pulcherri, ncbi: 2053062, acc: MF621982.1, len: 159556
+taxon: Tilia_amurensis, ncbi: 1522114, acc: KT894772.1, len: 162715
+taxon: Firmiana_simpl, ncbi: 190243, acc: NC_041438.1, len: 161268
+taxon: Firmiana_simpl, ncbi: 190243, acc: MH671308.1, len: 161268
+taxon: Firmiana_major, ncbi: 197122, acc: NC_037242.1, len: 161302
+taxon: Firmiana_major, ncbi: 197122, acc: MG229069.1, len: 161302
+taxon: Firmiana_color, ncbi: 1679331, acc: BK010724.1, len: 160700
+taxon: Heritiera_littoralis, ncbi: 93780, acc: NC_043923.1, len: 168778
+taxon: Heritiera_littoralis, ncbi: 93780, acc: MK033518.1, len: 168778
+taxon: Heritiera_parvifoli, ncbi: 252110, acc: NC_038057.1, len: 160193
+taxon: Heritiera_angus, ncbi: 190245, acc: NC_037784.1, len: 168953
+taxon: Heritiera_parvifoli, ncbi: 252110, acc: MF997465.1, len: 160193
+taxon: Heritiera_angus, ncbi: 190245, acc: MG897126.1, len: 168953
+taxon: Heritiera_fomes, ncbi: 2171973, acc: NC_043924.1, len: 168904
+taxon: Heritiera_fomes, ncbi: 2171973, acc: MK033519.1, len: 168904

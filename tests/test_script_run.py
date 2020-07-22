@@ -4,7 +4,7 @@ def test_physcraper_run_script():
     subprocess.check_call(["python", "bin/physcraper_run.py", 
                             "-s", "ot_350", 
                             "-t", "Tr53297",
-                            "-a", "docs/examples/ot_350Tr53297.aln",
+                            "-a", "docs/examples/inputdata/ot_350Tr53297.aln",
                             "-as", "nexus",
                             "-no_est",
                             "-o", "tests/data/precooked/ot_350/"])
@@ -46,7 +46,7 @@ def test_script_args():
 
 def test_comparison():
     subprocess.check_call(["python", "bin/tree_comparison.py",
-                           "-d", "docs/examples/pg_55/",
+                           "-d", "docs/examples/pg_55_local/",
                             "-og", "otu376420", "otu376439", "otu376452",
                             "-o", "tests/tmp/pg_55_comparison"])
 
