@@ -44,7 +44,7 @@ parser.add_argument("-hl","--hitlist_len", help="number of blast searches to sav
 parser.add_argument("-nt","--num_threads", help="number of threads to use in processing")
 parser.add_argument("-de","--delay", help="how long to wait before blasting the same sequence again")
 
-parser.add_argument("-no_est","--no_estimate_tree", action='store_true', help="don't estimate tree")
+parser.add_argument("-no_est","--no_estimate", action='store_true', help="Just check the input files. don't estimate tree, or run last search")
 
 parser.add_argument("-bs","--bootstrap_reps", help="number of bootstrap reps")
 
@@ -281,7 +281,7 @@ if args.repeat:
         scraper.data.write_otus(schema='json', direc=scraper.rundir)
         to_be_blasted = [otu.label for otu in scraper.data.aln if ((scraper.data.otu_dict[otu.label]['^physcraper:ingroup'] == True) and (scraper.data.otu_dict[otu.label]['^physcraper:last_blasted']==None))]
     scraper.calculate_final_tree(boot_reps = boot_reps)
-elif not args.no_estimate_tree:
+elif not args.no_estimate:
 #scraper.read_blast_wrapper()
     scraper.calculate_final_tree(boot_reps = boot_reps)
     scraper.data.write_labelled(label='^ot:ottTaxonName',  direc=scraper.outputsdir)
