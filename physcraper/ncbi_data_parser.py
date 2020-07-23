@@ -16,12 +16,8 @@ _DEBUG = 0
 def get_acc_from_blast(query_string):
     """
     Get the accession number from a blast query.
-    
-    Get acc is more difficult now, as new seqs not always have gi number, then query changes.
-    
     :param query_string: string that contains acc and gi from local blast query result
-    :return: gb_acc 
-
+    :return: gb_acc
     """
     if len(query_string.split("|")) >= 3:
         gb_acc = query_string.split("|")[3]
@@ -35,50 +31,27 @@ def get_acc_from_blast(query_string):
 
 def get_gi_from_blast(query_string):
     """
-    Get the gi number from a blast query. 
+    Get the gi number from a blast query.
     Get acc is more difficult now, as new seqs not always have gi number, then query changes.
-
-    If not available return None. 
+    If not available return None.
 
     :param query_string: string that contains acc and gi from local blast query result
     :return: gb_id if available
-    """      
+    """
     if len(query_string.split("|")) >= 3:
-        gb_id = query_string.split("|")[1]
-    else:
-        return None
-    assert len(gb_id.split(".")) < 2, (len(gb_id.split(".")), gb_id)
-    assert gb_id.isdigit() is True
+        gb_gi = query_string.split("|")[1]
+        assert len(gb_gi.split(".")) < 2, (len(gb_gi.split(".")), gb_gi)
+        assert gb_gi.isdigit() is True
+        return gb_gi
+    return None
 
-def get_tax_info_from_acc(gb_id, data_obj, ids_obj):
-    '''takes an accessionumber and returns the ncabi_id and the taxon name'''
+
+def get_tax_info_from_acc(gb_id, ids_obj):
+    '''takes an accession number and returns the ncbi_id and the taxon name'''
 #    debug("Getting tax info from acc {}".format(gb_id))
-    ncbi_id = None
-    tax_name = None
-    if gb_id[:6] == "unpubl":  # There may not be ncbi id, because they aren't published
-            tax_name = data_obj.gb_dict[gb_id]["^ot:ottTaxonName"]
-            ncbi_id = data_obj.gb_dict[gb_id]["^ncbi:taxon"]
-            ott_id = data_obj.gb_dict[gb_id]["^ot:ottId"]
-            if tax_name is None:
-                tax_name = data_obj.gb_dict[gb_id][u'^user:TaxonName']
-            if ncbi_id is None: 
-                # debug(tax_name.split(" ")[0])
-                tax_lin_name = tax_name.split(" ")[0]
-                tax_lin_name = tax_lin_name.split("_")[0]
-                # debug(tax_lin_name)
-                ncbi_id = ids_obj.ncbi_parser.get_id_from_name(tax_lin_name) #TODO What should happen here if the unpublished sequence doesn't have a name that is found?
-  #  elif len(gb_id.split(".")) >= 2:  # used to figure out if gb_id is from Genbank
-  #          if gb_id in data_obj.gb_dict.keys() and "staxids" in data_obj.gb_dict[gb_id].keys():
-  #              tax_name = data_obj.gb_dict[gb_id]["sscinames"]
-  #              ncbi_id = data_obj.gb_dict[gb_id]["staxids"]
-  #          else:  # all web blast results
-  #              if tax_name is None:
-  #                  sys.stderr.write("no species name returned for {}\n".format(gb_id))
-  #              ncbi_id = ids_obj.get_ncbiid_from_acc(gb_id)
-    else:
-        ncbi_id = ids_obj.get_ncbiid_from_acc(gb_id)
-        tax_name = ids_obj.ncbiid_to_spn.get(ncbi_id)
-    if ncbi_id == None:
+    ncbi_id = ids_obj.get_ncbiid_from_acc(gb_id)
+    tax_name = ids_obj.ncbiid_to_spn.get(ncbi_id)
+    if ncbi_id is None:
         sys.stderr.write("Failed to get information for sequence with accession number {}".format(gb_id))
     return ncbi_id, tax_name
 
@@ -103,7 +76,7 @@ def get_ncbi_tax_id(handle):
 
 
 def get_ncbi_tax_name(handle):
-    """Get the sp name from ncbi. 
+    """Get the sp name from ncbi.
     Could be replaced by direct lookup to ott_ncbi.
 
     :param handle: NCBI read.handle
@@ -118,39 +91,16 @@ def get_ncbi_tax_name(handle):
     return ncbi_sp
 
 
-# def get_rank_info_from_web(self, ncbi_id):
-# #        #TODO, why input name rather than ID here?
-#         # """Collects rank and lineage information from ncbi,
-#         # used to delimit the sequences from blast,
-#         # when the web blast service is used.
-#         # """
-#         rank_dict = {}
-#         if ncbi_id == None:
-#              rank_dict = {"taxon id": ncbi_id, "lineage": 'life', "rank": 'unassigned'}
-#         else:
-#              ncbi = NCBITaxa()
-#              lineage = ncbi.get_lineage(ncbi_id)
-#              lineage2ranks = ncbi.get_rank(lineage)
-#              tax_name = str(tax_name).replace(" ", "_")
-#              assert type(ncbi_id) is int
-#              rank_dict = \
-#                  {"taxon id": ncbi_id, "lineage": lineage, "rank": lineage2ranks, "taxon name": tax_name}
-#         return rank_dict
-
-
-
-
 nodes = None
 names = None
 
 
-def strip(input):
+def strip(inputstr):
     """ Strips of blank characters from string in pd dataframe.
     """
-    if isinstance(input, str):
-        return input.strip()
-    else:
-        return input
+    if isinstance(inputstr, str):
+        return inputstr.strip()
+    return inputstr
 
 
 def load_nodes(nodes_file):
@@ -252,11 +202,11 @@ class Parser:
         # self.initialize()
 
     def initialize(self):
-        """ The data itself are not stored in __init__, as then the information will be pickled (which results in
-        gigantic pickle file sizes).
-        Instead every time the function is loaded after loading a pickle file, it will be 'initialized'.
+        """ The data itself are not stored in __init__, as then results in
+        gigantic file sizes).
+        Instead every time the function is loaded it will be 'initialized'.
         """
-        sys.stdout.write("Reading in local NCBI taxonomy information")
+        sys.stdout.write("Reading in local NCBI taxonomy information\n")
         global nodes
         nodes = load_nodes(self.nodes_file)
         global names
@@ -269,7 +219,7 @@ class Parser:
         """
         if nodes is None:
             self.initialize()
-        if tax_id == None:
+        if tax_id is None:
             rank = "unassigned"
         else:
             rank = nodes[nodes["tax_id"] == tax_id]["rank"].values[0]
@@ -278,7 +228,7 @@ class Parser:
     def get_downtorank_id(self, tax_id, downtorank="species"):
         """ Recursive function to find the parent id of a taxon as defined by downtorank.
         """
-#        debug("get downtorank")
+        #        debug("get downtorank")
         if nodes is None:
             self.initialize()
         if type(tax_id) != int:
@@ -317,7 +267,6 @@ class Parser:
        # debug("testing if {} within {}".format(tax_id, mrca_id))
         current_id = int(tax_id)
         mrca_id = int(mrca_id)
-        #debug([rank_mrca_id, rank_tax_id])
         while current_id:
             if current_id == mrca_id:
                 # debug("found right rank")
@@ -327,16 +276,16 @@ class Parser:
                 return False
             elif current_id == 0:
                 debug("current id is: {}, in search for {} in {}".format(current_id, tax_id, mrca_id))
-                return False             
+                return False
             else: #try parent
                 try:
                     current_id = int(nodes[nodes["tax_id"] == current_id]["parent_tax_id"].values[0])
                 except:
-                    sys.stderr.write("no parent found for ncbi:id {}".format(current_id))
+                    sys.stderr.write("no parent found for ncbi:id {}\n".format(current_id))
                     return False
 #                debug("parent id is: {}".format(current_id))
 
-                
+
     def get_name_from_id(self, tax_id):
         """ Find the scientific name for a given ID.
         """
@@ -350,9 +299,7 @@ class Parser:
                 tax_name = tax_name.values[0].replace(" ", "_")
                 tax_name = tax_name.strip()
         except IndexError:
-            sys.stdout.write(
-                    "tax_id {} unknown by ncbi_parser files (names.dmp)\n".format(tax_id)
-                )
+            sys.stdout.write("tax_id {} unknown by ncbi_parser files (names.dmp)\n".format(tax_id))
             tax_name = "unknown_{}".format(tax_id)
             if os.path.exists("ncbi_id_unknown.err"):
                 fn = open("ncbi_id_unknown.err", "a")
@@ -424,5 +371,3 @@ class Parser:
                     fn.write("{}".format(tax_id))
                     fn.close()
         return tax_id
-
-

@@ -47,7 +47,6 @@ def test_owndata_bulktnrs():
     conf = ConfigObj(configfi)
 
     otu_dict = bulk_tnrs_load(otu_jsonfi)  
-    print(otu_dict)
     data_obj = generate_ATT_from_files(alnfile=seqaln,
                                  aln_schema=mattype,
                                  workdir=workdir,

@@ -1,0 +1,61 @@
+otu_id	^ot:ottTaxonName	^ot:ottId	^ncbi:taxon	^ncbi:accession	^physcraper:last_blasted	^physcraper:ingroup	^physcraper:status	^ot:originalLabel	^ncbi:title	^physcraper:in_current_aln
+otu376428	Sterculia tragacantha	770769	66668	-	2020/07/23	True	original	Sterculia_tragacantha	-	True
+otu376440	Sterculia stipulata	638563	300530	-	2020/07/23	True	original	Sterculia_stipulata	-	True
+otu376436	Sterculia coccinea	638561	300531	-	2020/07/23	True	original	Sterculia_coccina	-	True
+otu376444	Sterculia parviflora	638557	300533	-	2020/07/23	True	original	Sterculia_parviflora	-	True
+otu376450	Sterculia balanghas	638559	300532	-	2020/07/23	True	original	Sterculia_balanghas	-	True
+otu376432	Hildegardia barteri	336228	82431	-	2020/07/23	True	original	Hildegardia_barteri	-	True
+otu376449	Firmiana malayana	638539	300539	-	2020/07/23	True	original	Firmiana_malayana	-	True
+otu376425	Firmiana platanifolia	283034	190243	-	2020/07/23	True	original	Firmiana_simplex	-	True
+otu376448	Hildegardia populifolia	269830	300540	-	2020/07/23	True	original	Hildegardia_populifolia	-	True
+otu376433	Pterocymbium tinctorium	269825	300542	-	2020/07/23	True	original	Pterocymbium_tinctorium	-	True
+otu376451	Scaphium macropodum	269827	300543	-	2020/07/23	True	original	Scaphium_macropodum_B	-	True
+otu376434	Scaphium linearicarpum	269821	300544	-	2020/07/23	True	original	Scaphium_linearicarpum	-	True
+otu376426	Scaphium macropodum	269827	300543	-	2020/07/23	True	original	Scaphium_macropodum_A	-	True
+otu376437	Cola acuminata	1053097	93760	-	2020/07/23	True	original	Cola_acuminata	-	True
+otu376438	Pterygota alata	793342	300553	-	2020/07/23	True	original	Pterygota_alata	-	True
+otu376447	Octolobus spectabilis	536207	300538	-	2020/07/23	True	original	Octolobus_spectabilis	-	True
+otu376442	Acropogon bullatus	269819	300547	-	2020/07/23	True	original	Acropogon_bullatus	-	True
+otu376429	Acropogon dzumacensis	269817	300546	-	2020/07/23	True	original	Acropogon_dzumacensis	-	True
+otu376443	Franciscodendron laurifolium	793340	300551	-	2020/07/23	True	original	Franciscodendron_laurifolium	-	True
+otu376431	Argyrodendron peralatum	269815	300549	-	2020/07/23	True	original	Argyrodendron_peralatum	-	True
+otu376453	Brachychiton acerifolius	5551	93745	-	2020/07/23	True	original	Brachychiton_acerifolius_B	-	True
+otu376441	Brachychiton acerifolius	5551	93745	-	2020/07/23	True	original	Brachychiton_acerifolius_A	-	True
+otu376445	Heritiera elata	536243	300536	-	2020/07/23	True	original	Heritiera_elata	-	True
+otu376454	Heritiera littoralis	108610	93780	-	2020/07/23	True	original	Heritiera_littoralis	-	True
+otu376427	Heritiera simplicifolia	638569	300534	-	2020/07/23	True	original	Heritiera_simplicifolia	-	True
+otu376435	Heritiera aurea	638567	300535	-	2020/07/23	True	original	Heritiera_aurea_A	-	True
+otu376446	Heritiera aurea	638567	300535	-	2020/07/23	True	original	Heritiera_aurea_B	-	True
+otu376430	Ochroma pyramidale	861917	66662	-	None	False	original	Ochroma_pyramidale	-	True
+otu376420	Bombax buonopozense	312752	66654	-	None	False	original	Bombax_buonopozense	-	True
+otu376439	Pachira aquatica	84784	69118	-	None	False	original	Pachira_aquatica	-	True
+otu376452	Spirotheca rosea	578275	93754	-	None	False	original	Ceiba_rosea	-	True
+otuPS1	Pterygota alata	793342	300553	AY795599.1	None	True	identical and/or subsequence of otu376438, not added	-	gi|55978661|gb|AY795599.1| Pterygota alata NADH dehydrogenase (ndhF) gene, partial cds; chloroplast	False
+otuPS2	Octolobus spectabilis	536207	300538	AY795586.1	None	True	identical and/or subsequence of otu376447, not added	-	gi|55978635|gb|AY795586.1| Octolobus spectabilis NADH dehydrogenase (ndhF) gene, partial cds; chloroplast	False
+otuPS3	Scaphium macropodum	269827	300543	AY795593.1	None	True	identical and/or subsequence of otu376426, not added	-	gi|55978649|gb|AY795593.1| Scaphium macropodum voucher P. Wilkie PW16 E NADH dehydrogenase (ndhF) gene, partial cds; chloroplast	False
+otuPS4	Scaphium linearicarpum	269821	300544	AY795592.1	None	True	identical and/or subsequence of otu376434, not added	-	gi|55978647|gb|AY795592.1| Scaphium linearicarpum NADH dehydrogenase (ndhF) gene, partial cds; chloroplast	False
+otuPS5	Acropogon dzumacensis	269817	300546	AY795595.1	None	True	identical and/or subsequence of otu376429, not added	-	gi|55978653|gb|AY795595.1| Acropogon dzumacensis NADH dehydrogenase (ndhF) gene, partial cds; chloroplast	False
+otuPS6	Cola acuminata	1053097	93760	AF111759.1	None	True	identical and/or subsequence of otu376437, not added	-	gi|6739410|gb|AF111759.1|AF111759 Cola acuminata NADH dehydrogenase (ndhF) gene, partial cds; chloroplast gene for chloroplast product	False
+otuPS7	Firmiana malayana	638539	300539	AY795587.1	None	True	identical and/or subsequence of otu376449, not added	-	gi|55978637|gb|AY795587.1| Firmiana malayana NADH dehydrogenase (ndhF) gene, partial cds; chloroplast	False
+otuPS8	Franciscodendron laurifolium	793340	300551	AY795598.1	None	True	identical and/or subsequence of otu376443, not added	-	gi|55978659|gb|AY795598.1| Franciscodendron laurifolium NADH dehydrogenase (ndhF) gene, partial cds; chloroplast	False
+otuPS9	Brachychiton acerifolius	5551	93745	AF111748.1	None	True	identical and/or subsequence of otu376453, not added	-	gi|6739389|gb|AF111748.1|AF111748 Brachychiton acerifolius NADH dehydrogenase (ndhF) gene, partial cds; chloroplast gene for chloroplast product	False
+otuPS10	Acropogon bullatus	269819	300547	AY795596.1	None	True	identical and/or subsequence of otu376442, not added	-	gi|55978655|gb|AY795596.1| Acropogon bullatus NADH dehydrogenase (ndhF) gene, partial cds; chloroplast	False
+otuPS11	Septotheca tessmannii	595902	289063	AY589082.1	None	True	new	-	gi|51702752|gb|AY589082.1| Septotheca tessmannii NADH dehydrogenase (ndhF) gene, partial cds; chloroplast	True
+otuPS12	Argyrodendron peralatum	269815	300549	AY795597.1	None	True	identical and/or subsequence of otu376431, not added	-	gi|55978657|gb|AY795597.1| Argyrodendron peralatum NADH dehydrogenase (ndhF) gene, partial cds; chloroplast	False
+otuPS13	Brachychiton acerifolius	5551	93745	AY795594.1	None	True	identical and/or subsequence of otu376441, not added	-	gi|55978651|gb|AY795594.1| Brachychiton acerifolius NADH dehydrogenase (ndhF) gene, partial cds; chloroplast	False
+otuPS14	Fremontodendron californicum	827914	93767	AF111721.1	None	True	new	-	gi|6739329|gb|AF111721.1|AF111721 Fremontodendron californicum NADH dehydrogenase (ndhF) gene, partial cds; chloroplast gene for chloroplast product	True
+otuPS15	Firmiana simplex	283034	190243	AY795589.1	None	True	identical and/or subsequence of otu376425, not added	-	gi|55978641|gb|AY795589.1| Firmiana platanifolia NADH dehydrogenase (ndhF) gene, partial cds; chloroplast	False
+otuPS16	Pterocymbium tinctorium	269825	300542	AY795590.1	None	True	identical and/or subsequence of otu376433, not added	-	gi|55978643|gb|AY795590.1| Pterocymbium tinctorium NADH dehydrogenase (ndhF) gene, partial cds; chloroplast	False
+otuPS17	Scaphium macropodum	269827	300543	AY795591.1	None	True	identical and/or subsequence of otu376451, not added	-	gi|55978645|gb|AY795591.1| Scaphium macropodum voucher P. Wilkie PW111 E NADH dehydrogenase (ndhF) gene, partial cds; chloroplast	False
+otuPS18	Hildegardia populifolia	269830	300540	AY795588.1	None	True	identical and/or subsequence of otu376448, not added	-	gi|55978639|gb|AY795588.1| Hildegardia populifolia NADH dehydrogenase (ndhF) gene, partial cds; chloroplast	False
+otuPS19	Hildegardia barteri	336228	82431	AF111754.1	None	True	identical and/or subsequence of otu376432, not added	-	gi|6739400|gb|AF111754.1|AF111754 Hildegardia barteri NADH dehydrogenase (ndhF) gene, partial cds; chloroplast gene for chloroplast product	False
+otuPS20	Heritiera elata	536243	300536	AY795585.1	None	True	identical and/or subsequence of otu376445, not added	-	gi|55978633|gb|AY795585.1| Heritiera elata NADH dehydrogenase (ndhF) gene, partial cds; chloroplast	False
+otuPS21	Heritiera littoralis	108610	93780	AF111744.1	None	True	identical and/or subsequence of otu376454, not added	-	gi|6739381|gb|AF111744.1|AF111744 Heritiera littoralis NADH dehydrogenase (ndhF) gene, partial cds; chloroplast gene for chloroplast product	False
+otuPS22	Heritiera aurea	638567	300535	AY795583.1	None	True	identical and/or subsequence of otu376435, not added	-	gi|55978629|gb|AY795583.1| Heritiera aurea voucher P. Wilkie PW37 E NADH dehydrogenase (ndhF) gene, partial cds; chloroplast	False
+otuPS23	Heritiera aurea	638567	300535	AY795584.1	None	True	identical and/or subsequence of otu376446, not added	-	gi|55978631|gb|AY795584.1| Heritiera aurea voucher P. Wilkie PW43 E NADH dehydrogenase (ndhF) gene, partial cds; chloroplast	False
+otuPS24	Heritiera simplicifolia	638569	300534	AY795582.1	None	True	identical and/or subsequence of otu376427, not added	-	gi|55978627|gb|AY795582.1| Heritiera simplicifolia NADH dehydrogenase (ndhF) gene, partial cds; chloroplast	False
+otuPS25	Sterculia parviflora	638557	300533	AY795581.1	None	True	identical and/or subsequence of otu376444, not added	-	gi|55978625|gb|AY795581.1| Sterculia parviflora NADH dehydrogenase (ndhF) gene, partial cds; chloroplast	False
+otuPS26	Sterculia coccinea	638561	300531	AY795579.1	None	True	identical and/or subsequence of otu376436, not added	-	gi|55978621|gb|AY795579.1| Sterculia coccinea NADH dehydrogenase (ndhF) gene, partial cds; chloroplast	False
+otuPS27	Sterculia balanghas	638559	300532	AY795580.1	None	True	identical and/or subsequence of otu376450, not added	-	gi|55978623|gb|AY795580.1| Sterculia balanghas NADH dehydrogenase (ndhF) gene, partial cds; chloroplast	False
+otuPS28	Sterculia stipulata	638563	300530	AY795578.1	None	True	identical and/or subsequence of otu376440, not added	-	gi|55978619|gb|AY795578.1| Sterculia stipulata NADH dehydrogenase (ndhF) gene, partial cds; chloroplast	False
+otuPS29	Sterculia tragacantha	770769	66668	AF111747.1	None	True	new	-	gi|6739387|gb|AF111747.1|AF111747 Sterculia tragacantha NADH dehydrogenase (ndhF) gene, partial cds; chloroplast gene for chloroplast product	True

@@ -39,7 +39,7 @@ def debug(msg):
 
 
 
-class PhyscraperScrape(object):
+class PhyscraperScrape():
     """
     This is the class that does the perpetual updating
 
@@ -126,7 +126,7 @@ class PhyscraperScrape(object):
         self.repeat = 1  # used to determine if we continue updating the tree
         self.newseqs_acc = []  # all ever added Genbank accession numbers during any PhyScraper run, used to speed up adding process
         self.seq_filter = ['deleted', 'subsequence,', 'not', "removed", "deleted,",
-                           "local"] 
+                           "local"]
         self.reset_markers()
         self.gb_not_added = []  # list of blast seqs not added
         self.del_superseq = set()  # items that were deleted bc they are superseqs, needed for assert statement
@@ -245,7 +245,7 @@ class PhyscraperScrape(object):
         result_handle.close()
         save_file.close()
 
-    def run_blast_wrapper(self): 
+    def run_blast_wrapper(self):
         """generates the blast queries and saves them depending on the blasting method to different file formats
 
         It runs blast if the sequences was not blasted since the user defined threshold in the config file (delay).
@@ -329,7 +329,7 @@ class PhyscraperScrape(object):
                 if gb_acc == None:
                     continue
                 gi_id = get_gi_from_blast(sseqid)
-                sseq = sseq.replace("-", "") 
+                sseq = sseq.replace("-", "")
                 taxname = sscinames.replace(" ", "_").replace("/", "_")
                 pident = float(pident)
                 evalue = float(evalue)
@@ -364,7 +364,7 @@ class PhyscraperScrape(object):
 
                     else:
                         fn = open("{}/blast_threshold_not_passed.csv".format(self.rundir), "a+")
-                        fn.write("blast_threshold_not_passed: {}, {}, {}\n".format(sscinames, gb_acc, gi_id))
+                        fn.write("blast_threshold_not_passed: {}, {}, {}, {}\n".format(sscinames, gb_acc, gi_id, evalue))
                         fn.close()
                 else:
                     pass
@@ -398,7 +398,7 @@ class PhyscraperScrape(object):
                                         "-entry", gb_id,
                                         "-outfmt", "%f",
                                         "-out", seq_path])
-        
+
             except subprocess.CalledProcessError as grepexc:
                 sys.stderr.write("error code {}, {}".format(grepexc.returncode, grepexc.output))
                 sys.exit()
@@ -484,9 +484,9 @@ class PhyscraperScrape(object):
                             else:
                                 pass
                         else:
-                            fi = open("{}/below_eval_thresh.txt".format(self.rundir), 'a')
+                            fi = open("{}/blast_threshold_not_passed.csv".format(self.rundir), "a+")
                             fi.write("{}, {}\n".format(gb_id, hsp.expect))
-
+                            fi.close()
         except ValueError:
             sys.stderr.write("Problem reading {}, skipping\n".format(fn_path))
 
@@ -703,7 +703,7 @@ class PhyscraperScrape(object):
         aln_sp_d = self.make_sp_dict(aln_otus)
         debug("There are {} taxa in aln".format(len(aln_sp_d)))
         alltax = set(new_sp_d.keys()).union(aln_sp_d.keys())
-        sys.stdout.write("taxa in orginal alignment; {} taxa in updated alignemnt {}, keeping max {} seq per taxon\n".format(len(aln_sp_d), len(alltax), threshold))
+        sys.stdout.write("{} taxa in orginal alignment; {} taxa in updated alignemnt, keeping max {} seq per taxon\n".format(len(aln_sp_d), len(alltax), threshold))
         for tax_id in new_sp_d:
             debug(" {} new seqs for taxon {}".format(len(new_sp_d[tax_id]), tax_id))
             tax_otus = []
@@ -825,7 +825,7 @@ class PhyscraperScrape(object):
                    taxon_namespace = self.data.aln.taxon_namespace)
         try:
             rooted_tre = root_tree_from_synth(newtre, self.data.otu_dict)
-        except: 
+        except:
             sys.stderr.write("Tree not rooted, root before running conflict analyses.\n")
         self.data.tre = newtre
 
@@ -964,7 +964,7 @@ class PhyscraperScrape(object):
         sumtree_file = open(summarized_tree_path, 'w')
         subprocess.check_call(["sumtrees.py",
                                 "-t", besttreepath,
-                                "-f", str(min_clade_freq), 
+                                "-f", str(min_clade_freq),
                                 "-d0",
                                 bootpath], stdout=sumtree_file)
         sumtree_file.close()

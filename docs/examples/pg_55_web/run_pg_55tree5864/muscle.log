@@ -1,0 +1,28 @@
+
+MUSCLE v3.8.1551 by Robert C. Edgar
+
+http://www.drive5.com/muscle
+This software is donated to the public domain.
+Please cite: Edgar, R.C. Nucleic Acids Res 32(5), 1792-97.
+
+new_seqs_UNaligned_2020-07-23_p 3 seqs, lengths min 2099, max 2134, avg 2119
+00:00:00    15 MB(-2%)  Iter   1   16.67%  K-mer dist pass 100:00:00    15 MB(-2%)  Iter   1  100.00%  K-mer dist pass 1
+00:00:00    15 MB(-2%)  Iter   1   16.67%  K-mer dist pass 200:00:00    15 MB(-2%)  Iter   1  100.00%  K-mer dist pass 2
+00:00:00    17 MB(-2%)  Iter   1   50.00%  Align node       00:00:01    28 MB(-3%)  Iter   1  100.00%  Align node00:00:01    29 MB(-3%)  Iter   1  100.00%  Align node
+00:00:01    29 MB(-3%)  Iter   1   33.33%  Root alignment00:00:01    29 MB(-3%)  Iter   1   66.67%  Root alignment00:00:01    29 MB(-3%)  Iter   1  100.00%  Root alignment00:00:01    29 MB(-3%)  Iter   1  100.00%  Root alignment
+00:00:01    29 MB(-3%)  Iter   2  100.00%  Root alignment
+00:00:01    29 MB(-3%)  Iter   3   66.67%  Refine biparts00:00:01    29 MB(-3%)  Iter   3  100.00%  Refine biparts00:00:01    29 MB(-3%)  Iter   3  133.33%  Refine biparts00:00:01    29 MB(-3%)  Iter   3  100.00%  Refine biparts
+
+MUSCLE v3.8.1551 by Robert C. Edgar
+
+http://www.drive5.com/muscle
+This software is donated to the public domain.
+Please cite: Edgar, R.C. Nucleic Acids Res 32(5), 1792-97.
+
+00:00:00    15 MB(-2%)  Reading /home/ejmctavish/projects/otapi/physcraper/docs/examples/pg_55_web/run_pg_55tree5864/original_cleaned.fas
+00:00:00    16 MB(-2%)  31 seqs 2156 cols
+00:00:00    16 MB(-2%)  Reading /home/ejmctavish/projects/otapi/physcraper/docs/examples/pg_55_web/run_pg_55tree5864/new_seqs_aligned_2020-07-23_pg_55tree5864.fas
+00:00:00    16 MB(-2%)  3 seqs 2134 cols
+00:00:00    17 MB(-2%)  Aligning profiles
+00:00:00    28 MB(-3%)  Building output
+00:00:00    28 MB(-3%)  Writing output

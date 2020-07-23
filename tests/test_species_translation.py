@@ -29,7 +29,7 @@ def test_compare_json():
 	otu_jsonfi = "{}/otu_dict.json".format(workdir)
 
 
-	conf = ConfigObj(configfi, interactive=False)
+	conf = ConfigObj(configfi)
 	ids = IdDicts(configfi)
 
 	otu_json = OtuJsonDict(id_to_spn, ids)

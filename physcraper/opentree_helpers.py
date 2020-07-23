@@ -1,21 +1,26 @@
-import requests
+"""Linker Functions to get data from OpenTree"""
+
 import json
 import copy
 import sys
 import os
-import physcraper
+from urllib.error import HTTPError
 
+import requests
+
+from dendropy import DataSet
 from opentree import OT, object_conversion, nexson_helpers
 
-from dendropy import Tree, DnaCharacterMatrix, DataSet, datamodel
-
-from physcraper.helpers import cd, standardize_label, to_string
+import physcraper
+from physcraper.helpers import standardize_label, to_string
 
 
 
 _VERBOSE = 0
 
 def set_verbose():
+    """Set output verbosity
+    """
     global _VERBOSE
     _VERBOSE = 1
 
@@ -30,17 +35,23 @@ def debug(msg):
 physcraper_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 
 
-if sys.version_info < (3,):
-    from urllib2 import HTTPError
-#    from urllib2 import ConnectionError
-else:
-    from urllib.error import HTTPError
 
-phylesystemref = "McTavish EJ, Hinchliff CE, Allman JF, Brown JW, Cranston KA, Holder MT,  Phylesystem: a gitbased data store for community curated phylogenetic estimates. Bioinformatics. 2015 31 2794-800. doi: 10.1093/bioinformatics/btv276\n"
-synthref = "Redelings BD, Holder MT. A supertree pipeline for summarizing phylogenetic and taxonomic information for millions of species. PeerJ. 2017;5:e3058. https://doi.org/10.7717/peerj.3058 \n"
 
-def root_tree_from_synth(tree, otu_dict, base = 'ott'):
-    leaves = [leaf.taxon.label for leaf in tree.leaf_nodes()] 
+
+phylesystemref = "McTavish EJ, Hinchliff CE, Allman JF, Brown JW, Cranston KA, Holder MT,\
+                  Phylesystem: a gitbased data store for community curated phylogenetic estimates. \
+                  Bioinformatics. 2015 31 2794-800. doi: 10.1093/bioinformatics/btv276\n"
+synthref = "Redelings BD, Holder MT. A supertree pipeline for summarizing phylogenetic and \
+            taxonomic information for millions of species. PeerJ. 2017;5:e3058. https://doi.org/10.7717/peerj.3058 \n"
+
+def root_tree_from_synth(tree, otu_dict, base='ott'):
+    """Uses information from OpenTree of Life to suggest root.
+    :param tree: dendropy :class:`Tree
+    :param otu_dict: a dictionary of tip label metadata, inculding an '^ot:ottId'attribute
+    'param base: either `synth` or `ott.` If synth will use synth tree relationships to root input tree,
+    if `ott` will use OpenTree taxonomy.
+    """
+    leaves = [leaf.taxon.label for leaf in tree.leaf_nodes()]
     spp = set([otu_dict[otu]['^ot:ottId'] for otu in leaves])
     if None in spp:
         spp.remove(None)
@@ -53,14 +64,14 @@ def root_tree_from_synth(tree, otu_dict, base = 'ott'):
             if sp in synth_ids:
                 synth_spp.add(int(sp))
         if len(synth_spp) <= 3:
-                sys.stdout.write("Didn't find enough taxon matches in synth tree to root. Tree is unrooted\n")
-                return(tree)
+            sys.stdout.write("Didn't find enough taxon matches in synth tree to root. Tree is unrooted\n")
+            return tree
         resp = OT.synth_induced_tree(ott_ids=synth_spp)
         induced_tree_of_taxa = resp.tree
     elif base == 'ott':
         tax_mrca = OT.taxon_mrca(spp).response_dict['mrca']['ott_id']
         resp = OT.taxon_subtree(tax_mrca)
-        taxleaves = [leaf.taxon.label for leaf in resp.tree.leaf_nodes()] 
+        taxleaves = [leaf.taxon.label for leaf in resp.tree.leaf_nodes()]
         matches = [label for label in taxleaves if int(label.split()[-1].strip('ott')) in spp]
         induced_tree_of_taxa = resp.tree.extract_tree_with_taxa_labels(matches)
     for node in induced_tree_of_taxa:
@@ -76,7 +87,8 @@ def root_tree_from_synth(tree, otu_dict, base = 'ott'):
             representative_taxa.append(tip.taxon.label)
         else:
             representative_taxa.append(child.leaf_nodes()[0].taxon.label)
-    sys.stdout.write("Rooting tree based on taxon relationships in {}. Root will be MRCA of {}\n".format(base, ", ".join(representative_taxa)))
+    sys.stdout.write("Rooting tree based on taxon relationships in {}. \
+                      Root will be MRCA of {}\n".format(base, ", ".join(representative_taxa)))
 
     ## Get tips for those taxa:
     phyloref = set()
@@ -85,27 +97,50 @@ def root_tree_from_synth(tree, otu_dict, base = 'ott'):
         phyloref.add(ott_id)
 
     tips_for_root = set()
-
-    for ottid in phyloref:
-        for otu in otu_dict:
-            if otu_dict[otu]['^ot:ottId'] in phyloref:
-                if  otu in leaves:           
-                    tips_for_root.add(otu)
-                    continue
-
-    mrca = tree.mrca(taxon_labels = tips_for_root)
+    for otu in otu_dict:
+        if otu_dict[otu]['^ot:ottId'] in phyloref:
+            if  otu in leaves:
+                tips_for_root.add(otu)
+                continue
+    mrca = tree.mrca(taxon_labels=tips_for_root)
     tree.reroot_at_node(mrca)
-    return(tree)
+    return tree
 
 def ottids_in_synth(synthfile=None):
-    if synthfile == None:
+    """Checks if ottids are present in current synth tree,
+    using a file listing all current otts in syth (v12.3)
+    :param synthfile: defaults to taxonomy/ottids_in_synth.txt
+    """
+    if synthfile is None:
         synthfile = open("{}/taxonomy/ottids_in_synth.txt".format(physcraper_dir))
-    ottids_in_synth = set()
+    synth_ottids = set()
     for lin in synthfile:
         ottid = lin.lstrip('ott').strip()
         if len(ottid) >= 1:
-            ottids_in_synth.add(int(ottid))
-    return(ottids_in_synth)
+            synth_ottids.add(int(ottid))
+    return synth_ottids
+
+
+def check_if_ottid_in_synth(ottid):
+    """Web call to check if ott id in synth tree. NOT USED.
+    """
+    url = 'https://api.opentreeoflife.org/v3/tree_of_life/node_info'
+    payload = json.dumps({"ott_id":int(ottid)})
+    headers = {'content-type': 'application/json', 'Accept-Charset': 'UTF-8'}
+    try:
+        r = requests.post(url, data=payload, headers=headers)
+        if r.status_code == 200:
+            return 1
+        elif r.status_code == 400:
+            return 0
+        elif r.status_code == 502:
+            sys.stderr.write("Bad OpenTree taxon ID: {}".format(ottid))
+            return 0
+        else:
+            sys.stderr.write("unexpected status code from node_info call: {}".format(r.status_code))
+            return 0
+    except requests.ConnectionError:
+        sys.stderr.write("Connection Error - coud not get taxon information from OpenTree\n")
 
 def get_ottid_from_gbifid(gbif_id):
     """Returns a dictionary mapping gbif_ids to ott_ids.
@@ -119,15 +154,16 @@ def get_ottid_from_gbifid(gbif_id):
     if res.status_code == 200:
         ott_id = int(res.json()['ott_id'])
         return ott_id
-    elif res.status_code == 400:
-        return None
-    else:
-        sys.stderr.write("error getting ott_id for gbif id {}, {}, {}".format(tax,res.status_code, res.reason))
-        return None
+    sys.stderr.write("error getting ott_id for gbif id {}, {}, {}".format(tax, res.status_code, res.reason))
+    return None
 
 
 
-def bulk_tnrs_load(filename, ids_obj = None):
+def bulk_tnrs_load(filename):
+    """Read in outputs from OpenTree Bulk TNRS,
+    translates to a Physcraper otu_dictionary.
+    :param filename: input json file
+    """
     otu_dict = {}
     with open(filename) as data_file:
         input_dict = json.load(data_file)
@@ -136,8 +172,8 @@ def bulk_tnrs_load(filename, ids_obj = None):
         otu = "otu" + name['id'].strip('name')
         while otu in otu_dict.keys():
             otu = "{}_{}".format(otu, i)
-            i+=1
-        otu_dict[otu]={"^ot:originalLabel":name["originalLabel"]}
+            i += 1
+        otu_dict[otu] = {"^ot:originalLabel":name["originalLabel"]}
         if name.get("ottTaxonName"):
             otu_dict[otu]["^ot:ottTaxonName"] = name["ottTaxonName"]
         if name.get("ottId"):
@@ -166,21 +202,26 @@ def bulk_tnrs_load(filename, ids_obj = None):
 # res = requests.post(url, data=payload, headers=headers)
 
 def get_citations_from_json(synth_response, citations_file):
+    """Get ciattions for studies in an induced synth tree repsonse.
+    :param synth_response: Webservice call record
+    :param citations_file: output file
+    """
     assert isinstance(citations_file, str)
-    f = open(citations_file,"w+")
+    f = open(citations_file, "w+")
     sys.stdout.write("Gathering citations ...")
     assert 'supporting_studies' in synth_response.keys(), synth_response.keys()
     for study in synth_response['supporting_studies']:
         study = study.split('@')[0]
         index_url = 'https://api.opentreeoflife.org/v3/studies/find_studies'
         headers = {'content-type':'application/json'}
-        payload = json.dumps({"property":"ot:studyId","value":study,"verbose":"true"})
+        payload = json.dumps({"property":"ot:studyId", "value":study, "verbose":"true"})
         res_cites = requests.post(index_url, data=payload, headers=headers)
         new_cite = res_cites.json()['matched_studies']
 #        debug(new_cite)
         sys.stdout.write('.')
         if new_cite:
-            f.write(to_string(new_cite[0].get('ot:studyPublicationReference', '')) + '\n' + new_cite[0].get('ot:studyPublication', '') + '\n')
+            f.write(to_string(new_cite[0].get('ot:studyPublicationReference', '')) + '\n'
+                    + new_cite[0].get('ot:studyPublication', '') + '\n')
     f.close()
     sys.stdout.write("Citations printed to {}\n".format(citations_file))
 
@@ -189,22 +230,25 @@ def get_citations_from_json(synth_response, citations_file):
 # use append
 
 def conflict_tree(inputtree, otu_dict):
-        tmp_tree = copy.deepcopy(inputtree)
-        new_names = set()
-        i = 1
-        for node in tmp_tree:
-            i+=1
-            if node.taxon:
-                otu = otu_dict[node.taxon.label]
-                ottid = otu['^ot:ottId']
-                new_label = "_nd{}_ott{}".format(i, ottid)
-                node.taxon.label = new_label
-            else:
-                node.label = "_nd{}_".format(i)
-        return tmp_tree
+    """Write out a tree with labels taht work for the OPenTree Conflict API
+    """
+    tmp_tree = copy.deepcopy(inputtree)
+    new_names = set()
+    i = 1
+    for node in tmp_tree:
+        i += 1
+        if node.taxon:
+            otu = otu_dict[node.taxon.label]
+            ottid = otu['^ot:ottId']
+            new_label = "_nd{}_ott{}".format(i, ottid)
+            node.taxon.label = new_label
+        else:
+            node.label = "_nd{}_".format(i)
+    return tmp_tree
 
 def get_tree_from_synth(ott_ids, label_format="name", citation="cites.txt"):
-    synth_json = OT.synth_induced_tree(ott_ids = ott_ids, label_format=label_format)
+    """Wrapper for OT.synth_induced_tree that also pulls citations"""
+    synth_json = OT.synth_induced_tree(ott_ids=ott_ids, label_format=label_format)
     get_citations_from_json(synth_json.response_dict, citation)
     return synth_json.tree
 
@@ -212,6 +256,12 @@ def get_tree_from_synth(ott_ids, label_format="name", citation="cites.txt"):
 
 
 def get_tree_from_study(study_id, tree_id, label_format="ot:originallabel"):
+    """Create a dendropy Tree object from OpenTree data.
+    :param study_id: OpenTree Study Id
+    :param tree_id: OpenTree tree id
+    :param label_format: One of 'id', 'name', "ot:originallabel", "ot:ottid", "ot:otttaxonname".
+    defaults to "ot:originallabel"
+    """
     assert label_format in ['id', 'name', "ot:originallabel", "ot:ottid", "ot:otttaxonname"]
     study = OT.get_study(study_id)
     study_nexson = study.response_dict['data']
@@ -229,7 +279,6 @@ def generate_ATT_from_phylesystem(alnfile,
                                   configfile,
                                   study_id,
                                   tree_id,
-                                  phylesystem_loc='api',
                                   search_taxon=None,
                                   tip_label='^ot:originalLabel'):
     """gathers together tree, alignment, and study info - forces names to otu_ids.
@@ -238,13 +287,15 @@ def generate_ATT_from_phylesystem(alnfile,
 
     Spaces vs underscores kept being an issue, so all spaces are coerced to underscores when data are read in.
 
-    :param aln: dendropy :class:`DnaCharacterMatrix <dendropy.datamodel.charmatrixmodel.DnaCharacterMatrix>` alignment object
+    :param aln: dendropy :class:`DnaCharacterMatrix
+    <dendropy.datamodel.charmatrixmodel.DnaCharacterMatrix>` alignment object
     :param workdir: path to working directory
     :param config_obj: config class containing the settings
     :param study_id: OToL study id of the corresponding phylogeny which shall be updated
     :param tree_id: OToL corresponding tree ID as some studies have several phylogenies
-    :param phylesystem_loc: access the github version of the OpenTree data store, or a local clone
-    :param search_taxon: optional.  OToL identifier of the mrca of the clade that shall be updated (can be subset of the phylogeny)
+    :param phylesystem_loc: access the github version of the OpenTree
+    data store, or a local clone
+    :param search_taxon: optional.  OTTiD of the mrca of the clade that shall be updated
     :return: object of class ATT
     """
     assert(tip_label in ['^ot:originalLabel', 'otu', "^ot:ottTaxonName", "^ot:ottId"])
@@ -261,9 +312,9 @@ def generate_ATT_from_phylesystem(alnfile,
     orig_lab_to_otu = {}
     treed_taxa = {}
     ingroup_otus = set(nexson_helpers.get_subtree_otus(study_nexson,
-                                              tree_id=tree_id,
-                                              subtree_id="ingroup",
-                                              return_format="otu_id"))
+                                                       tree_id=tree_id,
+                                                       subtree_id="ingroup",
+                                                       return_format="otu_id"))
     for leaf in tree_obj.leaf_node_iter():
         tn = leaf.taxon
         otu_id = tn.otu
@@ -275,7 +326,7 @@ def generate_ATT_from_phylesystem(alnfile,
         if otu_id in ingroup_otus:
             otu_dict[otu_id]["^physcraper:ingroup"] = True
         else:
-            otu_dict[otu_id]["^physcraper:ingroup"] = False            
+            otu_dict[otu_id]["^physcraper:ingroup"] = False
         orig = otu_dict[otu_id].get(u"^ot:originalLabel").replace(" ", "_")
         orig_lab_to_otu[orig] = otu_id
         if tip_label == 'otu':
@@ -286,22 +337,28 @@ def generate_ATT_from_phylesystem(alnfile,
     # need to prune tree to seqs and seqs to tree...
     ott_mrca = None
     if search_taxon:
-        if type(search_taxon) == list:
+        if search_taxon.isinstance(list):
             ott_ids = set(search_taxon)
             ott_mrca = get_mrca_ott(ott_ids)
         else:
             ott_mrca = int(search_taxon)
-    if ott_mrca == None:
+    if ott_mrca is None:
         ingroup_ott_ids = set()
         for otu_id in otu_dict:
-            if otu_dict[otu_id]["^physcraper:ingroup"] == True: 
+            if otu_dict[otu_id]["^physcraper:ingroup"] == True:
                 ingroup_ott_ids.add(otu_dict[otu_id].get(u"^ot:ottId"))
         if None in ingroup_ott_ids:
             ingroup_ott_ids.remove(None)
-        assert(len(ingroup_ott_ids)>=1)
+        assert len(ingroup_ott_ids) >= 1
         ott_mrca = get_mrca_ott(ingroup_ott_ids)
     otu_newick = tree_obj.as_string(schema="newick")
-    return physcraper.aligntreetax.AlignTreeTax(tree = otu_newick, otu_dict =otu_dict, alignment=alnfile, aln_schema = aln_schema, search_taxon=ott_mrca, workdir=workdir, configfile=configfile)
+    return physcraper.aligntreetax.AlignTreeTax(tree=otu_newick,
+                                                otu_dict=otu_dict,
+                                                alignment=alnfile,
+                                                aln_schema=aln_schema,
+                                                search_taxon=ott_mrca,
+                                                workdir=workdir,
+                                                configfile=configfile)
     # newick should be bare, but alignment should be DNACharacterMatrix
 
 
@@ -314,14 +371,14 @@ def get_dataset_from_treebase(study_id):
         nexson = study.response_dict['data']
     except HTTPError as err:
         sys.stderr.write(err)
-        sys.stderr.write("couldn't find study id {} in phylesystem location {}\n".format(study_id, phylesystem_loc))
+        sys.stderr.write("couldn't find study id {} in phylesystem\n".format(study_id))
     treebase_url = nexson['nexml'][u'^ot:dataDeposit'][u'@href']
     if 'treebase' not in nexson['nexml'][u'^ot:dataDeposit'][u'@href']:
         sys.stderr.write("No treebase record associated with study ")
         sys.exit(-2)
     else:
         tb_id = treebase_url.split(':S')[1]
-        try: 
+        try:
             url = "https://raw.githubusercontent.com/TreeBASE/supertreebase/master/data/treebase/S{}.xml".format(tb_id)
             dna = DataSet.get(url=url, schema="nexml")
         except HTTPError as err:
@@ -330,12 +387,13 @@ def get_dataset_from_treebase(study_id):
                 dna = DataSet.get(url=url, schema="nexml")
             except:
                 sys.stderr.write("Data not found on treebase or supertreebase. Try downloading to a file.\n")
-                sys.exit()     
+                sys.exit()
         if _DEBUG:
             sys.stderr.write(url + "\n")
         return dna
 
 def count_match_tree_to_aln(tree, dataset):
+    """Assess how many taxa mantch between multiple genes in an alignment data set and input tree"""
     aln_match = {}
     i = 0
     leaves = [leaf.taxon.label for leaf in tree.leaf_node_iter()]
@@ -344,10 +402,12 @@ def count_match_tree_to_aln(tree, dataset):
         for tax in mat:
             if tax.label in leaves:
                 aln_match[i] += 1
-        i+=1
+        i += 1
     return aln_match
 
-def get_max_match_aln(tree, dataset, min_match = 3):
+def get_max_match_aln(tree, dataset, min_match=3):
+    """Select an alignment from a DNA dataset
+    """
     aln_match = count_match_tree_to_aln(tree, dataset)
     max_val = min_match
     max_match = None
@@ -357,21 +417,24 @@ def get_max_match_aln(tree, dataset, min_match = 3):
             max_val = aln_match[aln]
     if max_match is not None:
         return dataset.char_matrices[max_match]
-    else:
-        return None
+    return None
 
 def deconcatenate_aln(aln_obj, filename, direc):
+    """Split out seperate concatended alignments. NOT TESTED
+    """
     #dna1 = dendropy.DnaCharacterMatrix.get(file=open("treebase_alns/M4358.nex"), schema="nexus")
-    for label in dna1.character_subsets.keys():
+    for label in aln_obj.character_subsets.keys():
         sys.stdout.write("deconcatenating {}".format(label))
-        submat = dna1.export_character_subset(label)
-        submat.write(path = "{}/{}_{}.fasta".format(direc, filename, label), schema = "fasta")
+        submat = aln_obj.export_character_subset(label)
+        submat.write(path="{}/{}_{}.fasta".format(direc, filename, label), schema="fasta")
 
 
 def scraper_from_opentree(study_id, tree_id, alnfile, workdir, aln_schema, configfile=None):
+    """Pull tree from OpenTree to create a physcraper object
+    """
     # Read in the configuration information
     data_obj = generate_ATT_from_phylesystem(alnfile=alnfile,
-                                             aln_schema = aln_schema,
+                                             aln_schema=aln_schema,
                                              workdir=workdir,
                                              configfile=configfile,
                                              study_id=study_id,
@@ -406,7 +469,8 @@ def OtuJsonDict(id_to_spn, id_dict):
             ottid, ottname, ncbiid = None, None, None
             tipname, species = lin.strip().split(",")
             clean_lab = standardize_label(tipname)
-            assert clean_lab not in sp_info_dict, ("standardized label ('{}') of `{}` already exists".format(clean_lab, tipname))
+            assert clean_lab not in sp_info_dict, ("standardized label ('{}') of \
+                                                    `{}` already exists".format(clean_lab, tipname))
             otu_id = clean_lab
             spn = species.replace("_", " ")
             info = get_ott_taxon_info(spn)
@@ -465,7 +529,7 @@ def get_mrca_ott(ott_ids):
     :return: OToL identifier of most recent common ancestor or ott_ids
     """
     debug("get_mrca_ott")
-    mrca_node = OT.synth_mrca(ott_ids = ott_ids).response_dict
+    mrca_node = OT.synth_mrca(ott_ids=ott_ids).response_dict
     if u'nearest_taxon' in mrca_node.keys():
         tax_id = mrca_node[u'nearest_taxon'].get(u'ott_id')
         if _VERBOSE:
@@ -507,25 +571,5 @@ def get_ott_taxon_info(spp_name):
             if source.startswith("ncbi"):
                 ncbi_id = source.split(":")[1]
         return ottid, ottname, ncbi_id
-    else:
-        sys.stderr.write("match to taxon {} not found in open tree taxonomy".format(spp_name))
-        return None, None, None
-
-def check_if_ottid_in_synth(ottid):
-    url = 'https://api.opentreeoflife.org/v3/tree_of_life/node_info'
-    payload = json.dumps({"ott_id":int(ottid)})
-    headers = {'content-type': 'application/json', 'Accept-Charset': 'UTF-8'}
-    try:
-        r = requests.post(url, data=payload, headers=headers)
-        if r.status_code == 200:
-            return 1
-        elif r.status_code == 400:
-            return 0
-        elif r.status_code == 502:
-            sys.stderr.write("Bad OpenTree taxon ID: {}".format(ottid))
-            return 0
-        else:
-            sys.stderr.write("unexpected status code from node_info call: {}".format(r.status_code))
-            return 0
-    except requests.ConnectionError:
-        sys.stderr.write("Connection Error - coud not get taxon information from OpenTree\n")
+    sys.stderr.write("match to taxon {} not found in open tree taxonomy".format(spp_name))
+    return None, None, None
