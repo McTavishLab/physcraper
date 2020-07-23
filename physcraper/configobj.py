@@ -231,6 +231,7 @@ max_length = {maxlen}
     def set_local(self):
         """ Checks that all appropriate files etc are in place for local blast db.
         """
+        self.blast_loc = "local"
         self.ncbi_nodes = "{}/nodes.dmp".format(self.taxonomy_dir)
         self.ncbi_names = "{}/names.dmp".format(self.taxonomy_dir)
         assert(self.blastdb), "No blast db location set"
