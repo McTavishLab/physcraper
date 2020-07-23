@@ -1,8 +1,8 @@
 
 import sys
 from Bio.Blast import NCBIXML
-from physcraper import IdDicts, PhyscraperScrape, ConfigObj, generate_ATT_from_files, generate_ATT_from_run
-from physcraper import ncbi_data_parser
+from physcraper import IdDicts, PhyscraperScrape, ConfigObj, generate_ATT_from_files, generate_ATT_from_run, ncbi_data_parser
+
 
 def test_generate_ATT_from_files():
 
@@ -32,7 +32,7 @@ def test_generate_ATT_from_run():
 
     sys.stdout.write("\nTesting 'generate_ATT_from_run '\n")
     data_obj = generate_ATT_from_run(workdir=workdir)
-      
+  
 
 def test_example():
     indir="docs/examples/pg_55_web"
@@ -118,3 +118,4 @@ for blast_record in blast_records:
                                 print("was mismatch")
                             else: 
                                     print("was match")"""
+
