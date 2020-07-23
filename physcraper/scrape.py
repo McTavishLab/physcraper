@@ -209,7 +209,6 @@ class PhyscraperScrape(object):
             proc = subprocess.check_output(blastcmd, cwd=self.config.blastdb)
         except KeyboardInterrupt:
             if os.stat(abs_outfile).st_size == 0:
-                print("deleting {}".format(abs_outfile))
                 os.remove(abs_outfile)
             sys.stderr.write("KeyboardInterrupt")
             sys.exit()
@@ -465,8 +464,8 @@ class PhyscraperScrape(object):
             for blast_record in blast_records:
                 for alignment in blast_record.alignments:
                     for hsp in alignment.hsps:
+                        gb_id = alignment.title.split("|")[3]  # 1 is for gi
                         if float(hsp.expect) < float(self.config.e_value_thresh):
-                            gb_id = alignment.title.split("|")[3]  # 1 is for gi
                             if len(gb_id.split(".")) == 1:
                                  sys.stdout.write("skipping acc {}, incorrect format\n".format(gb_id))
                             elif gb_id not in self.data.gb_dict:  # skip ones we already have
@@ -474,17 +473,16 @@ class PhyscraperScrape(object):
                                 gi_id = alignment.title.split('|')[1]
                                 gb_acc = alignment.accession
                                 stitle = alignment.title
-                                hsps = alignment.hsps
-                                for hsp in hsps:
-                                    match = hsp.sbjct.lower().replace('-','')
-                                    if match not in seq.lower():
-                                        seq = self.check_complement(match, seq, gb_id)
+                                match = hsp.sbjct.lower().replace('-','')
+                                if match not in seq.lower():
+                                    seq = self.check_complement(match, seq, gb_id)
                                 length = alignment.length
                                 query_dict = {'^ncbi:gi': gi_id, 'accession': gb_acc, 'title': stitle,
-                                              'length': length, 'hsps': hsps}
+                                              'length': length, 'hsp': hsp}
                                 self.data.gb_dict[gb_id] = query_dict
                                 self.new_seqs[gb_id] = seq
-
+                            else:
+                                pass
                         else:
                             fi = open("{}/below_eval_thresh.txt".format(self.rundir), 'a')
                             fi.write("{}, {}\n".format(gb_id, hsp.expect))
@@ -685,7 +683,8 @@ class PhyscraperScrape(object):
 #        debug("len new seqs otu dict after remove identical{}".format(len(self.new_seqs_otu_id)))
         sys.stdout.write("**** Found {} new sequences****\n".format(len(self.new_seqs_otu_id)))
         if len(self.new_seqs_otu_id)==0:
-            sys.exit()
+            pass
+#            sys.exit()
         with open(self.logfile, "a") as log:
             log.write("{} new sequences added from Genbank after removing identical seq, "
                       "of {} before filtering\n".format(len(self.new_seqs_otu_id), len(self.new_seqs)))
@@ -733,9 +732,9 @@ class PhyscraperScrape(object):
 
 
 
-    def make_sp_dict(self, otu_list=[]):
-        """Mkaes dict of OT_ids by species"""
-        if otu_list == []:
+    def make_sp_dict(self, otu_list=None):
+        """Makes dict of OT_ids by species"""
+        if otu_list is None:
             otu_list = self.new_seqs_otu_id.keys()
         debug("make sp_dict")
         sp_d = {}

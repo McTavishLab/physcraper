@@ -1,7 +1,7 @@
 
 import sys
-from physcraper import generate_ATT_from_files, generate_ATT_from_run
 
+from physcraper import generate_ATT_from_files, generate_ATT_from_run
 
 def test_generate_ATT_from_files():
 
@@ -31,4 +31,3 @@ def test_generate_ATT_from_run():
 
     sys.stdout.write("\nTesting 'generate_ATT_from_run (fromfile.py)'\n")
     data_obj = generate_ATT_from_run(workdir=workdir)
-      
