@@ -284,7 +284,8 @@ class PhyscraperScrape():
                     file_ending = "txt"
                 else:
                     file_ending = "xml"
-                fn_path = "{}/{}.{}".format(self.blast_subdir, taxon.label, file_ending)
+                idtag = "{}{}".format(taxon.label, self.data.otu_dict[taxon.label].get('^ncbi:accession', ''))
+                fn_path = "{}/{}.{}".format(self.blast_subdir, idtag, file_ending)
                 # if _DEBUG:
                 #     sys.stdout.write("attempting to write {}\n".format(fn_path))
                 if not os.path.isfile(fn_path):
@@ -517,7 +518,8 @@ class PhyscraperScrape():
                 file_ending = "txt"
             else:
                 file_ending = "xml"
-            fn_path = "{}/{}.{}".format(self.blast_subdir, taxon.label, file_ending)
+            idtag = "{}{}".format(taxon.label, self.data.otu_dict[taxon.label].get('^ncbi:accession', ''))
+            fn_path = "{}/{}.{}".format(self.blast_subdir, idtag, file_ending)
             if _DEBUG:
                 sys.stdout.write("reading {}\n".format(fn_path))
             if os.path.isfile(fn_path):

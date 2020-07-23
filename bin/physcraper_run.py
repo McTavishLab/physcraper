@@ -279,6 +279,8 @@ if args.repeat:
         scraper.data.write_labelled(filename="run_{}".format(run), label='^ot:ottTaxonName', direc=scraper.outputsdir)
         scraper.data.write_otus(schema='table', direc=scraper.inputsdir)
         scraper.data.write_otus(schema='json', direc=scraper.rundir)
+        os.rename(scraper.rundir, "{}_run{}".format(scraper.rundir, run))
+        os.mkdir(scraper.rundir)
         to_be_blasted = [otu.label for otu in scraper.data.aln if ((scraper.data.otu_dict[otu.label]['^physcraper:ingroup'] == True) and (scraper.data.otu_dict[otu.label]['^physcraper:last_blasted']==None))]
     scraper.calculate_final_tree(boot_reps = boot_reps)
 elif not args.no_estimate:
