@@ -267,22 +267,39 @@ if args.block_list:
         sys.stdout.write("Excluding accession numbers {}\n".format(','.join(scraper.blocklist)))
 
 
-run = 1
+run = 0
 if args.repeat:
+    besttreepath = None
     to_be_blasted = ['first_pass']
+    rundir_base = scraper.rundir
     while len(to_be_blasted) >= 1:
         run += 1
-        print(scraper.blast_subdir)
         scraper.run_blast_wrapper()
         besttreepath = scraper.est_full_tree()
-        scraper.replace_tre(besttreepath)
-        scraper.data.write_labelled(filename="run_{}".format(run), label='^ot:ottTaxonName', direc=scraper.outputsdir)
-        scraper.data.write_otus(schema='table', direc=scraper.inputsdir)
-        scraper.data.write_otus(schema='json', direc=scraper.rundir)
-        os.rename(scraper.rundir, "{}_run{}".format(scraper.rundir, run))
-        os.mkdir(scraper.rundir)
-        to_be_blasted = [otu.label for otu in scraper.data.aln if ((scraper.data.otu_dict[otu.label]['^physcraper:ingroup'] == True) and (scraper.data.otu_dict[otu.label]['^physcraper:last_blasted']==None))]
-    scraper.calculate_final_tree(boot_reps = boot_reps)
+        if besttreepath:
+            prev_besttreepath = besttreepath
+            scraper.replace_tre(besttreepath)
+            scraper.data.write_labelled(filename="run_{}".format(run), label='^ot:ottTaxonName', direc=scraper.outputsdir)
+            scraper.data.write_otus(schema='table', direc=scraper.inputsdir)
+            scraper.data.write_otus(schema='json', direc=scraper.rundir)
+            new_rundir = "{}_run{}".format(rundir_base, run)
+            prev_rundir = scraper.rundir
+            scraper.rundir = new_rundir
+            os.mkdir(scraper.rundir)
+            to_be_blasted = [otu.label for otu in scraper.data.aln if ((scraper.data.otu_dict[otu.label]['^physcraper:ingroup'] == True) and (scraper.data.otu_dict[otu.label]['^physcraper:last_blasted']==None))]
+        elif besttreepath is None:
+            os.rmdir(scraper.rundir)
+            scraper.rundir = prev_rundir
+            updated_alnfi = "{}/physcraper_{}.fas".format(prev_rundir, scraper.data.tag)
+            bootpath = scraper.calculate_bootstrap(alignment = updated_alnfi, num_reps = boot_reps)
+            sumtreepath = scraper.summarize_boot(prev_besttreepath, bootpath)
+            scraper.replace_tre(sumtreepath, schema="nexus")
+            scraper.data.write_files(direc=scraper.outputsdir)
+            scraper.data.write_otus(schema='table', direc=scraper.inputsdir)
+            scraper.data.write_labelled(filename='updated_taxonname',label='^ot:ottTaxonName', direc = scraper.outputsdir)
+            to_be_blasted =  []
+        else:
+            sys.stderr.write("unexpected error")
 elif not args.no_estimate:
 #scraper.read_blast_wrapper()
     scraper.calculate_final_tree(boot_reps = boot_reps)

@@ -167,27 +167,32 @@ def bulk_tnrs_load(filename):
     otu_dict = {}
     with open(filename) as data_file:
         input_dict = json.load(data_file)
-    for name in input_dict["names"]:
-        i = 1
-        otu = "otu" + name['id'].strip('name')
-        while otu in otu_dict.keys():
-            otu = "{}_{}".format(otu, i)
-            i += 1
-        otu_dict[otu] = {"^ot:originalLabel":name["originalLabel"]}
-        if name.get("ottTaxonName"):
-            otu_dict[otu]["^ot:ottTaxonName"] = name["ottTaxonName"]
-        if name.get("ottId"):
-            otu_dict[otu]["^ot:ottId"] = name["ottId"]
-        for source in name.get("taxonomicSources", []):
-            #debug(source)
-            if source:
-                taxsrc = source.split(":")
-                assert len(taxsrc) == 2, taxsrc
-                otu_dict[otu]["^{}:taxon".format(taxsrc[0])] = taxsrc[1]
-    for otu in otu_dict:
-        otu_dict[otu]["^physcraper:status"] = "original"
-        otu_dict[otu]["^physcraper:last_blasted"] = None
-        otu_dict[otu]["^physcraper:ingroup"] = "unknown"
+    if "name" in input_dict.keys():
+        for name in input_dict["names"]:
+            i = 1
+            otu = "otu" + name['id'].strip('name')
+            while otu in otu_dict.keys():
+                otu = "{}_{}".format(otu, i)
+                i += 1
+            otu_dict[otu] = {"^ot:originalLabel":name["originalLabel"]}
+            if name.get("ottTaxonName"):
+                otu_dict[otu]["^ot:ottTaxonName"] = name["ottTaxonName"]
+            if name.get("ottId"):
+                otu_dict[otu]["^ot:ottId"] = name["ottId"]
+            for source in name.get("taxonomicSources", []):
+                #debug(source)
+                if source:
+                    taxsrc = source.split(":")
+                    assert len(taxsrc) == 2, taxsrc
+                    otu_dict[otu]["^{}:taxon".format(taxsrc[0])] = taxsrc[1]
+        for otu in otu_dict:
+            otu_dict[otu]["^physcraper:status"] = "original"
+            otu_dict[otu]["^physcraper:last_blasted"] = None
+            otu_dict[otu]["^physcraper:ingroup"] = "unknown"
+    else:
+        for otu in input_dict:
+            assert input_dict[otu]["^physcraper:status"], otu_dict[otu]
+            otu_dict = input_dict
     return otu_dict
 
 
