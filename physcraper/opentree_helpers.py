@@ -316,10 +316,13 @@ def generate_ATT_from_phylesystem(alnfile,
     otu_dict = {tn.taxon.otu:{} for tn in tree_obj.leaf_node_iter()}
     orig_lab_to_otu = {}
     treed_taxa = {}
-    ingroup_otus = set(nexson_helpers.get_subtree_otus(study_nexson,
+    ingroup_otus = nexson_helpers.get_subtree_otus(study_nexson,
                                                        tree_id=tree_id,
                                                        subtree_id="ingroup",
-                                                       return_format="otu_id"))
+                                                       return_format="otu_id")
+    if not ingroup_otus:
+        sys.stdout.write("No ingroup annotation found in tree; using all taxa.\n \
+                          Please update tree annotation through OpenTree curation app.\n")
     for leaf in tree_obj.leaf_node_iter():
         tn = leaf.taxon
         otu_id = tn.otu
@@ -328,10 +331,13 @@ def generate_ATT_from_phylesystem(alnfile,
         otu_dict[otu_id]["^ot:originalLabel"] = tn.original_label.replace(" ", "_")
         otu_dict[otu_id]["^physcraper:status"] = "original"
         otu_dict[otu_id]["^physcraper:last_blasted"] = None
-        if otu_id in ingroup_otus:
-            otu_dict[otu_id]["^physcraper:ingroup"] = True
+        if ingroup_otus:
+            if otu_id in set(ingroup_otus):
+                otu_dict[otu_id]["^physcraper:ingroup"] = True
+            else:
+                otu_dict[otu_id]["^physcraper:ingroup"] = False
         else:
-            otu_dict[otu_id]["^physcraper:ingroup"] = False
+            otu_dict[otu_id]["^physcraper:ingroup"] = 'unknown'
         orig = otu_dict[otu_id].get(u"^ot:originalLabel").replace(" ", "_")
         orig_lab_to_otu[orig] = otu_id
         if tip_label == 'otu':
@@ -350,7 +356,10 @@ def generate_ATT_from_phylesystem(alnfile,
     if ott_mrca is None:
         ingroup_ott_ids = set()
         for otu_id in otu_dict:
-            if otu_dict[otu_id]["^physcraper:ingroup"] == True:
+            if ingroup_otus:
+                if otu_dict[otu_id]["^physcraper:ingroup"] == True:
+                    ingroup_ott_ids.add(otu_dict[otu_id].get(u"^ot:ottId"))
+            else:
                 ingroup_ott_ids.add(otu_dict[otu_id].get(u"^ot:ottId"))
         if None in ingroup_ott_ids:
             ingroup_ott_ids.remove(None)
