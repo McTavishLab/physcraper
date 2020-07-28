@@ -167,7 +167,7 @@ def bulk_tnrs_load(filename):
     otu_dict = {}
     with open(filename) as data_file:
         input_dict = json.load(data_file)
-    if "name" in input_dict.keys():
+    if "names" in input_dict.keys():
         for name in input_dict["names"]:
             i = 1
             otu = "otu" + name['id'].strip('name')
