@@ -167,27 +167,32 @@ def bulk_tnrs_load(filename):
     otu_dict = {}
     with open(filename) as data_file:
         input_dict = json.load(data_file)
-    for name in input_dict["names"]:
-        i = 1
-        otu = "otu" + name['id'].strip('name')
-        while otu in otu_dict.keys():
-            otu = "{}_{}".format(otu, i)
-            i += 1
-        otu_dict[otu] = {"^ot:originalLabel":name["originalLabel"]}
-        if name.get("ottTaxonName"):
-            otu_dict[otu]["^ot:ottTaxonName"] = name["ottTaxonName"]
-        if name.get("ottId"):
-            otu_dict[otu]["^ot:ottId"] = name["ottId"]
-        for source in name.get("taxonomicSources", []):
-            #debug(source)
-            if source:
-                taxsrc = source.split(":")
-                assert len(taxsrc) == 2, taxsrc
-                otu_dict[otu]["^{}:taxon".format(taxsrc[0])] = taxsrc[1]
-    for otu in otu_dict:
-        otu_dict[otu]["^physcraper:status"] = "original"
-        otu_dict[otu]["^physcraper:last_blasted"] = None
-        otu_dict[otu]["^physcraper:ingroup"] = "unknown"
+    if "names" in input_dict.keys():
+        for name in input_dict["names"]:
+            i = 1
+            otu = "otu" + name['id'].strip('name')
+            while otu in otu_dict.keys():
+                otu = "{}_{}".format(otu, i)
+                i += 1
+            otu_dict[otu] = {"^ot:originalLabel":name["originalLabel"]}
+            if name.get("ottTaxonName"):
+                otu_dict[otu]["^ot:ottTaxonName"] = name["ottTaxonName"]
+            if name.get("ottId"):
+                otu_dict[otu]["^ot:ottId"] = name["ottId"]
+            for source in name.get("taxonomicSources", []):
+                #debug(source)
+                if source:
+                    taxsrc = source.split(":")
+                    assert len(taxsrc) == 2, taxsrc
+                    otu_dict[otu]["^{}:taxon".format(taxsrc[0])] = taxsrc[1]
+        for otu in otu_dict:
+            otu_dict[otu]["^physcraper:status"] = "original"
+            otu_dict[otu]["^physcraper:last_blasted"] = None
+            otu_dict[otu]["^physcraper:ingroup"] = "unknown"
+    else:
+        for otu in input_dict:
+            assert input_dict[otu]["^physcraper:status"], otu_dict[otu]
+            otu_dict = input_dict
     return otu_dict
 
 
@@ -311,10 +316,13 @@ def generate_ATT_from_phylesystem(alnfile,
     otu_dict = {tn.taxon.otu:{} for tn in tree_obj.leaf_node_iter()}
     orig_lab_to_otu = {}
     treed_taxa = {}
-    ingroup_otus = set(nexson_helpers.get_subtree_otus(study_nexson,
+    ingroup_otus = nexson_helpers.get_subtree_otus(study_nexson,
                                                        tree_id=tree_id,
                                                        subtree_id="ingroup",
-                                                       return_format="otu_id"))
+                                                       return_format="otu_id")
+    if not ingroup_otus:
+        sys.stdout.write("No ingroup annotation found in tree; using all taxa.\n \
+                          Please update tree annotation through OpenTree curation app.\n")
     for leaf in tree_obj.leaf_node_iter():
         tn = leaf.taxon
         otu_id = tn.otu
@@ -323,10 +331,13 @@ def generate_ATT_from_phylesystem(alnfile,
         otu_dict[otu_id]["^ot:originalLabel"] = tn.original_label.replace(" ", "_")
         otu_dict[otu_id]["^physcraper:status"] = "original"
         otu_dict[otu_id]["^physcraper:last_blasted"] = None
-        if otu_id in ingroup_otus:
-            otu_dict[otu_id]["^physcraper:ingroup"] = True
+        if ingroup_otus:
+            if otu_id in set(ingroup_otus):
+                otu_dict[otu_id]["^physcraper:ingroup"] = True
+            else:
+                otu_dict[otu_id]["^physcraper:ingroup"] = False
         else:
-            otu_dict[otu_id]["^physcraper:ingroup"] = False
+            otu_dict[otu_id]["^physcraper:ingroup"] = 'unknown'
         orig = otu_dict[otu_id].get(u"^ot:originalLabel").replace(" ", "_")
         orig_lab_to_otu[orig] = otu_id
         if tip_label == 'otu':
@@ -345,7 +356,10 @@ def generate_ATT_from_phylesystem(alnfile,
     if ott_mrca is None:
         ingroup_ott_ids = set()
         for otu_id in otu_dict:
-            if otu_dict[otu_id]["^physcraper:ingroup"] == True:
+            if ingroup_otus:
+                if otu_dict[otu_id]["^physcraper:ingroup"] == True:
+                    ingroup_ott_ids.add(otu_dict[otu_id].get(u"^ot:ottId"))
+            else:
                 ingroup_ott_ids.add(otu_dict[otu_id].get(u"^ot:ottId"))
         if None in ingroup_ott_ids:
             ingroup_ott_ids.remove(None)

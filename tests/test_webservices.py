@@ -101,4 +101,14 @@ def test_find_trees():
     assert(os.path.exists("tests/tmp/orcinus.txt"))
 
 
-
+def test_no_ingroup():
+    alnfile = "tests/data/pg_127tree804.aln"
+    workdir = "tests/tmp/no_ingroup"
+    opentree_helpers.generate_ATT_from_phylesystem(alnfile,
+                                                   "nexus",
+                                                   workdir,
+                                                   "tests/data/test.config",
+                                                   "pg_127",
+                                                   "tree804",
+                                                   search_taxon=None,
+                                                   tip_label='^ot:originalLabel')

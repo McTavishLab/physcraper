@@ -284,7 +284,8 @@ class PhyscraperScrape():
                     file_ending = "txt"
                 else:
                     file_ending = "xml"
-                fn_path = "{}/{}.{}".format(self.blast_subdir, taxon.label, file_ending)
+                idtag = "{}{}".format(taxon.label, self.data.otu_dict[taxon.label].get('^ncbi:accession', ''))
+                fn_path = "{}/{}.{}".format(self.blast_subdir, idtag, file_ending)
                 # if _DEBUG:
                 #     sys.stdout.write("attempting to write {}\n".format(fn_path))
                 if not os.path.isfile(fn_path):
@@ -309,8 +310,6 @@ class PhyscraperScrape():
                 if _VERBOSE:
                     sys.stdout.write("otu {} was last blasted on {}, {} days ago and is not being re-blasted. "
                                      "Use run_blast_wrapper(delay = 0) to force a search.\n".format(otu_id, last_blast, time_passed))
-    #except KeyboardInterrupt:
-           # sys.exit()
         self._blasted = 1
 
 
@@ -517,7 +516,8 @@ class PhyscraperScrape():
                 file_ending = "txt"
             else:
                 file_ending = "xml"
-            fn_path = "{}/{}.{}".format(self.blast_subdir, taxon.label, file_ending)
+            idtag = "{}{}".format(taxon.label, self.data.otu_dict[taxon.label].get('^ncbi:accession', ''))
+            fn_path = "{}/{}.{}".format(self.blast_subdir, idtag, file_ending)
             if _DEBUG:
                 sys.stdout.write("reading {}\n".format(fn_path))
             if os.path.isfile(fn_path):
@@ -533,8 +533,9 @@ class PhyscraperScrape():
         if len(self.new_seqs) == 0:
             sys.stderr.write("no new sequences found in blast. Exiting")
             sys.exit()
-        self.remove_identical_seqs()
+        ret = self.remove_identical_seqs()
         self._blast_read = 1
+        return ret
 
 
     def seq_dict_build(self, seq, new_otu_label, seq_dict):
@@ -681,14 +682,13 @@ class PhyscraperScrape():
         self.new_seqs_otu_id = filter_dict  # renamed new seq to their otu_ids from GI's, but all info is in self.otu_dict
         self.new_seqs = {} #Wipe clean
 #        debug("len new seqs otu dict after remove identical{}".format(len(self.new_seqs_otu_id)))
-        sys.stdout.write("**** Found {} new sequences****\n".format(len(self.new_seqs_otu_id)))
+        sys.stdout.write("**** Found {} new sequences after removing identical seqs****\n".format(len(self.new_seqs_otu_id)))
         if len(self.new_seqs_otu_id)==0:
-            pass
-#            sys.exit()
+            return None
         with open(self.logfile, "a") as log:
             log.write("{} new sequences added from Genbank after removing identical seq, "
                       "of {} before filtering\n".format(len(self.new_seqs_otu_id), len(self.new_seqs)))
-#        self.data.dump()
+        return len(self.new_seqs_otu_id)
 
     def filter_seqs(self, tmp_dict, type="random", threshold=None):
         if threshold == None:
@@ -776,8 +776,11 @@ class PhyscraperScrape():
     def write_new_seqs(self, filename='date'):
         """writes out the query sequence file"""
         debug("write query seq")
+        new_seqs = len(self.new_seqs_otu_id.keys())
         if not self._blast_read:
-            self.read_blast_wrapper()
+            new_seqs = self.read_blast_wrapper()
+        if new_seqs is None:
+            return None
         if filename == 'date':
             self.newseqs_file = "NEW{}_{}.fasta".format(self.date, self.data.tag)
         else:
@@ -794,14 +797,19 @@ class PhyscraperScrape():
 
 
     def align_new_seqs(self, aligner = 'muscle'):
+        ret = len(self.new_seqs_otu_id)
         if not self._blast_read:
-            self.read_blast_wrapper()
+           ret = self.read_blast_wrapper()
+        if ret is None:
+            return None
         assert aligner in ['muscle', 'papara']
         if aligner == 'papara':
             self.run_papara()
         if aligner == 'muscle':
             self.run_muscle()
         alnfi = self.data.write_aln(direc=self.rundir)
+        if alnfi is None:
+            return None
         self.data.write_otus(schema='table', direc=self.outputsdir)
         self.data.write_otus(schema='json', direc=self.rundir)
         return alnfi
@@ -884,14 +892,16 @@ class PhyscraperScrape():
         return(outpath_ALL)
 
 
-    def est_full_tree(self, alignment = None, startingtree = None, method = "raxml"):
+    def est_full_tree(self, alignment = 'default', startingtree = None, method = "raxml"):
         """Full raxml run from the placement tree as starting tree.
         The PTHREAD version is the faster one, hopefully people install it. if not it falls back to the normal raxml.
         """
         cwd = os.getcwd()
-        if alignment == None:
+        if alignment == 'default':
             debug("call align query seqs from est full tree, self._blast_read is {}".format(self._blast_read))
             alignment = self.align_new_seqs()
+        if alignment is None:
+            return None
         if startingtree == None:
             startingtree = os.path.abspath(self.data.write_random_resolve_tre(direc=self.rundir))
         debug("est full tree")
@@ -914,7 +924,7 @@ class PhyscraperScrape():
 #
 
 
-    def calculate_bootstrap(self, alignment = None, num_reps = "10"):
+    def calculate_bootstrap(self, alignment = 'default', num_reps = "10"):
         """Calculates bootstrap and consensus trees.
 
         -p: random seed
@@ -927,9 +937,12 @@ class PhyscraperScrape():
 
         """
         debug("calculate bootstrap")
-        if alignment == None:
+        if alignment == 'default':
             debug("call align query seqs from est full tree, self._blast_read is {}".format(self._blast_read))
             alignment = self.align_new_seqs()
+        if alignment is None:
+            sys.stderr.write("no default alignemnt found for bootstrap\n")
+            return None
         with cd(self.rundir):
             ntasks = os.environ.get('SLURM_NTASKS_PER_NODE')
             nnodes = os.environ.get("SLURM_JOB_NUM_NODES")
@@ -981,6 +994,8 @@ class PhyscraperScrape():
         debug("calculate final tree")
         debug("current alignment length {}".format(len(self.data.aln)))
         besttreepath = self.est_full_tree()
+        if besttreepath is None:
+            return None
         bootpath = self.calculate_bootstrap(num_reps = boot_reps)
         sumtreepath = self.summarize_boot(besttreepath, bootpath)
         self.replace_tre(sumtreepath, schema="nexus")
