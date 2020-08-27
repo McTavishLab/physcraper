@@ -30,3 +30,4 @@ taxonomy/full_seqs/
 *.fas
 taxonomy/*.dmp
 taxonomy/*.tar*
+README.html

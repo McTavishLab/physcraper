@@ -1,7 +1,7 @@
 
-<!-- README.md is generated from README.Rmd; please edit the .Rmd file -->
+<!-- README.md is generated from README.Rmd; please edit the .Rmd file and then from R do rmarkdown::render("README.Rmd")-->
 
-<img align="left" width="260" src="https://raw.githubusercontent.com/McTavishLab/physcraper/main/docs/physcraper.svg">
+<img align="left" width="250" src="https://raw.githubusercontent.com/McTavishLab/physcraper/main/docs/physcraper.svg">
 
 # Physcraper
 
@@ -26,23 +26,32 @@ Lab](https://mctavishlab.github.io/). Please post a GitHub issue
 [here](https://github.com/McTavishLab/physcraper/issues) or contact
 <ejmctavish@ucmerced.edu> if you need any help or have feedback.
 
-This is the code repository. For an introduction to the tool,
-installation and function usage instructions, tutorials and examples,
-and tools for developers, please refer to Physcraper’s [documentation
-website](https://physcraper.readthedocs.io/en/latest/) for more
-details\!
-
-Installation instuctions at [INSTALL](docs/mds/INSTALL.md)
+This is the code repository. Please refer to Physcraper’s [documentation
+website](https://physcraper.readthedocs.io/en/latest/) for more details
+on
+[installation](https://physcraper.readthedocs.io/en/latest/install.html)
+instructions,
+[function](https://physcraper.readthedocs.io/en/latest/apidocs.html)
+usage, running
+[tutorials](https://physcraper.readthedocs.io/en/latest/physcraper_run.html),
+real life
+[examples](https://physcraper.readthedocs.io/en/latest/data_exploration.html),
+and tools for
+[developers](https://physcraper.readthedocs.io/en/latest/CONTRIBUTING.html).
 
 :hamster: :palm\_tree: :frog: :ear\_of\_rice: :panda\_face: :tulip:
 :octopus: :blossom: :whale: :mushroom: :ant: :cactus: :fish:
 :maple\_leaf: :water\_buffalo: 🦠 :shell: :bug: :octocat:
 
-`Physcraper` relies on:
+Physcraper relies on:
 
-Dendropy: *Sukumaran, J and MT Holder. 2010.
-DendroPy: a Python library for phylogenetic computing. Bioinformatics
-26: 1569-1571*.
+• [Dendropy](https://dendropy.org/primer/index.html) *Sukumaran, J and
+MT Holder. 2010. DendroPy: a Python library for phylogenetic computing.
+Bioinformatics 26: 1569-1571*.
 
-[The Open Tree of Life Project](oentreeoflife.org):
-*Open Tree of Life, Benjamin Redelings, Luna Luisa Sanchez Reyes, Karen A. Cranston, Jim Allman, Mark T. Holder, & Emily Jane McTavish. (2019). Open Tree of Life Synthetic Tree (Version 12.3). Zenodo. [https://doi.org/10.5281/zenodo.3937741](https://doi.org/10.5281/zenodo.3937741)*
+• [The Open Tree of Life
+Project](https://tree.opentreeoflife.org/opentree/argus/opentree12.3@ott93302)
+*Open Tree of Life, Benjamin Redelings, Luna Luisa Sanchez Reyes, Karen
+A. Cranston, Jim Allman, Mark T. Holder, & Emily Jane McTavish. (2019).
+Open Tree of Life Synthetic Tree (Version 12.3). Zenodo.
+<https://doi.org/10.5281/zenodo.3937741>*

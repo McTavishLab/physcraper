@@ -2,7 +2,7 @@
 output: github_document
 ---
 
-<!-- README.md is generated from README.Rmd; please edit the .Rmd file -->
+<!-- README.md is generated from README.Rmd; please edit the .Rmd file and then from R do rmarkdown::render("README.Rmd")-->
 
 ```{r setup, include = FALSE}
 knitr::opts_chunk$set(
@@ -33,9 +33,15 @@ IS_README <- TRUE
 
 ```
 
+
 This is the code repository.
-For an introduction to the tool, installation and function usage instructions, tutorials and examples, and tools for developers,
-please refer to Physcraper's [documentation website](https://physcraper.readthedocs.io/en/latest/) for more details!
+Please refer to Physcraper's [documentation website](https://physcraper.readthedocs.io/en/latest/) for more details
+on [installation](https://physcraper.readthedocs.io/en/latest/install.html) instructions,
+[function](https://physcraper.readthedocs.io/en/latest/apidocs.html) usage,
+running [tutorials](https://physcraper.readthedocs.io/en/latest/physcraper_run.html),
+real life [examples](https://physcraper.readthedocs.io/en/latest/data_exploration.html),
+and tools for [developers](https://physcraper.readthedocs.io/en/latest/CONTRIBUTING.html).
+
 
 
 :hamster: :palm_tree: :frog: :ear_of_rice: :panda_face: :tulip: :octopus: :blossom: :whale: :mushroom: :ant: :cactus: :fish: :maple_leaf: :water_buffalo: 🦠 :shell: :bug: :octocat:
