@@ -30,4 +30,5 @@ taxonomy/full_seqs/
 *.fas
 taxonomy/*.dmp
 taxonomy/*.tar*
+taxonomy/downloaded_ncbi_sequences/
 README.html
