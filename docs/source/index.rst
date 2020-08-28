@@ -18,9 +18,7 @@ Welcome to Physcraper's documentation!
 |
 |
 |
-|
-|
-|
+
 
 
 .. toctree::
