@@ -27,6 +27,7 @@ Welcome to Physcraper's documentation!
 
    how_to_start
    methods_extended
+   examples
    install
    physcraper_run
    find_trees
