@@ -2,23 +2,22 @@
 
 ## The Physcraper framework
 
+While genome scale data is increasing rapidly - there are still large quantities of gene-sequence data being uploaded to NCBI [GenBank](https://www.ncbi.nlm.nih.gov/genbank/statistics/).
+These data are often appropriate for looking at phylogenetic relationships, and have the advantage of being homologous to the sequences in existing trees.
+
+If you have access to a single gene alignment, and a tree, Physcraper automates adding homologous data into your tree by using [Blast](https://blast.ncbi.nlm.nih.gov/Blast.cgi) to search for loci in GenBank that are likely to be homologous to sequences in an existing alignment.
+
 <br/>
 
 ![](../img/schematic.svg)
+The Physcraper framework consists of 4 general steps. The methodology is extensively described in the *Framework* section.
 
 <br/>
 
-If you have access to a single gene alignment, and a tree, you can automate adding homologous data into your tree by searching GenBank.
-
-While genome scale data is increasing rapidly - there are still large quantities of gene-sequence data being uploaded to NCBI [GenBank](https://www.ncbi.nlm.nih.gov/genbank/statistics/).
-These data are often appropriate for looking at phylogenetic relationships, and have the advantage of being homologous to the sequences in existing trees,
-
-With Physcraper we can use [Blast](https://blast.ncbi.nlm.nih.gov/Blast.cgi) to search for loci that are likely to be homologous to sequences in an existing alignment.
-
-By using a starting tree and alignment, Physcraper, takes advantage of loci that previous researchers have assessed and deemed appropriate for the phylogenetic scope.
+By using a starting tree and an alignment, Physcraper, takes advantage of loci that previous researchers have assessed and deemed appropriate for the phylogenetic scope.
 The sequences added in the search are limited to a user specified taxon or monophyletic group, or within the taxonomic scope of the in-group of the starting tree.
 
-These automated tree can provide a quick inference or potential relationships, of problems in the taxonomic assignments of sequences, and flag areas of potential systematic interest.
+These automated trees can provide a quick inference or potential relationships, of problems in the taxonomic assignments of sequences, and flag areas of potential systematic interest.
 
 <br/>
 
