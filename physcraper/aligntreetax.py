@@ -383,7 +383,7 @@ class AlignTreeTax():
         elif isinstance(tree, datamodel.treemodel.Tree):
             self.tre = tree
         assert isinstance(self.tre, datamodel.treemodel.Tree)
-        
+
     def read_in_aln(self, alignment, aln_schema):
         """Reads in an alignment to the object taxon namespace."""
         assert isinstance(alignment, str)
