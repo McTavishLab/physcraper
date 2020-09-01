@@ -136,9 +136,8 @@ def check_if_ottid_in_synth(ottid):
         elif r.status_code == 502:
             sys.stderr.write("Bad OpenTree taxon ID: {}".format(ottid))
             return 0
-        else:
-            sys.stderr.write("unexpected status code from node_info call: {}".format(r.status_code))
-            return 0
+        sys.stderr.write("unexpected status code from node_info call: {}".format(r.status_code))
+        return 0
     except requests.ConnectionError:
         sys.stderr.write("Connection Error - coud not get taxon information from OpenTree\n")
 
@@ -235,10 +234,9 @@ def get_citations_from_json(synth_response, citations_file):
 # use append
 
 def conflict_tree(inputtree, otu_dict):
-    """Write out a tree with labels taht work for the OPenTree Conflict API
+    """Write out a tree with labels that work for the OPenTree Conflict API
     """
     tmp_tree = copy.deepcopy(inputtree)
-    new_names = set()
     i = 1
     for node in tmp_tree:
         i += 1
@@ -257,9 +255,6 @@ def get_tree_from_synth(ott_ids, label_format="name", citation="cites.txt"):
     get_citations_from_json(synth_json.response_dict, citation)
     return synth_json.tree
 
-
-
-
 def get_tree_from_study(study_id, tree_id, label_format="ot:originallabel"):
     """Create a dendropy Tree object from OpenTree data.
     :param study_id: OpenTree Study Id
@@ -274,8 +269,6 @@ def get_tree_from_study(study_id, tree_id, label_format="ot:originallabel"):
     tree_obj = DC.tree_from_nexson(study_nexson, tree_id, label_format)
     cites = study_nexson['nexml']['^ot:studyPublicationReference']
     return tree_obj, cites
-
-
 
 # ATT is a dumb acronym for Alignment Tree Taxa object
 def generate_ATT_from_phylesystem(alnfile,
@@ -317,9 +310,9 @@ def generate_ATT_from_phylesystem(alnfile,
     orig_lab_to_otu = {}
     treed_taxa = {}
     ingroup_otus = nexson_helpers.get_subtree_otus(study_nexson,
-                                                       tree_id=tree_id,
-                                                       subtree_id="ingroup",
-                                                       return_format="otu_id")
+                                                   tree_id=tree_id,
+                                                   subtree_id="ingroup",
+                                                   return_format="otu_id")
     if not ingroup_otus:
         sys.stdout.write("No ingroup annotation found in tree; using all taxa.\n \
                           Please update tree annotation through OpenTree curation app.\n")
@@ -491,14 +484,9 @@ def OtuJsonDict(id_to_spn, id_dict):
             if info:
                 ottid, ottname, ncbiid = info
             if not info:
-                ncbi = NCBITaxa()
-                name2taxid = ncbi.get_name_translator([spn])
-                if len(name2taxid.items()) >= 1:
-                    ncbiid = name2taxid.items()[0][1][0]
-                else:
-                    sys.stderr.write("match to taxon {} not found in open tree taxonomy or NCBI. "
-                                     "Proceeding without taxon info\n".format(spn))
-                    nosp.append(spn)
+                sys.stderr.write("match to taxon {} not found in open tree taxonomy or NCBI. "
+                                 "Proceeding without taxon info\n".format(spn))
+                nosp.append(spn)
             ncbi_spn = None
             if ncbiid is not None:
                 ncbi_spn = spn
