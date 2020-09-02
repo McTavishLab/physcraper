@@ -86,4 +86,4 @@ def test_add_all_local():
     scraper._blasted = 1
     scraper.taxonomy = "tests/data/taxonomy_test"
     scraper.read_blast_wrapper(blast_dir="tests/data/precooked/tiny_local/blast_run_test")
-    assert(len(scraper.new_seqs_otu_id)==17)
+    assert(len(scraper.new_seqs_otu_id)==18)

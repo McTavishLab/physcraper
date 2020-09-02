@@ -1,3 +1,5 @@
+"""Work in progress to pull apart the linked tree and taxon objects
+ from the alignemnt based ATT object"""
 import sys
 import re
 import json
@@ -6,11 +8,11 @@ from dendropy import Tree
 from physcraper.opentree_helpers import bulk_tnrs_load
 
 
-def generate_TreeTax_from_run(workdir, start_files='output', tag=None, configfile=None):
+def generate_TreeTax_from_run(workdir, start_files='output', tag=None):
     """Build an Tree + Taxon object from the outputs of a run.
     :return: object of class TreeTax
     """
-    files = [f for f in os.listdir(workdir)]
+    files = os.listdir(workdir)
     for file in files:
         if file.startswith('inputs_'):
             tag = file.split('.')[0].replace('inputs_', '')
@@ -18,35 +20,35 @@ def generate_TreeTax_from_run(workdir, start_files='output', tag=None, configfil
     rundir = "{}/run_{}".format(workdir, tag)
     outputsdir = "{}/outputs_{}".format(workdir, tag)
     inputsdir = "{}/inputs_{}".format(workdir, tag)
-    try:
-        treefile = "{}/physcraper_{}.tre".format(outputsdir, tag)
-        otu_json = "{}/otu_info_{}.json".format(rundir, tag)
-        assert(os.path.exists(treefile))
-        assert(os.path.exists(otu_json))
-        otu_dict = json.load(open(otu_json, "r"))
-        mrca_ott = int(open("{}/mrca.txt".format(inputsdir)).readline().split()[-1])
-    except AssertionError:
-        sys.stdout.write("No output files found in {}, loading files from {}\n".format(outputsdir, inputsdir))
-        treefile = "{}/physcraper_{}.tre".format(inputsdir, tag)
-        otu_json = "{}/otu_info_{}.json".format(rundir, tag)
-        assert(os.path.exists(treefile)), treefile
-        assert(os.path.exists(otu_json)), otu_json
-        otu_dict = json.load(open(otu_json, "r"))
-    return TreeTax(treefrom = treefile, otu_json= otu_dict, schema='newick')
+    if start_files == 'output':
+        try:
+            treefile = "{}/physcraper_{}.tre".format(outputsdir, tag)
+            otu_json = "{}/otu_info_{}.json".format(rundir, tag)
+            assert os.path.exists(treefile)
+            assert os.path.exists(otu_json)
+            otu_dict = json.load(open(otu_json, "r"))
+            return TreeTax(treefrom=treefile, otu_json=otu_dict, schema='newick')
+        except AssertionError:
+            sys.stdout.write("No output files found in {}, loading files from {}\n".format(outputsdir, inputsdir))
+    treefile = "{}/physcraper_{}.tre".format(inputsdir, tag)
+    otu_json = "{}/otu_info_{}.json".format(rundir, tag)
+    assert os.path.exists(treefile), treefile
+    assert os.path.exists(otu_json), otu_json
+    otu_dict = json.load(open(otu_json, "r"))
+    return TreeTax(treefrom=treefile, otu_json=otu_dict, schema='newick')
 
 
 
-class TreeTax(object):
+class TreeTax():
     """wrap up the key parts together, requires OTT_id, and names must already match.
 
     """
-    def __init__(self, otu_json, treefrom = 'synth', 
-                 schema='newick', taxon_namespace=None):
+    def __init__(self, otu_json, treefrom,
+                 schema='newick'):
         if treefrom == 'synth':
-            sys.stderr("Tree from synth not implemented\n")
+            sys.stderr.write("Tree from synth not implemented\n")
             sys.exit()
-            pass
-        assert(os.path.exists(treefrom))
+        assert os.path.exists(treefrom)
         self.tre = Tree.get(path=treefrom,
                             schema=schema,
                             preserve_underscores=True)
@@ -67,7 +69,6 @@ class TreeTax(object):
 
         :return: replaced tip names
         """
-        i = 1
         for tax in self.tre.taxon_namespace:
             if tax.label in self.otu_dict.keys():
                 pass
@@ -80,16 +81,16 @@ class TreeTax(object):
                     newname = newname[:-1]
                 for otu in self.otu_dict:
                     original = self.otu_dict[otu].get("^ot:originalLabel")
-                    if original == tax.label or original == newname:
+                    if original in (tax.label, newname):
                         tax.label = otu
                         found_label = 1
                 if found_label == 0:
                     sys.stderr.write("could not match tiplabel {} or {} to an OTU\n".format(tax.label, newname))
                     otulab = tax.label
                     self.otu_dict[otulab]["^ot:originalLabel"] = tax.label
-                    tax.label = otu_lab
+                    tax.label = otulab
         for tax in self.tre.taxon_namespace:
-              assert tax.label in self.otu_dict          
+            assert tax.label in self.otu_dict
     def write_labelled(self, label, path, norepeats=True, add_gb_id=False):
         """output tree and alignment with human readable labels
         Jumps through a bunch of hoops to make labels unique.
@@ -125,7 +126,6 @@ class TreeTax(object):
                 if gb_id is None:
                     gb_id = self.otu_dict[taxon.label].get("^ot:originalLabel")
                 new_label = "_".join([str(new_label), str(gb_id)])
-                sp_counter = 2
             else:
                 if norepeats:
                     new_label = "_".join([str(new_label), taxon.label])
@@ -134,4 +134,3 @@ class TreeTax(object):
                       schema="newick",
                       unquoted_underscores=True,
                       suppress_edge_lengths=False)
-
