@@ -750,7 +750,7 @@ class PhyscraperScrape():
                 if count > len(otu_list):
                     tax_otus = otu_list
                 else:
-                    if type == 'random':
+                    if selection == 'random':
                         tax_otus = self.select_seq_at_random(otu_list, count)
                 debug("passing on {} otus for tax id {}".format(len(tax_otus), tax_id))
                 assert isinstance(selected_otus, set), 'why not set?!?!'
