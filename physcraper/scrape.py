@@ -166,7 +166,7 @@ class PhyscraperScrape():
 
 
     def reset_markers(self):
-        """set completion markersback to 0 for a re-run"""
+        """set completion markers back to 0 for a re-run"""
         self._blasted = 0
         self._blast_read = 0
         self._query_seqs_written = 0
