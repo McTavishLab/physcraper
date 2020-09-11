@@ -3,10 +3,9 @@ Examples
 
 |
 
-Interactive illustrated examples are available at package
-at `Physcraperex <https://mctavishlab.github.io/physcraperex/index.html>`_
-for different organisms:
+Interactive illustrated examples are available at the |Physcraperex|_ 
+website for:
 
-- the hollies
-- the family of chocolate
-- the fungi
+- The hollies, represented by the genus |Ilex|_
+- The family of cotton and chocolate, |Malvaceae|_
+- The |Dothideomycetes|_, representing the most diverse class of ascomycete fungi
