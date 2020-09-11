@@ -1,16 +1,17 @@
 ## Downloading Physcraper
 
-While physcraper can be install via pip,
-in order to easily access the example data and ancillary files, we recommend downloading the physcraper repo from GitHub and installing locally.  
-First step is to clone the Physcraper repo to your computer:
+While physcraper can be installed via pip,
+in order to easily access the example data and ancillary files, we recommend downloading
+the physcraper repository from GitHub and installing it locally.
+First step is to download Physcraper to your computer with Git:
 
 ```
 git clone https://github.com/McTavishLab/physcraper.git
 ```
 
-or dowload the repo from https://github.com/McTavishLab/physcraper.git
+or downloading the repository from https://github.com/McTavishLab/physcraper.git
 
-Then move to the newly created physcraper directory (cd physcraper) and choose a type
+Then move to the newly created physcraper directory with `cd physcraper` and choose a type
 of installation, using conda or a python virtual environment.
 
 ### Option 1: Install Physcraper using conda
@@ -68,7 +69,7 @@ This will also install the following python packages:
 - ConfigParser
 
 
-After you are finished working with physcraper and you don't want to run Physcraper anymore, deactivate the virtual environment with:
+After you are finished working with Physcraper and you don't want to run it anymore, deactivate the virtual environment with:
 
 ```
 deactivate
