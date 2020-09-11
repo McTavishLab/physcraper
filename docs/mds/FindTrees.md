@@ -1,5 +1,5 @@
-## Searching for studies
 
+## Find a tree to update
 To search for trees on OpenTree with your taxon of interest, you can use
 find_trees.py
 
@@ -21,3 +21,6 @@ e.g.
     find_trees.py --taxon_name Malvaceae --treebase -o malvacea.txt
 
     find_trees.py --ott_id 124219 -o orcinus.txt
+
+
+## Find the corresponding alignment

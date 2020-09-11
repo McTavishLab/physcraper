@@ -1,4 +1,4 @@
-Exploring results
+Visualizing the Physcraper results
 ================
 
 .. mdinclude:: ../mds/results.md
