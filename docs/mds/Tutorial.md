@@ -1,4 +1,3 @@
-<br/>
 
 ## The Physcraper framework
 
@@ -39,7 +38,9 @@ For more information on the Open Tree of Life project see https://opentreeoflife
 
 <br/>
 
-## Updating a tree from Open Tree of Life
+## Quick start with the Physcraper software
+
+### Updating a tree from Open Tree of Life
 
 The Open Tree of Life data store, [Phylesystem](https://academic.oup.com/bioinformatics/article/31/17/2794/183373), contains more than 4,500 phylogenetic trees from published studies.
 The tips in these trees are mapped a unified taxonomy, which makes these data searchable in a phylogenetically explicit way.
@@ -47,7 +48,7 @@ This is a great place to start of finding existing estimates of phylogenetic rel
 and assessing regions of the tree of life which are lacking available phylogenetic estimates.
 There is a lot of sequence data available that has never been incorporated into any phylogenetic estimates.
 
-### *Find a starting tree with your taxon of interest*
+#### *Find a starting tree with your taxon of interest*
 
 For this example we'll use a tree that is already in the Open Tree of Life database. You can find more details about finding a tree to update at the section [Finding Data](https://physcraper.readthedocs.io/en/latest/find_trees.html).
 
@@ -69,7 +70,7 @@ phylogenetic inference have suggested that this family is not [monophyletic]((ht
 
 Lets take a look at how recent molecular data affect our inferences of relationships, and if there is sequence data for taxa that don't have any phylogenetic information available in the tree.
 
-### *Run the auto-update*
+#### *Run the auto-update*
 
 The script `physcraper_run.py` wraps together linking the tree and alignment, blasting, aligning sequences, and inferring an updated tree.
 Detailed explanation of the inputs needed can be found in the section [Running Physcraper](https://physcraper.readthedocs.io/en/latest/physcraper_run.html).
@@ -82,7 +83,7 @@ The blast search part of updating trees takes a long time (for example, this ana
 The `-r` flag repeats the search on new sequences until no additional sequences are found.
 We have put example outputs from this command in `docs/examples/pg_55`, so that you can explore the outputs without waiting for the searches to complete.
 
-## Updating your own tree and alignment
+### Updating your own tree and alignment
 
 You can upload your own tree to OpenTree to update it, and that way it will be included in the OpenTree synthetic tree!
 See [Submitting-phylogenies-to-Open-Tree-of-Life](https://github.com/OpenTreeOfLife/opentree/wiki/Submitting-phylogenies-to-Open-Tree-of-Life) for more info on this.
@@ -93,7 +94,7 @@ You need an alignment (single locus) and a tree. Note that the taxon labels in t
 
 You also need a file linking the labels in your tree and alignment to broader taxonomy. This can be easily generated via OpenTree's Bulk Taxonomic Name Resolution Service ([bulk TNRS](https://tree.opentreeoflife.org/curator/tnrs/)).
 
-### *Mapping names to taxa*
+#### *Mapping names to taxa*
 
 Map your tip names to unique identifiers using the Open Tree bulk TNRS upload tool at https://tree.opentreeoflife.org/curator/tnrs/
 
@@ -135,7 +136,7 @@ Take a look at the human readable version at `output/main.csv`. You will see tha
 
 By passing in the `main.json` file, Physcraper can link your sequences to their correct taxonomic context.
 
-### *Run the auto-update on your tree*
+#### *Run the auto-update on your tree*
 
 Example run on local files using test data:
 
