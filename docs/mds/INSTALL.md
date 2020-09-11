@@ -1,4 +1,4 @@
-## Downloading Physcraper
+## Download
 
 While physcraper can be installed via pip,
 in order to easily access the example data and ancillary files, we recommend downloading

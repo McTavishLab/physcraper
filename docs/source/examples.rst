@@ -1,9 +1,9 @@
-Examples
+Physcraper use case examples
 ===========
 
 |
 
-Interactive illustrated examples are available at the |Physcraperex|_ 
+Interactive illustrated examples are available at the |Physcraperex|_
 website for:
 
 - The hollies, represented by the genus |Ilex|_

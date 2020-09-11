@@ -17,12 +17,12 @@ Welcome to Physcraper's documentation!
    :hidden:
 
    Introduction <how_to_start>
-   methods_extended
-   examples
-   install
-   physcraper_run
-   find_trees
-   data_exploration
+   Use cases <examples>
+   Framework <methods_extended>
+   Installation <install>
+   Finding an input <find_trees>
+   Running <physcraper_run>
+   Viualizing results <data_exploration>
    apidocs
    CONTRIBUTING
    CONTRIBUTORS
