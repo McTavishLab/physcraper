@@ -4,6 +4,7 @@ import json
 import copy
 import sys
 import os
+import xml
 from urllib.error import HTTPError
 
 import requests
@@ -387,7 +388,12 @@ def get_dataset_from_treebase(study_id):
         tb_id = treebase_url.split(':S')[1]
         try:
             url = "https://raw.githubusercontent.com/TreeBASE/supertreebase/master/data/treebase/S{}.xml".format(tb_id)
-            dna = DataSet.get(url=url, schema="nexml")
+            try:
+                dna = DataSet.get(url=url, schema="nexml")
+            except xml.etree.ElementTree.ParseError:
+                sys.stderr.write("error reading nexml, from supertreebase, will check TreeBASE")
+                url = "https://treebase.org/treebase-web/search/downloadAStudy.html?id={}&format=nexml".format(tb_id)
+                dna = DataSet.get(url=url, schema="nexml")
         except HTTPError as err:
             try:
                 url = "https://treebase.org/treebase-web/search/downloadAStudy.html?id={}&format=nexml".format(tb_id)
