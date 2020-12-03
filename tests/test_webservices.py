@@ -71,7 +71,7 @@ def test_get_full_seq():
 
 def test_get_from_treebase():
     subprocess.check_call(["python", "bin/physcraper_run.py", 
-                            "-s" "pg_55",
+                            "-s", "pg_55",
                             "-t", "tree5864",
                             "-tb",
                             "-no_est",
@@ -79,7 +79,7 @@ def test_get_from_treebase():
 
 def test_get_from_treebase_supertreebase_err():
     subprocess.check_call(["python", "bin/physcraper_run.py", 
-                            "-s" "pg_328",
+                            "-s", "pg_328",
                             "-t", "tree322",
                             "-tb",
                             "-no_est",

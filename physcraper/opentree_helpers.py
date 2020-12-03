@@ -391,7 +391,7 @@ def get_dataset_from_treebase(study_id):
             try:
                 dna = DataSet.get(url=url, schema="nexml")
             except xml.etree.ElementTree.ParseError:
-                sys.stderr.write("error reading nexml, from supertreebase, will check TreeBASE")
+                sys.stdout.write("error reading nexml, from supertreebase, will check TreeBASE\n")
                 url = "https://treebase.org/treebase-web/search/downloadAStudy.html?id={}&format=nexml".format(tb_id)
                 dna = DataSet.get(url=url, schema="nexml")
         except HTTPError as err:
