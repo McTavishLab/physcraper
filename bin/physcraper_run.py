@@ -288,7 +288,7 @@ if args.repeat:
             os.mkdir(scraper.rundir)
             to_be_blasted = [otu.label for otu in scraper.data.aln if ((scraper.data.otu_dict[otu.label]['^physcraper:ingroup'] == True) and (scraper.data.otu_dict[otu.label]['^physcraper:last_blasted']==None))]
         elif besttreepath is None:
-            os.rmdir(scraper.rundir)
+          #`  os.rmdir(scraper.rundir)
             scraper.rundir = prev_rundir
             updated_alnfi = "{}/physcraper_{}.fas".format(prev_rundir, scraper.data.tag)
             bootpath = scraper.calculate_bootstrap(alignment = updated_alnfi, num_reps = boot_reps)

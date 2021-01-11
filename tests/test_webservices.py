@@ -71,11 +71,19 @@ def test_get_full_seq():
 
 def test_get_from_treebase():
     subprocess.check_call(["python", "bin/physcraper_run.py", 
-                            "-s" "pg_55",
+                            "-s", "pg_55",
                             "-t", "tree5864",
                             "-tb",
                             "-no_est",
                             "-o", "tests/data/tmp/pg_55_treebase"])
+
+def test_get_from_treebase_supertreebase_err():
+    subprocess.check_call(["python", "bin/physcraper_run.py", 
+                            "-s", "pg_328",
+                            "-t", "tree322",
+                            "-tb",
+                            "-no_est",
+                            "-o", "tests/data/tmp/pg_328_treebase"])
 
 def test_web_blast():
     scraper.run_blast_wrapper()
