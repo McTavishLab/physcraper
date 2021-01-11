@@ -1,16 +1,9 @@
+"""Link together NCBI and Open Tree identifiers and names, with Gen Bank information for updated sequences"""
 import sys
 import os
-import json
 import time
-
-
-if sys.version_info < (3,):
-    from urllib2 import HTTPError
-else:
-    from urllib.error import HTTPError
-
+from urllib.error import HTTPError
 from Bio import Entrez
-
 from physcraper import ncbi_data_parser, ConfigObj  # is the ncbi data parser class and associated functions
 from physcraper.helpers import debug
 
@@ -19,7 +12,7 @@ _DEBUG = 0
 
 
 
-class IdDicts(object):
+class IdDicts():
     """Class contains different taxonomic identifiers and helps to find the corresponding ids between ncbi and OToL
 
         To build the class the following is needed:
@@ -61,13 +54,14 @@ class IdDicts(object):
 
           * **Optional**:
 
-              * depending on blasting method:
-               * self.ncbi_parser: for local blast, initializes the ncbi_parser class, that contains information about rank and identifiers
+            * depending on blasting method:
+            * self.ncbi_parser: for local blast,
+               initializes the ncbi_parser class, that contains information about rank and identifiers
     """
 
-    def __init__(self, configfile = None, workdir=None):
+    def __init__(self, configfile=None):
         """Generates a series of name disambiguation dicts"""
-        if configfile == None:
+        if configfile is None:
             self.config = ConfigObj()
         elif isinstance(configfile, ConfigObj):
             self.config = configfile
@@ -82,9 +76,9 @@ class IdDicts(object):
         self.ott_to_name = {}  # used in add_otu to get name from otuId
         self.acc_ncbi_dict = {}  # filled by ncbi_parser (by subprocess in earlier versions of the code).
         self.spn_to_ncbiid = {}  # spn to ncbi_id, it's only fed by the ncbi_data_parser, but makes it faster
-        self.ncbiid_to_spn = {} #TODO when is this generated? MK: well, here. it is filled with information from genbank to speed up translation between ncbi_taxon_ids and names. similar to  acc_ncbi_dict and spn_to_ncbiid.
-        tax_folder = self.config.taxonomy_dir
-        fi = open(self.config.ott_ncbi)  # This is in the taxonomy folder of the repo, needs to be updated by devs when OpenTree taxonomy changes.
+        self.ncbiid_to_spn = {}
+        fi = open(self.config.ott_ncbi)
+        # This is in the taxonomy folder of the repo, needs to be updated by devs when OpenTree taxonomy changes.
         for lin in fi:
             lii = lin.split(",")
             self.ott_to_ncbi[int(lii[0])] = int(lii[1])
@@ -107,7 +101,7 @@ class IdDicts(object):
     def get_ncbiid_from_acc(self, acc):
         '''checks local dicts, and then runs eftech to get ncbi id for accession'''
         gb_id = acc
-        if gb_id in self.acc_ncbi_dict:#TODO if the accession number and tax id are here, does that mean the name is in ncbiid_to_spn?
+        if gb_id in self.acc_ncbi_dict:
             ncbi_id = self.acc_ncbi_dict[gb_id]
         elif gb_id in self.acc_tax_seq_dict:
             ncbi_id = self.acc_tax_seq_dict[gb_id]["^ncbi:taxon"]
@@ -121,6 +115,7 @@ class IdDicts(object):
 
  #removed function find_tax_id because it wasn't being used
     def get_tax_seq_acc(self, acc):
+        """Pulls the taxon ID and the full sequences from NCBI"""
         if not os.path.exists(self.full_seq_path):
             os.makedirs(self.full_seq_path)
         gb_id = acc
@@ -136,23 +131,19 @@ class IdDicts(object):
         elif os.path.exists(seq_path):
             fi = open(seq_path)
             header = fi.readline().strip('>')
-            #try:
-            assert(header.split()[1].startswith('taxname:'))
+            assert header.split()[1].startswith('taxname:')
             tax_name = header.split()[1].strip('taxname:')
             ncbi_id = header.split()[2].strip('ncbi:')
             seq = "".join(fi.readlines())
-#            except IndexError:
- #               print("IndexError")
-  #              pass
-        if seq == None:
+        if seq is None:
             read_handle = self.entrez_efetch(gb_id)
             tax_name = ncbi_data_parser.get_ncbi_tax_name(read_handle)
-            ncbi_id =  ncbi_data_parser.get_ncbi_tax_id(read_handle)
+            ncbi_id = ncbi_data_parser.get_ncbi_tax_id(read_handle)
             seq = read_handle[0][u'GBSeq_sequence']
-            tax_name = tax_name.replace(" ","_") #TODO check that searches are using names without spaces
+            tax_name = tax_name.replace(" ", "_") #TODO check that searches are using names without spaces
             self.ncbiid_to_spn[ncbi_id] = tax_name
             self.acc_ncbi_dict[gb_id] = ncbi_id
-            self.acc_tax_seq_dict[gb_id] = {'taxname':tax_name, "^ncbi:taxon":ncbi_id, 'seq':seq} #This is going to be a memory hog...
+            self.acc_tax_seq_dict[gb_id] = {'taxname':tax_name, "^ncbi:taxon":ncbi_id, 'seq':seq}#ToDo memory hog
             with open(seq_path, 'w') as fi:
                 fi.write("> {} taxname:{} ncbi:{}\n".format(gb_id, tax_name, ncbi_id))
                 fi.write(self.acc_tax_seq_dict[gb_id]['seq'])
@@ -209,7 +200,7 @@ class IdDicts(object):
                 if i < tries - 1:  # i is zero indexed
                     continue
                 else:
-                    raise
+                    raise e
             # break
         assert handle is not None, ("your handle file to access data from efetch does not exist. "
                                     "Likely an issue with the internet connection of ncbi. Try rerun...")
