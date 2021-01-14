@@ -47,7 +47,6 @@ release = u'0.1'
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    # 'recommonmark',
     'm2r2',
     'sphinx.ext.autodoc',
     'sphinx.ext.intersphinx',
