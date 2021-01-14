@@ -20,10 +20,6 @@ from datetime import date
 
 # sys.path.insert(0, os.path.abspath('.'))
 import sphinx
-import sphinx_readable_theme
-import sphinx_rtd_theme
-
-
 
 # -- Project information -----------------------------------------------------
 
@@ -50,8 +46,7 @@ extensions = [
     'm2r2',
     'sphinx.ext.autodoc',
     'sphinx.ext.intersphinx',
-    'sphinx.ext.viewcode',
-    "sphinx_rtd_theme"
+    'sphinx.ext.viewcode'
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -90,7 +85,7 @@ pygments_style = None
 # html_theme_path = [sphinx_readable_theme.get_html_theme_path()]
 
 # html_theme = 'readable'
-html_theme = "sphinx_rtd_theme"
+html_theme = "alabaster"
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
