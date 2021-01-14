@@ -13,7 +13,7 @@ requests
 sh
 urllib3>=1.23
 
-m2r
+m2r2
 numpy
 pytest
 pytest-cov
