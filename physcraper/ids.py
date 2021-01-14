@@ -79,6 +79,8 @@ class IdDicts():
         self.ncbiid_to_spn = {}
         fi = open(self.config.ott_ncbi)
         # This is in the taxonomy folder of the repo, needs to be updated by devs when OpenTree taxonomy changes.
+        # by downloading teh taxonomy and then using
+        # grep ncbi: ottVERSION/taxonomy.tsv | sed -r -e "s/([0-9]+).+?\|.+?\|(.+?)\|.+?\|.*ncbi:([0-9]+).*/\\1,\\3,\\2/" > physcraper/taxonomy/ott_ncbi
         for lin in fi:
             lii = lin.split(",")
             self.ott_to_ncbi[int(lii[0])] = int(lii[1])
