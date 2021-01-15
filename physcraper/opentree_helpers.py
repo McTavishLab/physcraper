@@ -432,6 +432,7 @@ def get_max_match_aln(tree, dataset, min_match=3):
             max_match = aln
             max_val = aln_match[aln]
     if max_match is not None:
+        assert type(dataset.char_matrices[max_match]) == datamodel.charmatrixmodel.DnaCharacterMatrix
         return dataset.char_matrices[max_match]
     return None
 
