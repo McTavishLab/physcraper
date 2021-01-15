@@ -9,7 +9,7 @@ from urllib.error import HTTPError
 
 import requests
 
-from dendropy import DataSet
+from dendropy import DataSet, datamodel
 from opentree import OT, object_conversion, nexson_helpers
 
 import physcraper
@@ -25,7 +25,7 @@ def set_verbose():
     global _VERBOSE
     _VERBOSE = 1
 
-_DEBUG = 0
+_DEBUG = 1
 
 def debug(msg):
     """short debugging command
@@ -394,6 +394,8 @@ def get_dataset_from_treebase(study_id):
                 sys.stdout.write("error reading nexml, from supertreebase, will check TreeBASE\n")
                 url = "https://treebase.org/treebase-web/search/downloadAStudy.html?id={}&format=nexml".format(tb_id)
                 dna = DataSet.get(url=url, schema="nexml")
+
+                return dna
         except HTTPError as err:
             try:
                 url = "https://treebase.org/treebase-web/search/downloadAStudy.html?id={}&format=nexml".format(tb_id)
@@ -412,9 +414,10 @@ def count_match_tree_to_aln(tree, dataset):
     leaves = [leaf.taxon.label for leaf in tree.leaf_node_iter()]
     for mat in dataset.char_matrices:
         aln_match[i] = 0
-        for tax in mat:
-            if tax.label in leaves:
-                aln_match[i] += 1
+        if type(mat) == datamodel.charmatrixmodel.DnaCharacterMatrix:
+            for tax in mat:
+                if tax.label in leaves:
+                    aln_match[i] += 1
         i += 1
     return aln_match
 
@@ -429,6 +432,7 @@ def get_max_match_aln(tree, dataset, min_match=3):
             max_match = aln
             max_val = aln_match[aln]
     if max_match is not None:
+        assert type(dataset.char_matrices[max_match]) == datamodel.charmatrixmodel.DnaCharacterMatrix
         return dataset.char_matrices[max_match]
     return None
 
