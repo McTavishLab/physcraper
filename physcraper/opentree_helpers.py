@@ -394,6 +394,7 @@ def get_dataset_from_treebase(study_id):
                 sys.stdout.write("error reading nexml, from supertreebase, will check TreeBASE\n")
                 url = "https://treebase.org/treebase-web/search/downloadAStudy.html?id={}&format=nexml".format(tb_id)
                 dna = DataSet.get(url=url, schema="nexml")
+
                 return dna
         except HTTPError as err:
             try:
@@ -412,12 +413,11 @@ def count_match_tree_to_aln(tree, dataset):
     i = 0
     leaves = [leaf.taxon.label for leaf in tree.leaf_node_iter()]
     for mat in dataset.char_matrices:
-        if type(mat) != datamodel.charmatrixmodel.DnaCharacterMatrix:
-            continue
         aln_match[i] = 0
-        for tax in mat:
-            if tax.label in leaves:
-                aln_match[i] += 1
+        if type(mat) == datamodel.charmatrixmodel.DnaCharacterMatrix:
+            for tax in mat:
+                if tax.label in leaves:
+                    aln_match[i] += 1
         i += 1
     return aln_match
 
