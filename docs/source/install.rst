@@ -1,5 +1,5 @@
 Installing Physcraper
-============
+=====================
 
 .. mdinclude:: ../mds/INSTALL.md
 
