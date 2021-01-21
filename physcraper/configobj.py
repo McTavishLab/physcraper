@@ -239,12 +239,12 @@ max_length = {maxlen}
             sys.stderr.write(
                 "Local Blast DB not found at {},\
                 please use a remote search, or update as described\
-                in 'taxonomy/update_blast_db'\n".format(self.blastdb))
+                in 'https://physcraper.readthedocs.io/en/latest/install.html#local-databases'\n".format(self.blastdb))
             sys.exit()
         if not os.path.exists("{}/nt.23.nhr".format(self.blastdb)):
             sys.stderr.write("Errors with local Blast DB at {}, \
                 may be incomplete. please use a remote search, \
-                or update as described in 'taxonomy/update_blast_db'\n".format(self.blastdb))
+                or update as described in 'https://physcraper.readthedocs.io/en/latest/install.html#local-databases'\n".format(self.blastdb))
             sys.exit()
         else:
             download_date = os.path.getmtime("{}/nt.23.nhr".format(self.blastdb))
@@ -255,10 +255,10 @@ max_length = {maxlen}
                 sys.stderr.write("Your databases might not be up to date anymore. \
                     You downloaded them {} days ago. \
                     Continuing, but perhaps use a remote search, \
-                    or update as decribed in 'taxonomy/update_blast_db'\n".format(time_passed))
+                    or update as decribed in 'https://physcraper.readthedocs.io/en/latest/install.html#local-databases'\n".format(time_passed))
         if not os.path.exists(self.ncbi_nodes):
             sys.stderr.write("NCBI taxonomy not found at {} - please update nodes and names.dmp, \
-                as described in 'taxonomy/update_blast_db'\n".format(self.ncbi_nodes))
+                as described in 'https://physcraper.readthedocs.io/en/latest/install.html#local-databases'\n".format(self.ncbi_nodes))
             sys.exit()
         else:
             download_date = os.path.getmtime(self.ncbi_nodes)
@@ -268,6 +268,6 @@ max_length = {maxlen}
             if time_passed >= 90:
                 sys.stderr.write("Your taxonomy databases from NCBI were dowloaded {} days ago. \
                     Please update nodes and names.dmp, \
-                    as described in 'taxonomy/update_blast_db'\n".format(time_passed))
+                    as described in 'https://physcraper.readthedocs.io/en/latest/install.html#local-databases'\n".format(time_passed))
         assert(shutil.which("blastn")), "blastn  not found in path"
         self.url_base = None
