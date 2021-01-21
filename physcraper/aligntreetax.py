@@ -200,6 +200,7 @@ def write_labelled_tree(treetax, label, filepath, schema="newick", norepeats=Tru
                       schema=schema,
                       unquoted_underscores=True,
                       suppress_edge_lengths=False)
+    sys.stdout.write("Tree file written to {}\n".format(filepath))
 
 
 
