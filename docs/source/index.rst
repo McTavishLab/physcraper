@@ -16,13 +16,13 @@ Welcome to Physcraper's documentation!
    :caption: Documentation topics:
    :hidden:
 
-   Introduction <how_to_start>
-   Installation <install>
+   how_to_start
+   install
    apidocs
-   Tutorial 1 Finding an input <find_trees>
-   Tutorial 2 Running <physcraper_run>
-   Tutorial 3 Viualizing results <data_exploration>
-   Examples <examples>
-   Detailed methods <methods_extended>
+   find_trees
+   physcraper_run
+   data_exploration
+   examples
+   methods_extended
    CONTRIBUTING
    CONTRIBUTORS
