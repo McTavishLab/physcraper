@@ -13,13 +13,8 @@
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
 import physcraper
-import os
-import sys
-from datetime import date
-
-
 # sys.path.insert(0, os.path.abspath('.'))
-import sphinx
+
 
 # -- Project information -----------------------------------------------------
 
