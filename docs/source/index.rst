@@ -14,7 +14,6 @@ Welcome to Physcraper's documentation!
 .. toctree::
    :maxdepth: 3
    :caption: Documentation topics:
-   :hidden:
 
    how_to_start
    install
