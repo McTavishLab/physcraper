@@ -187,19 +187,3 @@ epub_exclude_files = ['search.html']
 intersphinx_mapping = {'https://docs.python.org/': None}
 
 # Shortcuts
-rst_prolog = """
-.. |Git| replace:: Git
-.. _Git: http://git-scm.com/
-
-.. |Physcraperex| replace:: Physcraperex
-.. _Physcraperex: https://mctavishlab.github.io/physcraperex/index.html
-
-.. |Ilex| replace:: *Ilex*
-.. _Ilex: https://mctavishlab.github.io/physcraperex/articles/ilex.html
-
-.. |Malvaceae| replace:: Malvaceae
-.. _Malvaceae: https://mctavishlab.github.io/physcraperex/articles/malvaceae.html
-
-.. |Dothideomycetes| replace:: Dothideomycetes
-.. _Dothideomycetes: https://mctavishlab.github.io/physcraperex/articles/schoch.html
-"""
