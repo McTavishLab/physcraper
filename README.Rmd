@@ -14,7 +14,7 @@ knitr::opts_chunk$set(
 IS_README <- TRUE
 ```
 
-<img align="left" width="250" src="https://raw.githubusercontent.com/McTavishLab/physcraper/main/docs/physcraper.svg">
+<img align="left" width="250" src="https://raw.githubusercontent.com/McTavishLab/physcraper/cleanup/docs/physcraper-long.png">
 
 # Physcraper
 
@@ -35,11 +35,14 @@ IS_README <- TRUE
 
 
 This is the code repository.
-Please refer to Physcraper's [documentation website](https://physcraper.readthedocs.io/en/latest/) for more details
-on [installation](https://physcraper.readthedocs.io/en/latest/install.html) instructions,
+Please refer to `Physcraper`'s [documentation website](https://physcraper.readthedocs.io/en/latest/) for more details
+on [installation](https://physcraper.readthedocs.io/en/latest/install.html) instructions
+using an Anaconda or a Virtualenv Python virtual environment,
 [function](https://physcraper.readthedocs.io/en/latest/apidocs.html) usage,
-running [tutorials](https://physcraper.readthedocs.io/en/latest/physcraper_run.html),
-real life [examples](https://physcraper.readthedocs.io/en/latest/data_exploration.html),
+tutorials on finding and choosing a [starting dataset](https://physcraper.readthedocs.io/en/latest/find_trees.html),
+[running](https://physcraper.readthedocs.io/en/latest/physcraper_run.html) a full analysis,
+and [visualizing](https://physcraper.readthedocs.io/en/latest/data_exploration.html) results,
+as well as real life [examples](https://physcraper.readthedocs.io/en/latest/examples.html)
 and tools for [developers](https://physcraper.readthedocs.io/en/latest/CONTRIBUTING.html).
 
 
