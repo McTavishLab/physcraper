@@ -1,4 +1,4 @@
-## An overview of the Physcraper results files
+## The Physcraper results files
 
 ### - Input files
 
