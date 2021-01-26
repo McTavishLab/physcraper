@@ -41,7 +41,7 @@ using an Anaconda or a Virtualenv Python virtual environment,
 [function](https://physcraper.readthedocs.io/en/latest/apidocs.html) usage,
 tutorials on finding and choosing a [starting dataset](https://physcraper.readthedocs.io/en/latest/find_trees.html),
 [running](https://physcraper.readthedocs.io/en/latest/physcraper_run.html) a full analysis,
-and [visualizing](https://physcraper.readthedocs.io/en/latest/data_exploration.html) results,
+and [visualizing and analysing](https://physcraper.readthedocs.io/en/latest/data_exploration.html) results,
 as well as real life [examples](https://physcraper.readthedocs.io/en/latest/examples.html)
 and tools for [developers](https://physcraper.readthedocs.io/en/latest/CONTRIBUTING.html).
 
