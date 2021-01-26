@@ -1,24 +1,37 @@
-## Download
-
-While physcraper can be installed via pip,
+While `Physcraper` can be installed via pip,
 in order to easily access the example data and ancillary files, we recommend downloading
-the physcraper repository from GitHub and installing it locally.
-First step is to download Physcraper to your computer with Git:
+the Physcraper repository from GitHub and installing it locally following the instructions below.
+This process will also install the following python packages:
+
+- Dendropy https://pythonhosted.org/DendroPy/
+- Peyotl https://github.com/OpenTreeOfLife/peyotl (currently needs to be on physcraper branch)
+- Biopython http://biopython.org/wiki/Download
+- ConfigParser
+
+
+## Downloading Physcraper
+
+First step is to download `Physcraper` to your computer.
+
+You can do this with Git:
 
 ```
 git clone https://github.com/McTavishLab/physcraper.git
 ```
 
-or downloading the repository from https://github.com/McTavishLab/physcraper.git
+or, you ca download the repository from https://github.com/McTavishLab/physcraper.git
 
-Then move to the newly created physcraper directory with `cd physcraper` and choose a type
-of installation, using conda or a python virtual environment.
+Now, move to the newly created "physcraper" directory with `cd physcraper` to continue.
 
-### Option 1: Install Physcraper using conda
+Next step is to create a virtual
+environment to run `Physcraper` on. You can do this using Anaconda
+or Virtualenv.
 
-First, install [anaconda](https://www.anaconda.com/products/individual)
+## Anaconda virtual environment
 
-Then, create a conda environment
+For this option you will of course need [Anaconda](https://www.anaconda.com/products/individual) installed.
+
+Now you can create a "conda virtual environment" with:
 
 ```
    conda env create -f cond_env.yml
@@ -27,32 +40,30 @@ Then, create a conda environment
    pip install -e .
 ```
 
-You're done with the installation with conda!
+Note the "dot" at the end of that last command, and it should be ready!
 
-### Option 2: Install Physcraper using a python virtual environment
+## Virtualenv virtual environment
 
-First, create a python virtual environment
+For this option you will need [Virtualenv](https://pypi.org/project/virtualenv/) installed.
 
-Remeber you need to be in the physcraper folder, once there do:
+Now you can go ahead and create a "Python virtual environment".
+
+Remember you need to be in the "physcraper" folder (go there with `cd physcraper`).
+Once there do:
 
 ```
 virtualenv -p python3 venv-physcraper
 ```
-This will create a python 3 virtual environment
 
-Once you have a venv-physcraper directory, **_activate_** it with:
+This will create a python 3 virtual environment named "venv-physcraper".
+
+**_Activate_** the virtual environment with:
 
 ```
 source venv-physcraper/bin/activate
 ```
 
-You will stay in the virtual environment even if you change directories and `physcraper` should run from anywhere, while the virtual environment is activated.
-
-
-**Note** that you will have to activate the virtual environment every time you want to run `physcraper`
-
-
-Finally, install `physcraper` inside the virtual environment:
+Finally, install `Physcraper` inside the virtual environment:
 
 ```
 pip install -r requirements.txt
@@ -61,15 +72,13 @@ pip install -e  .
 
 Note the "dot" at the end of that last command!
 
-This will also install the following python packages:
-
-- Dendropy https://pythonhosted.org/DendroPy/
-- Peyotl https://github.com/OpenTreeOfLife/peyotl (currently needs to be on physcraper branch)
-- Biopython http://biopython.org/wiki/Download
-- ConfigParser
+The virtual environment remains active even if you change directories.
+So, `Physcraper` will run from anywhere, while the virtual environment is activated.
 
 
-After you are finished working with Physcraper and you don't want to run it anymore, deactivate the virtual environment with:
+**Note** that you will have to activate the virtual environment every time you want to run `Physcraper`
+
+After you are finished working with `Physcraper` and you don't want to run it anymore, deactivate the virtual environment with:
 
 ```
 deactivate
@@ -78,7 +87,7 @@ deactivate
 
 ## Checking for dependencies
 
-Currently complete phylogenetic updating WITH `physcraper` requires
+Currently complete phylogenetic updating WITH `Physcraper` requires
 [raxmlHPC](http://sco.h-its.org/exelixis/web/software/raxml/index.html) and [MUSCLE](install-muscle.md) to be installed and in the path.
 
 You can check if they are already installed with:
@@ -87,7 +96,7 @@ You can check if they are already installed with:
 which muscle
 which raxmlHPC
 ```
-## Checking install success on remote searches
+## Checking installation success on remote searches
 
 To test a full run with pre-downloaded Blast results, copy the example results using:
 
@@ -106,4 +115,3 @@ To check if your installation was successful for remote searches, try running an
     physcraper_run.py --study_id pg_55 --tree_id tree5864 --treebase --bootstrap_reps 10 --output pg_55_new
 
 This run will take a while - once it starts blasting, that means it's working! You can use Ctrl-C to cancel.
-
