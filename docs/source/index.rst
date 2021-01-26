@@ -21,7 +21,7 @@ Welcome to Physcraper's documentation!
    Documentation <apidocs>
    Start <find_trees>
    Run <physcraper_run>
-   Visualization <data_exploration>
+   Results <data_exploration>
    Examples <examples>
    Implementation <methods_extended>
    CONTRIBUTING
