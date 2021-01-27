@@ -19,7 +19,7 @@ You can do this with Git:
 git clone https://github.com/McTavishLab/physcraper.git
 ```
 
-or, you ca download the repository from https://github.com/McTavishLab/physcraper.git
+or, you can download the repository from https://github.com/McTavishLab/physcraper.git
 
 Now, move to the newly created "physcraper" directory with `cd physcraper` to continue.
 
@@ -57,7 +57,7 @@ virtualenv -p python3 venv-physcraper
 
 This will create a python 3 virtual environment named "venv-physcraper".
 
-**_Activate_** the virtual environment with:
+_Activate_ the virtual environment with:
 
 ```
 source venv-physcraper/bin/activate
@@ -70,13 +70,14 @@ pip install -r requirements.txt
 pip install -e  .
 ```
 
-Note the "dot" at the end of that last command!
+Do not miss the "dot" at the end of that last command!
 
 The virtual environment remains active even if you change directories.
 So, `Physcraper` will run from anywhere, while the virtual environment is activated.
 
 
-**Note** that you will have to activate the virtual environment every time you want to run `Physcraper`
+**Note** that you will have to activate the virtual environment with `source venv-physcraper/bin/activate`
+every time you want to run `Physcraper`.
 
 After you are finished working with `Physcraper` and you don't want to run it anymore, deactivate the virtual environment with:
 
@@ -87,7 +88,7 @@ deactivate
 
 ## Checking for dependencies
 
-Currently complete phylogenetic updating WITH `Physcraper` requires
+Currently complete phylogenetic updating with `Physcraper` requires
 [raxmlHPC](http://sco.h-its.org/exelixis/web/software/raxml/index.html) and [MUSCLE](install-muscle.md) to be installed and in the path.
 
 You can check if they are already installed with:
@@ -96,6 +97,7 @@ You can check if they are already installed with:
 which muscle
 which raxmlHPC
 ```
+
 ## Checking installation success on remote searches
 
 To test a full run with pre-downloaded Blast results, copy the example results using:
@@ -106,11 +108,11 @@ and then run:
 
     physcraper_run.py --study_id pg_55 --tree_id tree5864 --treebase --bootstrap_reps 10 --output pg_55_test
 
-There is more info on all the parameter setting in [Physcraper_run](https://physcraper.readthedocs.io/en/latest/physcraper_run.html), but briefly this gets a tree (tree5864) from study pg_55 on OpenTree, pulls the alignment from tree base, blasts the sequences, and does 10 bootstrap reps on the final phylogeny.
+There is more info on all the parameter settings in the documentation section [Run](https://physcraper.readthedocs.io/en/latest/physcraper_run.html), but briefly, this gets a tree (tree5864) from study pg_55 on OpenTree, pulls the alignment from treeBase, blasts the sequences, and does 10 bootstrap reps on the final phylogeny.
 
 
-This example tests all the components, except the actual remote blast searches (because they can be very sloooow).
-To check if your installation was successful for remote searches, try running an analysis:
+This example tests all the components except for the actual remote blast searches (because they can be very slow).
+To check if your installation was successful for remote searches, try running a full analysis:
 
     physcraper_run.py --study_id pg_55 --tree_id tree5864 --treebase --bootstrap_reps 10 --output pg_55_new
 
