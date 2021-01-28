@@ -56,7 +56,7 @@ To find trees containing your taxon of interest (e.g. 'Malvaceae') on OpenTree o
 
     $ find_trees.py --taxon_name "Malvaceae"
 
-This prints a bunch of studies out to the screen. We will need an alignment to update (which OpenTree doesn't store), so lets just look at trees that have data stored in TreeBase.
+This prints a bunch of studies out to the screen. We will need an alignment to update (which OpenTree doesn't store), so lets just look at trees that have data stored in TreeBASE.
 
     $ find_trees.py --taxon_name "Malvaceae" --treebase
 
