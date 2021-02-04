@@ -53,3 +53,7 @@ and tools for [developers](https://physcraper.readthedocs.io/en/latest/CONTRIBUT
 ```{r child="docs/mds/intro-dendropy.md"}
 
 ```
+
+```{r child="docs/mds/citation.md"}
+
+```
