@@ -43,7 +43,7 @@ For more information on the Open Tree of Life project see https://opentreeoflife
 ### Updating a tree from Open Tree of Life
 
 The Open Tree of Life data store, [Phylesystem](https://academic.oup.com/bioinformatics/article/31/17/2794/183373), contains more than 4,500 phylogenetic trees from published studies.
-The tips in these trees are mapped a unified taxonomy, which makes these data searchable in a phylogenetically explicit way.
+The tips in these trees are mapped to a unified taxonomy, which makes these data searchable in a phylogenetically explicit way.
 This is a great place to start of finding existing estimates of phylogenetic relationships,
 and assessing regions of the tree of life which are lacking available phylogenetic estimates.
 There is a lot of sequence data available that has never been incorporated into any phylogenetic estimates.

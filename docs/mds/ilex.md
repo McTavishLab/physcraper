@@ -187,7 +187,7 @@ A number of files is automatically written down by physcraper.
 
 A nexson tree with all types of tip labels is saved in here.
 From this tree, a tree with any kind of label can be produced.
-By default, the updtaed tree with taxon names as tip labels is saved
+By default, the updated tree with taxon names as tip labels is saved
 in the `output_tag` folder as `updated_taxonname.tre`.
 
 

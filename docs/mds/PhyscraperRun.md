@@ -230,7 +230,7 @@ Take a look at the tree, the alignemnt and the out_info csv file. It will list a
 
 To then run a blast search and estimate an updated tree from that tree and alignemnt, you can re-load from that directory. It will use your same config settings (which weere automatically written out to outputdir/run.config).
 
-If the run completed, re-run will use the final output ree and alignment. If the run was not compelte, it will reload the input files.
+If the run completed, re-run will use the final output tree and alignment. If the run was not compelte, it will reload the input files.
 
 
     physcraper_run.py -re pg_55_C -o pg_55_C
@@ -241,7 +241,7 @@ To re-run with a different configuration file,
     physcraper_run.py -re  pg_55_C/ -c alt_config -o  pg_55_D
 
 
-Configuration parameters can be either set in a cofniguration file using -c (e.g. data.config)
+Configuration parameters can be either set in a configuration file using -c (e.g. data.config)
 
     physcraper_run.py -s ot_350 -t Tr53297 -a ot_350Tr53297.aln -nt 8 -spn 3 -hl 20 -as "nexus" -c data.config -o output4
 
