@@ -76,3 +76,6 @@ If you use Physcraper, please cite:
     evolutionary estimates using the Open Tree of Life. BioRxiv
     2020.09.15.299156*. doi:
     [doi.org/10.1101/2020.09.15.299156](https://doi.org/10.1101/2020.09.15.299156)
+
+Physcraper is made available through the [GNU General Public License
+v3.0](https://github.com/McTavishLab/physcraper/blob/main/LICENSE)
