@@ -40,7 +40,29 @@ e.g
 
 *In construction*
 
-  tree_comparison.py -d docs/examples/pg_55/ -og otu376420 otu376439 otu376452 -o pg_55_comparison
+The 'tree_comparison.py' script takes as an argument the output directory of a physcraper run, 
+and compares the relationships in teh final tree to the relationships in the input tree.
+
+It uses the rooting functions descibed above to assure the two trees are rooted the same.
+
+the simplest format is
+
+    tree_comparison.py -d docs/examples/pg_55_web/ -o pg_55_comparison
+
+Where -d is the directory with the output files from a physcraper run, and -o is where the tree compaison results are stored. By default it will root trees based on the OpenTree taxonomy.
+
+Alternatively, you can pass in tip OTU ids from the input tree to use to root both trees:
+e.g.
+
+  tree_comparison.py -d docs/examples/pg_55_web/ -og otu376420 otu376439 otu376452 -o pg_55_comparison
+
+In either case the script will print to screen information comparing the two trees including:
+    - The number of new tips
+    - The number of new taxa
+    - Whether the taxa in the tree are included synthesis phylogenies currently in OpenTree
+    - Which taxa phylogenetic information is not currently incorporated into the synthetic tree
+    - The RF distance and weighted RF distance between the relationships of tips that are in both trees
+    - Which taxa included in the OpenTree taxonomy these estimates conflict with the monophyly of.
 
 
 ### Relabeling the trees
