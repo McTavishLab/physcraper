@@ -2,18 +2,33 @@
 Credits
 =======
 
+.. mdinclude:: ../mds/citation.md
+
+
 Development Lead
 ----------------
 
-* Emily Jane McTavish <ejmctavish@ucmerced.edu>
+Emily Jane McTavish
+
+https://github.com/snacktavish
+
+ejmctavish@ucmerced.edu
 
 Coauthors
 ---------
-Luna Luisa Sanchez Reyes  
 
-Martha Kandziora  
+Luna Luisa Sanchez Reyes
+
+https://github.com/LunaSare
+
+Martha Kandziora
+
+https://github.com/mkandziora
 
 
 Contributors
 ------------
-Matthias Bussonnier  
+
+Matthias Bussonnier
+
+https://github.com/Carreau
