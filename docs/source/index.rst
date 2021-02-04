@@ -13,6 +13,8 @@ Welcome to Physcraper's documentation!
 
 .. mdinclude:: ../mds/citation.md
 
+.. mdinclude:: ../mds/license.md
+
 .. toctree::
    :maxdepth: 3
    :caption: Documentation topics:
