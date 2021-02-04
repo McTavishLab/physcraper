@@ -10,11 +10,12 @@ If you have access to a single gene alignment, and a tree, Physcraper automates 
 
 <img src="https://raw.githubusercontent.com/McTavishLab/physcraper/main/docs/img/schematic.svg" title="schematic" alt="The Phsycraper Framework" width="100%" />
 
-The Physcraper framework consists of 4 general steps. The methodology is extensively described in the *Framework* section.
+The Physcraper framework consists of 4 general steps. The methodology is extensively described in the
+[Implementation](https://physcraper.readthedocs.io/en/latest/methods_extended.html) section.
 
 <br/>
 
-By using a starting tree and an alignment, Physcraper, takes advantage of loci that previous researchers have assessed and deemed appropriate for the phylogenetic scope.
+By using a starting tree and an alignment, Physcraper takes advantage of loci that previous researchers have assessed and deemed appropriate for the phylogenetic scope.
 The sequences added in the search are limited to a user specified taxon or monophyletic group, or within the taxonomic scope of the in-group of the starting tree.
 
 These automated trees can provide a quick inference or potential relationships, of problems in the taxonomic assignments of sequences, and flag areas of potential systematic interest.
