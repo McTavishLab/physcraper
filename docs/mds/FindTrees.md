@@ -1,5 +1,6 @@
 
 ## Find a tree to update
+
 To search for trees on OpenTree with your taxon of interest, you can use
 find_trees.py
 
@@ -12,7 +13,7 @@ optional arguments:
                         Name of search taxon
   -ott OTT_ID, --ott_id OTT_ID
                         Name of search taxon
-  -tb, --treebase       Rturn studies with treebase data only
+  -tb, --treebase       Return studies with TreeBASE data only
   -o OUTPUT, --output OUTPUT
                         Output file path
 
