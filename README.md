@@ -36,8 +36,8 @@ environment,
 usage, tutorials on finding and choosing a [starting
 dataset](https://physcraper.readthedocs.io/en/latest/find_trees.html),
 [running](https://physcraper.readthedocs.io/en/latest/physcraper_run.html)
-a full analysis, and
-[visualizing](https://physcraper.readthedocs.io/en/latest/data_exploration.html)
+a full analysis, and [visualizing and
+analysing](https://physcraper.readthedocs.io/en/latest/data_exploration.html)
 results, as well as real life
 [examples](https://physcraper.readthedocs.io/en/latest/examples.html)
 and tools for
@@ -67,3 +67,12 @@ Physcraper relies on:
     (2020). OpenTree: A Python package for Accessing and Analyzing data
     from the Open Tree of Life. BioRxiv 2020.12.14.422759*
     [doi.org/10.1101/2020.12.14.422759](https://doi.org/10.1101/2020.12.14.422759)
+
+If you use Physcraper, please cite:
+
+  - [Physcraper](https://www.biorxiv.org/content/10.1101/2020.09.15.299156v1.abstract):
+    *Luna Luisa Sanchez Reyes, Martha Kandziora, Emily Jane McTavish.
+    (2020). Physcraper: A Python package for continual update of
+    evolutionary estimates using the Open Tree of Life. BioRxiv
+    2020.09.15.299156*. doi:
+    [doi.org/10.1101/2020.09.15.299156](https://doi.org/10.1101/2020.09.15.299156)
