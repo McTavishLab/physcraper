@@ -4,6 +4,8 @@ Credits
 
 .. mdinclude:: ../mds/citation.md
 
+.. mdinclude:: ../mds/license.md
+
 
 Development Lead
 ----------------
