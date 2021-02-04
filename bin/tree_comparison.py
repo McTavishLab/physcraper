@@ -118,7 +118,7 @@ if args.outgroup:
     tree2.reroot_at_node(mrca, update_bipartitions=True)
 else:
     try:
-        rooted = root_tree_from_synth(ree2, otu_dict, base='ott')
+        rooted = root_tree_from_synth(tree2, otu_dict, base='ott')
     ##Write out t2 for conflict with opentree
     except:
         sys.stdout.write("Auto-rooting unsuccessful, conflict results may be spurious\n")
