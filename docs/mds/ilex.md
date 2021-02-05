@@ -114,7 +114,7 @@ find_trees.py --taxon_name  "Ilex"
 
 ### TreeBASE
 
-#### Using physcraper and the arguments `-tb` and `-no_est`
+#### Using Physcraper and the arguments `-tb` and `-no_est`
 
 ```
 physcraper_run.py -s pg_2827 -t tree6577 -tb -no_est -o data/pg_2827_tree6577
@@ -133,7 +133,7 @@ wget "http://purl.org/phylo/treebase/phylows/matrix/TB2:M2478?format=nexus" -o d
 ### Other repos
 
 
-## III. Starting a physcraper a run
+## III. Starting a Physcraper a run
 
 
 ```
@@ -150,9 +150,9 @@ physcraper_run.py -s pg_2827 -t tree6577 -a data-raw/alignments/T1281-M2478.nex 
 physcraper_run.py -s pg_2827 -t tree6577 -a data-raw/alignments/T1281-M2478.nex -as nexus -db local_blast_db -o data/ilex-local
 ```
 
-## IV. Reading physcraper results
+## IV. Reading the Physcraper results
 
-### The physcraper tag
+### The Physcraper tag
 
 T1281-M2478
 
@@ -163,9 +163,9 @@ It writes the config file down if none was provided
 
 ### Run files
 
-Files in here are also automatically written down by physcraper.
+Files in here are also automatically written down by Physcraper.
 
-blast runs, alignments, raxml trees, bootstrap
+blast runs, alignments, RAxML trees, bootstrap
 
 The trees are reconstructed using RAxML, with tip labels corresponding to local ids (e.g., otu42009, otuPS1) and not taxon names (e.g., *Helwingia japonica*), nor taxonomic ids (e.g., ott or ncbi). Branch lengths are proportional to relative substitution rates.
 The RAxML tree with taxon names as tip labels is saved on the `outputs_tag` folder.
@@ -183,7 +183,7 @@ mtext("Updated tree - otu tags as labels", side = 3, line = -1)
 
 ### Output files
 
-A number of files is automatically written down by physcraper.
+A number of files is automatically written down by Physcraper.
 
 A nexson tree with all types of tip labels is saved in here.
 From this tree, a tree with any kind of label can be produced.
@@ -209,7 +209,7 @@ mtext("Updated tree - Taxon names as labels  ", side = 3, line = -1)
 
 
 
-## IV. Analyzing the physcraper results
+## IV. Analyzing the Physcraper results
 
 First, compare the original tree with the updated tree.
 

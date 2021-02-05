@@ -4,7 +4,7 @@ the Physcraper repository from GitHub and installing it locally following the in
 This process will also install the following python packages:
 
 - Dendropy https://pythonhosted.org/DendroPy/
-- Peyotl https://github.com/OpenTreeOfLife/peyotl (currently needs to be on physcraper branch)
+- Peyotl https://github.com/OpenTreeOfLife/peyotl (currently needs to be on the Physcraper branch)
 - Biopython http://biopython.org/wiki/Download
 - ConfigParser
 
