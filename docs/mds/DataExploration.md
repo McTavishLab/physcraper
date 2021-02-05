@@ -3,8 +3,11 @@
 *Under construction*
 
 The functionalities described in the following sections are still under development.
+Even in this raw form, we think they have the potential to be pretty useful, so
+we released them.
+
 The first two functionalities are not accessible through the command line yet.
-This means that you can access them only through Python from now.
+This means that you can access them only through Python for the moment.
 The last functionality can be accessed through the command line, but it has not
 achieved final form yet.
 
@@ -13,7 +16,7 @@ achieved final form yet.
 For downstream analyses and figure making, it can be handy to swap name on tips of
 the updated phylogeny from alternative taxonomies or taxon id numbers.
 
-Do that with`write_labelled` function, e.g.,
+Do that with the `write_labelled` function, e.g.,
 
     from physcraper import treetaxon
     pg55 = treetaxon.generate_TreeTax_from_run('docs/examples/pg_55_web')
@@ -75,9 +78,9 @@ e.g.,
 
 In either case the script will print to screen information comparing the two trees including:
 
-    - The number of new tips
-    - The number of new taxa
-    - Whether the taxa in the tree are included synthesis phylogenies currently in OpenTree
-    - Which taxa phylogenetic information is not currently incorporated into the synthetic tree
-    - The RF distance and weighted RF distance between the relationships of tips that are in both trees
-    - How the estimates of phylogenetic relationships of taxa included in the OpenTree taxonomy from both trees have conflict with the monophyly of the OpenTree synthetic tree.
+* The number of new tips
+* The number of new taxa
+* Whether the taxa in the tree are included synthesis phylogenies currently in OpenTree
+* Which taxa phylogenetic information is not currently incorporated into the synthetic tree
+* The RF distance and weighted RF distance between the relationships of tips that are in both trees
+* How the estimates of phylogenetic relationships of taxa included in the OpenTree taxonomy from both trees have conflict with the monophyly of the OpenTree synthetic tree.
