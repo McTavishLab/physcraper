@@ -35,7 +35,7 @@ IS_README <- TRUE
 
 
 This is the code repository.
-Please refer to `Physcraper`'s [documentation website](https://physcraper.readthedocs.io/en/latest/) for more details
+Please refer to Physcraper's [documentation website](https://physcraper.readthedocs.io/en/latest/) for more details
 on [installation](https://physcraper.readthedocs.io/en/latest/install.html) instructions
 using an Anaconda or a Virtualenv Python virtual environment,
 [function](https://physcraper.readthedocs.io/en/latest/apidocs.html) usage,

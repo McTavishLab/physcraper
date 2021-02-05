@@ -1,4 +1,4 @@
-While `Physcraper` can be installed via pip,
+While Physcraper can be installed via pip,
 in order to easily access the example data and ancillary files, we recommend downloading
 the Physcraper repository from GitHub and installing it locally following the instructions below.
 This process will also install the following python packages:
@@ -11,7 +11,7 @@ This process will also install the following python packages:
 
 ## Downloading Physcraper
 
-First step is to download `Physcraper` to your computer.
+First step is to download Physcraper to your computer.
 
 You can do this with Git:
 
@@ -24,7 +24,7 @@ or, you can download the repository from https://github.com/McTavishLab/physcrap
 Now, move to the newly created "physcraper" directory with `cd physcraper` to continue.
 
 Next step is to create a virtual
-environment to run `Physcraper` on. You can do this using Anaconda
+environment to run Physcraper on. You can do this using Anaconda
 or Virtualenv.
 
 ## Anaconda virtual environment
@@ -63,7 +63,7 @@ _Activate_ the virtual environment with:
 source venv-physcraper/bin/activate
 ```
 
-Finally, install `Physcraper` inside the virtual environment:
+Finally, install Physcraper inside the virtual environment:
 
 ```
 pip install -r requirements.txt
@@ -73,13 +73,13 @@ pip install -e  .
 Do not miss the "dot" at the end of that last command!
 
 The virtual environment remains active even if you change directories.
-So, `Physcraper` will run from anywhere, while the virtual environment is activated.
+So, Physcraper will run from anywhere, while the virtual environment is activated.
 
 
 **Note** that you will have to activate the virtual environment with `source venv-physcraper/bin/activate`
-every time you want to run `Physcraper`.
+every time you want to run Physcraper.
 
-After you are finished working with `Physcraper` and you don't want to run it anymore, deactivate the virtual environment with:
+After you are finished working with Physcraper and you don't want to run it anymore, deactivate the virtual environment with:
 
 ```
 deactivate
@@ -88,7 +88,7 @@ deactivate
 
 ## Checking for dependencies
 
-Currently complete phylogenetic updating with `Physcraper` requires
+Currently complete phylogenetic updating with Physcraper requires
 [raxmlHPC](http://sco.h-its.org/exelixis/web/software/raxml/index.html) and [MUSCLE](install-muscle.md) to be installed and in the path.
 
 You can check if they are already installed with:

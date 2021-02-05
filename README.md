@@ -26,7 +26,7 @@ Lab](https://mctavishlab.github.io/). Please post a GitHub issue
 [here](https://github.com/McTavishLab/physcraper/issues) or contact
 <ejmctavish@ucmerced.edu> if you need any help or have feedback.
 
-This is the code repository. Please refer to `Physcraper`’s
+This is the code repository. Please refer to Physcraper’s
 [documentation website](https://physcraper.readthedocs.io/en/latest/)
 for more details on
 [installation](https://physcraper.readthedocs.io/en/latest/install.html)
