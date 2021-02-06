@@ -38,7 +38,7 @@ For example, to update a tree from [Crous et al. 2012](https://tree.opentreeofli
 ### Starting with your own tree
 
 If the tree you want to update is not posted to the OpenTree website, you need to match
-the labels on your tree to taxa using the [OpenTree Bulk Taxonomic Name Resolution Service](https://tree.opentreeoflife.org/curator/tnrs/). Download your matched names, unzip the folder, and pass the "json" file that is output from the OpenTree Bulk TNRS tool as `--taxon_info` argument:
+the labels on your tree to taxa using the [OpenTree Bulk Taxonomic Name Resolution Service](https://tree.opentreeoflife.org/curator/tnrs/). Download your matched names, unzip the folder, and pass the "json" file that is output from the OpenTree Bulk TNRS tool as `--taxon_info` or `-ti` argument:
 
 
     physcraper_run.py [-tf TREE_FILE] [-tfs TREEFILE_SCHEMA] [-a ALIGNMENT] [-as ALIGNMENT_SCHEMA] [-ti TAXON_INFO_JSONFILE]  [-o OUTPUT]
@@ -59,7 +59,7 @@ This will not run the BLAST and tree estimation steps:
 
 
 To initiate a full Physcraper run from that tree and alignment, simply remove the `-no_est` flag.
-It will re-load the inputs from the specified output directory and will use your same config settings that are automatically written out to "OUTPUT_DIRECTORY_NAME/AND/OR/PATH/run.config".
+It will re-load the inputs from the specified output directory and will use your same config settings that are automatically written out to "OUTPUT_run.config".
 
 The `-re` flag will re-run a Physcraper cycle on a given output directory.
 If the initial or previous run completed, it will use the final output tree and alignment as input.
@@ -83,7 +83,7 @@ To see all the configuration parameters, use `physcraper_run.py -h`.
 The configuration parameters may be set in a configuration file, and then passed into the analysis run. See file "example.config" for an example.
 
   -c CONFIGFILE, --configfile CONFIGFILE
-                        path to config file
+                        Gives the path to the configuration file
 
 If a config file input is combined with command line configuration parameters, the command line values will override those in the configuration file.
 
@@ -121,43 +121,43 @@ Tree information (required)
 OR
 
   -tf TREE_FILE, --tree_file TREE_FILE
-                        a path to a tree file
+                        A path to a tree file
   -tfs TREE_SCHEMA, --tree_schema TREE_SCHEMA
-                        tree file format schema
+                        Tree file format schema
   -ti TAXON_INFO, --taxon_info TAXON_INFO
-                        taxon info file from OpenTree TNRS
+                        Taxon info file from OpenTree TNRS
 
 
 
 Alignment information (required)
 
   -a ALIGNMENT, --alignment ALIGNMENT
-                        path to alignment
+                        Gives the path to alignment file
   -as ALN_SCHEMA, --aln_schema ALN_SCHEMA
-                        alignment schema (nexus or fasta)
+                        Specifies the alignment schema, one of nexus or fasta
 
 OR
 
-  -tb, --treebase       download alignment from treebase
+  -tb, --treebase       Downloads alignment from TreeBASE
 
 Tree and alignment information are required.
 After an analysis has been run, they can be reloaded from a directory from a previous run.
 
   -re RELOAD_FILES, --reload_files RELOAD_FILES
-                        reload files and configureation from dir
+                        Reloads files and configuration from the output directory specified in -o
 
 
 REQUIRED:
 
   -o OUTPUT, --output OUTPUT
-                        path to output directory
+                        Specifies the path to output directory
 
 Optional:
 
   -st SEARCH_TAXON, --search_taxon SEARCH_TAXON
-                        taxonomic id to constrain blast search. format ott:123
-                        or ncbi:123. Deafult will use ingroup of tree on
-                        OpenTree, or MRCA of input tip
+                        Specifies the taxonomic id to constrain the BLAST search. Format ott:123
+                        or ncbi:123. By default it will use the ingroup of the tree from
+                        OpenTree, or the MRCA of all tips if the former is not specified.
 
 
 
@@ -165,31 +165,31 @@ Optional:
 ### Blast search parameters
 
   -e EMAIL, --email EMAIL
-                        email address for ncbi blast searches
+                        Specifies the email address for BLAST searches
 
-  -r, --repeat          repeat search until no no sequences are found
+  -r, --repeat          To repeat a BLAST search until no more sequences are found
 
 
   -ev EVAL, --eval EVAL
-                        blast e-value cutoff
+                        Specifies the blast e-value cutoff
   -hl HITLIST_LEN, --hitlist_len HITLIST_LEN
-                        number of blast searches to save per taxon
+                        Specifies the number of BLAST searches to save per taxon
 
 
-You can use a local blast database:
-To setup see [setting_up_local database](setting_up_local_database))
+You can use a local BLAST database.
+To setup see [Local Databases section](https://physcraper.readthedocs.io/en/cleanup/install.html#local-databases) of this documentation.
 
   -db BLAST_DB, --blast_db BLAST_DB
-                        local download of blast database
+                        Specifies the local download of BLAST database
 
 
 
 
   -nt NUM_THREADS, --num_threads NUM_THREADS
-                        number of threads to use in processing
+                        Specifies the number of threads to use in processing
 
 
-You can use your own blast database, for example set up on an AWS server.
+You can use your own BLAST database, for example set up on an AWS server.
 
 
 ### Sequence filtering parameters
