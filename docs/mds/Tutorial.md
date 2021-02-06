@@ -1,7 +1,7 @@
 
 ## The Physcraper framework
 
-While genome scale data is increasing rapidly - there are still large quantities of gene-sequence data being uploaded to NCBI [GenBank](https://www.ncbi.nlm.nih.gov/genbank/statistics/).
+While genome scale data is increasing rapidly - there are still large quantities of gene-sequence data being uploaded to the US National Center on Biotechnology Information (NCBI) database [GenBank](https://www.ncbi.nlm.nih.gov/genbank/statistics/).
 These data are often appropriate for looking at phylogenetic relationships, and have the advantage of being homologous to the sequences in existing trees.
 
 If you have access to a single gene alignment, and a tree, Physcraper automates adding homologous data into your tree by using [Blast](https://blast.ncbi.nlm.nih.gov/Blast.cgi) to search for loci in GenBank that are likely to be homologous to sequences in an existing alignment.
@@ -25,18 +25,27 @@ These automated trees can provide a quick inference or potential relationships, 
 
 ## The Open Tree of Life
 
-The Open Tree of Life (https://opentreeoflife.github.io/) is a project that unites phylogenetic inferences and taxonomy to provide a synthetic estimate of species relationships across the entire tree of life.
+The Open Tree of Life (OpenTree; https://opentreeoflife.github.io/) is a project that unites phylogenetic inferences and taxonomy to provide a synthetic estimate of species relationships across the entire tree of life.
 
 ![](../img/otol_logo.png)
 
-Open Tree of Life aims to construct a comprehensive, dynamic and digitally-available tree of life by synthesizing published phylogenetic trees along with taxonomic data.
+Open Tree aims to construct a comprehensive, dynamic and digitally-available tree of life by synthesizing published phylogenetic trees along with taxonomic data.
 Currently the tree comprises 2.3 million tips.
 However, only around 90,000 of those taxa are represented by phylogenetic estimates - the rest are placed in the tree based on their taxonomic names.
+
+To achieve this, the OpenTree Taxonomy (OTT) constructs a reference taxonomy through an algorithmic combination of several source taxonomies, such as Hibbet et al. 2007 (https://doi.org/10.1016/j.mycres.2007.03.004),
+SILVA (http://www.arb-silva.de/),
+the Index Fungorum (http://www.indexfungorum.org/),
+Schäferhoff et al. 2010 (https://doi.org/10.1186/1471-2148-10-352),
+the World Register of Marine Species (WoRMS; http://www.marinespecies.org/aphia.php)
+the NCBI Taxonomy (https://www.ncbi.nlm.nih.gov/books/NBK21100/),
+the Global Biodiversity Information facility (GBIF) backbone Taxonomy (https://www.gbif.org/),
+and the Interim Register of Marine and Nonmarine Genera (IRMNG; https://irmng.org/).
 
 ![](../img/synthtreeleg.svg)
 
 Figure from [Hinchliff et al. 2015](https://www.pnas.org/content/112/41/12764.short).
-For more information on the Open Tree of Life project see https://opentreeoflife.github.io
+For more information on the OpenTree project see https://opentreeoflife.github.io
 
 <br/>
 
@@ -52,33 +61,33 @@ There is a lot of sequence data available that has never been incorporated into 
 
 #### *Find a starting tree with your taxon of interest*
 
-For this example we'll use a tree that is already in the Open Tree of Life database. You can find more details about finding a tree to update at the section [Finding Data](https://physcraper.readthedocs.io/en/latest/find_trees.html).
+For this example we will use a tree that is already in the Open Tree of Life database. You can find more details about finding a tree to update at the [Start section](https://physcraper.readthedocs.io/en/latest/find_trees.html) of this documentation.
 
-To find trees containing your taxon of interest (e.g. 'Malvaceae') on OpenTree of life use:
+To find trees containing your taxon of interest (e.g. 'Malvaceae') on OpenTree use:
 
     $ find_trees.py --taxon_name "Malvaceae"
 
-This prints a bunch of studies out to the screen. We will need an alignment to update (which OpenTree doesn't store), so lets just look at trees that have data stored in TreeBASE.
+This prints a bunch of studies out to the screen. We will need an alignment to update (which OpenTree does not store), so let's just look at trees that have data stored in TreeBASE.
 
     $ find_trees.py --taxon_name "Malvaceae" --treebase
 
 There are a bunch of options!
 
-Lets update the Wilkie et al. ([2006](https://doi.org/10.1600/036364406775971714)) study.
+Lets update the Wilkie et al. 2006 (https://doi.org/10.1600/036364406775971714) study.
 You can view the study on the OpenTree database at [Wilkie, 2006](https://tree.opentreeoflife.org/curator/study/view/pg_55)
 
-While this study was focussed on the family Sterculiacea,
-phylogenetic inference have suggested that this family is not [monophyletic]((https://tree.opentreeoflife.org/opentree/argus/ottol@996482))
+While this study was focused on the family Sterculiacea,
+phylogenetic inference have suggested that this taxon is not monophyletic, as you can see on its [OpenTree homepage]((https://tree.opentreeoflife.org/opentree/argus/ottol@996482))
 
-Lets take a look at how recent molecular data affect our inferences of relationships, and if there is sequence data for taxa that don't have any phylogenetic information available in the tree.
+Let's take a look at how recent molecular data affect our inferences of relationships, and if there is sequence data for taxa that don't have any phylogenetic information available in the tree.
 
 #### *Run the auto-update*
 
 The script `physcraper_run.py` wraps together linking the tree and alignment, blasting, aligning sequences, and inferring an updated tree.
-Detailed explanation of the inputs needed can be found in the section [Running Physcraper](https://physcraper.readthedocs.io/en/latest/physcraper_run.html).
+Detailed explanation of the inputs needed can be found in the [Run section](https://physcraper.readthedocs.io/en/latest/physcraper_run.html) of this documentation.
 
-The blast search part of updating trees takes a long time (for example, this analysis took around 12 hours!). We recommend running it on a cluster or other remote computing option.
-
+The BLAST search part of updating trees takes a long time. For example, this analysis took around 12 hours!
+We recommend running it on a cluster or other remote computing option.
 
     $ physcraper_run.py -s pg_55 -t tree5864 -tb -r -o pg_55
 
