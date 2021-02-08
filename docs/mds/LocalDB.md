@@ -13,9 +13,10 @@ https://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/
 e.g. installing BLAST command line tools on **linux**:
 
 ```
-    wget https://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/LATEST/ncbi-blast-2.10.0+-x64-linux.tar.gz
-    tar -xzvf ncbi-blast-2.10.0+-x64-linux.tar.gz
+    wget https://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/LATEST/ncbi-blast-2.11.0+-x64-linux.tar.gz
+    tar -xzvf ncbi-blast-2.11.0+-x64-linux.tar.gz
  ```
+This link may be broken by NCBI blast executables updates - if so check https://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/LATEST/ for the newest version.
 
 The binaries/scripts/executables will be installed in the `/bin` folder.
 
@@ -34,11 +35,9 @@ This is what you should do:
 ```
     mkdir local_blast_db  # create the folder to save the database
     cd local_blast_db  # move to the newly created folder
-    update_blastdb nt  # download the NCBI nucleotide databases
-    # update_blastdb.pl nt  # in MAC
+    update_blastdb.pl nt  # download the NCBI nucleotide databases
     cat *.tar.gz | tar -xvzf - --ignore-zeros  # unzip the nucleotide databases
-    update_blastdb taxdb  # download the NCBI taxonomy database
-    # update_blastdb.pl taxdb  # in MAC
+    update_blastdb.pl taxdb  # download the NCBI taxonomy database
     gunzip -cd taxdb.tar.gz | (tar xvf - )  # unzip the taxonomy database
 ```
 
@@ -49,6 +48,24 @@ This is what you should do:
     wget 'ftp://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdump.tar.gz'
     gunzip -f -cd taxdump.tar.gz | (tar xvf - names.dmp nodes.dmp)
 ```
+
+#### Updating an existing blast db
+
+``` 
+    cd local_blast_db  # move to the nblast db folder
+    update_blastdb nt  # download the NCBI nucleotide databases
+    # update_blastdb.pl nt  # on Mac OS
+    cat *.tar.gz | tar -xvzf - --ignore-zeros  # unzip the nucleotide databases
+    update_blastdb taxdb  # download the NCBI taxonomy database
+    # update_blastdb.pl taxdb  # on Mac OS
+    gunzip -cd taxdb.tar.gz | (tar xvf - )  # unzip the taxonomy database
+```
+
+### Checking install success of local blast DB
+
+    physcraper_run.py --study_id pg_55 --tree_id tree5864 --treebase --bootstrap_reps 10 -db local_blast_db --output pg_55_local
+
+This should start running a query using your local blast DB.
 
 
 ### Setting up an AWS blast db

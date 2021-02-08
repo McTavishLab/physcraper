@@ -62,14 +62,8 @@ class PhyscraperScrape():
 
             * key: otu_id
             * value: see otu_dict, is a subset of the otu_dict, all sequences that will be newly added to aln and tre
-          * **self.otu_by_gi**: dictionary that contains ????:
-
-            * key:
-            * value:
-          * **self._to_be_pruned**: list that contains ????
           * **self.mrca_ncbi**:  int ncbi identifier of mrca
 
-          * **self.tmpfi**: path to a file or folder???
           * **self.blast_subdir**: path to folder that contains the files writen during blast
 
           * **self.newseqs_file**: filename of files that contains the sequences from self.new_seqs_otu_id
@@ -288,7 +282,6 @@ class PhyscraperScrape():
                 continue
             if time_passed > delay:
                 query = seq.symbols_as_string().replace("-", "").replace("?", "")
-               # tmpfile.write(query)
                 if self.config.blast_loc == "local":
                     file_ending = "txt"
                 else:

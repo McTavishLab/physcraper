@@ -13,7 +13,6 @@
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
 import physcraper
-# import sys
 # sys.path.insert(0, os.path.abspath('.'))
 
 
@@ -52,7 +51,7 @@ templates_path = ['_templates']
 # You can specify multiple suffix as a list of string:
 #
 source_suffix = ['.rst', '.md']
-#source_suffix = '.rst'
+# source_suffix = '.rst'
 
 # The master toctree document.
 master_doc = 'index'
@@ -78,7 +77,10 @@ pygments_style = None
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = 'alabaster'
+# html_theme_path = [sphinx_readable_theme.get_html_theme_path()]
+
+# html_theme = 'readable'
+html_theme = "alabaster"
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
@@ -183,3 +185,21 @@ epub_exclude_files = ['search.html']
 
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {'https://docs.python.org/': None}
+
+# Shortcuts
+rst_prolog = """
+.. |Git| replace:: Git
+.. _Git: http://git-scm.com/
+
+.. |Physcraperex| replace:: Physcraperex
+.. _Physcraperex: https://mctavishlab.github.io/physcraperex/index.html
+
+.. |Ilex| replace:: *Ilex*
+.. _Ilex: https://mctavishlab.github.io/physcraperex/articles/ilex.html
+
+.. |Malvaceae| replace:: Malvaceae
+.. _Malvaceae: https://mctavishlab.github.io/physcraperex/articles/malvaceae.html
+
+.. |Dothideomycetes| replace:: Dothideomycetes
+.. _Dothideomycetes: https://mctavishlab.github.io/physcraperex/articles/schoch.html
+"""
