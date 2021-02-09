@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd; please edit the .Rmd file and then from R do rmarkdown::render("README.Rmd")-->
 
-<img align="left" width="250" src="https://raw.githubusercontent.com/McTavishLab/physcraper/cleanup/docs/physcraper-long.png">
+<img align="left" width="250" src="https://raw.githubusercontent.com/McTavishLab/physcraper/master/docs/physcraper-long.png">
 
 # Physcraper
 
