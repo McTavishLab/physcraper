@@ -63,12 +63,13 @@ class ConfigObj():
               * self.ncbi_names: path to 'names.dmp' file, that contains the different ID's
     """
 
-    def __init__(self, configfile=None):
+    def __init__(self, configfile=None, run = True):
        # debug(configfi)
         if _DEBUG:
             sys.stdout.write("Building config object\n")
         if configfile:
             self.set_defaults()
+            self.run = run
             self.read_config(configfile)
         else:
             sys.stdout.write("No config file, using defaults\n")
@@ -231,6 +232,8 @@ max_length = {maxlen}
     def set_local(self):
         """ Checks that all appropriate files etc are in place for local blast db.
         """
+        if not self.run:
+            return
         self.blast_loc = "local"
         self.ncbi_nodes = "{}/nodes.dmp".format(self.taxonomy_dir)
         self.ncbi_names = "{}/names.dmp".format(self.taxonomy_dir)

@@ -75,9 +75,10 @@ def generate_ATT_from_files(workdir,
     return AlignTreeTax(treefile, otu_dict, alnfile, search_taxon=mrca_ott, workdir=workdir,
                         configfile=configfile, aln_schema=aln_schema, tree_schema=tree_schema)
 
-def generate_ATT_from_run(workdir, start_files='output', tag=None, configfile=None):
+def generate_ATT_from_run(workdir, start_files='output', tag=None, configfile=None, run=True):
     """Build an ATT object without phylesystem, use your own files instead.
-    :return: object of class ATT
+    :return: object of class ATT.
+    To load without checking databases, set run to False
     """
     files = [f for f in os.listdir(workdir)]
     for file in files:
@@ -89,6 +90,8 @@ def generate_ATT_from_run(workdir, start_files='output', tag=None, configfile=No
     inputsdir = "{}/inputs_{}".format(workdir, tag)
     if configfile is None:
         configfile = "{}/run.config".format(rundir)
+    if run == False:
+        configfile = ConfigObj(configfile, run = False)
     if start_files == 'output':
         sdir = outputsdir
     if start_files == 'input':
