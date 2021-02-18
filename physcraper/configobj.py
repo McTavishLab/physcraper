@@ -67,9 +67,9 @@ class ConfigObj():
        # debug(configfi)
         if _DEBUG:
             sys.stdout.write("Building config object\n")
+        self.run = run
         if configfile:
             self.set_defaults()
-            self.run = run
             self.read_config(configfile)
         else:
             sys.stdout.write("No config file, using defaults\n")
