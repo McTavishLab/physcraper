@@ -230,6 +230,7 @@ def write_labelled_aln(aligntreetax, label, filepath, schema="fasta", norepeats=
     tmp_aln = DnaCharacterMatrix.get(data=tmp_fasta,
                                      schema="fasta")
     for taxon in tmp_aln.taxon_namespace:
+        debug(taxon.label)
         assert(taxon.label in aligntreetax.otu_dict), "{} not in {}".format(taxon.label, aligntreetax.otu_dict.keys())
         new_label = aligntreetax.otu_dict[taxon.label].get(label, None)
         if new_label is None:
@@ -238,10 +239,10 @@ def write_labelled_aln(aligntreetax, label, filepath, schema="fasta", norepeats=
             gb_id = aligntreetax.otu_dict[taxon.label].get('^ncbi:accession')
             if gb_id is None:
                 gb_id = aligntreetax.otu_dict[taxon.label].get("^ot:originalLabel")
-            new_label = "_".join([new_label, str(gb_id)])
+            new_label = "_".join([str(new_label), str(gb_id)])
         else:
             if norepeats:
-                new_label = "_".join([new_label, taxon.label])
+                new_label = "_".join([str(new_label), str(taxon.label)])
         new_label = str(new_label).replace(' ', '_')
         taxon.label = new_label
         tmp_aln.write(path=filepath,
