@@ -282,6 +282,8 @@ if args.repeat:
             scraper.data.write_labelled(filename="run_{}".format(run), label='^ot:ottTaxonName', direc=scraper.outputsdir)
             scraper.data.write_otus(schema='table', direc=scraper.inputsdir)
             scraper.data.write_otus(schema='json', direc=scraper.rundir)
+            scraper.data.write_otus(schema='json', direc=scraper.outputsdir)   
+            scraper.data.write_files(direc=scraper.outputsdir)         
             new_rundir = "{}_run{}".format(rundir_base, run)
             prev_rundir = scraper.rundir
             scraper.rundir = new_rundir
