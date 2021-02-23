@@ -347,8 +347,6 @@ class PhyscraperScrape():
                                     gb_acc = get_acc_from_blast(match)
                                     if gb_acc is not None:
                                         full_seq = self.get_full_seq(gb_acc, sseq)
-                                        if full_seq == None or full_seq == 'None':
-                                            full_seq = self.get_full_seq(gi_id, sseq)
                                         query_dict[gb_acc] = {'^ncbi:gi': gi_id,
                                                               'accession': gb_acc,
                                                               'staxids': staxids,
@@ -365,8 +363,6 @@ class PhyscraperScrape():
                                 if gb_acc not in self.ids.acc_ncbi_dict:  # fill up dict with more information.
                                     self.ids.acc_ncbi_dict[gb_acc] = staxids
                                 full_seq = self.get_full_seq(gb_acc, sseq)
-                                if full_seq == None or full_seq == 'None':
-                                    full_seq = self.get_full_seq(gi_id, sseq)
                                 query_dict[gb_acc] = {'^ncbi:gi': gi_id,
                                                       'accession': gb_acc,
                                                       'staxids': staxids,
@@ -422,8 +418,7 @@ class PhyscraperScrape():
 
             except subprocess.CalledProcessError as grepexc:
                 sys.stderr.write("error code {}, {}".format(grepexc.returncode, grepexc.output))
-                return None
-                #sys.exit()
+                sys.exit()
             # read in file to get full seq
         f = open(seq_path)
         seq = ""

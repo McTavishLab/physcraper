@@ -26,13 +26,6 @@ parser.add_argument("-m","--include_missing", help="Where unevern numbers of seq
 args = parser.parse_args()
 
 
-ds = dendropy.DataSet()
-
-# Set it up to manage all data under a single taxon namespace.
-# HIGHLY RECOMMENDED!
-taxon_namespace = dendropy.TaxonNamespace()
-ds.attach_taxon_namespace(taxon_namespace)
-
 
 all_taxa = {}
 
@@ -62,14 +55,15 @@ for run in runs:
     all_loci[loc] = {}
     all_loci[loc]['data'] = locus
     all_loci[loc]['path'] = fp
-    for tip in locus.otu_dict:
-        taxon = locus.otu_dict[tip]['^ot:ottId']
-        tax_labels[taxon] = locus.otu_dict[tip]['^ot:ottTaxonName']
+    for seq in locus.aln:
+        otu_id = seq.label
+        taxon = locus.otu_dict[otu_id]['^ot:ottTaxonName']
+        tax_labels[taxon] = locus.otu_dict[otu_id]['^ot:ottTaxonName']
         if taxon not in all_taxa:
             all_taxa[taxon] = {}
         if loc not in all_taxa[taxon]:
             all_taxa[taxon][loc] = []
-        all_taxa[taxon][loc].append(tip)
+        all_taxa[taxon][loc].append(otu_id)
 
 nloci = i
 
@@ -86,32 +80,43 @@ for loc in all_loci:
     re_label_dict[loc] = {}
 
 
-for taxon in all_taxa:
+taxa_in_all_loci = set(all_taxa.keys())
+
+for locus in all_loci:
+    locusset = set([all_loci[locus]['data'].otu_dict[seq.label]['^ot:ottTaxonName'] for seq in all_loci[locus]['data'].aln])
+    taxa_in_all_loci = taxa_in_all_loci.intersection(locusset)
+
+
+concat_names = []
+for taxon in taxa_in_all_loci:
+    print(taxon)
     ntax_seq_max = max([len(all_taxa[taxon][locus]) for locus in all_taxa[taxon]])
     ntax_seq_min = min([len(all_taxa[taxon][locus]) for locus in all_taxa[taxon]])
-    if ntax_seq_min < len(all_loci):
-        ntax_seq_min = 0
     if args.include_missing:
         ntax_seq = ntax_seq_max
     else:
         ntax_seq = ntax_seq_min
+    print(ntax_seq)
     for i in range(ntax_seq):
         concat_name = "{}_{}".format(tax_labels[taxon], i)
         concat_dict[concat_name] = {}
+        concat_names.append(concat_name)
         for loc in all_loci:
             print(loc)
-            if i < len(all_taxa[taxon].get(loc,[])):
-                tip = all_taxa[taxon][loc][i]
-                concat_dict[concat_name][loc] = tip
-                re_label_dict[loc][tip] = concat_name
+            tip = all_taxa[taxon][loc][i]
+            concat_dict[concat_name][loc] = tip
+            re_label_dict[loc][tip] = concat_name
 
-            else:
-                concat_dict[concat_name][loc] = None
+
+
+if args.include_missing == False:
+    assert len(concat_dict[concat_name][loc]) == len(concat_names)
 
 
 ds = dendropy.DataSet()
 taxon_namespace = dendropy.TaxonNamespace()
 ds.attach_taxon_namespace(taxon_namespace)
+
 
 
 for loc in all_loci:
@@ -121,8 +126,6 @@ for loc in all_loci:
         concat_name = re_label_dict[loc].get(seq.label, None)
         if concat_name == None:
             removal_list.append(seq)
-            print("remove")
-            print(seq)
         else:
             seq.label = concat_name
     aln.remove_sequences(removal_list)
