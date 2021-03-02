@@ -4,20 +4,28 @@ import argparse
 import os
 import copy
 
+from physcraper import aligntreetax
 
 # Example using the data from https://github.com/McTavishLab/physcraper_example
 #physcraper_run.py -s pg_238 -t tree109 -a physcraper_example/treebase_alns/pg_238tree109_18S.aln -db /branchinecta/shared/local_blast_db -nt 8 -as "nexus" -r -o pg_238_runs/18s
 #physcraper_run.py -s pg_238 -t tree109 -a physcraper_example/treebase_alns/pg_238tree109_18S.aln -db /branchinecta/shared/local_blast_db -nt 8 -as "nexus" -r -o pg_238_runs/18s
 
-
-#python -i bin/concatenate_loci.py -d ../physcraper_runs/pg_238_runs/
-
-
+#Examples
+#python bin/concatenate_loci.py -d ../physcraper_runs/pg_238_runs/ -f concatenate -o test_concat_res
 
 
-from physcraper import aligntreetax
+
+#python bin/concatenate_loci.py -d ../physcraper_runs/pg_238_runs/ -f astral -o test_concat_res
+#java -jar astral.5.7.5.jar -i ../physcraper/test_concat_res/genetrees.new -a ../physcraper/test_concat_res/mappings.txt 
+
+
+#ToDo - clean up dendropy part, write Charsets
+# Generate taxon sets for SVD quratets inputs
+
+
+
 parser = argparse.ArgumentParser()
-parser.add_argument("-d","--loci_runs_folder", help="folder containing results directories from individual locus runs")
+parser.add_argument("-d","--locus_runs_folder", help="folder containing results directories from individual locus runs")
 parser.add_argument("-o","--output", help="folder to write to")
 parser.add_argument("-c","--concatenate_by", help="what aspect of otu info to concatenate by, eitehr OTTid or ...?")
 parser.add_argument("-f","--format", help="output format", choices=["concatenate", "astral"])
@@ -32,7 +40,7 @@ args = parser.parse_args()
 
 all_taxa = {}
 
-args.output = "test_concat_res"
+#args.output = "test_concat_res"
 if not os.path.exists(args.output):
     os.mkdir(args.output)
 
@@ -40,14 +48,14 @@ tax_labels = {}
 
 otu_dict_dict = {}
 
-runs = [f for f in os.listdir(args.loci_runs_folder) if os.path.isdir("{}/{}".format(args.loci_runs_folder, f))]
+runs = [f for f in os.listdir(args.locus_runs_folder) if os.path.isdir("{}/{}".format(args.locus_runs_folder, f))]
 i = 0
 
 all_loci = {}
 for run in runs:
     print(run)
     i += 1
-    fp = "{}/{}".format(args.loci_runs_folder, run)
+    fp = "{}/{}".format(args.locus_runs_folder, run)
     files = [f for f in os.listdir(fp)]
     if files:
         for file in files:
@@ -150,6 +158,8 @@ if args.format == "astral":
     
     fi = open("{}/genetrees.new".format(args.output), "w")
     for gtree in genetrees:
+        gtree = gtree.replace('[&R] ', "")
+        gtree = gtree.replace("'", "")
         fi.write(gtree)
     fi.close()
     
