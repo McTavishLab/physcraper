@@ -146,8 +146,9 @@ else:
     try:
         rooted = root_tree_from_synth(tree2, otu_dict, base='ott')
     ##Write out t2 for conflict with opentree
+    ## In which cases will auto-root fail????
     except:
-        sys.stdout.write("Auto-rooting unsuccessful, conflict results may be spurious\n")
+        sys.stdout.write("Auto-rooting failed, conflict results may be spurious.\n")
 
 tree2.write(path = "{}/after_rooting.tre".format(comparisondir), schema="newick")
 
@@ -254,24 +255,23 @@ for node in tree_updated:
 tree_updated.write(path = "{}/conflict_label.tre".format(comparisondir), schema="newick")
 
 
-'''
-tree_updated_synth = conflict_tree(unpruned_tree2, otu_dict)
-resp_updated_synth = OT.conflict_str(tree_updated_synth.as_string(schema="newick"), 'synth')
-conflict_synth = resp_updated_synth.response_dict
 
-
-for node in tree_updated_synth:
-    if node.taxon:
-        node_id = node.taxon.label.split('_')[1]
-        conf_node = conflict_synth.get(node_id, False)
-        if conf_node:
-            new_label = "{} {}".format(conf_node['status'], conf_node['witness'])
-            node.taxon.label = new_label
-    else:
-        node_id = node.label.split('_')[1]
-        conf_node = conflict_synth.get(node_id, False)
-        if conf_node:
-            new_label = "{} {}".format(conf_node['status'], conf_node['witness'])
-            node.label = new_label
-
-'''
+## tree_updated_synth = conflict_tree(unpruned_tree2, otu_dict)
+## resp_updated_synth = OT.conflict_str(tree_updated_synth.as_string(schema="newick"), 'synth')
+## conflict_synth = resp_updated_synth.response_dict
+##
+## 
+## for node in tree_updated_synth:
+##     if node.taxon:
+##         node_id = node.taxon.label.split('_')[1]
+##         conf_node = conflict_synth.get(node_id, False)
+##         if conf_node:
+##             new_label = "{} {}".format(conf_node['status'], conf_node['witness'])
+##             node.taxon.label = new_label
+##     else:
+##         node_id = node.label.split('_')[1]
+##         conf_node = conflict_synth.get(node_id, False)
+##         if conf_node:
+##             new_label = "{} {}".format(conf_node['status'], conf_node['witness'])
+##             node.label = new_label
+##
