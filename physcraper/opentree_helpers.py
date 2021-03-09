@@ -109,7 +109,7 @@ def root_tree_from_synth(tree, otu_dict, base='ott'):
 
 def ottids_in_synth(synthfile=None):
     """Checks if ottids are present in current synth tree,
-    using a file listing all current otts in syth (v12.3)
+    using a file listing all current otts in synth (v12.3)
     :param synthfile: defaults to taxonomy/ottids_in_synth.txt
     """
     if synthfile is None:
