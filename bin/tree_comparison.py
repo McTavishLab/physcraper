@@ -55,7 +55,7 @@ args = parser.parse_args()
 
 
 try:
-    assert(args.outputdir)
+    assert args.outputdir
 except AssertionError:
     sys.stderr.write("ERROR: Output directory (-o) is required.\n")
     sys.exit(-1)
@@ -161,8 +161,10 @@ ottids_in_synth = ottids_in_synth()
 
 
 sys.stdout.write("\nThere were {} new taxa in the updated tree\n".format(len(new_spp) - len(old_spp)))
-sys.stdout.write("Of the {} taxa in original tree {} are not included in synthesis phylogenies,\n".format(len(old_spp), len(old_spp.difference(ottids_in_synth))))
-sys.stdout.write("Of the {} taxa in updated tree {} are not included in synthesis phylogenies \n\n".format(len(new_spp), len(new_spp.difference(ottids_in_synth))))
+msg1 = "Of the {} taxa in original tree {} are not included in synthesis phylogenies.\n"
+sys.stdout.write(msg1.format(len(old_spp), len(old_spp.difference(ottids_in_synth))))
+msg2 = "Of the {} taxa in updated tree {} are not included in synthesis phylogenies.\n\n"
+sys.stdout.write(msg2.format(len(new_spp), len(new_spp.difference(ottids_in_synth))))
 
 
 ids = physcraper.IdDicts()
@@ -194,8 +196,8 @@ for tax in tns:
 ## write put with tip labels that have taxon names
 tree1.write(path = "{}/original.tre".format(comparisondir), schema="newick")
 tree2.write(path = "{}/pruned_updated.tre".format(comparisondir), schema="newick")
-
-sys.stdout.write("\n\nThe RobinsonFoulds distance between the matched tips in the trees is {} and the weighted RF is {}\n".format(RF, weightedrf))
+msg3 = "\n\nThe RF distance between the matched tips in the trees is {} and the weighted RF is {}\n"
+sys.stdout.write(msg3.format(RF, weightedrf))
 
 workdir = comparisondir
 tree_updated = conflict_tree(unpruned_tree2, otu_dict)
