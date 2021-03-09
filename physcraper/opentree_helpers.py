@@ -88,8 +88,8 @@ def root_tree_from_synth(tree, otu_dict, base='ott'):
             representative_taxa.append(tip.taxon.label)
         else:
             representative_taxa.append(child.leaf_nodes()[0].taxon.label)
-    sys.stdout.write("Rooting tree based on taxon relationships in {}. \n
-                      Root will be MRCA of {}\n".format(base, ", ".join(representative_taxa)))
+    sys.stdout.write("Rooting tree based on taxon relationships in {}. \
+                      \n Root will be MRCA of {}\n".format(base, ", ".join(representative_taxa)))
 
     ## Get tips for those taxa:
     phyloref = set()
