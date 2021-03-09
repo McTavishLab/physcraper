@@ -1,3 +1,26 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+##############################################################################
+##  Physcraper Library.
+##
+##
+##  If you use this work or any portion thereof in published work,
+##  please cite it as:
+##
+##     Luna L. Sanchez Reyes, Martha Kandziora, Emily Jane McTavish. (2020).
+##     Physcraper: A Python package for continual update of evolutionary
+##     estimates using the Open Tree of Life. BioRxiv 2020.09.15.299156.
+##     doi: doi.org/10.1101/2020.09.15.299156
+##
+##############################################################################
+
+"""
+This module handles the command line code to compare two trees with
+the Open Tree of Life conflict functions, and using the Robinson-Foulds statistic
+calculated using Dendropy functions.
+"""
+
 import sys
 import os
 import json
@@ -10,14 +33,17 @@ from opentree import OT
 from physcraper.opentree_helpers import root_tree_from_synth, conflict_tree, ottids_in_synth
 from dendropy.calculate import treecompare
 ### Example
-# python ../physcraper/bin/rf_distance.py -t1 pg_238/inputs_pg_238tree109_RPB2/physcraper_pg_238tree109_RPB2.tre -t2 pg_238/outputs_pg_238tree109_RPB2/physcraper_pg_238tree109_RPB2.tre -otu pg_238/run_pg_238tree109_RPB2/otu_info_pg_238tree109_RPB2.json 
+# python ../physcraper/bin/rf_distance.py
+# -t1 pg_238/inputs_pg_238tree109_RPB2/physcraper_pg_238tree109_RPB2.tre
+# -t2 pg_238/outputs_pg_238tree109_RPB2/physcraper_pg_238tree109_RPB2.tre
+# -otu pg_238/run_pg_238tree109_RPB2/otu_info_pg_238tree109_RPB2.json
 
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument("-d","--results_dir", help="results directory from run")
-parser.add_argument("-t1","--original_tree", help="Original tree")
-parser.add_argument("-t2","--updated_tree", help="Updated Tree")
+parser.add_argument("-d", "--results_dir", help="results directory from run")
+parser.add_argument("-t1", "--original_tree", help="Original tree")
+parser.add_argument("-t2", "--updated_tree", help="Updated Tree")
 parser.add_argument("-otu", "--otu_info", help="File with taxon information JSON")
 parser.add_argument("-og", "--outgroup", nargs='+', help="otu ids of outgroup taxa for rooting")
 parser.add_argument("-o", "--outputdir", help="Name for output directory")
