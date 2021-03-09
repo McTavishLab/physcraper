@@ -49,7 +49,7 @@ def root_tree_from_synth(tree, otu_dict, base='ott'):
     """Uses information from OpenTree of Life to suggest root.
     :param tree: dendropy :class:`Tree
     :param otu_dict: a dictionary of tip label metadata, inculding an '^ot:ottId'attribute
-    'param base: either `synth` or `ott.` If synth will use synth tree relationships to root input tree,
+    'param base: either `synth` or `ott.` If `synth` will use synthetic OpenTree tree relationships to root input tree,
     if `ott` will use OpenTree taxonomy.
     """
     leaves = [leaf.taxon.label for leaf in tree.leaf_nodes()]
