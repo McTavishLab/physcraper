@@ -49,7 +49,12 @@ if args.taxon_name:
     try:
         ottid = OT.get_ottid_from_name(args.taxon_name)
     except:
-        sys.stdout.write("no match to taxon name. Try finding your taxon on tree.opentreeoflife.org and inputting the taxon id using -ott\n")
+        msg1 = "There is no match to the provided taxon name.\n"
+        msg2 = "Try finding your taxon on tree.opentreeoflife.org and getting its taxon id. \n"
+        msg3 = "Then use the taxon id to search for a tree using the '-ott' argument.\n"
+        sys.stdout.write(msg1)
+        sys.stdout.write(msg2)
+        sys.stdout.write(msg3)
         sys.exit()
 
 
