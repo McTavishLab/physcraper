@@ -48,7 +48,7 @@ assert(args.taxon_name or args.ott_id), "A taxon name or an OTT id are required 
 if args.taxon_name:
     try:
         ottid = OT.get_ottid_from_name(args.taxon_name)
-    except:
+    except IndexError:
         msg1 = "There is no match to the provided taxon name.\n"
         msg2 = "Try finding your taxon on tree.opentreeoflife.org and getting its taxon id. \n"
         msg3 = "Then use the taxon id to search for a tree using the '-ott' argument.\n"
