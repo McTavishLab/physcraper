@@ -94,8 +94,8 @@ def test_web_blast():
 def test_reroot():
     tr = treetaxon.generate_TreeTax_from_run(workdir="tests/data/precooked/ot_350")
     opentree_helpers.root_tree_from_synth(tree=tr.tre, otu_dict=tr.otu_dict)
-    tr = treetaxon.generate_TreeTax_from_run(workdir="tests/data/precooked/tiny_local/inputs_test")
-    opentree_helpers.root_tree_from_synth(tree=tr.tre, otu_dict=tr.otu_dict)
+#    tr = treetaxon.generate_TreeTax_from_run(workdir="tests/data/precooked/tiny_local/inputs_test")
+#    opentree_helpers.root_tree_from_synth(tree=tr.tre, otu_dict=tr.otu_dict)
 #    tr = treetaxon.generate_TreeTax_from_run(workdir="tests/tmp/example_test/inputs_pg_55tree5864")
 #    opentree_helpers.root_tree_from_synth(tree=tr.tre, otu_dict=tr.otu_dict)
     tr = treetaxon.generate_TreeTax_from_run(workdir="tests/output/test_run_raxml")
