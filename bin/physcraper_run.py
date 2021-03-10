@@ -286,7 +286,9 @@ if args.repeat:
             prev_rundir = scraper.rundir
             scraper.rundir = new_rundir
             os.mkdir(scraper.rundir)
-            to_be_blasted = [otu.label for otu in scraper.data.aln if ((scraper.data.otu_dict[otu.label]['^physcraper:ingroup'] == True) and (scraper.data.otu_dict[otu.label]['^physcraper:last_blasted']==None))]
+            cond1 = scraper.data.otu_dict[otu.label]['^physcraper:ingroup']
+            cond2 = scraper.data.otu_dict[otu.label]['^physcraper:last_blasted'] is None
+            to_be_blasted = [otu.label for otu in scraper.data.aln if (cond1 and cond2)]
         elif besttreepath is None:
           #`  os.rmdir(scraper.rundir)
             scraper.rundir = prev_rundir
