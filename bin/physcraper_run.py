@@ -3,7 +3,7 @@ import argparse
 import os
 import sys
 import physcraper
-from physcraper.opentree_helpers import get_tree_from_study, scraper_from_opentree, get_max_match_aln, count_match_tree_to_aln, generate_ATT_from_phylesystem, bulk_tnrs_load
+from physcraper.opentree_helpers import get_tree_from_study, scraper_from_opentree, get_max_match_aln, generate_ATT_from_phylesystem, bulk_tnrs_load
 from physcraper.aligntreetax import generate_ATT_from_run, generate_ATT_from_files
 
 parser = argparse.ArgumentParser()
