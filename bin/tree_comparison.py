@@ -24,14 +24,14 @@ calculated using Dendropy functions.
 import sys
 import os
 import json
-import subprocess
+# import subprocess
 import argparse
-import dendropy
 import copy
-import physcraper
-from opentree import OT
-from physcraper.opentree_helpers import root_tree_from_synth, conflict_tree, ottids_in_synth
+import dendropy
 from dendropy.calculate import treecompare
+import physcraper
+from physcraper.opentree_helpers import root_tree_from_synth, conflict_tree, ottids_in_synth
+from opentree import OT
 ### Example
 # python ../physcraper/bin/rf_distance.py
 # -t1 pg_238/inputs_pg_238tree109_RPB2/physcraper_pg_238tree109_RPB2.tre
@@ -184,10 +184,10 @@ unpruned_tree2 = copy.deepcopy(tree2)
 tree2.prune_taxa(prune)
 
 
-RF = dendropy.calculate.treecompare.unweighted_robinson_foulds_distance(tree1, tree2)
+RF = treecompare.unweighted_robinson_foulds_distance(tree1, tree2)
 
 #Weighted RF
-weightedrf = dendropy.calculate.treecompare.weighted_robinson_foulds_distance(tree1, tree2)
+weightedrf = treecompare.weighted_robinson_foulds_distance(tree1, tree2)
 
 
 for tax in tns:
@@ -260,7 +260,7 @@ tree_updated.write(path = "{}/conflict_label.tre".format(comparisondir), schema=
 ## resp_updated_synth = OT.conflict_str(tree_updated_synth.as_string(schema="newick"), 'synth')
 ## conflict_synth = resp_updated_synth.response_dict
 ##
-## 
+##
 ## for node in tree_updated_synth:
 ##     if node.taxon:
 ##         node_id = node.taxon.label.split('_')[1]
