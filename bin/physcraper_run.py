@@ -3,67 +3,77 @@ import argparse
 import os
 import sys
 import physcraper
-from physcraper.opentree_helpers import get_tree_from_study, scraper_from_opentree, get_max_match_aln, generate_ATT_from_phylesystem, bulk_tnrs_load
+from physcraper.opentree_helpers import (get_tree_from_study,
+                                         scraper_from_opentree,
+                                         get_max_match_aln,
+                                         generate_ATT_from_phylesystem,
+                                         bulk_tnrs_load)
 from physcraper.aligntreetax import generate_ATT_from_run, generate_ATT_from_files
 
 parser = argparse.ArgumentParser()
-parser.add_argument("-s","--study_id", help="OpenTree study id")
-parser.add_argument("-t","--tree_id", help="OpenTree tree id")
-parser.add_argument("-a","--alignment", help="path to alignment")
-parser.add_argument("-as","--aln_schema", help="alignment schema (nexus or fasta)")
-parser.add_argument("-o","--output", help="path to output directory")
-parser.add_argument("-c","--configfile", help="path to config file")
-parser.add_argument("-tb","--treebase", action="store_true", help="download alignment from treebase")
-parser.add_argument("-re","--reload_files",  help="reload files and configuration from dir")
+parser.add_argument("-s","--study_id", help="OpenTree study id.")
+parser.add_argument("-t","--tree_id", help="OpenTree tree id.")
+parser.add_argument("-a","--alignment", help="Path to alignment.")
+parser.add_argument("-as","--aln_schema", help="Alignment schema (nexus or fasta).")
+parser.add_argument("-o","--output", help="Path to output directory.")
+parser.add_argument("-c","--configfile", help="Path to config file.")
+parser.add_argument("-tb","--treebase", action="store_true", help="Download alignment from treebase.")
+parser.add_argument("-re","--reload_files",  help="Reload files and configuration from dir.")
 
-parser.add_argument("-tf","--tree_file", help="a path to a tree file")
-parser.add_argument("-tfs","--tree_schema", help="tree file format schema")
-parser.add_argument("-ti","--taxon_info", help="taxon info file from OpenTree TNRS")
+parser.add_argument("-tf","--tree_file", help="A path to a tree file.")
+parser.add_argument("-tfs","--tree_schema", help="Tree file format schema.")
+parser.add_argument("-ti","--taxon_info", help="Taxon info file from OpenTree TNRS.")
 
 
 
-parser.add_argument("-tag","--tag", help="gene name or other specifier")
-parser.add_argument("-st","--search_taxon", help="taxonomic id to constrain blast search. format ott:123 or ncbi:123. Deafult will use ingroup of tree on OpenTree, or MRCA of input tips ")
+parser.add_argument("-tag","--tag", help="Gene name or other name specifier.")
+msg1 = "Taxonomic id to constrain a BLAST search. "
+msg2 = "Format is ott:123 or ncbi:123. Default will use ingroup of tree on OpenTree, or MRCA of input tips."
+parser.add_argument("-st","--search_taxon", help=msg1 + msg2)
+msg3 = "MAXimum "
+msg4 = "MINimum "
+parser.add_argument("-spn","--species_number", help=msg3 + "number of sequences to include per species.")
+parser.add_argument("-bl","--block_list", nargs='+', help="NCBI accession numbers to exclude.")
 
-parser.add_argument("-spn","--species_number", help="max number of seqs to include per species")
-parser.add_argument("-bl","--block_list", nargs='+', help="ncbi accession numbers to exclude")
+parser.add_argument("-tp","--trim_perc", help= msg4 + "percentage of sequences end of alignments.")
 
-parser.add_argument("-tp","--trim_perc", help="minimum percentage of seqs end of alignemnts")
-parser.add_argument("-rlmax","--relative_length_max", help="max relative length of added seqs, compared to input seq len")
-parser.add_argument("-rlmin","--relative_length_min", help="min relative length of added seqs, compared to input seq len")
+msg5 = "relative length of added sequences, compared to input sequence length."
+parser.add_argument("-rlmax","--relative_length_max", help=msg3 + msg5)
+parser.add_argument("-rlmin","--relative_length_min", help=msg4 + msg5)
 
-parser.add_argument("-r","--repeat",  action='store_true', help="repeat search until no no sequences are found")
-parser.add_argument("-db", "--blast_db", help="local download of blast database")
-parser.add_argument("-u", "--blast_url", help="a URL for your own mirrored blast database")
-parser.add_argument("-e","--email", help="email address for ncbi blast searches")
-parser.add_argument("-ak","--api_key", help="ncbi api key")
+parser.add_argument("-r","--repeat",  action='store_true', help="Repeat BLAST search until no new sequences are found.")
+parser.add_argument("-db", "--blast_db", help="Local download of BLAST database.")
+parser.add_argument("-u", "--blast_url", help="A URL for your own mirrored BLAST database.")
+parser.add_argument("-e","--email", help="email address for NCBI BLAST searches.")
+parser.add_argument("-ak","--api_key", help="NCBI API key.")
 
-parser.add_argument("-ev","--eval", help="blast evalue cutoff")
-parser.add_argument("-hl","--hitlist_len", help="number of blast searches to save per taxon")
+parser.add_argument("-ev","--eval", help="BLAST e-value cutoff.")
+parser.add_argument("-hl","--hitlist_len", help="Number of blast searches to save per taxon.")
 
-parser.add_argument("-nt","--num_threads", help="number of threads to use in processing")
+parser.add_argument("-nt","--num_threads", help="Number of threads to use in processing.")
 parser.add_argument("-de","--delay", help="how long to wait before blasting the same sequence again")
+msg6 = "Just checks the input files. Does not estimate tree, nor runs BLAST search."
+parser.add_argument("-no_est","--no_estimate", action='store_true', help=msg6)
 
-parser.add_argument("-no_est","--no_estimate", action='store_true', help="Just check the input files. don't estimate tree, or run last search")
+parser.add_argument("-bs","--bootstrap_reps", help="Number of bootstrap repetitions.")
 
-parser.add_argument("-bs","--bootstrap_reps", help="number of bootstrap reps")
+parser.add_argument("-tx","--taxonomy", help="Path to taxonomy.")
 
-parser.add_argument("-tx","--taxonomy", help="path to taxonomy")
-
-parser.add_argument("-v","--verbose", action="store_true", help="verbose")
+parser.add_argument("-v","--verbose", action="store_true", help="Verbose mode.")
 
 
 
-#Not yet implemented
-#parser.add_argument("-tl", "--tree_link", help="Link to tree to update on OpenTree")
-
-#parser.add_argument("-bl","--blast_sequence", action='store_true', help="run blast search, and align but do not estimate tree")
-#parser.add_argument("-d","--download_data", action='store_true', help="write out tree and alignment, without blasting")
-#parser.add_argument("-bs","--bootstrap", help="number of bootstrap reps")
-#parser.add_argument("-gt","--get_tree", action='store_true', help="get tree from opentree")
-#parser.add_argument("-ga","--get_aln", action='store_true', help="get alignment from opentree")
-#parser.add_argument("-tf", "--tree_file", help="path to your tree")
-#parser.add_argument("-l","--linker_file", help="path to .csv linking tip labels to taxon names")
+# Not yet implemented
+# parser.add_argument("-tl", "--tree_link", help="Link to tree to update on OpenTree")
+# msg7 = "run blast search, and align but do not estimate tree"
+# parser.add_argument("-bl","--blast_sequence", action='store_true', help=msg7)
+# msg8 = "write out tree and alignment, without blasting"
+# parser.add_argument("-d","--download_data", action='store_true', help=msg8)
+# parser.add_argument("-bs","--bootstrap", help="number of bootstrap reps")
+# parser.add_argument("-gt","--get_tree", action='store_true', help="get tree from opentree")
+# parser.add_argument("-ga","--get_aln", action='store_true', help="get alignment from opentree")
+# parser.add_argument("-tf", "--tree_file", help="path to your tree")
+# parser.add_argument("-l","--linker_file", help="path to .csv linking tip labels to taxon names")
 
 
 args = parser.parse_args()
