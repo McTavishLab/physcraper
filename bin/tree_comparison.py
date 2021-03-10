@@ -16,9 +16,9 @@
 ##############################################################################
 
 """
-This module handles the command line code to compare two trees with
-the Open Tree of Life conflict functions, and using the Robinson-Foulds statistic
-calculated using Dendropy functions.
+This module handles the code to generate the Physcraper command line interface
+to compare two trees using (1) the Open Tree of Life conflict functions, and
+(2) using the Robinson-Foulds statistic calculated using Dendropy functions.
 """
 
 import sys

@@ -1,4 +1,28 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+##############################################################################
+##  Physcraper Library.
+##
+##
+##  If you use this work or any portion thereof in published work,
+##  please cite it as:
+##
+##     Luna L. Sanchez Reyes, Martha Kandziora, Emily Jane McTavish. (2020).
+##     Physcraper: A Python package for continual update of evolutionary
+##     estimates using the Open Tree of Life. BioRxiv 2020.09.15.299156.
+##     doi: doi.org/10.1101/2020.09.15.299156
+##
+##############################################################################
+
+"""
+This module handles the code to generate the Physcraper command line code interface
+to update a tree from an existing alignment, by:
+getting a tree from an OpenTree study ID or from a local file, getting the
+corresponding alignment form TREEbase or from a local file, identifying the MRCA,
+running BLAST, downloading new matching sequences, aligning them and inferring a tree.
+"""
+
 import argparse
 import os
 import sys
