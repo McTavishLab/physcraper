@@ -138,7 +138,7 @@ if args.species_number:
     conf.spp_threshold = int(args.species_number)
 
 if args.num_threads:
-   conf.num_threads = int(args.num_threads)
+    conf.num_threads = int(args.num_threads)
 
 if args.delay:
     conf.delay = int(args.delay)
