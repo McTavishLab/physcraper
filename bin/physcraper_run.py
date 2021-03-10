@@ -88,7 +88,7 @@ if len(sys.argv)==1:
     sys.exit(1)
 
 try:
-    assert(args.output)
+    assert args.output
     workdir = args.output
     if not os.path.exists(workdir):
         os.makedirs(workdir)
@@ -164,8 +164,8 @@ if args.study_id or args.tree_id:
     try:
         study_id = args.study_id
         tree_id = args.tree_id
-        assert(study_id)
-        assert(tree_id)
+        assert study_id
+        assert tree_id
     except AssertionError:
         sys.stderr.write("ERROR: To get tree from OpenTree, specify both -s [study_id] and -t [tree_id]\n")
         sys.exit(-1)
@@ -174,7 +174,7 @@ if args.study_id or args.tree_id:
 if args.alignment:
     alnfile = args.alignment
     try:
-        assert(args.aln_schema)
+        assert args.aln_schema
         aln_schema = args.aln_schema
     except AssertionError:
         sys.stderr.write("ERROR: Specify alignment format using -as [fasta or nexus]\n")
@@ -229,9 +229,14 @@ if study_id:
 
 if args.tree_file:
     treefile = args.tree_file
-    assert(args.tree_schema), "When passing in a treefile, a tree schema is required\n"
-    assert(args.taxon_info), "When passing in a treefile, a taxon mapping from from https://tree.opentreeoflife.org/curator/tnrs/ is required\n"
-    assert(args.taxon_info.split('.')[-1]=='json'), "JSON format file required for taxon info from https://tree.opentreeoflife.org/curator/tnrs/\n"
+    ast1 = "When passing in a treefile, a tree schema is required.\n"
+    ast2 = "When passing in a treefile, a taxon mapping from \
+            https://tree.opentreeoflife.org/curator/tnrs/ is required.\n"
+    ast3 = "JSON format file required for taxon info from \
+            https://tree.opentreeoflife.org/curator/tnrs/.\n"
+    assert(args.tree_schema), ast1
+    assert(args.taxon_info), ast2
+    assert(args.taxon_info.split('.')[-1]=='json'), ast3
     if args.tag:
         tag = args.tag
     elif args.alignment:
@@ -242,13 +247,13 @@ if args.tree_file:
     else:
         search_taxon = None
     data_obj = generate_ATT_from_files(workdir= workdir,
-                                        configfile=conf,
-                                        alnfile = alnfile,
-                                        aln_schema = aln_schema,
-                                        treefile = treefile,
-                                        otu_json = otu_dict,
-                                        tree_schema = args.tree_schema,
-                                        search_taxon=search_ott_id)
+                                       configfile=conf,
+                                       alnfile = alnfile,
+                                       aln_schema = aln_schema,
+                                       treefile = treefile,
+                                       otu_json = otu_dict,
+                                       tree_schema = args.tree_schema,
+                                       search_taxon=search_ott_id)
     ids = physcraper.IdDicts(conf)
     scraper = physcraper.PhyscraperScrape(data_obj, ids)
 #    sys.stdout.write("Read in tree {} taxa in alignment and tree\n".format(len(scraper.data.aln)))
@@ -289,10 +294,15 @@ if args.repeat:
         if besttreepath:
             prev_besttreepath = besttreepath
             scraper.replace_tre(besttreepath)
-            scraper.data.write_labelled(filename="run_{}".format(run), label='^ot:ottTaxonName', direc=scraper.outputsdir)
-            scraper.data.write_otus(schema='table', direc=scraper.inputsdir)
-            scraper.data.write_otus(schema='json', direc=scraper.rundir)
-            new_rundir = "{}_run{}".format(rundir_base, run)
+            scraper.data.write_labelled(filename="run_{}".format(run),
+                                        label='^ot:ottTaxonName',
+                                        direc=scraper.outputsdir)
+            scraper.data.write_otus(schema='table',
+                                    direc=scraper.inputsdir)
+            scraper.data.write_otus(schema='json',
+                                    direc=scraper.rundir)
+            new_rundir = "{}_run{}".format(rundir_base,
+                                           run)
             prev_rundir = scraper.rundir
             scraper.rundir = new_rundir
             os.mkdir(scraper.rundir)
@@ -303,16 +313,23 @@ if args.repeat:
           #`  os.rmdir(scraper.rundir)
             scraper.rundir = prev_rundir
             updated_alnfi = "{}/physcraper_{}.fas".format(prev_rundir, scraper.data.tag)
-            bootpath = scraper.calculate_bootstrap(alignment = updated_alnfi, num_reps = boot_reps)
-            sumtreepath = scraper.summarize_boot(prev_besttreepath, bootpath)
-            scraper.replace_tre(sumtreepath, schema="nexus")
+            bootpath = scraper.calculate_bootstrap(alignment = updated_alnfi,
+                                                   num_reps = boot_reps)
+            sumtreepath = scraper.summarize_boot(prev_besttreepath,
+                                                 bootpath)
+            scraper.replace_tre(sumtreepath,
+                                schema="nexus")
             scraper.data.write_files(direc=scraper.outputsdir)
-            scraper.data.write_otus(schema='table', direc=scraper.inputsdir)
-            scraper.data.write_labelled(filename='updated_taxonname',label='^ot:ottTaxonName', direc = scraper.outputsdir)
+            scraper.data.write_otus(schema='table',
+                                    direc=scraper.inputsdir)
+            scraper.data.write_labelled(filename='updated_taxonname',
+                                        label='^ot:ottTaxonName',
+                                        direc = scraper.outputsdir)
             to_be_blasted =  []
         else:
             sys.stderr.write("unexpected error")
 elif not args.no_estimate:
 #scraper.read_blast_wrapper()
     scraper.calculate_final_tree(boot_reps = boot_reps)
-    scraper.data.write_labelled(label='^ot:ottTaxonName',  direc=scraper.outputsdir)
+    scraper.data.write_labelled(label='^ot:ottTaxonName',
+                                direc=scraper.outputsdir)
