@@ -81,7 +81,7 @@ Ready to contribute? Here's how to set up Physcraper for local development.
 
     $ pytest tests
 
-6. Use Pylint to check your code. Move to the \bin directory to use the ".pylintrc"
+6. Use Pylint to check your code. Move to the "bin" or "physcraper" directory to use the ".pylintrc"
    config file, then run::
 
     $ pylint insert_name_of_module_here.py
@@ -93,6 +93,12 @@ Ready to contribute? Here's how to set up Physcraper for local development.
     $ git push origin name-of-your-bugfix-or-feature
 
 8. Submit a pull request through the GitHub website.
+
+Extra: Count the number of functions in any given module
+
+    from inspect import getmembers, isfunction
+    foos = [o for o in getmembers(physcraper) if isfunction(o[1])]
+    len(foos)
 
 Pull Request Guidelines
 -----------------------
