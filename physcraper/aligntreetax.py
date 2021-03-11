@@ -420,7 +420,7 @@ class AlignTreeTax():
         for leaf in self.tre.leaf_nodes():
             treed_tax.add(leaf.taxon)
         aln_tax = set()
-        for tax, seq in self.aln.items():
+        for tax in self.aln.items():
             aln_tax.add(tax)
         if not aln_tax.intersection(treed_tax):
             self.write_files()
