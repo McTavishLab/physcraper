@@ -719,8 +719,8 @@ class PhyscraperScrape():
         filtered_dict = {}
         new_sp_d = self.make_sp_dict(tmp_dict.keys())
         debug("There are {} taxa in the new taxa".format(len(new_sp_d)))
-        debug("The keys of tmp_dict".format(tmp_dict.keys()))
-        aln_otus = set([taxon.label for taxon in self.data.aln])
+        debug("The keys of tmp_dict are {}".format(tmp_dict.keys()))
+        aln_otus = {taxon.label for taxon in self.data.aln}
         aln_sp_d = self.make_sp_dict(aln_otus)
         debug("There are {} taxa in aln".format(len(aln_sp_d)))
         alltax = set(new_sp_d.keys()).union(aln_sp_d.keys())
