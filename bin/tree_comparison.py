@@ -109,8 +109,8 @@ tree2 = dendropy.Tree.get_from_path(tree2_path,
 otu_dict = json.load(open(otu_json_path, "r"))
 
 
-leaves_t1 = set([leaf.taxon.label for leaf in tree1.leaf_nodes()])
-leaves_t2 = set([leaf.taxon.label for leaf in tree2.leaf_nodes()])
+leaves_t1 = {leaf.taxon.label for leaf in tree1.leaf_nodes()}
+leaves_t2 = {leaf.taxon.label for leaf in tree2.leaf_nodes()}
 
 old_spp = set()
 new_spp = set()
@@ -143,13 +143,13 @@ if args.outgroup:
     mrca = tree2.mrca(taxon_labels=outgroup)
     tree2.reroot_at_node(mrca, update_bipartitions=True)
 else:
-    try:
-        rooted = root_tree_from_synth(tree2, otu_dict, base='ott')
-    ##Write out t2 for conflict with opentree
+    # try:
+    rooted = root_tree_from_synth(tree2, otu_dict, base='ott')
     ## In which cases will auto-root fail????
-    except:
-        sys.stdout.write("Auto-rooting failed, conflict results may be spurious.\n")
+    # except:
+        # sys.stdout.write("Auto-rooting failed, conflict results may be spurious.\n")
 
+##Write out tree2 for conflict with opentree
 tree2.write(path = "{}/after_rooting.tre".format(comparisondir), schema="newick")
 
 
