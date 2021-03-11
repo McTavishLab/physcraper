@@ -204,7 +204,7 @@ class PhyscraperScrape():
                     "-max_hsps",
                     str(self.config.hitlist_size)]
         try:
-            proc = subprocess.check_output(blastcmd, cwd=self.config.blastdb)
+            subprocess.check_output(blastcmd, cwd=self.config.blastdb)
         except KeyboardInterrupt:
             if os.stat(abs_outfile).st_size == 0:
                 os.remove(abs_outfile)
@@ -713,7 +713,8 @@ class PhyscraperScrape():
         """Subselect from sequences to a threshold of number of seqs per species"""
         if threshold is None:
             threshold = int(self.config.spp_threshold)
-        assert selection in ['random'], "selection {} not recognized, please filter by 'length' or 'random'".format(selection)
+        msg = "selection {} not recognized, please filter by 'length' or 'random'"
+        assert selection in ['random'], msg.format(selection)
         selected_otus = set()
         filtered_dict = {}
         new_sp_d = self.make_sp_dict(tmp_dict.keys())
