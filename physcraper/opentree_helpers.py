@@ -53,7 +53,7 @@ def root_tree_from_synth(tree, otu_dict, base='ott'):
     if `ott` will use OpenTree taxonomy.
     """
     leaves = [leaf.taxon.label for leaf in tree.leaf_nodes()]
-    spp = set([otu_dict[otu]['^ot:ottId'] for otu in leaves])
+    spp = {otu_dict[otu]['^ot:ottId'] for otu in leaves}
     if None in spp:
         spp.remove(None)
     assert(base in ['synth', 'ott'])
@@ -351,7 +351,7 @@ def generate_ATT_from_phylesystem(alnfile,
         ingroup_ott_ids = set()
         for otu_id in otu_dict:
             if ingroup_otus:
-                if otu_dict[otu_id]["^physcraper:ingroup"] == True:
+                if otu_dict[otu_id]["^physcraper:ingroup"]:
                     ingroup_ott_ids.add(otu_dict[otu_id].get(u"^ot:ottId"))
             else:
                 ingroup_ott_ids.add(otu_dict[otu_id].get(u"^ot:ottId"))
@@ -414,7 +414,7 @@ def count_match_tree_to_aln(tree, dataset):
     leaves = [leaf.taxon.label for leaf in tree.leaf_node_iter()]
     for mat in dataset.char_matrices:
         aln_match[i] = 0
-        if type(mat) == datamodel.charmatrixmodel.DnaCharacterMatrix:
+        if isinstance(mat, datamodel.charmatrixmodel.DnaCharacterMatrix):
             for tax in mat:
                 if tax.label in leaves:
                     aln_match[i] += 1
@@ -432,7 +432,7 @@ def get_max_match_aln(tree, dataset, min_match=3):
             max_match = aln
             max_val = aln_match[aln]
     if max_match is not None:
-        assert type(dataset.char_matrices[max_match]) == datamodel.charmatrixmodel.DnaCharacterMatrix
+        assert isinstance(dataset.char_matrices[max_match], datamodel.charmatrixmodel.DnaCharacterMatrix)
         return dataset.char_matrices[max_match]
     return None
 
