@@ -1,24 +1,20 @@
-"""The core blasting and new sequence ntegretaion module"""
+"""
+The core blasting and new sequence integration module
+"""
 import sys
 import os
 import subprocess
 import datetime
 import glob
-import pickle
 import random
-
-
 from dendropy import Tree, DnaCharacterMatrix
-
 from Bio.Blast import NCBIXML
 from Bio.Seq import Seq
-
 from physcraper.ids import IdDicts
 from physcraper.aligntreetax import AlignTreeTax
 from physcraper.helpers import cd, get_raxml_ex
 from physcraper.ncbi_data_parser import get_gi_from_blast, get_acc_from_blast
 from physcraper.opentree_helpers import root_tree_from_synth
-
 from physcraper import AWSWWW
 
 _VERBOSE = 0
@@ -34,7 +30,6 @@ def debug(msg):
     """
     if _DEBUG == 1:
         print(msg)
-
 
 
 class PhyscraperScrape():
@@ -1002,7 +997,6 @@ class PhyscraperScrape():
         return summarized_tree_path
 
 
-
     def calculate_final_tree(self, boot_reps=100):
         """Calculates the final tree using a trimmed alignment.
 
@@ -1019,8 +1013,6 @@ class PhyscraperScrape():
         self.data.write_files(direc=self.outputsdir)
         self.data.write_labelled(filename='updated_taxonname', label='^ot:ottTaxonName', direc=self.outputsdir)
         return 1
-
-
 
 
     def remove_blocklistitem(self):
