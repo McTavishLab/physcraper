@@ -650,7 +650,7 @@ class AlignTreeTax():
         A reverse search to find the unique OTU ID for a given accession number
         :param gb_id: the Genbank identifier
         """
-        if gb_id in set([self.otu_dict[otu].get("^ncbi:accession", 'UNK') for otu in self.otu_dict]):
+        if gb_id in {self.otu_dict[otu].get("^ncbi:accession", 'UNK') for otu in self.otu_dict}:
             for otu in self.otu_dict:
                 if self.otu_dict[otu].get("^ncbi:accession") == gb_id:
                     debug("tried to create OTU for {} but already had otu {}".format(gb_id, otu))
