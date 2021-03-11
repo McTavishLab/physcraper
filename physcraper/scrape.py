@@ -272,7 +272,7 @@ class PhyscraperScrape():
             else:
                 time_passed = abs((datetime.datetime.strptime(today, "%Y/%m/%d") -
                                    datetime.datetime.strptime(last_blast, "%Y/%m/%d")).days)
-            if self.data.otu_dict[otu_id].get("^physcraper:ingroup") == False:
+            if not self.data.otu_dict[otu_id].get("^physcraper:ingroup"):
                 sys.stdout.write("tip {} not in ingroup. Will not blast, \n".format(otu_id))
                 continue
             if time_passed > delay:
@@ -692,7 +692,7 @@ class PhyscraperScrape():
                 lr.write("taxon: {}, ncbi: {}, acc: {}, len: {}\n".format(taxname, taxid, gb_id, len(seq)))
                 lr.close()
                 debug("\nlen {}:{} was not between {} and {}\n".format(gb_id, len(seq), seq_len_min, seq_len_max))
-        otu_in_aln = set([taxon.label for taxon in self.data.aln])
+        otu_in_aln = {taxon.label for taxon in self.data.aln}
         for otu in otu_in_aln:
             del tmp_dict[otu]
         filter_dict = self.filter_seqs(tmp_dict, selection='random', threshold=self.config.spp_threshold)
