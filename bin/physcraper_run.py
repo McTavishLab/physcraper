@@ -218,13 +218,14 @@ if args.treebase:
     else:
         sys.stdout.write("Using alignment file found at {}.\n".format(alnfile))
 
+# TODO Luna: add a test for this chunk of code:
 search_ott_id = None
 if args.search_taxon:
     ids = physcraper.IdDicts(conf)
     if args.search_taxon.startswith('ott'):
         search_ott_id = args.search_taxon.split(':')[1]
     elif args.search_taxon.startswith('ncbi'):
-        ncbi_id = inst(args.search_taxon.split(':')[1])
+        ncbi_id = int(args.search_taxon.split(':')[1])
         search_ott_id = ids.ncbi_ott[ncbi_id]
     else:
         sys.stderr.write("search taxon id must be in format ott:123 or ncbi:123\n")
@@ -330,9 +331,13 @@ if args.repeat:
             prev_rundir = scraper.rundir
             scraper.rundir = new_rundir
             os.mkdir(scraper.rundir)
-            cond1 = scraper.data.otu_dict[otu.label]['^physcraper:ingroup']
-            cond2 = scraper.data.otu_dict[otu.label]['^physcraper:last_blasted'] is None
-            to_be_blasted = [otu.label for otu in scraper.data.aln if (cond1 and cond2)]
+            new_to_be_blasted = []
+            for otu in scraper.data.aln:
+                cond1 = scraper.data.otu_dict[otu.label]['^physcraper:ingroup']
+                cond2 = scraper.data.otu_dict[otu.label]['^physcraper:last_blasted'] is None
+                if (cond1 and cond2):
+                    new_to_be_blasted.append(otu.label)
+            to_be_blasted = new_to_be_blasted
         elif besttreepath is None:
           #`  os.rmdir(scraper.rundir)
             scraper.rundir = prev_rundir
