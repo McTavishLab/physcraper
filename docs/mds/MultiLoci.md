@@ -1,0 +1,1 @@
+Single locus analyses only porvide a narrow view of teh evolutionary history of a group.
