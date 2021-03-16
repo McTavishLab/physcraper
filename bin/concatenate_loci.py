@@ -27,31 +27,31 @@ from physcraper import aligntreetax
 parser = argparse.ArgumentParser()
 parser.add_argument("-d","--locus_runs_folder", help="folder containing results directories from individual locus runs")
 parser.add_argument("-o","--output", help="folder to write to")
-parser.add_argument("-c","--concatenate_by", help="what aspect of otu info to concatenate by, eitehr OTTid or ...?")
+#parser.add_argument("-c","--concatenate_by", help="what aspect of otu info to concatenate by, eitehr OTTid or ...?")
 parser.add_argument("-f","--format", help="output format", choices=["concatenate", "astral"])
 parser.add_argument("-s","--schema", help="alignment file format schema", choices=["fasta", "nexus"], default="fasta")
-parser.add_argument("-m","--include_missing", help="Where unevern numbers of sequences are available, concatenate with gaps", default = False)
+parser.add_argument("-m","--include_missing", help="Where uneven numbers of sequences are available, concatenate with gaps", default = False)
 ## Include all seqs or just some???
-
 
 args = parser.parse_args()
 
-
-
-all_taxa = {}
-
-#args.output = "test_concat_res"
 if not os.path.exists(args.output):
     os.mkdir(args.output)
 
+
+# Track what taxa are present across all loci
+all_taxa = {}
+
+# find otu_ids by taxon
 tax_labels = {}
 
-otu_dict_dict = {}
-
+# Runs is the set of completed physcraper runs. 
+# They should all be in the folder given by -d aka locus_runs_folder
 runs = [f for f in os.listdir(args.locus_runs_folder) if os.path.isdir("{}/{}".format(args.locus_runs_folder, f))]
-i = 0
 
-all_loci = {}
+
+i = 0 #iterator to count runs (loci)
+all_loci = {} # dictionary of ATT objects
 for run in runs:
     print(run)
     i += 1
@@ -61,16 +61,15 @@ for run in runs:
         for file in files:
             if file.startswith('inputs_'):
                 tag = file.split('.')[0].replace('inputs_', '')
-        loc = "Locus{}".format(i)
+        loc = "Locus{}_{}".format(i, tag)
         print(loc)
-        locus = aligntreetax.generate_ATT_from_run(fp, start_files='output', tag=tag, run=False)
+        locus = aligntreetax.generate_ATT_from_run(fp, start_files='output', tag=tag, run=False) #build ATT opject for each run
         all_loci[loc] = {}
-        all_loci[loc]['data'] = locus
+        all_loci[loc]['data'] = locus #all_loci[loc]['data'] has an alignemnt, and otuu_dictionary, and a tree
         all_loci[loc]['path'] = fp
         for seq in locus.aln:
             otu_id = seq.label
             taxon = locus.otu_dict[otu_id]['^ot:ottTaxonName']
-            tax_labels[taxon] = locus.otu_dict[otu_id]['^ot:ottTaxonName']
             if taxon not in all_taxa:
                 all_taxa[taxon] = {}
             if loc not in all_taxa[taxon]:
@@ -79,46 +78,37 @@ for run in runs:
 
 nloci = i
 
-#ds.read(path="pythonidae_cytb.fasta", schema="fasta", data_type="dna")
-#ds.read(schema="pythonidae.mle.tre", "nexus", taxon_namespace=ds.taxon_namespaces[0])
-#ds.write_to_path("pythonidae_combined.nex", "nexus")
-
-
 
 if args.format == "concatenate":
     concat_dict = {}
-    re_label_dict = {}
+    re_label_dict = {} # What are we calling each concatneated taxon, and what OTUs are part of it.
     for loc in all_loci:
         re_label_dict[loc] = {}
 
-    taxa_in_all_loci = set(all_taxa.keys())
-
-    for locus in all_loci:
-        locusset = set([all_loci[locus]['data'].otu_dict[seq.label]['^ot:ottTaxonName'] for seq in all_loci[locus]['data'].aln])
-        taxa_in_all_loci = taxa_in_all_loci.intersection(locusset)
-
-    concat_names = []
-    for taxon in taxa_in_all_loci:
-        print(taxon)
-        ntax_seq_max = max([len(all_taxa[taxon][locus]) for locus in all_taxa[taxon]])
+  
+    for taxon in all_taxa:
+        ntax_seq_max = max([len(all_taxa[taxon][locus]) for locus in all_taxa[taxon]]) 
+        # If we include missing data, this is how many represnetatives of this taxon we should end up with
         ntax_seq_min = min([len(all_taxa[taxon][locus]) for locus in all_taxa[taxon]])
+        # If we do not include missing data, this is how many represnetatives of this taxon we should end up with
         if args.include_missing:
             ntax_seq = ntax_seq_max
         else:
             ntax_seq = ntax_seq_min
-        print(ntax_seq)
+        #so after this, we have pruned down this set to only taxa that are present in all loci (stirnct misisng data condition)
         for i in range(ntax_seq):
-            concat_name = "{}_{}".format(tax_labels[taxon].replace(" ","_"), i)
+            concat_name = "{}_{}".format(taxon.replace(" ","_"), i)
             concat_dict[concat_name] = {}
-            concat_names.append(concat_name)
+#            concat_names.append(concat_name)
             for loc in all_loci:
-                print(loc)
-                tip = all_taxa[taxon][loc][i]
-                concat_dict[concat_name][loc] = tip
-                re_label_dict[loc][tip] = concat_name
+                if i <= len(all_taxa[taxon][loc]):
+                    tip = all_taxa[taxon][loc][i]
+                    concat_dict[concat_name][loc] = tip # tells me what sequence form this locus I will but in this concanated taxon
+                    re_label_dict[loc][tip] = concat_name
+                else:
+                    concat_dict[concat_name][loc] = "GAP"
         #if args.include_missing == False:
         #    assert len(concat_dict[concat_name][loc]) == len(concat_names)
-
 
     ds = dendropy.DataSet()
     taxon_namespace = dendropy.TaxonNamespace()
@@ -126,14 +116,31 @@ if args.format == "concatenate":
 
     for loc in all_loci:
         aln = copy.deepcopy(all_loci[loc]['data'].aln)
-        removal_list = []
-        for seq in aln:
-            concat_name = re_label_dict[loc].get(seq.label, None)
-            if concat_name == None:
-                removal_list.append(seq)
-            else:
-                seq.label = concat_name
-        aln.remove_sequences(removal_list)
+        if args.include_missing == False:
+            removal_list = []
+            for seq in aln:
+                concat_name = re_label_dict[loc].get(seq.label, None)
+                    if concat_name == None:
+                        removal_list.append(seq)
+                    else:
+                        seq.label = concat_name
+            aln.remove_sequences(removal_list)
+        if args.include_missing == True:
+            matched = set()
+            for seq in aln:
+                seqlen = len(seq.)
+                concat_name = re_label_dict[loc].get(seq.label, None)
+                assert concat_name
+                matched.add(concat_name)
+            for concat_name in concat_dict:
+                if concat_name not in matched:
+                    assert concat_dict[concat_name][loc] = "GAP"
+                newseq = "-" * seqlen
+                
+                #Add newseq to 
+
+
+
         ds.add(aln, taxon_namespace=ds.taxon_namespaces[0])
 
 
