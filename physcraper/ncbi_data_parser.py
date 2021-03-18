@@ -93,7 +93,7 @@ def get_ncbi_tax_name(handle):
 # Defining global variables at the module level:
 nodes = None
 names = None
-
+synonyms = None
 
 def strip(inputstr):
     """ Strips of blank characters from string in pd dataframe.
