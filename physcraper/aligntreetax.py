@@ -19,7 +19,7 @@ _VERBOSE = 0
 
 def set_verbose():
     """Set verbosity of outputs"""
-    global _VERBOSE
+    global _VERBOSE # pylint: disable=global-statement
     _VERBOSE = 1
 
 _DEBUG = 0

@@ -90,7 +90,7 @@ def get_ncbi_tax_name(handle):
             ncbi_sp = ncbi_sp.replace(" ", "_")
     return ncbi_sp
 
-
+# Defining global variables at the module level:
 nodes = None
 names = None
 
@@ -207,11 +207,11 @@ class Parser:
         Instead every time the function is loaded it will be 'initialized'.
         """
         sys.stdout.write("Reading in local NCBI taxonomy information\n")
-        global nodes
+        global nodes # pylint: disable=global-statement
         nodes = load_nodes(self.nodes_file)
-        global names
+        global names # pylint: disable=global-statement
         names = load_names(self.names_file)
-        global synonyms
+        global synonyms # pylint: disable=global-statement
         synonyms = load_synonyms(self.names_file)
 
     def get_rank(self, tax_id):
