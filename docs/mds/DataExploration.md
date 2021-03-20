@@ -27,20 +27,24 @@ Do that with the `write_labelled` function, e.g.,
 A correctly rooted phylogeny is needed to compare relationships between two or more phylogenies.
 Rooting phylogenies can be tricky. Physcraper places a suggested root based on the taxonomic relationships in OpenTree, using the `root_tree_from_synth` function.
 
-To root a Physcraper tree using either the OpenTree taxonomy, or the OpenTree synthetic tree, first get the tree object:
+To root a Physcraper tree using either the OpenTree taxonomy, or the OpenTree synthetic tree.
+First load the tree object:
 
+    from physcraper import treetaxon
     pg55 = treetaxon.generate_TreeTax_from_run('docs/examples/pg_55_web')
 
 Then, to root based on taxonomy, set `base = "ott"`:
 
-    ott_rooted_tree = physcraper.opentree_helpers.root_tree_from_synth(pg55.tre, pg55.otu_dict, base='ott')
+    from physcraper import opentree_helpers
+    ott_rooted_tree = opentree_helpers.root_tree_from_synth(pg55.tre, pg55.otu_dict, base='ott')
     pg55.tre = ott_rooted_tree
     pg55.write_labelled(label="^ot:ottTaxonName", path="ott_root.tre")
 
 
 And, to root based on phylogenetic relationships in the synthetic tree, set `base = "synth"`:
 
-    synth_rooted_tree = physcraper.opentree_helpers.root_tree_from_synth(pg55.tre, pg55.otu_dict, base='synth')
+    from physcraper import opentree_helpers
+    synth_rooted_tree = opentree_helpers.root_tree_from_synth(pg55.tre, pg55.otu_dict, base='synth')
     pg55.tre = synth_rooted_tree
     pg55.write_labelled(label="^ot:ottTaxonName", path="synth_root.tre")
 
