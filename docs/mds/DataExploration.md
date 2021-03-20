@@ -33,7 +33,7 @@ First load the tree object:
     from physcraper import treetaxon
     pg55 = treetaxon.generate_TreeTax_from_run('docs/examples/pg_55_web')
 
-Then, to root based on taxonomy, set `base = "ott"`:
+Then, to root based on the OpenTree taxonomy, set `base = "ott"`:
 
     from physcraper import opentree_helpers
     ott_rooted_tree = opentree_helpers.root_tree_from_synth(pg55.tre, pg55.otu_dict, base='ott')
@@ -41,7 +41,7 @@ Then, to root based on taxonomy, set `base = "ott"`:
     pg55.write_labelled(label="^ot:ottTaxonName", path="ott_root.tre")
 
 
-And, to root based on phylogenetic relationships in the synthetic tree, set `base = "synth"`:
+And, to root based on phylogenetic relationships in the OpenTree synthetic tree, set `base = "synth"`:
 
     from physcraper import opentree_helpers
     synth_rooted_tree = opentree_helpers.root_tree_from_synth(pg55.tre, pg55.otu_dict, base='synth')
