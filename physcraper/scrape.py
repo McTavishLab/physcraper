@@ -309,8 +309,7 @@ class PhyscraperScrape():
                         sys.stdout.write("file {} exists in current blast run. Will not blast, "
                                          "delete file to force\n".format(fn_path))
             else:
-                if _VERBOSE:
-                    sys.stdout.write("otu {} was last blasted on {}, {} days ago and is not being re-blasted."
+                sys.stdout.write("otu {} was last blasted on {}, {} days ago and is not being re-blasted."
                                      "Use run_blast_wrapper(delay = 0) to force a search.\n".format(otu_id,
                                                                                                     last_blast,
                                                                                                     time_passed))

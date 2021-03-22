@@ -187,9 +187,9 @@ if args.treebase:
 search_ott_id = None
 if args.search_taxon:
     ids = physcraper.IdDicts(conf)
-    if args.search_taxon.startswith('ott'):
+    if args.search_taxon.lower().startswith('ott'):
         search_ott_id = args.search_taxon.split(':')[1]
-    elif args.search_taxon.startswith('ncbi'):
+    elif args.search_taxon.lower().startswith('ncbi'):
         ncbi_id = inst(args.search_taxon.split(':')[1])
         search_ott_id = ids.ncbi_ott[ncbi_id]
     else:
