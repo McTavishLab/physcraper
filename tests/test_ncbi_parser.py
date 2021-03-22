@@ -7,7 +7,6 @@ slow = mark.slow
 
 def test_ncbi_parser():
     ncbitax = ncbi_data_parser.Parser("./taxonomy/names.dmp","./taxonomy/nodes.dmp")
-    ncbitax.initialize()
 
     taxid = ncbitax.get_id_from_name("Crassocephalum vitellinum")
 
