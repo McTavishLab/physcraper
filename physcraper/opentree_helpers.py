@@ -49,7 +49,7 @@ def root_tree_from_synth(tree, otu_dict, base='ott'):
     """Uses information from OpenTree of Life to suggest root.
     :param tree: dendropy :class:`Tree
     :param otu_dict: a dictionary of tip label metadata, inculding an '^ot:ottId'attribute
-    'param base: either `synth` or `ott.` If `synth` will use synthetic OpenTree tree relationships to root input tree,
+    'param base: either `synth` or `ott.` If `synth` will use OpenTree synthetic tree relationships to root input tree,
     if `ott` will use OpenTree taxonomy.
     """
     leaves = [leaf.taxon.label for leaf in tree.leaf_nodes()]
@@ -69,17 +69,19 @@ def root_tree_from_synth(tree, otu_dict, base='ott'):
             return tree
         resp = OT.synth_induced_tree(ott_ids=synth_spp)
         induced_tree_of_taxa = resp.tree
+        base = "OpenTree synthetic tree"
     elif base == 'ott':
         tax_mrca = OT.taxon_mrca(spp).response_dict['mrca']['ott_id']
         resp = OT.taxon_subtree(tax_mrca)
         taxleaves = [leaf.taxon.label for leaf in resp.tree.leaf_nodes()]
         matches = [label for label in taxleaves if int(label.split()[-1].strip('ott')) in spp]
         induced_tree_of_taxa = resp.tree.extract_tree_with_taxa_labels(matches)
+        base = "OpenTree taxonomy"
+    node = None
     for node in induced_tree_of_taxa:
         if node.parent_node is None:
-            break
-    root_node = node
-    children = root_node.child_nodes()
+            break # stop when node has no parents, i.e., it is the root node
+    children = node.child_nodes()
     representative_taxa = []
     for child in children:
         if len(child.child_nodes()) > 1:
@@ -88,6 +90,7 @@ def root_tree_from_synth(tree, otu_dict, base='ott'):
             representative_taxa.append(tip.taxon.label)
         else:
             representative_taxa.append(child.leaf_nodes()[0].taxon.label)
+
     sys.stdout.write("Rooting tree based on taxon relationships in {}. \
                       \nRoot will be MRCA of {}\n".format(base, ", ".join(representative_taxa)))
 
