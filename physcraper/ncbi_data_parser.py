@@ -16,9 +16,8 @@ _DEBUG = 0
 def get_acc_from_blast(query_string):
     """
     Get the accession number from a blast query.
-       
     :param query_string: string that contains acc and gi from local blast query result
-    :return: gb_acc 
+    :return: gb_acc
 
     """
     if len(query_string.split("|")) >= 3:
@@ -36,7 +35,7 @@ def get_gi_from_blast(query_string):
     Get the gi number from a blast query.
     Get acc is more difficult now, as new seqs not always have gi number, then query changes.
 
-    If not available return None. 
+    If not available return None.
 
     :param query_string: string that contains acc and gi from local blast query result
     :return: gb_id if available
