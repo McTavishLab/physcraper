@@ -260,7 +260,7 @@ max_length = {maxlen}
                     Continuing, but perhaps use a remote search, \
                     or update as decribed in 'https://physcraper.readthedocs.io/en/latest/install.html#local-databases'\n".format(time_passed))
         if not os.path.exists(self.ncbi_nodes):
-            sys.stderr.write("NCBI taxonomy not found at {} - please update nodes and names.dmp, \
+            sys.stderr.write("NCBI taxonomy not found at {} - To perform a local blast search, please update nodes and names.dmp, \
                 as described in 'https://physcraper.readthedocs.io/en/latest/install.html#local-databases'\n".format(self.ncbi_nodes))
             sys.exit()
         else:
@@ -270,7 +270,7 @@ max_length = {maxlen}
             time_passed = (today - download_date).days
             if time_passed >= 90:
                 sys.stderr.write("Your taxonomy databases from NCBI were dowloaded {} days ago. \
-                    Please update nodes and names.dmp, \
+                    To perform a local blast search, please update nodes and names.dmp, \
                     as described in 'https://physcraper.readthedocs.io/en/latest/install.html#local-databases'\n".format(time_passed))
         assert(shutil.which("blastn")), "blastn  not found in path"
         self.url_base = None

@@ -444,7 +444,7 @@ class AlignTreeTax():
         prune = treed_tax ^ aln_tax
         missing = [i.label for i in prune]
         if missing:
-            errmf = 'NAME RECONCILIATION Some of the taxa in the tree are not in the alignment or vice versa' \
+            errmf = 'NAME RECONCILIATION Some of the taxa in the tree are not in the alignment.' \
                     ' and will be pruned. Missing "{}"...\n'
             missing = [self.otu_dict[tax].get('^ot:originalLabel', tax) for tax in missing][:10]
             errm = errmf.format('", "'.join(missing))

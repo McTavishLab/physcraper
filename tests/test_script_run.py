@@ -50,3 +50,6 @@ def test_comparison():
                             "-og", "otu376420", "otu376439", "otu376452",
                             "-o", "tests/tmp/pg_55_comparison"])
 
+def test_concat():
+    subprocess.check_call(["python", "bin/physcraper_run.py",
+                            ])
