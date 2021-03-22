@@ -16,9 +16,7 @@ _DEBUG = 0
 def get_acc_from_blast(query_string):
     """
     Get the accession number from a blast query.
-    
-    Get acc is more difficult now, as new seqs not always have gi number, then query changes.
-    
+       
     :param query_string: string that contains acc and gi from local blast query result
     :return: gb_acc 
 
@@ -35,14 +33,14 @@ def get_acc_from_blast(query_string):
 
 def get_gi_from_blast(query_string):
     """
-    Get the gi number from a blast query. 
+    Get the gi number from a blast query.
     Get acc is more difficult now, as new seqs not always have gi number, then query changes.
 
     If not available return None. 
 
     :param query_string: string that contains acc and gi from local blast query result
     :return: gb_id if available
-    """      
+    """
     if len(query_string.split("|")) >= 3:
         gb_id = query_string.split("|")[1]
     else:
@@ -50,26 +48,11 @@ def get_gi_from_blast(query_string):
     assert len(gb_id.split(".")) < 2, (len(gb_id.split(".")), gb_id)
     assert gb_id.isdigit() is True
 
-def get_tax_info_from_acc(gb_id, data_obj, ids_obj):
-    '''takes an accessionumber and returns the ncabi_id and the taxon name'''
+def get_tax_info_from_acc(gb_id, ids_obj):
+    '''takes an accession number and returns the ncbi_id and the taxon name'''
 #    debug("Getting tax info from acc {}".format(gb_id))
     ncbi_id = None
     tax_name = None
-    if gb_id[:6] == "unpubl":  # There may not be ncbi id, because they aren't published
-            tax_name = data_obj.gb_dict[gb_id]["^ot:ottTaxonName"]
-            ncbi_id = data_obj.gb_dict[gb_id]["^ncbi:taxon"]
-            ott_id = data_obj.gb_dict[gb_id]["^ot:ottId"]
-            if tax_name is None:
-                tax_name = data_obj.gb_dict[gb_id][u'^user:TaxonName']
-            if ncbi_id is None: 
-                # debug(tax_name.split(" ")[0])
-                tax_lin_name = tax_name.split(" ")[0]
-                tax_lin_name = tax_lin_name.split("_")[0]
-                # debug(tax_lin_name)
-                ncbi_id = ids_obj.ncbi_parser.get_id_from_name(tax_lin_name) 
-    else:
-        ncbi_id = ids_obj.get_ncbiid_from_acc(gb_id)
-        tax_name = ids_obj.ncbiid_to_spn.get(ncbi_id)
     if ncbi_id == None:
         sys.stderr.write("Failed to get information for sequence with accession number {}".format(gb_id))
     return ncbi_id, tax_name
@@ -95,7 +78,7 @@ def get_ncbi_tax_id(handle):
 
 
 def get_ncbi_tax_name(handle):
-    """Get the sp name from ncbi. 
+    """Get the sp name from ncbi.
     Could be replaced by direct lookup to ott_ncbi.
 
     :param handle: NCBI read.handle
@@ -278,7 +261,7 @@ class Parser:
                 return False
             elif current_id == 0:
                 debug("current id is: {}, in search for {} in {}".format(current_id, tax_id, mrca_id))
-                return False             
+                return False       
             else: #try parent
                 try:
                     current_id = int(nodes[nodes["tax_id"] == current_id]["parent_tax_id"].values[0])
@@ -287,7 +270,6 @@ class Parser:
                     return False
 #                debug("parent id is: {}".format(current_id))
 
-                
     def get_name_from_id(self, tax_id):
         """ Find the scientific name for a given ID.
         """
@@ -300,9 +282,7 @@ class Parser:
                 tax_name = tax_name.values[0].replace(" ", "_")
                 tax_name = tax_name.strip()
         except IndexError:
-            sys.stdout.write(
-                    "tax_id {} unknown by ncbi_parser files (names.dmp)\n".format(tax_id)
-                )
+            sys.stdout.write("tax_id {} unknown by ncbi_parser files (names.dmp)\n".format(tax_id))
             tax_name = "unknown_{}".format(tax_id)
             if os.path.exists("ncbi_id_unknown.err"):
                 fn = open("ncbi_id_unknown.err", "a")
@@ -373,5 +353,3 @@ class Parser:
                     fn.write("{}".format(tax_id))
                     fn.close()
         return tax_id
-
-
