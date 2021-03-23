@@ -259,11 +259,14 @@ class Parser:
                 return False
             elif current_id == 0:
                 debug("current id is: {}, in search for {} in {}".format(current_id, tax_id, mrca_id))
-                return False       
+                return False
             else: #try parent
                 try:
                     current_id = int(nodes[nodes["tax_id"] == current_id]["parent_tax_id"].values[0])
-                except:
+                    # to get the except:
+                    # current_id = 17043521
+                    # nodes = ncbitax.nodes  ## ncbitax object from test_ncbi_parser.py
+                except IndexError:
                     sys.stderr.write("no parent found for ncbi:id {}".format(current_id))
                     return False
 #                debug("parent id is: {}".format(current_id))
