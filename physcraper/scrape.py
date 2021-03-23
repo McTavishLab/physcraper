@@ -699,8 +699,8 @@ class PhyscraperScrape():
                     tmp_dict = self.seq_dict_build(seq, otu_id, tmp_dict)
             else:
                 lr = open("{}/seqlen_mismatch.txt".format(self.outputsdir), "a")
-                taxid, taxname, seq = self.ids.get_tax_seq_acc(gb_id)
-                lr.write("taxon: {}, ncbi: {}, acc: {}, len: {}\n".format(taxname, taxid, gb_id, len(seq)))
+                #taxid, taxname, seq = self.ids.get_tax_seq_acc(gb_id)
+                lr.write("acc: {}, len: {}\n".format(gb_id, len(seq)))
                 lr.close()
                 debug("\nlen {}:{} was not between {} and {}\n".format(gb_id, len(seq), seq_len_min, seq_len_max))
         otu_in_aln = set([taxon.label for taxon in self.data.aln])
