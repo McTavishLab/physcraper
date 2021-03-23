@@ -50,12 +50,11 @@ def get_gi_from_blast(query_string):
 def get_tax_info_from_acc(gb_id, ids_obj):
     '''takes an accession number and returns the ncbi_id and the taxon name'''
 #    debug("Getting tax info from acc {}".format(gb_id))
-    ncbi_id = None
-    tax_name = None
-    if ncbi_id == None:
-        sys.stderr.write("Failed to get information for sequence with accession number {}".format(gb_id))
+    ncbi_id = ids_obj.get_ncbiid_from_acc(gb_id)
+    tax_name = ids_obj.ncbiid_to_spn.get(ncbi_id)
+    if ncbi_id is None:
+        sys.stderr.write("Failed to get information for sequence with accession number {}\n".format(gb_id))
     return ncbi_id, tax_name
-
 
 
 def get_ncbi_tax_id(handle):
