@@ -92,13 +92,13 @@ def get_ncbi_tax_name(handle):
     return ncbi_sp
 
 
-def strip(input):
+def strip(inputstr):
     """ Strips of blank characters from string in pd dataframe.
     """
-    if isinstance(input, str):
-        return input.strip()
+    if isinstance(inputstr, str):
+        return inputstr.strip()
     else:
-        return input
+        return inputstr
 
 
 def load_nodes(nodes_file):
@@ -205,7 +205,7 @@ class Parser:
     def get_rank(self, tax_id):
         """ Get rank for given ncbi tax id.
         """
-        if tax_id == None:
+        if tax_id is None:
             rank = "unassigned"
         else:
             nodes = self.nodes
