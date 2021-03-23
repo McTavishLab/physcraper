@@ -41,11 +41,11 @@ def get_gi_from_blast(query_string):
     :return: gb_id if available
     """
     if len(query_string.split("|")) >= 3:
-        gb_id = query_string.split("|")[1]
+        gb_gi = query_string.split("|")[1]
         assert len(gb_gi.split(".")) < 2, (len(gb_gi.split(".")), gb_gi)
         assert gb_gi.isdigit() is True
         return gb_gi
-     else:
+    else:
         return None
 
 def get_tax_info_from_acc(gb_id, ids_obj):
