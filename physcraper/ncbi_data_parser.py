@@ -42,10 +42,11 @@ def get_gi_from_blast(query_string):
     """
     if len(query_string.split("|")) >= 3:
         gb_id = query_string.split("|")[1]
-    else:
+        assert len(gb_gi.split(".")) < 2, (len(gb_gi.split(".")), gb_gi)
+        assert gb_gi.isdigit() is True
+        return gb_gi
+     else:
         return None
-    assert len(gb_id.split(".")) < 2, (len(gb_id.split(".")), gb_id)
-    assert gb_id.isdigit() is True
 
 def get_tax_info_from_acc(gb_id, ids_obj):
     '''takes an accession number and returns the ncbi_id and the taxon name'''
