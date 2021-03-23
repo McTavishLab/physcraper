@@ -416,8 +416,15 @@ class PhyscraperScrape():
                                        "-out", seq_path])
 
             except subprocess.CalledProcessError as grepexc:
-                sys.stderr.write("error code {}, {}".format(grepexc.returncode, grepexc.output))
-                sys.exit()
+                sys.stderr.write("error code {}, {},\n".format(grepexc.returncode, grepexc.output))
+                sys.stderr.write("downloading from NCBI\n")
+                read_handle = self.ids.entrez_efetch(gb_id)
+                seq = read_handle[0][u'GBSeq_sequence']
+                with open(seq_path, 'w') as fi:
+                    fi.write("> {} \n".format(gb_id))
+                    fi.write(seq)
+                fi.close()
+                #sys.exit()
             # read in file to get full seq
         f = open(seq_path)
         seq = ""
