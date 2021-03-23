@@ -306,3 +306,7 @@ elif not args.no_estimate:
 #scraper.read_blast_wrapper()
     scraper.calculate_final_tree(boot_reps = boot_reps)
     scraper.data.write_labelled(label='^ot:ottTaxonName',  direc=scraper.outputsdir)
+    scraper.data.write_otus(schema='table', direc=scraper.outputsdir)
+    scraper.data.write_otus(schema='json', direc=scraper.rundir)
+    scraper.data.write_otus(schema='json', direc=scraper.outputsdir)   
+    scraper.data.write_files(direc=scraper.outputsdir)   
