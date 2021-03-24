@@ -51,5 +51,8 @@ def test_comparison():
                             "-o", "tests/tmp/pg_55_comparison"])
 
 def test_concat():
-    subprocess.check_call(["python", "bin/physcraper_run.py",
+    subprocess.check_call(["python", "bbin/multi_loci.py",
+                            "-d", "tests/data/precooked/multi_loc/",
+                            "-f", "astral",
+                            "-o", "tests/tmp/mini_astral"
                             ])

@@ -168,9 +168,9 @@ max_length = {maxlen}
 
         # read in blast settings
         self.email = config["blast"].get("Entrez.email")
-        if not "@" in self.email:
-            sys.stderr.write(
-                "your email `%s` does not have an @ sign. NCBI blast requests an email address.\n" % self.email)
+        #if not "@" in self.email:
+            #sys.stderr.write(
+            #    "your email `%s` does not have an @ sign. NCBI blast requests an email address.\n" % self.email)
         if config["blast"].get("Entrez.api_key"):
             self.api_key = config["blast"]["Entrez.api_key"]
             if self.api_key == 'None':
