@@ -19,7 +19,7 @@
 This module handles the code to generate the Physcraper command line code interface
 to update a tree from an existing alignment, by:
 getting a tree from an OpenTree study ID or from a local file, getting the
-corresponding alignment form TREEbase or from a local file, identifying the MRCA,
+corresponding alignment form treeBASE or from a local file, identifying the MRCA,
 running BLAST, downloading new matching sequences, aligning them and inferring a tree.
 """
 

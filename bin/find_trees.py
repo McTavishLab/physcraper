@@ -18,7 +18,7 @@
 """
 This module handles the code to genefrate the Physcraper command line code interface
 to find trees in the Open Tree of Life Phylesystem database that contain a biological
-group of interest and/or that have data in TREEbase too.
+group of interest and/or that have data in treeBASE too.
 """
 
 

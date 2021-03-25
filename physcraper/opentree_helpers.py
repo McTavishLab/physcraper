@@ -372,7 +372,9 @@ def generate_ATT_from_phylesystem(alnfile,
 
 
 def get_dataset_from_treebase(study_id):
-    """Function is used to get the aln from treebase, for a tree that OpenTree has the mapped tree.
+    """
+        Given a tree in OpenTree with mapped tips, this function gets the corresponding
+        alignment from treeBASE if available.
     """
     try:
         study = OT.get_study(study_id)
@@ -391,7 +393,7 @@ def get_dataset_from_treebase(study_id):
             try:
                 dna = DataSet.get(url=url, schema="nexml")
             except xml.etree.ElementTree.ParseError:
-                sys.stdout.write("error reading nexml, from supertreebase, will check TreeBASE\n")
+                sys.stdout.write("Error reading nexml, from supertreebase, will check TreeBASE\n")
                 url = "https://treebase.org/treebase-web/search/downloadAStudy.html?id={}&format=nexml".format(tb_id)
                 dna = DataSet.get(url=url, schema="nexml")
 
@@ -401,7 +403,7 @@ def get_dataset_from_treebase(study_id):
                 url = "https://treebase.org/treebase-web/search/downloadAStudy.html?id={}&format=nexml".format(tb_id)
                 dna = DataSet.get(url=url, schema="nexml")
             except:
-                sys.stderr.write("Data not found on treebase or supertreebase. Try downloading to a file.\n")
+                sys.stderr.write("Alignment not found on treeBASE or supertreebase.\n")
                 sys.exit()
         if _DEBUG:
             sys.stderr.write(url + "\n")
