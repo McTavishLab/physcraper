@@ -50,3 +50,31 @@ def test_comparison():
                             "-og", "otu376420", "otu376439", "otu376452",
                             "-o", "tests/tmp/pg_55_comparison"])
 
+def test_astral():
+    subprocess.check_call(["python", "bin/multi_loci.py",
+                            "-d", "tests/data/precooked/multi_loc/",
+                            "-f", "astral",
+                            "-o", "tests/tmp/mini_astral"
+                            ])
+
+def test_concat():
+    subprocess.check_call(["python", "bin/multi_loci.py",
+                            "-d", "tests/data/precooked/multi_loc/",
+                            "-f", "concatenate",
+                            "-o", "tests/tmp/mini_concat"
+                            ])
+
+def test_concat_missing():
+    subprocess.check_call(["python", "bin/multi_loci.py",
+                            "-d", "tests/data/precooked/multi_loc/",
+                            "-f", "concatenate",
+                            "-m",
+                            "-o", "tests/tmp/mini_concat_missing"
+                            ])
+def test_concat_svdq():
+    subprocess.check_call(["python", "bin/multi_loci.py",
+                            "-d", "tests/data/precooked/multi_loc/",
+                            "-f", "svdq",
+                            "-m",
+                            "-o", "tests/tmp/mini_svdq"
+                            ])

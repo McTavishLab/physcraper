@@ -78,7 +78,8 @@ def generate_ATT_from_files(workdir,
     return AlignTreeTax(treefile, otu_dict, alnfile, search_taxon=mrca_ott, workdir=workdir,
                         configfile=configfile, aln_schema=aln_schema, tree_schema=tree_schema)
 
-def generate_ATT_from_run(workdir, start_files='output', tag=None, configfile=None):
+
+def generate_ATT_from_run(workdir, start_files='output', tag=None, configfile=None, run=True):
     """
     Build an ATT object without phylesystem, use your own files instead.
     :return: object of class ATT
@@ -93,6 +94,8 @@ def generate_ATT_from_run(workdir, start_files='output', tag=None, configfile=No
     inputsdir = "{}/inputs_{}".format(workdir, tag)
     if configfile is None:
         configfile = "{}/run.config".format(rundir)
+    if run == False:
+        configfile = ConfigObj(configfile, run = False)
     if start_files == 'output':
         sdir = outputsdir
     if start_files == 'input':
@@ -100,7 +103,7 @@ def generate_ATT_from_run(workdir, start_files='output', tag=None, configfile=No
     try:
         alnfi = "{}/physcraper_{}.fas".format(sdir, tag)
         treefile = "{}/physcraper_{}.tre".format(sdir, tag)
-        otu_json = "{}/otu_info_{}.json".format(rundir, tag)
+        otu_json = "{}/otu_info_{}.json".format(sdir, tag)
         assert os.path.exists(alnfi)
         assert os.path.exists(treefile)
         assert os.path.exists(otu_json)
@@ -445,7 +448,7 @@ class AlignTreeTax():
         prune = treed_tax ^ aln_tax
         missing = [i.label for i in prune]
         if missing:
-            errmf = 'NAME RECONCILIATION Some of the taxa in the tree are not in the alignment or vice versa' \
+            errmf = 'NAME RECONCILIATION Some of the taxa in the tree are not in the alignment.' \
                     ' and will be pruned. Missing "{}"...\n'
             missing = [self.otu_dict[tax].get('^ot:originalLabel', tax) for tax in missing][:10]
             errm = errmf.format('", "'.join(missing))
