@@ -42,9 +42,8 @@ if not os.path.exists(args.output):
 
 # Runs is the set of completed physcraper runs.
 # They should all be in the folder given by -d aka locus_runs_folder
-input_runs = [f for f in os.listdir(args.locus_runs_folder) if os.path.isdir("{}/{}".format(args.locus_runs_folder, f))]
 
-def setup_dicts(runs):
+def setup_dicts(runs_path):
     """Inputs: a directory of completed physcraper runs
     Outputs: 
         all_loci: A dictionary of AlignTreeTaxon objects by locus
@@ -53,10 +52,11 @@ def setup_dicts(runs):
     i = 0 #iterator to count runs (loci)
     all_loci = {} # dictionary of ATT objects
     all_taxa = {}
+    runs = [f for f in os.listdir(runs_path) if os.path.isdir("{}/{}".format(runs_path, f))]
     for run in runs:
         print(run)
         i += 1
-        fp = "{}/{}".format(args.locus_runs_folder, run)
+        fp = "{}/{}".format(runs_path, run)
         files = os.listdir(fp)
         if files:
             for file in files:
@@ -100,7 +100,7 @@ def concatenate(all_loci, all_taxa, include_missing, gapchar="?"):
         # If we include missing data, this is how many represnetatives of this taxon we should end up with
         ntax_seq_min = min([len(all_taxa[taxon][locus]) for locus in all_taxa[taxon]])
         # If we do not include missing data, this is how many represnetatives of this taxon we should end up with
-        if args.include_missing:
+        if include_missing:
             ntax_seq = ntax_seq_max
         else:
             ntax_seq = ntax_seq_min
@@ -116,8 +116,6 @@ def concatenate(all_loci, all_taxa, include_missing, gapchar="?"):
                     concat_dict[concat_name][loc] = tip # tells me what sequence form this locus I will but in this concanated taxon
                 else:
                     concat_dict[concat_name][loc] = "GAP"
-        #if args.include_missing == False:
-        #    assert len(concat_dict[concat_name][loc]) == len(concat_names)
     ds = dendropy.DataSet()
     taxon_namespace = dendropy.TaxonNamespace()
     ds.attach_taxon_namespace(taxon_namespace)
@@ -169,7 +167,7 @@ def concatenate(all_loci, all_taxa, include_missing, gapchar="?"):
     d_all = dendropy.DnaCharacterMatrix.concatenate(ds.char_matrices)
     return tax_map, concat_dict, d_all
 
-def write_astral_inputs(all_loci, all_taxa):
+def write_astral_inputs(all_loci, all_taxa, outputdir):
     genetrees = []
     taxset = {}
     for locus in all_loci:
@@ -183,14 +181,14 @@ def write_astral_inputs(all_loci, all_taxa):
             taxset[tax].append(new_label)
         genetrees.append(trecop.as_string(schema="newick"))
 
-    fi = open("{}/genetrees.new".format(args.output), "w")
+    fi = open("{}/genetrees.new".format(outputdir), "w")
     for gtree in genetrees:
         gtree = gtree.replace('[&R] ', "")
         gtree = gtree.replace("'", "")
         fi.write(gtree)
     fi.close()
 
-    mfi = open("{}/mappings.txt".format(args.output), "w")
+    mfi = open("{}/mappings.txt".format(outputdir), "w")
     for tax in taxset:
         mfi.write(tax)
         mfi.write(":")
@@ -207,7 +205,7 @@ def generate_taxpartition_str(tax_map):
     return taxpart_str
 
 if args.format == "concatenate":
-    loci, taxa = setup_dicts(input_runs)
+    loci, taxa = setup_dicts(args.locus_runs_folder)
     tax_map, concat_dict, d_all = concatenate(all_loci=loci,
                                               all_taxa=taxa,
                                               include_missing=args.include_missing,
@@ -216,7 +214,7 @@ if args.format == "concatenate":
 
 
 if args.format == "svdq":
-    loci, taxa = setup_dicts(input_runs)
+    loci, taxa = setup_dicts(args.locus_runs_folder)
     tax_map, concat_dict, d_all = concatenate(all_loci=loci,
                                               all_taxa=taxa,
                                               include_missing=args.include_missing,
@@ -229,6 +227,6 @@ if args.format == "svdq":
     fi.close()
 
 if args.format == "astral":
-    loci, taxa = setup_dicts(input_runs)
+    loci, taxa = setup_dicts(args.locus_runs_folder, args.output)
     write_astral_inputs(loci, taxa)
 

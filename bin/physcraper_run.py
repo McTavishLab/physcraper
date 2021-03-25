@@ -207,6 +207,8 @@ if study_id:
                                                  configfile = conf,
                                                  search_taxon = search_ott_id)
         scraper = physcraper.PhyscraperScrape(data_obj, ids)
+        scraper.data.write_otus(schema='table', direc=scraper.inputsdir)
+        scraper.data.write_otus(schema='json', direc=scraper.inputsdir)
     else:
         scraper = scraper_from_opentree(study_id =study_id,
                                         tree_id = tree_id,
@@ -214,6 +216,8 @@ if study_id:
                                         aln_schema = aln_schema,
                                         workdir = workdir,
                                         configfile = conf)
+        scraper.data.write_otus(schema='table', direc=scraper.inputsdir)
+        scraper.data.write_otus(schema='json', direc=scraper.inputsdir)
     sys.stdout.write("{} taxa in alignment and tree\n".format(len(scraper.data.aln)))
 
 
@@ -241,6 +245,9 @@ if args.tree_file:
                                         search_taxon=search_ott_id)
     ids = physcraper.IdDicts(conf)
     scraper = physcraper.PhyscraperScrape(data_obj, ids)
+    scraper.data.write_otus(schema='table', direc=scraper.inputsdir)
+    scraper.data.write_otus(schema='json', direc=scraper.inputsdir)
+
 #    sys.stdout.write("Read in tree {} taxa in alignment and tree\n".format(len(scraper.data.aln)))
 
 
@@ -280,7 +287,6 @@ if args.repeat:
             prev_besttreepath = besttreepath
             scraper.replace_tre(besttreepath)
             scraper.data.write_labelled(filename="run_{}".format(run), label='^ot:ottTaxonName', direc=scraper.outputsdir)
-            scraper.data.write_otus(schema='table', direc=scraper.inputsdir)
             scraper.data.write_otus(schema='json', direc=scraper.rundir)
             scraper.data.write_otus(schema='json', direc=scraper.outputsdir)   
             scraper.data.write_files(direc=scraper.outputsdir)         
