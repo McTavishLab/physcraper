@@ -227,6 +227,6 @@ if args.format == "svdq":
     fi.close()
 
 if args.format == "astral":
-    loci, taxa = setup_dicts(args.locus_runs_folder, args.output)
-    write_astral_inputs(loci, taxa)
+    loci, taxa = setup_dicts(args.locus_runs_folder)
+    write_astral_inputs(loci, taxa, args.output)
 
