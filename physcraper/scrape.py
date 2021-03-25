@@ -305,8 +305,7 @@ class PhyscraperScrape():
                         sys.stdout.write("file {} exists in current blast run. Will not blast, "
                                          "delete file to force\n".format(fn_path))
             else:
-                if _VERBOSE:
-                    sys.stdout.write("otu {} was last blasted on {}, {} days ago and is not being re-blasted."
+                sys.stdout.write("otu {} was last blasted on {}, {} days ago and is not being re-blasted."
                                      "Use run_blast_wrapper(delay = 0) to force a search.\n".format(otu_id,
                                                                                                     last_blast,
                                                                                                     time_passed))
@@ -413,8 +412,15 @@ class PhyscraperScrape():
                                        "-out", seq_path])
 
             except subprocess.CalledProcessError as grepexc:
-                sys.stderr.write("error code {}, {}".format(grepexc.returncode, grepexc.output))
-                sys.exit()
+                sys.stderr.write("error code {}, {},\n".format(grepexc.returncode, grepexc.output))
+                sys.stderr.write("downloading from NCBI\n")
+                read_handle = Entrez.efetch(db="nucleotide", id=gb_id, retmode="xml")
+                seq = read_handle[0][u'GBSeq_sequence']
+                with open(seq_path, 'w') as fi:
+                    fi.write("> {} \n".format(gb_id))
+                    fi.write(seq)
+                fi.close()
+                #sys.exit()
             # read in file to get full seq
         f = open(seq_path)
         seq = ""
@@ -689,8 +695,8 @@ class PhyscraperScrape():
                     tmp_dict = self.seq_dict_build(seq, otu_id, tmp_dict)
             else:
                 lr = open("{}/seqlen_mismatch.txt".format(self.outputsdir), "a")
-                taxid, taxname, seq = self.ids.get_tax_seq_acc(gb_id)
-                lr.write("taxon: {}, ncbi: {}, acc: {}, len: {}\n".format(taxname, taxid, gb_id, len(seq)))
+                #taxid, taxname, seq = self.ids.get_tax_seq_acc(gb_id)
+                lr.write("acc: {}, len: {}\n".format(gb_id, len(seq)))
                 lr.close()
                 debug("\nlen {}:{} was not between {} and {}\n".format(gb_id, len(seq), seq_len_min, seq_len_max))
         otu_in_aln = {taxon.label for taxon in self.data.aln}

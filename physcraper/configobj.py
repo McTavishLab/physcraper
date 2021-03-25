@@ -65,10 +65,11 @@ class ConfigObj():
               * self.ncbi_names: path to 'names.dmp' file, that contains the different ID's
     """
 
-    def __init__(self, configfile=None):
+    def __init__(self, configfile=None, run = True):
        # debug(configfi)
         if _DEBUG:
             sys.stdout.write("Building config object\n")
+        self.run = run
         if configfile:
             self.set_defaults()
             self.read_config(configfile)
@@ -169,9 +170,9 @@ max_length = {maxlen}
 
         # read in blast settings
         self.email = config["blast"].get("Entrez.email")
-        if not "@" in self.email:
-            sys.stderr.write(
-                "your email `%s` does not have an @ sign. NCBI blast requests an email address.\n" % self.email)
+        #if not "@" in self.email:
+            #sys.stderr.write(
+            #    "your email `%s` does not have an @ sign. NCBI blast requests an email address.\n" % self.email)
         if config["blast"].get("Entrez.api_key"):
             self.api_key = config["blast"]["Entrez.api_key"]
             if self.api_key == 'None':
@@ -233,6 +234,8 @@ max_length = {maxlen}
     def set_local(self):
         """ Checks that all appropriate files etc are in place for local blast db.
         """
+        if not self.run:
+            return
         self.blast_loc = "local"
         self.ncbi_nodes = "{}/nodes.dmp".format(self.taxonomy_dir)
         self.ncbi_names = "{}/names.dmp".format(self.taxonomy_dir)
@@ -261,9 +264,11 @@ max_length = {maxlen}
                     or update as decribed in \
                     'https://physcraper.readthedocs.io/en/latest/install.html#local-databases'\n".format(time_passed))
         if not os.path.exists(self.ncbi_nodes):
-            sys.stderr.write("NCBI taxonomy not found at {} - please update nodes and names.dmp, \
+            sys.stderr.write("NCBI taxonomy not found at {} - \
+             To perform a local blast search, please update nodes and names.dmp, \
                 as described in \
                 'https://physcraper.readthedocs.io/en/latest/install.html#local-databases'\n".format(self.ncbi_nodes))
+
             sys.exit()
         else:
             download_date = os.path.getmtime(self.ncbi_nodes)
@@ -272,7 +277,7 @@ max_length = {maxlen}
             time_passed = (today - download_date).days
             if time_passed >= 90:
                 sys.stderr.write("Your taxonomy databases from NCBI were dowloaded {} days ago. \
-                    Please update nodes and names.dmp, \
+                    To perform a local blast search, please update nodes and names.dmp, \
                     as described in \
                     'https://physcraper.readthedocs.io/en/latest/install.html#local-databases'\n".format(time_passed))
         assert(shutil.which("blastn")), "blastn  not found in path"
