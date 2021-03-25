@@ -39,7 +39,7 @@ Write Documentation
 ~~~~~~~~~~~~~~~~~~~
 
 Physcraper could always use more documentation, whether as part of the
-official physcraper docs, in docstrings, or even on the web in blog posts,
+official Physcraper docs, in docstrings, or even on the web in blog posts,
 articles, and such.
 
 Submit Feedback
@@ -81,14 +81,24 @@ Ready to contribute? Here's how to set up Physcraper for local development.
 
     $ pytest tests
 
+6. Use Pylint to check your code. Move to the "bin" or "physcraper" directory to use the ".pylintrc"
+   config file, then run::
 
-6. Commit your changes and push your branch to GitHub::
+    $ pylint insert_name_of_module_here.py
+
+7. Commit your changes and push your branch to GitHub::
 
     $ git add .
     $ git commit -m "Your detailed description of your changes."
     $ git push origin name-of-your-bugfix-or-feature
 
-7. Submit a pull request through the GitHub website.
+8. Submit a pull request through the GitHub website.
+
+Extra: Count the number of functions in any given module
+
+    from inspect import getmembers, isfunction
+    foos = [o for o in getmembers(physcraper) if isfunction(o[1])]
+    len(foos)
 
 Pull Request Guidelines
 -----------------------

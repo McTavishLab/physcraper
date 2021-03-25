@@ -70,7 +70,7 @@ def test_get_full_seq():
 
 
 def test_get_from_treebase():
-    subprocess.check_call(["python", "bin/physcraper_run.py", 
+    subprocess.check_call(["python", "bin/physcraper_run.py",
                             "-s", "pg_55",
                             "-t", "tree5864",
                             "-tb",
@@ -78,7 +78,7 @@ def test_get_from_treebase():
                             "-o", "tests/data/tmp/pg_55_treebase"])
 
 def test_get_from_treebase_supertreebase_err():
-    subprocess.check_call(["python", "bin/physcraper_run.py", 
+    subprocess.check_call(["python", "bin/physcraper_run.py",
                             "-s", "pg_328",
                             "-t", "tree322",
                             "-tb",
@@ -94,7 +94,12 @@ def test_web_blast():
 def test_reroot():
     tr = treetaxon.generate_TreeTax_from_run(workdir="tests/data/precooked/ot_350")
     opentree_helpers.root_tree_from_synth(tree=tr.tre, otu_dict=tr.otu_dict)
-
+#    tr = treetaxon.generate_TreeTax_from_run(workdir="tests/data/precooked/tiny_local/inputs_test")
+#    opentree_helpers.root_tree_from_synth(tree=tr.tre, otu_dict=tr.otu_dict)
+#    tr = treetaxon.generate_TreeTax_from_run(workdir="tests/tmp/example_test/inputs_pg_55tree5864")
+#    opentree_helpers.root_tree_from_synth(tree=tr.tre, otu_dict=tr.otu_dict)
+    tr = treetaxon.generate_TreeTax_from_run(workdir="tests/output/test_run_raxml")
+    opentree_helpers.root_tree_from_synth(tree=tr.tre, otu_dict=tr.otu_dict)
 
 def test_find_trees():
     subprocess.check_call(["python", "bin/find_trees.py",

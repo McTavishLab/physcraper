@@ -1,24 +1,49 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+##############################################################################
+##  Physcraper Library.
+##
+##
+##  If you use this work or any portion thereof in published work,
+##  please cite it as:
+##
+##     Luna L. Sanchez Reyes, Martha Kandziora, Emily Jane McTavish. (2020).
+##     Physcraper: A Python package for continual update of evolutionary
+##     estimates using the Open Tree of Life. BioRxiv 2020.09.15.299156.
+##     doi: doi.org/10.1101/2020.09.15.299156
+##
+##############################################################################
+
+"""
+This module handles the code to generate the Physcraper command line interface
+to compare two trees using (1) the Open Tree of Life conflict functions, and
+(2) using the Robinson-Foulds statistic calculated using Dendropy functions.
+"""
+
 import sys
 import os
 import json
-import subprocess
+# import subprocess
 import argparse
-import dendropy
 import copy
-import physcraper
-from opentree import OT
-from physcraper.opentree_helpers import root_tree_from_synth, conflict_tree, ottids_in_synth
+import dendropy
 from dendropy.calculate import treecompare
+import physcraper
+from physcraper.opentree_helpers import root_tree_from_synth, conflict_tree, ottids_in_synth
+from opentree import OT
 ### Example
-# python ../physcraper/bin/rf_distance.py -t1 pg_238/inputs_pg_238tree109_RPB2/physcraper_pg_238tree109_RPB2.tre -t2 pg_238/outputs_pg_238tree109_RPB2/physcraper_pg_238tree109_RPB2.tre -otu pg_238/run_pg_238tree109_RPB2/otu_info_pg_238tree109_RPB2.json 
+# python ../physcraper/bin/rf_distance.py
+# -t1 pg_238/inputs_pg_238tree109_RPB2/physcraper_pg_238tree109_RPB2.tre
+# -t2 pg_238/outputs_pg_238tree109_RPB2/physcraper_pg_238tree109_RPB2.tre
+# -otu pg_238/run_pg_238tree109_RPB2/otu_info_pg_238tree109_RPB2.json
 
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument("-d","--results_dir", help="results directory from run")
-parser.add_argument("-t1","--original_tree", help="Original tree")
-parser.add_argument("-t2","--updated_tree", help="Updated Tree")
+parser.add_argument("-d", "--results_dir", help="results directory from run")
+parser.add_argument("-t1", "--original_tree", help="Original tree")
+parser.add_argument("-t2", "--updated_tree", help="Updated Tree")
 parser.add_argument("-otu", "--otu_info", help="File with taxon information JSON")
 parser.add_argument("-og", "--outgroup", nargs='+', help="otu ids of outgroup taxa for rooting")
 parser.add_argument("-o", "--outputdir", help="Name for output directory")
@@ -30,7 +55,7 @@ args = parser.parse_args()
 
 
 try:
-    assert(args.outputdir)
+    assert args.outputdir
 except AssertionError:
     sys.stderr.write("ERROR: Output directory (-o) is required.\n")
     sys.exit(-1)
@@ -84,8 +109,8 @@ tree2 = dendropy.Tree.get_from_path(tree2_path,
 otu_dict = json.load(open(otu_json_path, "r"))
 
 
-leaves_t1 = set([leaf.taxon.label for leaf in tree1.leaf_nodes()])
-leaves_t2 = set([leaf.taxon.label for leaf in tree2.leaf_nodes()])
+leaves_t1 = {leaf.taxon.label for leaf in tree1.leaf_nodes()}
+leaves_t2 = {leaf.taxon.label for leaf in tree2.leaf_nodes()}
 
 old_spp = set()
 new_spp = set()
@@ -118,12 +143,13 @@ if args.outgroup:
     mrca = tree2.mrca(taxon_labels=outgroup)
     tree2.reroot_at_node(mrca, update_bipartitions=True)
 else:
-    try:
-        rooted = root_tree_from_synth(tree2, otu_dict, base='ott')
-    ##Write out t2 for conflict with opentree
-    except:
-        sys.stdout.write("Auto-rooting unsuccessful, conflict results may be spurious\n")
+    # try:
+    rooted = root_tree_from_synth(tree2, otu_dict, base='ott')
+    ## In which cases will auto-root fail????
+    # except:
+        # sys.stdout.write("Auto-rooting failed, conflict results may be spurious.\n")
 
+##Write out tree2 for conflict with opentree
 tree2.write(path = "{}/after_rooting.tre".format(comparisondir), schema="newick")
 
 
@@ -136,8 +162,10 @@ ottids_in_synth = ottids_in_synth()
 
 
 sys.stdout.write("\nThere were {} new taxa in the updated tree\n".format(len(new_spp) - len(old_spp)))
-sys.stdout.write("Of the {} taxa in original tree {} are not included in synthesis phylogenies,\n".format(len(old_spp), len(old_spp.difference(ottids_in_synth))))
-sys.stdout.write("Of the {} taxa in updated tree {} are not included in synthesis phylogenies \n\n".format(len(new_spp), len(new_spp.difference(ottids_in_synth))))
+msg1 = "Of the {} taxa in original tree {} are not included in synthesis phylogenies.\n"
+sys.stdout.write(msg1.format(len(old_spp), len(old_spp.difference(ottids_in_synth))))
+msg2 = "Of the {} taxa in updated tree {} are not included in synthesis phylogenies.\n\n"
+sys.stdout.write(msg2.format(len(new_spp), len(new_spp.difference(ottids_in_synth))))
 
 
 ids = physcraper.IdDicts()
@@ -156,10 +184,10 @@ unpruned_tree2 = copy.deepcopy(tree2)
 tree2.prune_taxa(prune)
 
 
-RF = dendropy.calculate.treecompare.unweighted_robinson_foulds_distance(tree1, tree2)
+RF = treecompare.unweighted_robinson_foulds_distance(tree1, tree2)
 
 #Weighted RF
-weightedrf = dendropy.calculate.treecompare.weighted_robinson_foulds_distance(tree1, tree2)
+weightedrf = treecompare.weighted_robinson_foulds_distance(tree1, tree2)
 
 
 for tax in tns:
@@ -169,8 +197,8 @@ for tax in tns:
 ## write put with tip labels that have taxon names
 tree1.write(path = "{}/original.tre".format(comparisondir), schema="newick")
 tree2.write(path = "{}/pruned_updated.tre".format(comparisondir), schema="newick")
-
-sys.stdout.write("\n\nThe RobinsonFoulds distance between the matched tips in the trees is {} and the weighted RF is {}\n".format(RF, weightedrf))
+msg3 = "\n\nThe RF distance between the matched tips in the trees is {} and the weighted RF is {}\n"
+sys.stdout.write(msg3.format(RF, weightedrf))
 
 workdir = comparisondir
 tree_updated = conflict_tree(unpruned_tree2, otu_dict)
@@ -227,24 +255,23 @@ for node in tree_updated:
 tree_updated.write(path = "{}/conflict_label.tre".format(comparisondir), schema="newick")
 
 
-'''
-tree_updated_synth = conflict_tree(unpruned_tree2, otu_dict)
-resp_updated_synth = OT.conflict_str(tree_updated_synth.as_string(schema="newick"), 'synth')
-conflict_synth = resp_updated_synth.response_dict
 
-
-for node in tree_updated_synth:
-    if node.taxon:
-        node_id = node.taxon.label.split('_')[1]
-        conf_node = conflict_synth.get(node_id, False)
-        if conf_node:
-            new_label = "{} {}".format(conf_node['status'], conf_node['witness'])
-            node.taxon.label = new_label
-    else:
-        node_id = node.label.split('_')[1]
-        conf_node = conflict_synth.get(node_id, False)
-        if conf_node:
-            new_label = "{} {}".format(conf_node['status'], conf_node['witness'])
-            node.label = new_label
-
-'''
+## tree_updated_synth = conflict_tree(unpruned_tree2, otu_dict)
+## resp_updated_synth = OT.conflict_str(tree_updated_synth.as_string(schema="newick"), 'synth')
+## conflict_synth = resp_updated_synth.response_dict
+##
+##
+## for node in tree_updated_synth:
+##     if node.taxon:
+##         node_id = node.taxon.label.split('_')[1]
+##         conf_node = conflict_synth.get(node_id, False)
+##         if conf_node:
+##             new_label = "{} {}".format(conf_node['status'], conf_node['witness'])
+##             node.taxon.label = new_label
+##     else:
+##         node_id = node.label.split('_')[1]
+##         conf_node = conflict_synth.get(node_id, False)
+##         if conf_node:
+##             new_label = "{} {}".format(conf_node['status'], conf_node['witness'])
+##             node.label = new_label
+##

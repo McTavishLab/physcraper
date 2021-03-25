@@ -1,6 +1,8 @@
-"""AlignTreeTax: The core data object for physcraper.
-Holds and links name spaces for a tree, an alignment and
-the taxa and their metadata"""
+"""
+AlignTreeTax: The core data object for Physcraper.
+Holds and links name spaces for a tree, an alignment,
+the taxa and their metadata.
+"""
 
 import sys
 import re
@@ -17,7 +19,7 @@ _VERBOSE = 0
 
 def set_verbose():
     """Set verbosity of outputs"""
-    global _VERBOSE
+    global _VERBOSE # pylint: disable=global-statement
     _VERBOSE = 1
 
 _DEBUG = 0
@@ -30,7 +32,8 @@ def generate_ATT_from_files(workdir,
                             otu_json,
                             tree_schema,
                             search_taxon=None):
-    """Build an ATT object without phylesystem, use your own files instead.
+    """
+    Build an ATT object without phylesystem, use your own files instead.
 
     Spaces vs underscores kept being an issue, so all spaces are coerced to underscores when data are read in.
 
@@ -75,10 +78,11 @@ def generate_ATT_from_files(workdir,
     return AlignTreeTax(treefile, otu_dict, alnfile, search_taxon=mrca_ott, workdir=workdir,
                         configfile=configfile, aln_schema=aln_schema, tree_schema=tree_schema)
 
+
 def generate_ATT_from_run(workdir, start_files='output', tag=None, configfile=None, run=True):
-    """Build an ATT object without phylesystem, use your own files instead.
-    :return: object of class ATT.
-    To load without checking databases, set run to False
+    """
+    Build an ATT object without phylesystem, use your own files instead.
+    :return: object of class ATT
     """
     files = [f for f in os.listdir(workdir)]
     for file in files:
@@ -130,12 +134,13 @@ def generate_ATT_from_run(workdir, start_files='output', tag=None, configfile=No
                         tree_schema='newick')
 
 def write_otu_file(treetax, filepath, schema="table"):
-    """Writes out OTU dict as json or table.
-        :param treetax: eitehr a treetaxon object or an alignment tree taxon object
-        :param filename: filename
-        :param schema: either table or json format
-        :return: writes out otu_dict to file
-        """
+    """
+    Writes out OTU dict as json or table.
+    :param treetax: eitehr a treetaxon object or an alignment tree taxon object
+    :param filename: filename
+    :param schema: either table or json format
+    :return: writes out otu_dict to file
+    """
     if schema == "json":
         with open(filepath, "w") as outfile:
             json.dump(treetax.otu_dict, outfile)
@@ -163,12 +168,13 @@ def write_otu_file(treetax, filepath, schema="table"):
 
 
 def write_labelled_tree(treetax, label, filepath, schema="newick", norepeats=True, add_gb_id=False):
-    """output tree and alignment with human readable labels
+    """
+    Output tree and alignment with human readable labels.
     Jumps through a bunch of hoops to make labels unique.
 
     NOT MEMORY EFFICIENT AT ALL
 
-    Has different options available for different desired outputs
+    Has different options available for different desired outputs.
 
     :param label: which information shall be displayed in labelled files: possible options:
                 '^ot:ottTaxonName', '^user:TaxonName', "^ot:originalLabel", "^ot:ottId", "^ncbi:taxon"
@@ -208,12 +214,13 @@ def write_labelled_tree(treetax, label, filepath, schema="newick", norepeats=Tru
 
 
 def write_labelled_aln(aligntreetax, label, filepath, schema="fasta", norepeats=True, add_gb_id=False):
-    """output tree and alignment with human readable labels
+    """
+    Output tree and alignment with human readable labels.
     Jumps through a bunch of hoops to make labels unique.
 
     NOT MEMORY EFFICIENT AT ALL
 
-    Has different options available for different desired outputs
+    Has different options available for different desired outputs.
 
     :param label: which information shall be displayed in labelled files: possible options:
                 '^ot:ottTaxonName', '^user:TaxonName', "^ot:originalLabel", "^ot:ottId", "^ncbi:taxon"
@@ -249,80 +256,72 @@ def write_labelled_aln(aligntreetax, label, filepath, schema="fasta", norepeats=
 
 
 class AlignTreeTax():
-    """wrap up the key parts together, requires OTT_id, and names must already match.
-        Hypothetically, all the keys in the  otu_dict should be clean.
+    """
+    Wrap up the key parts together, requires OTT_id, and names must already match.
+    Hypothetically, all the keys in the  otu_dict should be clean.
 
-        To build the class the following is needed:
-
-          * **newick**: dendropy.tre.as_string(schema=schema_trf) object
-          * **otu_dict**: json file including the otu_dict information generated earlier
-          * **alignment**: dendropy :class:`DnaCharacterMatrix
-          <dendropy.datamodel.charmatrixmodel.DnaCharacterMatrix>` object
-          * **search_taxon**: OToL identifier of the group of interest,
-          either subclade as defined by user or of all tip labels in the phylogeny
-          * **workdir**: the path to the corresponding working directory
-          * **config_obj**: Config class
-          * **schema**: optional argument to define tre file schema, if different from "newick"
-
-        During the initializing process the following self objects are generated:
-
-          * **self.aln**: contains the alignment and which will be updated during the run
-          * **self.tre**: contains the phylogeny, which will be updated during the run
-          * **self.otu_dict**: dictionary with taxon information and physcraper relevant stuff
-
-               * key: otu_id, a unique identifier
-               * value: dictionary with the following key:values:
-
-                    * '^ncbi:gi': GenBank identifier - deprecated by Genbank - only older sequences will have it
-                    * '^ncbi:accession': Genbanks accession number
-                    * '^ncbi:title': title of Genbank sequence submission
-                    * '^ncbi:taxon': ncbi taxon identifier
-                    * '^ot:ottId': OToL taxon identifier
-                    * '^physcraper:status': contains information if it
-                    was 'original', 'queried', 'removed', 'added during filtering process'
-                    * '^ot:ottTaxonName': OToL taxon name
-                    * '^physcraper:last_blasted': contains the date when the sequence was blasted.
-                    * '^user:TaxonName': optional, user given label from OtuJsonDict
-                    * "^ot:originalLabel" optional, user given tip label of phylogeny
-          * **self.ps_otu**: iterator for new otu IDs, is used as key for self.otu_dict
-          * **self.workdir**: contains the path to the working directory, if folder does not exists it is generated.
-          * **self.mrca_ott**: OToL taxon Id for the most recent common ancestor of the ingroup
-          * **self.orig_seqlen**: list of the original sequence length of the input data
-          * **self.gi_dict**: dictionary, that has all information from sequences found during the blasting.
-            * key: GenBank sequence identifier
-            * value: dictionary, content depends on blast option, differs between webquery and local blast queries
-                * keys - value pairs for local blast:
-                    * '^ncbi:gi': GenBank sequence identifier
-                    * 'accession': GenBank accession number
-                    * 'staxids': Taxon identifier
-                    * 'sscinames': Taxon species name
-                    * 'pident': Blast  percentage of identical matches
-                    * 'evalue': Blast e-value
-                    * 'bitscore': Blast bitscore, used for FilterBlast
-                    * 'sseq': corresponding sequence
-                    * 'title': title of Genbank sequence submission
-                * key - values for web-query:
-                    * 'accession':Genbank accession number
-                    * 'length': length of sequence
-                    * 'title': string combination of hit_id and hit_def
-                    * 'hit_id': string combination of gi id and accession number
-                    * 'hsps': Bio.Blast.Record.HSP object
-                    * 'hit_def': title from GenBank sequence
-                * optional key - value pairs for unpublished option:
-                    * 'localID': local sequence identifier
-          * **self._reconciled**: True/False,
-          * **self.unpubl_otu_json**: optional, will contain the OTU-dict for unpublished data, if that option is used
-
-        Following functions are called during the init-process:
-
-          * **self._reconcile()**:
-                removes taxa, that are not found in both, the phylogeny and the aln
-          * **self._reconcile_names()**:
-                is used for the own file stuff, it removes the character 'n' from tip names that start with a number
-
-        The physcraper class is then updating:
-
-          * self.aln, self.tre and self.otu_dict, self.ps_otu, self.gi_dict
+    To build the class the following is needed:
+      * **newick**: dendropy.tre.as_string(schema=schema_trf) object
+      * **otu_dict**: json file including the otu_dict information generated earlier
+      * **alignment**: dendropy :class:`DnaCharacterMatrix
+      <dendropy.datamodel.charmatrixmodel.DnaCharacterMatrix>` object
+      * **search_taxon**: OToL identifier of the group of interest,
+      either subclade as defined by user or of all tip labels in the phylogeny
+      * **workdir**: the path to the corresponding working directory
+      * **config_obj**: Config class
+      * **schema**: optional argument to define tre file schema, if different from "newick"
+    During the initializing process the following self objects are generated:
+      * **self.aln**: contains the alignment and which will be updated during the run
+      * **self.tre**: contains the phylogeny, which will be updated during the run
+      * **self.otu_dict**: dictionary with taxon information and physcraper relevant stuff
+           * key: otu_id, a unique identifier
+           * value: dictionary with the following key:values:
+                * '^ncbi:gi': GenBank identifier - deprecated by Genbank - only older sequences will have it
+                * '^ncbi:accession': Genbanks accession number
+                * '^ncbi:title': title of Genbank sequence submission
+                * '^ncbi:taxon': ncbi taxon identifier
+                * '^ot:ottId': OToL taxon identifier
+                * '^physcraper:status': contains information if it
+                was 'original', 'queried', 'removed', 'added during filtering process'
+                * '^ot:ottTaxonName': OToL taxon name
+                * '^physcraper:last_blasted': contains the date when the sequence was blasted.
+                * '^user:TaxonName': optional, user given label from OtuJsonDict
+                * "^ot:originalLabel" optional, user given tip label of phylogeny
+      * **self.ps_otu**: iterator for new otu IDs, is used as key for self.otu_dict
+      * **self.workdir**: contains the path to the working directory, if folder does not exists it is generated.
+      * **self.mrca_ott**: OToL taxon Id for the most recent common ancestor of the ingroup
+      * **self.orig_seqlen**: list of the original sequence length of the input data
+      * **self.gi_dict**: dictionary, that has all information from sequences found during the blasting.
+        * key: GenBank sequence identifier
+        * value: dictionary, content depends on blast option, differs between webquery and local blast queries
+            * keys - value pairs for local blast:
+                * '^ncbi:gi': GenBank sequence identifier
+                * 'accession': GenBank accession number
+                * 'staxids': Taxon identifier
+                * 'sscinames': Taxon species name
+                * 'pident': Blast  percentage of identical matches
+                * 'evalue': Blast e-value
+                * 'bitscore': Blast bitscore, used for FilterBlast
+                * 'sseq': corresponding sequence
+                * 'title': title of Genbank sequence submission
+            * key - values for web-query:
+                * 'accession':Genbank accession number
+                * 'length': length of sequence
+                * 'title': string combination of hit_id and hit_def
+                * 'hit_id': string combination of gi id and accession number
+                * 'hsps': Bio.Blast.Record.HSP object
+                * 'hit_def': title from GenBank sequence
+            * optional key - value pairs for unpublished option:
+                * 'localID': local sequence identifier
+      * **self._reconciled**: True/False,
+      * **self.unpubl_otu_json**: optional, will contain the OTU-dict for unpublished data, if that option is used
+    Following functions are called during the init-process:
+      * **self._reconcile()**:
+            removes taxa, that are not found in both, the phylogeny and the aln
+      * **self._reconcile_names()**:
+            is used for the own file stuff, it removes the character 'n' from tip names that start with a number
+    The physcraper class is then updating:
+      * self.aln, self.tre and self.otu_dict, self.ps_otu, self.gi_dict
     """
 
     def __init__(self, tree, otu_dict, alignment, search_taxon, workdir, configfile=None,
@@ -370,8 +369,10 @@ class AlignTreeTax():
         self._reconciled = False
         self.unpubl_otu_json = None
     def read_in_tree(self, tree, tree_schema=None):
-        """Imports a tree either from a file or a dendropy data object.
-        Adds records in OTU dictionary if not already present."""
+        """
+        Imports a tree either from a file or a dendropy data object.
+        Adds records in OTU dictionary if not already present.
+        """
         if isinstance(tree, str):
             if os.path.exists(tree):
                 self.tre = Tree.get(path=tree,
@@ -389,7 +390,9 @@ class AlignTreeTax():
         assert isinstance(self.tre, datamodel.treemodel.Tree)
 
     def read_in_aln(self, alignment, aln_schema):
-        """Reads in an alignment to the object taxon namespace."""
+        """
+        Reads in an alignment to the object taxon namespace.
+        """
         assert isinstance(alignment, str)
         assert os.path.exists(alignment)
         ##Check namespace
@@ -409,7 +412,8 @@ class AlignTreeTax():
                 ("your aln '%s' is not a DnaCharacterMatrix" % alignment)
 
     def _reconcile(self):
-        """Taxa that are only found in the tree, or only in the alignment are deleted.
+        """
+        Taxa that are only found in the tree, or only in the alignment are deleted.
 
         This checks that the tree "original labels" from phylesystem
         align with those found in the alignment.
@@ -482,7 +486,8 @@ class AlignTreeTax():
         return direc
 
     def _reconcile_names(self):
-        """It rewrites some tip names, which kept being an issue when it starts with a number at the beginning.
+        """
+        It rewrites some tip names, which kept being an issue when it starts with a number at the beginning.
         Then somehow a n was added to the tip names.
 
         :return: replaced tip names
@@ -506,11 +511,13 @@ class AlignTreeTax():
                     sys.stderr.write("could not match tiplabel {} or {} to an OTU\n".format(tax.label, newname))
 
     def prune_short(self):
-        """Prunes sequences from alignment if they are shorter than specified in the config file,
-         or if tip is only present in tre.
+        """
+        Prunes sequences from alignment if they are shorter than specified in the
+        config file, or if tip is only present in tre.
 
-        Sometimes in the de-concatenating of the original alignment taxa with no sequence are generated
-        or in general if certain sequences are really short. This removes those from both the tre and the alignment.
+        Sometimes in the de-concatenating of the original alignment taxa with no
+        sequence are generated or in general if certain sequences are really short.
+        This removes those from both the tre and the alignment.
 
         has test: test_prune_short.py
 
@@ -544,7 +551,8 @@ class AlignTreeTax():
         self._reconciled = 1
 
     def check_tre_in_aln(self):
-        """Makes sure that everything which is in tre is also found in aln.
+        """
+        Makes sure that everything which is in tre is also found in aln.
 
         Extracted method from trim. Not sure we actually need it there.
         """
@@ -566,7 +574,8 @@ class AlignTreeTax():
         assert treed_taxa.issubset(aln_ids), (treed_taxa, aln_ids)
 
     def remove_taxa_aln_tre(self, taxon_label):
-        """Removes taxa from aln and tre and updates otu_dict,
+        """
+        Removes taxa from aln and tre and updates otu_dict,
         takes a single taxon_label as input.
 
         note: has test, test_remove_taxa_aln_tre.py
@@ -590,8 +599,9 @@ class AlignTreeTax():
             self.otu_dict[taxon_label]['^physcraper:status'] = "deleted, updated otu_dict but was never in tre or aln!"
 
     def trim(self, min_taxon_perc):
-        """ It removes bases at the start and end of alignments, if they are represented by less than the value
-        specified. E.g. 0.75  that 75% of the sequences need to have a base present
+        """
+        It removes bases at the start and end of alignments, if they are represented by less than the value
+        specified. E.g. 0.75  that 75% of the sequences need to have a base present.
 
         Ensures, that not whole chromosomes get dragged in. It's cutting the ends of long sequences.
 
@@ -639,10 +649,11 @@ class AlignTreeTax():
         return
 
     def get_otu_for_acc(self, gb_id):
-        """A reverse search to find the unique OTU ID for a given accession number
+        """
+        A reverse search to find the unique OTU ID for a given accession number
         :param gb_id: the Genbank identifier
         """
-        if gb_id in set([self.otu_dict[otu].get("^ncbi:accession", 'UNK') for otu in self.otu_dict]):
+        if gb_id in {self.otu_dict[otu].get("^ncbi:accession", 'UNK') for otu in self.otu_dict}:
             for otu in self.otu_dict:
                 if self.otu_dict[otu].get("^ncbi:accession") == gb_id:
                     debug("tried to create OTU for {} but already had otu {}".format(gb_id, otu))
@@ -650,7 +661,8 @@ class AlignTreeTax():
         return None
 
     def add_otu(self, gb_id, ids_obj):
-        """ Generates an otu_id for new sequences and adds them into self.otu_dict.
+        """
+        Generates an otu_id for new sequences and adds them into self.otu_dict.
         Needs to be passed an IdDict to do the mapping.
 
         :param gb_id: the Genbank identifier/ or local unpublished
@@ -709,7 +721,8 @@ class AlignTreeTax():
         return otu_id
 
     def write_papara_files(self, treefilename="random_resolve.tre", alnfilename="aln_ott.phy"):
-        """This writes out needed files for papara (except query sequences).
+        """
+        This writes out needed files for papara (except query sequences).
         Papara is finicky about trees and needs phylip format for the alignment.
 
         NOTE: names for tree and aln files should not be changed, as they are hardcoded in align_query_seqs().
@@ -722,7 +735,10 @@ class AlignTreeTax():
 
 
     def write_random_resolve_tre(self, treefilename='random_resolve.tre', direc='workdir'):
-        """Randomly resolve polytomies, bc some downstream appraoches require that. e.g. papara"""
+        """
+        Randomly resolve polytomies, because some downstream approaches require
+        that, e.g. Papara.
+        """
         self.tre.resolve_polytomies()
         self.tre.deroot()
         direc = self._get_path(direc)
@@ -738,7 +754,9 @@ class AlignTreeTax():
         return treepath
 
     def write_aln(self, filename=None, alnschema="fasta", direc='workdir'):
-        """Output alignment with unique otuids as labels"""
+        """
+        Output alignment with unique otu ids as labels.
+        """
         direc = self._get_path(direc)
         if filename is None:
             filename = "physcraper_{}.fas".format(self.tag)
@@ -748,8 +766,10 @@ class AlignTreeTax():
         return os.path.abspath(alnpath)
 
     def write_files(self, treefilename=None, treeschema="newick", alnfilename=None, alnschema="fasta", direc='workdir'):
-        """Outputs both the streaming files, labeled with OTU ids.
-        Can be mapped to original labels using otu_dict.json or otu_seq_info.csv"""
+        """
+        Outputs both the streaming files, labeled with OTU ids.
+        Can be mapped to original labels using otu_dict.json or otu_seq_info.csv
+        """
         #debug("write_files")
         direc = self._get_path(direc)
         if treefilename is None:
@@ -767,7 +787,9 @@ class AlignTreeTax():
         return(treepath, alnpath)
 
     def write_labelled_tree(self, label, filename="labelled", direc='workdir', norepeats=True, add_gb_id=False):
-        """A wrapper for the write_labelled tree function to maintain older functionalitys"""
+        """
+        A wrapper for the write_labelled tree function to maintain older functionalities
+        """
         direc = self._get_path(direc)
         if filename == "labelled":
             treepath = "{}/{}_{}.tre".format(direc, filename, self.tag)
@@ -777,7 +799,9 @@ class AlignTreeTax():
 
 
     def write_labelled_aln(self, label, filename="labelled", direc='workdir', norepeats=True, add_gb_id=False):
-        """A wrapper for the write_labelled aln function to maintain older functionalitys"""
+        """
+        A wrapper for the write_labelled aln function to maintain older functionalities
+        """
         direc = self._get_path(direc)
         if filename == "labelled":
             alnpath = "{}/{}_{}.fas".format(direc, filename, self.tag)
@@ -787,7 +811,8 @@ class AlignTreeTax():
 
 
     def write_labelled(self, label, filename="labelled", direc='workdir', norepeats=True, add_gb_id=False):
-        """output tree and alignment with human readable labels
+        """
+        Output tree and alignment with human readable labels.
         Jumps through a bunch of hoops to make labels unique.
 
         NOT MEMORY EFFICIENT AT ALL
@@ -808,7 +833,9 @@ class AlignTreeTax():
 
 
     def write_otus(self, filename="otu_info", schema="table", direc='workdir'):
-        """Output all of the OTU information as either json or csv"""
+        """
+        Output all of the OTU information as either json or csv
+        """
         direc = self._get_path(direc)
         assert schema in ["table", "json"]
         if schema == "json":

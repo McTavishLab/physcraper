@@ -1,31 +1,27 @@
-"""The core blasting and new sequence ntegretaion module"""
+"""
+The core blasting and new sequence integration module
+"""
 import sys
 import os
 import subprocess
 import datetime
 import glob
-import pickle
 import random
-
-
 from dendropy import Tree, DnaCharacterMatrix
-
 from Bio.Blast import NCBIXML
 from Bio.Seq import Seq
-
 from physcraper.ids import IdDicts
 from physcraper.aligntreetax import AlignTreeTax
 from physcraper.helpers import cd, get_raxml_ex
 from physcraper.ncbi_data_parser import get_gi_from_blast, get_acc_from_blast
 from physcraper.opentree_helpers import root_tree_from_synth
-
 from physcraper import AWSWWW
 
 _VERBOSE = 0
 
 def set_verbose():
     """Set output to verbose"""
-    global _VERBOSE
+    global _VERBOSE # pylint: disable=global-statement
     _VERBOSE = 1
 
 _DEBUG = 0
@@ -34,7 +30,6 @@ def debug(msg):
     """
     if _DEBUG == 1:
         print(msg)
-
 
 
 class PhyscraperScrape():
@@ -209,7 +204,7 @@ class PhyscraperScrape():
                     "-max_hsps",
                     str(self.config.hitlist_size)]
         try:
-            proc = subprocess.check_output(blastcmd, cwd=self.config.blastdb)
+            subprocess.check_output(blastcmd, cwd=self.config.blastdb)
         except KeyboardInterrupt:
             if os.stat(abs_outfile).st_size == 0:
                 os.remove(abs_outfile)
@@ -277,7 +272,8 @@ class PhyscraperScrape():
             else:
                 time_passed = abs((datetime.datetime.strptime(today, "%Y/%m/%d") -
                                    datetime.datetime.strptime(last_blast, "%Y/%m/%d")).days)
-            if self.data.otu_dict[otu_id].get("^physcraper:ingroup") == False:
+            if self.data.otu_dict[otu_id].get("^physcraper:ingroup") == False: # pylint: disable
+            #this should stay == False, because sometimes ingroup status is just unknown 
                 sys.stdout.write("tip {} not in ingroup. Will not blast, \n".format(otu_id))
                 continue
             if time_passed > delay:
@@ -703,7 +699,7 @@ class PhyscraperScrape():
                 lr.write("acc: {}, len: {}\n".format(gb_id, len(seq)))
                 lr.close()
                 debug("\nlen {}:{} was not between {} and {}\n".format(gb_id, len(seq), seq_len_min, seq_len_max))
-        otu_in_aln = set([taxon.label for taxon in self.data.aln])
+        otu_in_aln = {taxon.label for taxon in self.data.aln}
         for otu in otu_in_aln:
             del tmp_dict[otu]
         filter_dict = self.filter_seqs(tmp_dict, selection='random', threshold=self.config.spp_threshold)
@@ -724,13 +720,14 @@ class PhyscraperScrape():
         """Subselect from sequences to a threshold of number of seqs per species"""
         if threshold is None:
             threshold = int(self.config.spp_threshold)
-        assert selection in ['random'], "selection {} not recognized, please filter by 'length' or 'random'".format(selection)
+        msg = "selection {} not recognized, please filter by 'length' or 'random'"
+        assert selection in ['random'], msg.format(selection)
         selected_otus = set()
         filtered_dict = {}
         new_sp_d = self.make_sp_dict(tmp_dict.keys())
         debug("There are {} taxa in the new taxa".format(len(new_sp_d)))
-        debug("The keys of tmp_dict".format(tmp_dict.keys()))
-        aln_otus = set([taxon.label for taxon in self.data.aln])
+        debug("The keys of tmp_dict are {}".format(tmp_dict.keys()))
+        aln_otus = {taxon.label for taxon in self.data.aln}
         aln_sp_d = self.make_sp_dict(aln_otus)
         debug("There are {} taxa in aln".format(len(aln_sp_d)))
         alltax = set(new_sp_d.keys()).union(aln_sp_d.keys())
@@ -1008,7 +1005,6 @@ class PhyscraperScrape():
         return summarized_tree_path
 
 
-
     def calculate_final_tree(self, boot_reps=100):
         """Calculates the final tree using a trimmed alignment.
 
@@ -1025,8 +1021,6 @@ class PhyscraperScrape():
         self.data.write_files(direc=self.outputsdir)
         self.data.write_labelled(filename='updated_taxonname', label='^ot:ottTaxonName', direc=self.outputsdir)
         return 1
-
-
 
 
     def remove_blocklistitem(self):

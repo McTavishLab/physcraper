@@ -22,7 +22,7 @@ _VERBOSE = 0
 def set_verbose():
     """Set output verbosity
     """
-    global _VERBOSE
+    global _VERBOSE # pylint: disable=global-statement
     _VERBOSE = 1
 
 _DEBUG = 1
@@ -49,11 +49,11 @@ def root_tree_from_synth(tree, otu_dict, base='ott'):
     """Uses information from OpenTree of Life to suggest root.
     :param tree: dendropy :class:`Tree
     :param otu_dict: a dictionary of tip label metadata, inculding an '^ot:ottId'attribute
-    'param base: either `synth` or `ott.` If synth will use synth tree relationships to root input tree,
+    'param base: either `synth` or `ott.` If `synth` will use synthetic OpenTree tree relationships to root input tree,
     if `ott` will use OpenTree taxonomy.
     """
     leaves = [leaf.taxon.label for leaf in tree.leaf_nodes()]
-    spp = set([otu_dict[otu]['^ot:ottId'] for otu in leaves])
+    spp = {otu_dict[otu]['^ot:ottId'] for otu in leaves}
     if None in spp:
         spp.remove(None)
     assert(base in ['synth', 'ott'])
@@ -89,7 +89,7 @@ def root_tree_from_synth(tree, otu_dict, base='ott'):
         else:
             representative_taxa.append(child.leaf_nodes()[0].taxon.label)
     sys.stdout.write("Rooting tree based on taxon relationships in {}. \
-                      Root will be MRCA of {}\n".format(base, ", ".join(representative_taxa)))
+                      \nRoot will be MRCA of {}\n".format(base, ", ".join(representative_taxa)))
 
     ## Get tips for those taxa:
     phyloref = set()
@@ -109,7 +109,7 @@ def root_tree_from_synth(tree, otu_dict, base='ott'):
 
 def ottids_in_synth(synthfile=None):
     """Checks if ottids are present in current synth tree,
-    using a file listing all current otts in syth (v12.3)
+    using a file listing all current otts in synth (v12.3)
     :param synthfile: defaults to taxonomy/ottids_in_synth.txt
     """
     if synthfile is None:
@@ -351,7 +351,7 @@ def generate_ATT_from_phylesystem(alnfile,
         ingroup_ott_ids = set()
         for otu_id in otu_dict:
             if ingroup_otus:
-                if otu_dict[otu_id]["^physcraper:ingroup"] == True:
+                if otu_dict[otu_id]["^physcraper:ingroup"]:
                     ingroup_ott_ids.add(otu_dict[otu_id].get(u"^ot:ottId"))
             else:
                 ingroup_ott_ids.add(otu_dict[otu_id].get(u"^ot:ottId"))
@@ -372,7 +372,9 @@ def generate_ATT_from_phylesystem(alnfile,
 
 
 def get_dataset_from_treebase(study_id):
-    """Function is used to get the aln from treebase, for a tree that OpenTree has the mapped tree.
+    """
+        Given a tree in OpenTree with mapped tips, this function gets the corresponding
+        alignment from treeBASE if available.
     """
     try:
         study = OT.get_study(study_id)
@@ -391,7 +393,7 @@ def get_dataset_from_treebase(study_id):
             try:
                 dna = DataSet.get(url=url, schema="nexml")
             except xml.etree.ElementTree.ParseError:
-                sys.stdout.write("error reading nexml, from supertreebase, will check TreeBASE\n")
+                sys.stdout.write("Error reading nexml, from supertreebase, will check TreeBASE\n")
                 url = "https://treebase.org/treebase-web/search/downloadAStudy.html?id={}&format=nexml".format(tb_id)
                 dna = DataSet.get(url=url, schema="nexml")
 
@@ -401,7 +403,7 @@ def get_dataset_from_treebase(study_id):
                 url = "https://treebase.org/treebase-web/search/downloadAStudy.html?id={}&format=nexml".format(tb_id)
                 dna = DataSet.get(url=url, schema="nexml")
             except:
-                sys.stderr.write("Data not found on treebase or supertreebase. Try downloading to a file.\n")
+                sys.stderr.write("Alignment not found on treeBASE or supertreebase.\n")
                 sys.exit()
         if _DEBUG:
             sys.stderr.write(url + "\n")
@@ -414,7 +416,7 @@ def count_match_tree_to_aln(tree, dataset):
     leaves = [leaf.taxon.label for leaf in tree.leaf_node_iter()]
     for mat in dataset.char_matrices:
         aln_match[i] = 0
-        if type(mat) == datamodel.charmatrixmodel.DnaCharacterMatrix:
+        if isinstance(mat, datamodel.charmatrixmodel.DnaCharacterMatrix):
             for tax in mat:
                 if tax.label in leaves:
                     aln_match[i] += 1
@@ -432,7 +434,7 @@ def get_max_match_aln(tree, dataset, min_match=3):
             max_match = aln
             max_val = aln_match[aln]
     if max_match is not None:
-        assert type(dataset.char_matrices[max_match]) == datamodel.charmatrixmodel.DnaCharacterMatrix
+        assert isinstance(dataset.char_matrices[max_match], datamodel.charmatrixmodel.DnaCharacterMatrix)
         return dataset.char_matrices[max_match]
     return None
 
