@@ -60,7 +60,6 @@ To generate concantented taxa with missing loci use -m (for missing data)
 # SVD quartets
 
 
-
     python bin/multi_loci.py -d tests/data/precooked/multi_loc/ -f svdq -m -o mini_concat2
     paup4a168_ubuntu64 mini_concat2/svdq.nex
     svdq evalq=all taxpartition=species nthreads=ncpus;
