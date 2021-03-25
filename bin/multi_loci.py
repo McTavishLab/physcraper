@@ -6,7 +6,7 @@ physcraper_run.py -s pg_238 -t tree109 -a physcraper_example/treebase_alns/pg_23
 
 Examples:
 python bin/multi_loci.py -d ../physcraper_runs/pg_238_runs/ -f concatenate -o test_concat_res
-ra
+
 
 python bin/multi_loci.py -d ../physcraper_runs/pg_238_runs/ -f astral -o test_concat_res
 java -jar astral.5.7.5.jar -i ../physcraper/test_concat_res/genetrees.new -a ../physcraper/test_concat_res/mappings.txt
