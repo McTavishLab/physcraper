@@ -180,7 +180,7 @@ if args.format == "svdq":
     nexstr = d_all.as_string(schema="nexus")
     taxpart_str = "\ntaxpartition species =\n"
     for taxon in tax_map:
-        taxpart_str = taxpart_str + "\t{}: ".format(taxon.replace(" ","_")) +"'"+"' '".join(tax_map[taxon])+"',\n"
+        taxpart_str = taxpart_str + "\t{}: ".format(taxon.replace(" ","_").replace("-","_")) +"'"+"' '".join(tax_map[taxon])+"',\n"
     taxpart_str = taxpart_str + ";\nend;"
     fi = open("{}/svdq.nex".format(args.output),"w")
     fi.write(nexstr[:-7])
