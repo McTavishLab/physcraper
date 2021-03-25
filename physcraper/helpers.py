@@ -34,17 +34,23 @@ def to_string(inputstr):
 
 @contextlib.contextmanager
 def cd(path):
-    """Change directories and return to original directory"""
+    """
+        Change directories and return to original directory.
+        Code taken from
+        https://kitchingroup.cheme.cmu.edu/blog/2013/06/16/Automatic-temporary-directory-changing/
+        Mainly used for RAxML runs.
+        If path does not exist, it will silently stay in the same path.
+    """
     # print 'initially inside {0}'.format(os.getcwd())
     curr = os.getcwd()
     os.chdir(path)
     # print 'inside {0}'.format(os.getcwd())
     try:
         yield
-    except:
+    except TypeError:
         print('Exception caught: ', sys.exc_info()[0])
     finally:
-        # print 'finally inside {0}'.format(os.getcwd())
+        # print('Changed dir to {}'.format(os.getcwd()))
         os.chdir(curr)
 
 def standardize_label(item):
