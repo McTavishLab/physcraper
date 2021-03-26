@@ -491,7 +491,7 @@ class PhyscraperScrape():
                             if len(gb_id.split(".")) == 1:
                                 sys.stdout.write("skipping acc {}, incorrect format\n".format(gb_id))
                             elif gb_id not in self.data.gb_dict:  # skip ones we already have
-                                taxid, taxname, seq = self.ids.get_tax_seq_acc(gb_id)
+                                seq = self.ids.get_tax_seq_acc(gb_id)
                                 gi_id = alignment.title.split('|')[1]
                                 gb_acc = alignment.accession
                                 stitle = alignment.title
@@ -916,8 +916,8 @@ class PhyscraperScrape():
 
 
     def est_full_tree(self, alignment='default', startingtree=None):
-        """Full raxml run from the placement tree as starting tree.
-        The PTHREAD version is the faster one, hopefully people install it. if not it falls back to the normal raxml.
+        """Full RAxML run from the placement tree as starting tree.
+        The PTHREAD version is the faster one, hopefully people install it if not it falls back to the normal RAxML.
         """
         cwd = os.getcwd()
         if alignment == 'default':
@@ -932,7 +932,7 @@ class PhyscraperScrape():
         rax_ex = get_raxml_ex()
         for filename in glob.glob('{}/RAxML*'.format(self.rundir)):
             os.rename(filename, "{}/treest_prev".format(self.rundir))
-        num_threads = int(self.config.num_threads)
+        # num_threads = int(self.config.num_threads)
         label = "{}".format(self.date)
         cmd = [rax_ex, "-m", "GTRCAT", "-s", alignment, "-t", startingtree, "-p", "1", "-n", label]
         process = subprocess.Popen(cmd)
