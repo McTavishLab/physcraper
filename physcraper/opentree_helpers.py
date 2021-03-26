@@ -386,10 +386,10 @@ def get_dataset_from_treebase(study_id):
         nexson = study.response_dict['data']
     except HTTPError as err:
         sys.stderr.write(err)
-        sys.stderr.write("couldn't find study id {} in phylesystem\n".format(study_id))
+        sys.stderr.write("Could not find study id {} in OpenTree phylesystem.\n".format(study_id))
     treebase_url = nexson['nexml'][u'^ot:dataDeposit'][u'@href']
     if 'treebase' not in nexson['nexml'][u'^ot:dataDeposit'][u'@href']:
-        sys.stderr.write("No treebase record associated with study ")
+        sys.stderr.write("No treeBASE record associated with study ")
         sys.exit(-2)
     else:
         tb_id = treebase_url.split(':S')[1]
