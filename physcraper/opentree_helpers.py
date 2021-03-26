@@ -280,7 +280,8 @@ def generate_ATT_from_phylesystem(alnfile,
                                   tree_id,
                                   search_taxon=None,
                                   tip_label='^ot:originalLabel'):
-    """gathers together tree, alignment, and study info - forces names to otu_ids.
+    """
+    Gathers together tree, alignment, and study info; forces names to OTT ids.
 
     Study and tree ID's can be obtained by using python ./scripts/find_trees.py LINEAGE_NAME
 
@@ -290,21 +291,25 @@ def generate_ATT_from_phylesystem(alnfile,
     <dendropy.datamodel.charmatrixmodel.DnaCharacterMatrix>` alignment object
     :param workdir: path to working directory
     :param config_obj: config class containing the settings
-    :param study_id: OToL study id of the corresponding phylogeny which shall be updated
-    :param tree_id: OToL corresponding tree ID as some studies have several phylogenies
-    :param phylesystem_loc: access the github version of the OpenTree
+    :param study_id: OpenTree study id of the phylogeny to update
+    :param tree_id: OpenTree tree id of the phylogeny to update, some studies have several phylogenies
+    :param phylesystem_loc: access the GitHub version of the OpenTree
     data store, or a local clone
-    :param search_taxon: optional.  OTTiD of the mrca of the clade that shall be updated
+    :param search_taxon: optional.  OTT id of the MRCA of the clade that shall be updated
     :return: object of class ATT
     """
     assert(tip_label in ['^ot:originalLabel', 'otu', "^ot:ottTaxonName", "^ot:ottId"])
     try:
         study = OT.get_study(study_id)
+    except AttributeError:
+        sys.stderr.write("Failure getting study {} from OpenTree phylesystem.".format(study_id))
+        sys.exit()
+    try:
         study_nexson = study.response_dict['data']
         DC = object_conversion.DendropyConvert()
         tree_obj = DC.tree_from_nexson(study_nexson, tree_id)
-    except:
-        sys.stderr.write("failure getting tree {} from study {} from phylesystem".format(tree_id, study_id))
+    except KeyError:
+        sys.stderr.write("Failure getting tree {} from study {} from OpenTree phylesystem.".format(tree_id, study_id))
         sys.exit()
     # this gets the taxa that are in the subtree with all of their info - ott_id, original name,
     otu_dict = {tn.taxon.otu:{} for tn in tree_obj.leaf_node_iter()}
@@ -396,13 +401,12 @@ def get_dataset_from_treebase(study_id):
                 sys.stdout.write("Error reading nexml, from supertreebase, will check TreeBASE\n")
                 url = "https://treebase.org/treebase-web/search/downloadAStudy.html?id={}&format=nexml".format(tb_id)
                 dna = DataSet.get(url=url, schema="nexml")
-
                 return dna
         except HTTPError as err:
             try:
                 url = "https://treebase.org/treebase-web/search/downloadAStudy.html?id={}&format=nexml".format(tb_id)
                 dna = DataSet.get(url=url, schema="nexml")
-            except:
+            except HTTPError:
                 sys.stderr.write("Alignment not found on treeBASE or supertreebase.\n")
                 sys.exit()
         if _DEBUG:
