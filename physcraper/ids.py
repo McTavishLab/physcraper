@@ -109,7 +109,8 @@ class IdDicts():
         elif gb_id in self.acc_tax_seq_dict:
             ncbi_id = self.acc_tax_seq_dict[gb_id]["^ncbi:taxon"]
         else:
-            taxid, taxname, seq = self.get_tax_seq_acc(gb_id)
+            # Disabling unused variable bc not used locally but used by other functions later on
+            taxid, taxname, seq = self.get_tax_seq_acc(gb_id) # pylint: disable=unused-variable
             ncbi_id = taxid
         return ncbi_id
 
