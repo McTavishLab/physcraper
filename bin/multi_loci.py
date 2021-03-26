@@ -1,8 +1,12 @@
 #!/usr/bin/env python
 """
 Example using the data from https://github.com/McTavishLab/physcraper_example
-physcraper_run.py -s pg_238 -t tree109 -a physcraper_example/treebase_alns/pg_238tree109_18S.aln -db /branchinecta/shared/local_blast_db -nt 8 -as "nexus" -r -o pg_238_runs/18s
-physcraper_run.py -s pg_238 -t tree109 -a physcraper_example/treebase_alns/pg_238tree109_18S.aln -db /branchinecta/shared/local_blast_db -nt 8 -as "nexus" -r -o pg_238_runs/18s
+
+    physcraper_run.py -s pg_238 -t tree109 -a physcraper_example/treebase_alns/pg_238tree109_18S.aln
+    -db /branchinecta/shared/local_blast_db -nt 8 -as "nexus" -r -o pg_238_runs/18s
+
+    physcraper_run.py -s pg_238 -t tree109 -a physcraper_example/treebase_alns/pg_238tree109_18S.aln
+    -db /branchinecta/shared/local_blast_db -nt 8 -as "nexus" -r -o pg_238_runs/18s
 
 Examples:
 python bin/multi_loci.py -d ../physcraper_runs/pg_238_runs/ -f concatenate -o test_concat_res
@@ -22,12 +26,22 @@ from physcraper import aligntreetax
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument("-d", "--locus_runs_folder", help="folder containing results directories from individual locus runs")
-parser.add_argument("-o", "--output", help="folder to write to")
+parser.add_argument("-d", "--locus_runs_folder",
+                    help="folder containing results directories from individual locus runs")
+parser.add_argument("-o", "--output",
+                    help="folder to write to")
 #parser.add_argument("-c","--concatenate_by", help="what aspect of otu info to concatenate by, eitehr OTTid or ...?")
-parser.add_argument("-f", "--format", help="output format", choices=["concatenate", "astral", "svdq"])
-parser.add_argument("-s", "--schema", help="output alignment file format schema", choices=["fasta", "nexus"], default="fasta")
-parser.add_argument("-m", "--include_missing", action="store_true", help="For concatenation, where uneven numbers of sequences are available, concatenate with gaps", default=False)
+parser.add_argument("-f", "--format",
+                    help="output format",
+                    choices=["concatenate", "astral", "svdq"])
+parser.add_argument("-s", "--schema",
+                    help="output alignment file format schema",
+                    choices=["fasta", "nexus"],
+                    default="fasta")
+parser.add_argument("-m", "--include_missing",
+                    action="store_true",
+                    help="For concatenation, where uneven numbers of sequences are available, concatenate with gaps",
+                    default=False)
 ## Include all seqs or just some???
 
 args = parser.parse_args()
@@ -63,7 +77,10 @@ def setup_dicts(runs_path):
                 if file.startswith('inputs_'):
                     tag = file.split('.')[0].replace('inputs_', '')
             loc = "Locus{}_{}".format(i, tag)
-            locus = aligntreetax.generate_ATT_from_run(fp, start_files='output', tag=tag, run=False) #build ATT opject for each run
+            locus = aligntreetax.generate_ATT_from_run(fp,
+                                                       start_files='output',
+                                                       tag=tag,
+                                                       run=False) #builds ATT opject for each run
             all_loci[loc] = {}
             all_loci[loc]['data'] = locus #all_loci[loc]['data'] has an alignemnt, and otuu_dictionary, and a tree
             all_loci[loc]['path'] = fp
@@ -104,7 +121,8 @@ def concatenate(all_loci, all_taxa, include_missing, gapchar="?"):
             ntax_seq = ntax_seq_max
         else:
             ntax_seq = ntax_seq_min
-        #so after this, we have pruned down this set to only taxa that are present in all loci (stirnct misisng data condition)
+        # so after this, we have pruned down this set to only taxa that are present
+        # in all loci (stirnct misisng data condition)
         for i in range(ntax_seq):
             concat_name = "{}_{}".format(taxon.replace(" ", "_"), i)
             concat_dict[concat_name] = {}
@@ -113,13 +131,15 @@ def concatenate(all_loci, all_taxa, include_missing, gapchar="?"):
             for loc in all_loci:
                 if i < len(all_taxa[taxon].get(loc, [])):
                     tip = all_taxa[taxon][loc][i]
-                    concat_dict[concat_name][loc] = tip # tells me what sequence form this locus I will but in this concanated taxon
+                    # tells me what sequence from this locus I will put in this concatenated taxon:
+                    concat_dict[concat_name][loc] = tip
                 else:
                     concat_dict[concat_name][loc] = "GAP"
     ds = dendropy.DataSet()
     taxon_namespace = dendropy.TaxonNamespace()
     ds.attach_taxon_namespace(taxon_namespace)
-    re_label_dict = {locus:{} for locus in all_loci} # What are we calling each concatneated taxon, and what OTUs are part of it.
+    # What are we calling each concatenated taxon, and what OTUs are part of it:
+    re_label_dict = {locus:{} for locus in all_loci}
     no_missing_tax = []
     if not include_missing:
         for conc_tax in concat_dict:
@@ -200,7 +220,9 @@ def write_astral_inputs(all_loci, all_taxa, outputdir):
 def generate_taxpartition_str(tax_map):
     taxpart_str = "\ntaxpartition species =\n"
     for taxon in tax_map:
-        taxpart_str = taxpart_str + "\t{}: ".format(taxon.replace(" ", "_").replace("-", "_")) +"'"+"' '".join(tax_map[taxon])+"',\n"
+        # Disabling long line
+        # pylint: disable=line-too-long
+        taxpart_str = taxpart_str + "\t{}: ".format(taxon.replace(" ", "_").replace("-", "_"))  +"'"+"' '".join(tax_map[taxon])+"',\n"
     taxpart_str = taxpart_str + ";\nend;"
     return taxpart_str
 
