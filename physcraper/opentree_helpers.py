@@ -46,6 +46,8 @@ synthref = "Redelings BD, Holder MT. A supertree pipeline for summarizing phylog
             taxonomic information for millions of species. PeerJ. 2017;5:e3058. https://doi.org/10.7717/peerj.3058 \n"
 
 def root_tree_from_synth(tree, otu_dict, base='ott'):
+    # Disable all the too many locals and branches for this function
+    # pylint: disable=too-many-locals, too-many-branches
     """Uses information from OpenTree of Life to suggest root.
     :param tree: dendropy :class:`Tree
     :param otu_dict: a dictionary of tip label metadata, inculding an '^ot:ottId'attribute
@@ -95,6 +97,8 @@ def root_tree_from_synth(tree, otu_dict, base='ott'):
                       \nRoot will be MRCA of {}\n".format(base, ", ".join(representative_taxa)))
 
     ## Get tips for those taxa:
+    ## TODO: make following code a function of its own
+    # def get_tips(tree, otu_dict, leaves):
     phyloref = set()
     for tax in representative_taxa:
         ott_id = int(tax.split()[-1].strip('ott_id'))
@@ -283,6 +287,8 @@ def generate_ATT_from_phylesystem(alnfile,
                                   tree_id,
                                   search_taxon=None,
                                   tip_label='^ot:originalLabel'):
+    # Disable all the too many locals, branches and statements for this function
+    # pylint: disable=too-many-locals, too-many-branches, too-many-statements
     """
     Gathers together tree, alignment, and study info; forces names to OTT ids.
 
@@ -472,6 +478,8 @@ def scraper_from_opentree(study_id, tree_id, alnfile, workdir, aln_schema, confi
 
 
 def OtuJsonDict(id_to_spn, id_dict):
+    # Disable all the too many locals for this function
+    # pylint: disable=too-many-locals
     """Makes otu json dict, which is also produced within the openTreeLife-query.
 
      This function is used, if files that shall be updated are not part of the OpenTreeofLife project.
