@@ -47,7 +47,8 @@ def cd(path):
     # print 'inside {0}'.format(os.getcwd())
     try:
         yield
-    except TypeError:
+    except: # pylint: disable=bare-except
+        # TODO: figure out exceptions here, or a better way to change dirs
         print('Exception caught: ', sys.exc_info()[0])
     finally:
         # print('Changed dir to {}'.format(os.getcwd()))
