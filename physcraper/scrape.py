@@ -648,8 +648,10 @@ class PhyscraperScrape():
                         del seq_dict[otu_lab]
                         seq_dict[new_otu_label] = seq
                         self.data.remove_taxa_aln_tre(otu_lab)
-                        reason = "seq {} is supersequence of {}, {} added \
-                                  and {} removed ".format(new_otu_label, otu_lab, new_otu_label, otu_lab)
+                        # pylint: disable=duplicate-string-formatting-argument
+                        reason = "Sequence {} is supersequence of {}. Adding {} \
+                                  and removing {}). ".format(new_otu_label, otu_lab,
+                                                             new_otu_label, otu_lab)
                         if _VERBOSE or _DEBUG:
                             sys.stdout.write("\n{}\n".format(reason))
                         self.data.otu_dict[otu_lab]['^physcraper:status'] = "deleted, \
