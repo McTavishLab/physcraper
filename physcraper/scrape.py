@@ -310,9 +310,9 @@ class PhyscraperScrape():
                                          "delete file to force\n".format(fn_path))
             else:
                 sys.stdout.write("otu {} was last blasted on {}, {} days ago and is not being re-blasted."
-                                     "Use run_blast_wrapper(delay = 0) to force a search.\n".format(otu_id,
-                                                                                                    last_blast,
-                                                                                                    time_passed))
+                                 "Use run_blast_wrapper(delay = 0) to force a search.\n".format(otu_id,
+                                                                                                last_blast,
+                                                                                                time_passed))
         self._blasted = 1
 
 
