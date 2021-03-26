@@ -494,7 +494,7 @@ class PhyscraperScrape():
                             if len(gb_id.split(".")) == 1:
                                 sys.stdout.write("skipping acc {}, incorrect format\n".format(gb_id))
                             elif gb_id not in self.data.gb_dict:  # skip ones we already have
-                                seq = self.ids.get_tax_seq_acc(gb_id)
+                                taxid, taxname, seq = self.ids.get_tax_seq_acc(gb_id) # pylint: disable=unused-variable
                                 gi_id = alignment.title.split('|')[1]
                                 gb_acc = alignment.accession
                                 stitle = alignment.title
