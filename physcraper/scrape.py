@@ -814,7 +814,7 @@ class PhyscraperScrape():
         if _VERBOSE:
             sys.stdout.write("writing out sequences\n")
         with open(fipath, "w") as fi:
-            for otu_id in self.new_seqs_otu_id.keys():
+            for otu_id in self.new_seqs_otu_id: # allegedly faster to run like this instead of calling .keys()
                 fi.write(">{}\n".format(otu_id))
                 fi.write("{}\n".format(self.new_seqs_otu_id[otu_id]))
         self._query_seqs_written = 1
