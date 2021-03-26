@@ -8,6 +8,7 @@ import datetime
 import glob
 import random
 from dendropy import Tree, DnaCharacterMatrix
+from Bio import Entrez
 from Bio.Blast import NCBIXML
 from Bio.Seq import Seq
 from physcraper.ids import IdDicts
@@ -272,8 +273,8 @@ class PhyscraperScrape():
             else:
                 time_passed = abs((datetime.datetime.strptime(today, "%Y/%m/%d") -
                                    datetime.datetime.strptime(last_blast, "%Y/%m/%d")).days)
-            if self.data.otu_dict[otu_id].get("^physcraper:ingroup") == False: # pylint: disable
-            #this should stay == False, because sometimes ingroup status is just unknown 
+            # following line should stay == False, because sometimes ingroup status is just unknown
+            if self.data.otu_dict[otu_id].get("^physcraper:ingroup") == False: # pylint: disable=singleton-comparison
                 sys.stdout.write("tip {} not in ingroup. Will not blast, \n".format(otu_id))
                 continue
             if time_passed > delay:
