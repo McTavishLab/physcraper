@@ -1,6 +1,9 @@
 """
 The core blasting and new sequence integration module
 """
+# Disabling some pylint for this module
+# pylint: disable=too-many-locals, too-many-branches, too-many-branches, too-many-lines, too-many-nested-blocks, too-many-statements, too-many-public-methods
+
 import sys
 import os
 import subprocess
