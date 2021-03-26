@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-""" 
+"""
 Example using the data from https://github.com/McTavishLab/physcraper_example
 physcraper_run.py -s pg_238 -t tree109 -a physcraper_example/treebase_alns/pg_238tree109_18S.aln -db /branchinecta/shared/local_blast_db -nt 8 -as "nexus" -r -o pg_238_runs/18s
 physcraper_run.py -s pg_238 -t tree109 -a physcraper_example/treebase_alns/pg_238tree109_18S.aln -db /branchinecta/shared/local_blast_db -nt 8 -as "nexus" -r -o pg_238_runs/18s
@@ -45,7 +45,7 @@ if not os.path.exists(args.output):
 
 def setup_dicts(runs_path):
     """Inputs: a directory of completed physcraper runs
-    Outputs: 
+    Outputs:
         all_loci: A dictionary of AlignTreeTaxon objects by locus
         all_taxa: a mapping of taxon names to tips in ATT objects
     """
@@ -80,7 +80,7 @@ def setup_dicts(runs_path):
 
 def concatenate(all_loci, all_taxa, include_missing, gapchar="?"):
     """Concatenate loci from ATT objects stored in a dictionary
-    Inputs:    
+    Inputs:
         loci: dictionary of ATT objects by locus
         taxa: dictionary of tips by taxon by locus
         include_missing: Boolean
@@ -229,4 +229,3 @@ if args.format == "svdq":
 if args.format == "astral":
     loci, taxa = setup_dicts(args.locus_runs_folder)
     write_astral_inputs(loci, taxa, args.output)
-
