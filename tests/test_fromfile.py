@@ -35,14 +35,14 @@ def test_generate_ATT_from_run():
 
 
 def test_example():
-indir="docs/examples/pg_55_web"
-workdir = "tests/tmp/example_test"
-data_obj = generate_ATT_from_run(workdir=indir, start_files = "input")
-data_obj.workdir = workdir
-ids = IdDicts(data_obj.config)
-scraper = PhyscraperScrape(data_obj, ids)
-scraper.read_blast_wrapper("docs/examples/pg_55_web/blast_run_pg_55tree5864/")
-assert(len(scraper.new_seqs_otu_id) == 3)
+    indir="docs/examples/pg_55_web"
+    workdir = "tests/tmp/example_test"
+    data_obj = generate_ATT_from_run(workdir=indir, start_files = "input")
+    data_obj.workdir = workdir
+    ids = IdDicts(data_obj.config)
+    scraper = PhyscraperScrape(data_obj, ids)
+    scraper.read_blast_wrapper("docs/examples/pg_55_web/blast_run_pg_55tree5864/")
+    assert(len(scraper.new_seqs_otu_id) == 3)
 
 
 # """
