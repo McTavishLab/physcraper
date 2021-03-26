@@ -787,9 +787,10 @@ class PhyscraperScrape():
                 sys.stdout.write("Removing {},{}".format(otu_id, self.data.otu_dict[otu_id]['^physcraper:status']))
         return sp_d
 
-
+    # pylint: disable=no-self-use
     def select_seq_at_random(self, otu_list, count):
-        """elects sequences at random if there are more than the threshold.
+        """
+        Selects sequences at random if there are more than the threshold.
         """
         debug("select_seq_at random")
         sample_count = min(count, len(otu_list))
