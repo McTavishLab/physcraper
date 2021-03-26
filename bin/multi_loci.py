@@ -18,7 +18,7 @@ java -jar astral.5.7.5.jar -i ../physcraper/test_concat_res/genetrees.new -a ../
 """
 
 # Disabling the following globally for this module
-# pylint: disable=redefined-outer-name, protected-access, too-many-branches, too-many-statements
+# pylint: disable=redefined-outer-name, protected-access, too-many-branches, too-many-statements, too-many-locals
 
 import argparse
 import os
