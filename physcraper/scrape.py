@@ -859,8 +859,8 @@ class PhyscraperScrape():
                           schema=schema,
                           preserve_underscores=True,
                           taxon_namespace=self.data.aln.taxon_namespace)
-        try:
-            newtre = root_tree_from_synth(newtre, self.data.otu_dict)
+        # try:
+        newtre = root_tree_from_synth(newtre, self.data.otu_dict)
         # TODO: not sure what the exception here would be, commenting it out for now
         # except:
         #     sys.stderr.write("Tree not rooted, root before running conflict analyses.\n")
