@@ -148,6 +148,13 @@ class PhyscraperScrape():
 #markers for status
 #holders for new data
         self.blocklist = []
+        self._blasted = 0
+        self._blast_read = 0
+        self._query_seqs_written = 0
+        self._query_seqs_placed = 0
+        self._full_tree_est = 0
+        self.blast_read = 0
+        self.newseqs_file = ""
 
     def map_taxa_to_ncbi(self):
         """Find NCBI ids for taxa from OpenTree"""
