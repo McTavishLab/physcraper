@@ -94,7 +94,7 @@ def generate_ATT_from_run(workdir, start_files='output', tag=None, configfile=No
     inputsdir = "{}/inputs_{}".format(workdir, tag)
     if configfile is None:
         configfile = "{}/run.config".format(rundir)
-    if run == False:
+    if not run:
         configfile = ConfigObj(configfile, run = False)
     if start_files == 'output':
         sdir = outputsdir
