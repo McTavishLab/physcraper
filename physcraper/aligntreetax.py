@@ -3,6 +3,8 @@ AlignTreeTax: The core data object for Physcraper.
 Holds and links name spaces for a tree, an alignment,
 the taxa and their metadata.
 """
+# Disabling some pylint for this module
+# pylint: disable=too-many-locals, too-many-branches
 
 import sys
 import re
