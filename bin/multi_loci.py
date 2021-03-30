@@ -254,4 +254,4 @@ if args.format == "svdq":
 
 if args.format == "astral":
     loci, taxa = setup_dicts(args.locus_runs_folder)
-    write_astral_inputs(loci, taxa, args.output)
+    write_astral_inputs(loci, args.output)
