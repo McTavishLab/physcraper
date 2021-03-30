@@ -191,7 +191,7 @@ def concatenate(all_loci, all_taxa, include_missing, gapchar="?"):
     d_all = dendropy.DnaCharacterMatrix.concatenate(ds.char_matrices)
     return tax_map, concat_dict, d_all
 
-def write_astral_inputs(all_loci, all_taxa, outputdir):
+def write_astral_inputs(all_loci, outputdir):
     genetrees = []
     taxset = {}
     for locus in all_loci:
