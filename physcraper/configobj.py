@@ -1,6 +1,9 @@
 """
 Physcraper run Configuration object generator
 """
+# Disabling some pylint for this module
+# pylint: disable=attribute-defined-outside-init
+
 import sys
 import os
 import datetime
