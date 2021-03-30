@@ -1,7 +1,7 @@
 """
 Physcraper run Configuration object generator
 """
-# Disabling some pylint for this module
+# Disabling attributes defined outside init bc they are defined in functions called in init
 # pylint: disable=attribute-defined-outside-init
 
 import sys
