@@ -18,6 +18,7 @@ def get_acc_from_blast(query_string):
     Get the accession number from a blast query.
     :param query_string: string that contains acc and gi from local blast query result
     :return: gb_acc
+
     """
     if len(query_string.split("|")) >= 3:
         gb_acc = query_string.split("|")[3]
@@ -33,6 +34,7 @@ def get_gi_from_blast(query_string):
     """
     Get the gi number from a blast query.
     Get acc is more difficult now, as new seqs not always have gi number, then query changes.
+
     If not available return None.
 
     :param query_string: string that contains acc and gi from local blast query result
@@ -43,8 +45,8 @@ def get_gi_from_blast(query_string):
         assert len(gb_gi.split(".")) < 2, (len(gb_gi.split(".")), gb_gi)
         assert gb_gi.isdigit() is True
         return gb_gi
-    return None
-
+    else:
+        return None
 
 def get_tax_info_from_acc(gb_id, ids_obj):
     '''takes an accession number and returns the ncbi_id and the taxon name'''
@@ -52,9 +54,8 @@ def get_tax_info_from_acc(gb_id, ids_obj):
     ncbi_id = ids_obj.get_ncbiid_from_acc(gb_id)
     tax_name = ids_obj.ncbiid_to_spn.get(ncbi_id)
     if ncbi_id is None:
-        sys.stderr.write("Failed to get information for sequence with accession number {}".format(gb_id))
+        sys.stderr.write("Failed to get information for sequence with accession number {}\n".format(gb_id))
     return ncbi_id, tax_name
-
 
 
 def get_ncbi_tax_id(handle):
@@ -91,16 +92,13 @@ def get_ncbi_tax_name(handle):
     return ncbi_sp
 
 
-nodes = None
-names = None
-
-
 def strip(inputstr):
     """ Strips of blank characters from string in pd dataframe.
     """
     if isinstance(inputstr, str):
         return inputstr.strip()
-    return inputstr
+    else:
+        return inputstr
 
 
 def load_nodes(nodes_file):
@@ -200,38 +198,26 @@ class Parser:
         self.names_file = names_file
         self.nodes_file = nodes_file
         # self.initialize()
-
-    def initialize(self):
-        """ The data itself are not stored in __init__, as then results in
-        gigantic file sizes).
-        Instead every time the function is loaded it will be 'initialized'.
-        """
-        sys.stdout.write("Reading in local NCBI taxonomy information\n")
-        global nodes
-        nodes = load_nodes(self.nodes_file)
-        global names
-        names = load_names(self.names_file)
-        global synonyms
-        synonyms = load_synonyms(self.names_file)
+        self.nodes = load_nodes(self.nodes_file)
+        self.names = load_names(self.names_file)
+        self.synonyms = load_synonyms(self.names_file)
 
     def get_rank(self, tax_id):
         """ Get rank for given ncbi tax id.
         """
-        if nodes is None:
-            self.initialize()
         if tax_id is None:
             rank = "unassigned"
         else:
+            nodes = self.nodes
             rank = nodes[nodes["tax_id"] == tax_id]["rank"].values[0]
         return rank
 
     def get_downtorank_id(self, tax_id, downtorank="species"):
         """ Recursive function to find the parent id of a taxon as defined by downtorank.
         """
-        #        debug("get downtorank")
-        if nodes is None:
-            self.initialize()
-        if type(tax_id) != int:
+        nodes = self.nodes
+        if not isinstance(tax_id, int):
+#        debug("get downtorank")
            # sys.stdout.write(
            #     "WARNING: tax_id {} is no integer. Will convert value to int\n".format(
            #         tax_id
@@ -242,11 +228,9 @@ class Parser:
         # following statement is to get id of taxa if taxa is higher ranked than specified
         if nodes[nodes["tax_id"] == tax_id]["rank"].values[0] != "species":
             if downtorank == "species":
-                if (
-                    nodes[nodes["tax_id"] == tax_id]["rank"].values[0] != "varietas"
-                    and nodes[nodes["tax_id"] == tax_id]["rank"].values[0]
-                    != "subspecies"
-                ):
+                if (nodes[nodes["tax_id"] == tax_id]["rank"].values[0] != "varietas"
+                        and nodes[nodes["tax_id"] == tax_id]["rank"].values[0]
+                        != "subspecies"):
                     return tax_id
         if nodes[nodes["tax_id"] == tax_id]["rank"].values[0] == downtorank:
             # debug("found right rank")
@@ -262,11 +246,11 @@ class Parser:
         """ Recursive function to find out if tax_id is part of mrca_id.
         """
         # debug("match_id_to_mrca")
-        if nodes is None:
-            self.initialize()
+        nodes = self.nodes
        # debug("testing if {} within {}".format(tax_id, mrca_id))
         current_id = int(tax_id)
         mrca_id = int(mrca_id)
+        #debug([rank_mrca_id, rank_tax_id])
         while current_id:
             if current_id == mrca_id:
                 # debug("found right rank")
@@ -280,18 +264,19 @@ class Parser:
             else: #try parent
                 try:
                     current_id = int(nodes[nodes["tax_id"] == current_id]["parent_tax_id"].values[0])
-                except:
-                    sys.stderr.write("no parent found for ncbi:id {}\n".format(current_id))
+                    # to get the except:
+                    # current_id = 17043521
+                    # nodes = ncbitax.nodes  ## ncbitax object from test_ncbi_parser.py
+                except IndexError:
+                    sys.stderr.write("no parent found for ncbi:id {}".format(current_id))
                     return False
 #                debug("parent id is: {}".format(current_id))
-
 
     def get_name_from_id(self, tax_id):
         """ Find the scientific name for a given ID.
         """
         try:
-            if names is None:
-                self.initialize()
+            names = self.names
             if tax_id == 0:
                 tax_name = "unidentified"
             else:
@@ -314,8 +299,7 @@ class Parser:
     def get_id_from_name(self, tax_name):
         """ Find the ID for a given taxonomic name.
         """
-        if names is None:
-            self.initialize()
+        names = self.names
         org_tax = tax_name
         tax_name = tax_name.replace("_", " ")
         if len(tax_name.split(" ")) >= 2:
@@ -346,8 +330,8 @@ class Parser:
     def get_id_from_synonym(self, tax_name):
         """ Find the ID for a given taxonomic name, which is not an accepted name.
         """
-        if names is None:
-            self.initialize()
+        names = self.names
+        synonyms = self.synonyms
         tax_name = tax_name.replace("_", " ")
         try:
             tax_id = synonyms[synonyms["name_txt"] == tax_name]["tax_id"].values[0]

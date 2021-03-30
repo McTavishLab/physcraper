@@ -1,89 +1,100 @@
-<br/>
 
 ## The Physcraper framework
 
+While genome scale data is increasing rapidly - there are still large quantities of gene-sequence data being uploaded to the US National Center on Biotechnology Information (NCBI) database [GenBank](https://www.ncbi.nlm.nih.gov/genbank/statistics/).
+These data are often appropriate for looking at phylogenetic relationships, and have the advantage of being homologous to the sequences in existing trees.
+
+If you have access to a single gene alignment, and a tree, Physcraper automates adding homologous data into your tree by using [Blast](https://blast.ncbi.nlm.nih.gov/Blast.cgi) to search for loci in GenBank that are likely to be homologous to sequences in an existing alignment.
+
 <br/>
 
-![](../img/schematic.svg)
+<img src="https://raw.githubusercontent.com/McTavishLab/physcraper/main/docs/img/schematic.svg" title="schematic" alt="The Phsycraper Framework" width="100%" />
+
+The Physcraper framework consists of 4 general steps. The methodology is extensively described in the
+[Implementation](https://physcraper.readthedocs.io/en/latest/methods_extended.html) section of the documentation.
 
 <br/>
 
-If you have access to a single gene alignment, and a tree, you can automate adding homologous data into your tree by searching GenBank.
-
-While genome scale data is increasing rapidly - there are still large quantities of gene-sequence data being uploaded to NCBI [GenBank](https://www.ncbi.nlm.nih.gov/genbank/statistics/).
-These data are often appropriate for looking at phylogenetic relationships, and have the advantage of being homologous to the sequences in existing trees,
-
-With Physcraper we can use [Blast](https://blast.ncbi.nlm.nih.gov/Blast.cgi) to search for loci that are likely to be homologous to sequences in an existing alignment.
-
-By using a starting tree and alignment, Physcraper, takes advantage of loci that previous researchers have assessed and deemed appropriate for the phylogenetic scope.
+By using a starting tree and an alignment, Physcraper takes advantage of loci that previous researchers have assessed and deemed appropriate for the phylogenetic scope.
 The sequences added in the search are limited to a user specified taxon or monophyletic group, or within the taxonomic scope of the in-group of the starting tree.
 
-These automated tree can provide a quick inference or potential relationships, of problems in the taxonomic assignments of sequences, and flag areas of potential systematic interest.
+These automated trees can provide a quick inference or potential relationships, of problems in the taxonomic assignments of sequences, and flag areas of potential systematic interest.
 
 <br/>
 
 
 ## The Open Tree of Life
 
-The Open Tree of Life (https://opentreeoflife.github.io/) is a project that unites phylogenetic inferences and taxonomy to provide a synthetic estimate of species relationships across the entire tree of life.
+The Open Tree of Life (OpenTree; https://opentreeoflife.github.io/) is a project that unites phylogenetic inferences and taxonomy to provide a synthetic estimate of species relationships across the entire tree of life.
 
 ![](../img/otol_logo.png)
 
-Open Tree of Life aims to construct a comprehensive, dynamic and digitally-available tree of life by synthesizing published phylogenetic trees along with taxonomic data.
+Open Tree aims to construct a comprehensive, dynamic and digitally-available tree of life by synthesizing published phylogenetic trees along with taxonomic data.
 Currently the tree comprises 2.3 million tips.
 However, only around 90,000 of those taxa are represented by phylogenetic estimates - the rest are placed in the tree based on their taxonomic names.
+
+To achieve this, the OpenTree Taxonomy (OTT) constructs a reference taxonomy through an algorithmic combination of several source taxonomies, such as Hibbet et al. 2007 (https://doi.org/10.1016/j.mycres.2007.03.004),
+SILVA (http://www.arb-silva.de/),
+the Index Fungorum (http://www.indexfungorum.org/),
+Schäferhoff et al. 2010 (https://doi.org/10.1186/1471-2148-10-352),
+the World Register of Marine Species (WoRMS; http://www.marinespecies.org/aphia.php)
+the NCBI Taxonomy (https://www.ncbi.nlm.nih.gov/books/NBK21100/),
+the Global Biodiversity Information facility (GBIF) backbone Taxonomy (https://www.gbif.org/),
+and the Interim Register of Marine and Nonmarine Genera (IRMNG; https://irmng.org/).
 
 ![](../img/synthtreeleg.svg)
 
 Figure from [Hinchliff et al. 2015](https://www.pnas.org/content/112/41/12764.short).
-For more information on the Open Tree of Life project see https://opentreeoflife.github.io
+For more information on the OpenTree project see https://opentreeoflife.github.io
 
 <br/>
 
-## Updating a tree from Open Tree of Life
+## Quick start with the Physcraper software
+
+### Updating a tree from Open Tree of Life
 
 The Open Tree of Life data store, [Phylesystem](https://academic.oup.com/bioinformatics/article/31/17/2794/183373), contains more than 4,500 phylogenetic trees from published studies.
-The tips in these trees are mapped a unified taxonomy, which makes these data searchable in a phylogenetically explicit way.
+The tips in these trees are mapped to a unified taxonomy, which makes these data searchable in a phylogenetically explicit way.
 This is a great place to start of finding existing estimates of phylogenetic relationships,
 and assessing regions of the tree of life which are lacking available phylogenetic estimates.
 There is a lot of sequence data available that has never been incorporated into any phylogenetic estimates.
 
-### *Find a starting tree with your taxon of interest*
+#### *Find a starting tree with your taxon of interest*
 
-For this example we'll use a tree that is already in the Open Tree of Life database. You can find more details about finding a tree to update at the section [Finding Data](https://physcraper.readthedocs.io/en/latest/find_trees.html).
+For this example we will use a tree that is already in the Open Tree of Life database. You can find more details about finding a tree to update at the [Start section](https://physcraper.readthedocs.io/en/latest/find_trees.html) of this documentation.
 
-To find trees containing your taxon of interest (e.g. 'Malvaceae') on OpenTree of life use:
+To find trees containing your taxon of interest (e.g. 'Malvaceae') on OpenTree use:
 
     $ find_trees.py --taxon_name "Malvaceae"
 
-This prints a bunch of studies out to the screen. We will need an alignment to update (which OpenTree doesn't store), so lets just look at trees that have data stored in TreeBase.
+This prints a bunch of studies out to the screen. We will need an alignment to update (which OpenTree does not store), so let's just look at trees that have data stored in TreeBASE.
 
     $ find_trees.py --taxon_name "Malvaceae" --treebase
 
 There are a bunch of options!
 
-Lets update the Wilkie et al. ([2006](https://doi.org/10.1600/036364406775971714)) study.
+Lets update the Wilkie et al. 2006 (https://doi.org/10.1600/036364406775971714) study.
 You can view the study on the OpenTree database at [Wilkie, 2006](https://tree.opentreeoflife.org/curator/study/view/pg_55)
 
-While this study was focussed on the family Sterculiacea,
-phylogenetic inference have suggested that this family is not [monophyletic]((https://tree.opentreeoflife.org/opentree/argus/ottol@996482))
+While this study was focused on the family Sterculiacea,
+phylogenetic inference have suggested that this taxon is not monophyletic, as you can see on its [OpenTree homepage]((https://tree.opentreeoflife.org/opentree/argus/ottol@996482))
 
-Lets take a look at how recent molecular data affect our inferences of relationships, and if there is sequence data for taxa that don't have any phylogenetic information available in the tree.
+Let's take a look at how recent molecular data affect our inferences of relationships, and if there is sequence data for taxa that don't have any phylogenetic information available in the tree.
 
-### *Run the auto-update*
+#### *Run the auto-update*
 
 The script `physcraper_run.py` wraps together linking the tree and alignment, blasting, aligning sequences, and inferring an updated tree.
-Detailed explanation of the inputs needed can be found in the section [Running Physcraper](https://physcraper.readthedocs.io/en/latest/physcraper_run.html).
+Detailed explanation of the inputs needed can be found in the [Run section](https://physcraper.readthedocs.io/en/latest/physcraper_run.html) of this documentation.
 
-The blast search part of updating trees takes a long time (for example, this analysis took around 12 hours!). We recommend running it on a cluster or other remote computing option.
-
+The BLAST search part of updating trees takes a long time. For example, this analysis took around 12 hours!
+We recommend running it on a cluster or other remote computing option.
 
     $ physcraper_run.py -s pg_55 -t tree5864 -tb -r -o pg_55
 
 The `-r` flag repeats the search on new sequences until no additional sequences are found.
 We have put example outputs from this command in `docs/examples/pg_55`, so that you can explore the outputs without waiting for the searches to complete.
 
-## Updating your own tree and alignment
+### Updating your own tree and alignment
 
 You can upload your own tree to OpenTree to update it, and that way it will be included in the OpenTree synthetic tree!
 See [Submitting-phylogenies-to-Open-Tree-of-Life](https://github.com/OpenTreeOfLife/opentree/wiki/Submitting-phylogenies-to-Open-Tree-of-Life) for more info on this.
@@ -94,7 +105,7 @@ You need an alignment (single locus) and a tree. Note that the taxon labels in t
 
 You also need a file linking the labels in your tree and alignment to broader taxonomy. This can be easily generated via OpenTree's Bulk Taxonomic Name Resolution Service ([bulk TNRS](https://tree.opentreeoflife.org/curator/tnrs/)).
 
-### *Mapping names to taxa*
+#### *Mapping names to taxa*
 
 Map your tip names to unique identifiers using the Open Tree bulk TNRS upload tool at https://tree.opentreeoflife.org/curator/tnrs/
 
@@ -136,7 +147,7 @@ Take a look at the human readable version at `output/main.csv`. You will see tha
 
 By passing in the `main.json` file, Physcraper can link your sequences to their correct taxonomic context.
 
-### *Run the auto-update on your tree*
+#### *Run the auto-update on your tree*
 
 Example run on local files using test data:
 

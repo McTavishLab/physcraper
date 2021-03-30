@@ -1,0 +1,1013 @@
+taxon: Opegrapha_dolomitica, ncbi: 399108, acc: DQ883706.1, len: 3066
+taxon: uncultured_fungus, ncbi: 175245, acc: JX111001.1, len: 850
+taxon: uncultured_fungal_contami, ncbi: 419790, acc: EF053592.1, len: 1170
+taxon: Lichinella_nigritell, ncbi: 2028443, acc: MF766301.1, len: 1907
+taxon: Pterygiopsis_guyanensis, ncbi: 157491, acc: AF282914.1, len: 1740
+taxon: Raffaelea_sp., ncbi: 1886607, acc: MN013805.1, len: 1016
+taxon: Raffaelea_arxii, ncbi: 45342, acc: MN013796.1, len: 1010
+taxon: Raffaelea_arxii, ncbi: 45342, acc: MN013795.1, len: 1028
+taxon: Raffaelea_arxii, ncbi: 45342, acc: MN013792.1, len: 1011
+taxon: Dendrographa_decolorans, ncbi: 279122, acc: AY548809.1, len: 1655
+taxon: Dendrographa_leucophaea_f._minor, ncbi: 72326, acc: AF279381.1, len: 1151
+taxon: Roccellographa_cretac, ncbi: 92842, acc: DQ883705.1, len: 1621
+taxon: Dendrographa_leucophaea_f._minor, ncbi: 72326, acc: AY548803.1, len: 1621
+taxon: Helotiales_sp._KL244, ncbi: 1792697, acc: KX090874.1, len: 1082
+taxon: Combea_mollusc, ncbi: 72309, acc: AY571380.1, len: 1522
+taxon: Skoua_fertilis, ncbi: 27318, acc: NG_061207.1, len: 1110
+taxon: Skoua_fertilis, ncbi: 27318, acc: KR139931.1, len: 1110
+taxon: Skoua_fertilis, ncbi: 27318, acc: KR139930.1, len: 1116
+taxon: Saxomyces_penninicus, ncbi: 1306391, acc: KC315864.1, len: 1715
+taxon: Ramoconidiophora_euphorbi, ncbi: 2315864, acc: NG_067663.1, len: 1667
+taxon: Ramoconidiophora_euphorbi, ncbi: 2315864, acc: MG592741.1, len: 1667
+taxon: Ramoconidiophora_euphorbi, ncbi: 2315864, acc: MG592742.1, len: 1667
+taxon: Cryomyces_montanus, ncbi: 1306365, acc: NG_070634.1, len: 1701
+taxon: Cryomyces_montanus, ncbi: 1306365, acc: GU250352.1, len: 1701
+taxon: uncultured_fungus, ncbi: 175245, acc: AM114816.1, len: 1797
+taxon: Helotiales_sp._2_MK-2015, ncbi: 1751023, acc: LN901162.1, len: 1670
+taxon: Pseudogymnoascus_destructans, ncbi: 655981, acc: KF866376.1, len: 1731
+taxon: Cryomyces_minteri, ncbi: 331657, acc: NG_062376.1, len: 1653
+taxon: Cryomyces_minteri, ncbi: 331657, acc: DQ066714.1, len: 1653
+taxon: Cryomyces_minteri, ncbi: 331657, acc: KC315858.1, len: 1653
+taxon: Leotiomycetes_sp._BY-2018d, ncbi: 2218483, acc: MH470217.1, len: 1678
+taxon: uncultured_eukaryo, ncbi: 100272, acc: JX098993.1, len: 1739
+taxon: Protomyces_inouyei, ncbi: 27332, acc: NG_013153.1, len: 2033
+taxon: Protomyces_pachydermus, ncbi: 48148, acc: D85142.1, len: 3250
+taxon: Taphrina_wiesneri, ncbi: 5012, acc: AY548293.1, len: 1725
+taxon: Taphrina_vestergrenii, ncbi: 202756, acc: AJ496253.1, len: 1778
+taxon: Taphrina_padi, ncbi: 99592, acc: AJ495833.1, len: 1795
+taxon: Taphrina_deformans, ncbi: 5011, acc: AJ495826.1, len: 1787
+taxon: Taphrina_pruni, ncbi: 48692, acc: AJ495815.1, len: 1796
+taxon: Taphrina_deformans, ncbi: 5011, acc: U00971.1, len: 1736
+taxon: Taphrina_wiesneri, ncbi: 5012, acc: D12531.1, len: 1741
+taxon: Taphrina_pruni, ncbi: 48692, acc: AJ495828.1, len: 1780
+taxon: Taphrina_tosquinetii, ncbi: 191417, acc: AJ496252.1, len: 1781
+taxon: Taphrina_tosquinetii, ncbi: 191417, acc: AJ495824.1, len: 1765
+taxon: Taphrina_alni, ncbi: 201970, acc: AJ495834.1, len: 1799
+taxon: Saitoella_complic, ncbi: 5606, acc: JQ698935.1, len: 1750
+taxon: Saitoella_complic, ncbi: 5606, acc: NG_013154.1, len: 1715
+taxon: Saitoella_complic, ncbi: 5606, acc: AY548297.1, len: 1715
+taxon: Saitoella_complic, ncbi: 5606, acc: D12530.1, len: 1736
+taxon: uncultured_fungus, ncbi: 175245, acc: KC670795.1, len: 1766
+taxon: uncultured_fungus, ncbi: 175245, acc: KT285754.1, len: 1654
+taxon: Neolecta_vitelli, ncbi: 29826, acc: Z27393.1, len: 1722
+taxon: uncultured_fungus, ncbi: 175245, acc: KC671291.1, len: 1768
+taxon: Taphrina_johansonii, ncbi: 201969, acc: AJ495835.1, len: 1775
+taxon: Neolecta_irregularis, ncbi: 48691, acc: DQ842040.1, len: 1045
+taxon: Neolecta_irregularis, ncbi: 48691, acc: AY789379.1, len: 1142
+taxon: Neolecta_vitelli, ncbi: 29826, acc: AY640996.1, len: 1129
+taxon: Neolecta_irregularis, ncbi: 48691, acc: Z47721.1, len: 1576
+taxon: Neolecta_sp., ncbi: 2506252, acc: MT796216.1, len: 1071
+taxon: Neolecta_vitelli, ncbi: 29826, acc: DQ471037.1, len: 926
+taxon: Taphrina_deformans, ncbi: 5011, acc: NG_062694.1, len: 1141
+taxon: Taphrina_deformans, ncbi: 5011, acc: DQ471024.1, len: 1141
+taxon: Taphrina_insititi, ncbi: 201971, acc: AJ495827.1, len: 1725
+taxon: Taphrina_alni, ncbi: 201970, acc: AJ495831.1, len: 1795
+taxon: Taphrina_alni, ncbi: 201970, acc: AJ495832.1, len: 1795
+taxon: Schizosaccharomyces_pombe, ncbi: 4896, acc: X54866.1, len: 1842
+taxon: Schizosaccharomyces_pombe, ncbi: 4896, acc: NR_151429.1, len: 1842
+taxon: Schizosaccharomyces_pombe, ncbi: 4896, acc: NR_151430.1, len: 1842
+taxon: Schizosaccharomyces_pombe, ncbi: 4896, acc: NR_151432.1, len: 1842
+taxon: Schizosaccharomyces_pombe, ncbi: 4896, acc: CU329672.1, len: 2452883
+taxon: Schizosaccharomyces_pombe, ncbi: 4896, acc: Z19578.1, len: 7865
+taxon: Schizosaccharomyces_pombe, ncbi: 4896, acc: AY251644.1, len: 1842
+taxon: Schizosaccharomyces_pombe, ncbi: 4896, acc: NG_070697.1, len: 1839
+taxon: Schizosaccharomyces_pombe, ncbi: 4896, acc: X58056.1, len: 1839
+taxon: Schizosaccharomyces_pombe, ncbi: 4896, acc: EU057529.1, len: 1814
+taxon: Schizosaccharomyces_pombe, ncbi: 4896, acc: EF550486.1, len: 1796
+taxon: Schizosaccharomyces_pombe, ncbi: 4896, acc: EU011742.1, len: 1772
+taxon: Pneumocystis_carinii, ncbi: 4754, acc: S83267.1, len: 1710
+taxon: Pneumocystis_murina_B123, ncbi: 1069680, acc: XR_486829.3, len: 1806
+taxon: Pneumocystis_carinii, ncbi: 4754, acc: AB812895.1, len: 1714
+taxon: Pneumocystis_jirovecii_RU7, ncbi: 1408657, acc: XR_001936352.1, len: 1804
+taxon: Pneumocystis_carinii_B80, ncbi: 1408658, acc: XR_001936350.1, len: 1805
+taxon: Pneumocystis_carinii, ncbi: 4754, acc: X12708.1, len: 1782
+taxon: Pneumocystis_jirovecii, ncbi: 42068, acc: AB266392.1, len: 1732
+taxon: Phanerochaete_chrysosporium, ncbi: 5306, acc: AF026593.1, len: 1806
+taxon: Phanerochaete_chrysosporium, ncbi: 5306, acc: U59084.1, len: 1811
+taxon: Phanerochaete_chrysosporium, ncbi: 5306, acc: MH047187.1, len: 4462
+taxon: Phanerochaete_sp._enrichment_culture_clone_NJ-F6, ncbi: 698297, acc: GU190187.1, len: 1776
+taxon: Phanerochaete_sp._enrichment_culture_clone_NJ-F8, ncbi: 698298, acc: GU190189.1, len: 1781
+taxon: Bjerkandera_adusta, ncbi: 5331, acc: MT644869.1, len: 2382
+taxon: Rhizochaete_filamentosa, ncbi: 114837, acc: AY219398.1, len: 1786
+taxon: Sistotrema_muscicola, ncbi: 154757, acc: AF334936.1, len: 1789
+taxon: Phanerochaete_chrysosporium, ncbi: 5306, acc: KU141330.1, len: 1774
+taxon: Fomitopsis_pinicola, ncbi: 40483, acc: AY705967.1, len: 1731
+taxon: Fomitopsis_pinicola, ncbi: 40483, acc: AY336765.1, len: 1772
+taxon: uncultured_eukaryote, ncbi: 100272, acc: JQ693077.1, len: 1649
+taxon: Fomitopsis_palustris, ncbi: 186125, acc: JQ279696.1, len: 1770
+taxon: Brunneoporus_juniperinus, ncbi: 239201, acc: AY336793.1, len: 1700
+taxon: Antrodia_variiformis, ncbi: 239204, acc: AY336783.1, len: 1690
+taxon: Fomitopsis_rosea, ncbi: 34475, acc: AY336764.1, len: 1758
+taxon: Brunneoporus_malicola, ncbi: 157705, acc: AY336790.1, len: 1699
+taxon: Fomitopsis_rosea, ncbi: 34475, acc: MK483338.1, len: 3320
+taxon: Brunneoporus_juniperinus, ncbi: 239201, acc: AY336792.1, len: 1702
+taxon: Hygrocybe_aff._conica_PBM_918, ncbi: 532116, acc: AY752965.1, len: 1774
+taxon: Hygrocybe_nigrescens_var._brevispora, ncbi: 1398658, acc: KF291132.1, len: 1775
+taxon: Hygrocybe_noninquinans, ncbi: 1414717, acc: KF291126.1, len: 1755
+taxon: Hygrocybe_conica, ncbi: 104224, acc: DQ851574.1, len: 1717
+taxon: Hygrocybe_occidentalis_var._scarletina, ncbi: 1398659, acc: KF291187.1, len: 1775
+taxon: Hygrocybe_chloochlora, ncbi: 521074, acc: KF381535.1, len: 1777
+taxon: Hygrocybe_aff._hypohaemacta_CFMR_BZ-1903, ncbi: 1398928, acc: KF291164.1, len: 1784
+taxon: Hygrocybe_aff._neofirma_CFMR_BZ-1926, ncbi: 1398929, acc: KF291167.1, len: 1788
+taxon: Hygrocybe_reidii, ncbi: 566101, acc: KF291160.1, len: 1796
+taxon: Hygrocybe_glutinipes_var._rubra, ncbi: 521077, acc: KF291125.1, len: 1781
+taxon: Strobilomyces_floccopus, ncbi: 80670, acc: AY662661.1, len: 1779
+taxon: Xerocomellus_chrysenteron, ncbi: 1354920, acc: M94340.1, len: 1759
+taxon: Neoboletus_luridiformis, ncbi: 2765353, acc: MT644889.1, len: 5871
+taxon: Paxillus_vernalis, ncbi: 101662, acc: AY662662.1, len: 1777
+taxon: Aureoboletus_projectellus, ncbi: 1661727, acc: AY662660.1, len: 1775
+taxon: Boletellus_shichianus, ncbi: 283656, acc: AY657011.1, len: 1786
+taxon: Rubroboletus_satanas, ncbi: 5370, acc: M94337.1, len: 1759
+taxon: Paragyrodon_sphaerosporus, ncbi: 5372, acc: GU187642.1, len: 1799
+taxon: Gyrodon_lividus, ncbi: 85971, acc: DQ534681.1, len: 1781
+taxon: Hydnomerulius_pinastri, ncbi: 388859, acc: GU187633.1, len: 1728
+taxon: Grifola_frondosa, ncbi: 5627, acc: AY705960.1, len: 1754
+taxon: Sparassis_sp._TENN50289/ss31, ncbi: 223918, acc: AY218382.1, len: 1748
+taxon: Pycnoporellus_fulgens, ncbi: 202718, acc: AF518587.1, len: 1757
+taxon: Grifola_frondosa, ncbi: 5627, acc: AY218383.1, len: 1719
+taxon: Grifola_sordulenta, ncbi: 172312, acc: AY665780.1, len: 1772
+taxon: Ganoderma_sp., ncbi: 1869158, acc: MN355501.1, len: 1804
+taxon: Ganoderma_tsugae, ncbi: 34467, acc: AY705969.1, len: 1777
+taxon: Trametes_polyzona, ncbi: 239206, acc: AY336771.1, len: 1749
+taxon: Lentinus_crinitus, ncbi: 5358, acc: MH915574.1, len: 3089
+taxon: Opegrapha_dolomitic, ncbi: 399108, acc: DQ883706.1, len: 3066
+taxon: uncultured_fungus, ncbi: 175245, acc: JX111001.1, len: 850
+taxon: uncultured_fungal_contami, ncbi: 419790, acc: EF053592.1, len: 1170
+taxon: Lichinella_nigritell, ncbi: 2028443, acc: MF766301.1, len: 1907
+taxon: Pterygiopsis_guyanensis, ncbi: 157491, acc: AF282914.1, len: 1740
+taxon: Raffaelea_sp., ncbi: 1886607, acc: MN013805.1, len: 1016
+taxon: Raffaelea_arxii, ncbi: 45342, acc: MN013796.1, len: 1010
+taxon: Raffaelea_arxii, ncbi: 45342, acc: MN013795.1, len: 1028
+taxon: Raffaelea_arxii, ncbi: 45342, acc: MN013792.1, len: 1011
+taxon: Dendrographa_decolorans, ncbi: 279122, acc: AY548809.1, len: 1655
+taxon: Dendrographa_leucophaea_f._minor, ncbi: 72326, acc: AF279381.1, len: 1151
+taxon: Roccellographa_cretac, ncbi: 92842, acc: DQ883705.1, len: 1621
+taxon: Dendrographa_leucophaea_f._minor, ncbi: 72326, acc: AY548803.1, len: 1621
+taxon: Helotiales_sp._KL244, ncbi: 1792697, acc: KX090874.1, len: 1082
+taxon: Combea_mollusc, ncbi: 72309, acc: AY571380.1, len: 1522
+taxon: Skoua_fertilis, ncbi: 27318, acc: NG_061207.1, len: 1110
+taxon: Skoua_fertilis, ncbi: 27318, acc: KR139931.1, len: 1110
+taxon: Skoua_fertilis, ncbi: 27318, acc: KR139930.1, len: 1116
+taxon: Saxomyces_penninicus, ncbi: 1306391, acc: KC315864.1, len: 1715
+taxon: Ramoconidiophora_euphorbi, ncbi: 2315864, acc: NG_067663.1, len: 1667
+taxon: Ramoconidiophora_euphorbi, ncbi: 2315864, acc: MG592741.1, len: 1667
+taxon: Ramoconidiophora_euphorbi, ncbi: 2315864, acc: MG592742.1, len: 1667
+taxon: Cryomyces_montanus, ncbi: 1306365, acc: NG_070634.1, len: 1701
+taxon: Cryomyces_montanus, ncbi: 1306365, acc: GU250352.1, len: 1701
+taxon: uncultured_fungus, ncbi: 175245, acc: AM114816.1, len: 1797
+taxon: Helotiales_sp._2_MK-2015, ncbi: 1751023, acc: LN901162.1, len: 1670
+taxon: Pseudogymnoascus_destructans, ncbi: 655981, acc: KF866376.1, len: 1731
+taxon: Cryomyces_minteri, ncbi: 331657, acc: NG_062376.1, len: 1653
+taxon: Cryomyces_minteri, ncbi: 331657, acc: DQ066714.1, len: 1653
+taxon: Cryomyces_minteri, ncbi: 331657, acc: KC315858.1, len: 1653
+taxon: Leotiomycetes_sp._BY-2018d, ncbi: 2218483, acc: MH470217.1, len: 1678
+taxon: uncultured_eukaryo, ncbi: 100272, acc: JX098993.1, len: 1739
+taxon: Protomyces_inouyei, ncbi: 27332, acc: NG_013153.1, len: 2033
+taxon: Protomyces_pachydermus, ncbi: 48148, acc: D85142.1, len: 3250
+taxon: Taphrina_wiesneri, ncbi: 5012, acc: AY548293.1, len: 1725
+taxon: Taphrina_vestergrenii, ncbi: 202756, acc: AJ496253.1, len: 1778
+taxon: Taphrina_padi, ncbi: 99592, acc: AJ495833.1, len: 1795
+taxon: Taphrina_deformans, ncbi: 5011, acc: AJ495826.1, len: 1787
+taxon: Taphrina_pruni, ncbi: 48692, acc: AJ495815.1, len: 1796
+taxon: Taphrina_deformans, ncbi: 5011, acc: U00971.1, len: 1736
+taxon: Taphrina_wiesneri, ncbi: 5012, acc: D12531.1, len: 1741
+taxon: Taphrina_pruni, ncbi: 48692, acc: AJ495828.1, len: 1780
+taxon: Taphrina_tosquinetii, ncbi: 191417, acc: AJ496252.1, len: 1781
+taxon: Taphrina_tosquinetii, ncbi: 191417, acc: AJ495824.1, len: 1765
+taxon: Taphrina_alni, ncbi: 201970, acc: AJ495834.1, len: 1799
+taxon: Saitoella_complic, ncbi: 5606, acc: JQ698935.1, len: 1750
+taxon: Saitoella_complic, ncbi: 5606, acc: NG_013154.1, len: 1715
+taxon: Saitoella_complic, ncbi: 5606, acc: AY548297.1, len: 1715
+taxon: Saitoella_complic, ncbi: 5606, acc: D12530.1, len: 1736
+taxon: uncultured_fungus, ncbi: 175245, acc: KC670795.1, len: 1766
+taxon: uncultured_fungus, ncbi: 175245, acc: KT285754.1, len: 1654
+taxon: Neolecta_vitelli, ncbi: 29826, acc: Z27393.1, len: 1722
+taxon: uncultured_fungus, ncbi: 175245, acc: KC671291.1, len: 1768
+taxon: Taphrina_johansonii, ncbi: 201969, acc: AJ495835.1, len: 1775
+taxon: Neolecta_irregularis, ncbi: 48691, acc: DQ842040.1, len: 1045
+taxon: Neolecta_irregularis, ncbi: 48691, acc: AY789379.1, len: 1142
+taxon: Neolecta_vitelli, ncbi: 29826, acc: AY640996.1, len: 1129
+taxon: Neolecta_irregularis, ncbi: 48691, acc: Z47721.1, len: 1576
+taxon: Neolecta_sp., ncbi: 2506252, acc: MT796216.1, len: 1071
+taxon: Neolecta_vitelli, ncbi: 29826, acc: DQ471037.1, len: 926
+taxon: Taphrina_deformans, ncbi: 5011, acc: NG_062694.1, len: 1141
+taxon: Taphrina_deformans, ncbi: 5011, acc: DQ471024.1, len: 1141
+taxon: Taphrina_insititi, ncbi: 201971, acc: AJ495827.1, len: 1725
+taxon: Taphrina_alni, ncbi: 201970, acc: AJ495831.1, len: 1795
+taxon: Taphrina_alni, ncbi: 201970, acc: AJ495832.1, len: 1795
+taxon: Schizosaccharomyces_pomb, ncbi: 4896, acc: X54866.1, len: 1842
+taxon: Schizosaccharomyces_pomb, ncbi: 4896, acc: NR_151429.1, len: 1842
+taxon: Schizosaccharomyces_pomb, ncbi: 4896, acc: NR_151430.1, len: 1842
+taxon: Schizosaccharomyces_pomb, ncbi: 4896, acc: NR_151432.1, len: 1842
+taxon: Schizosaccharomyces_pomb, ncbi: 4896, acc: CU329672.1, len: 2452883
+taxon: Schizosaccharomyces_pomb, ncbi: 4896, acc: Z19578.1, len: 7865
+taxon: Schizosaccharomyces_pomb, ncbi: 4896, acc: AY251644.1, len: 1842
+taxon: Schizosaccharomyces_pomb, ncbi: 4896, acc: NG_070697.1, len: 1839
+taxon: Schizosaccharomyces_pomb, ncbi: 4896, acc: X58056.1, len: 1839
+taxon: Schizosaccharomyces_pomb, ncbi: 4896, acc: EU057529.1, len: 1814
+taxon: Schizosaccharomyces_pomb, ncbi: 4896, acc: EF550486.1, len: 1796
+taxon: Schizosaccharomyces_pomb, ncbi: 4896, acc: EU011742.1, len: 1772
+taxon: Pneumocystis_carinii, ncbi: 4754, acc: S83267.1, len: 1710
+taxon: Pneumocystis_murina_B123, ncbi: 1069680, acc: XR_486829.3, len: 1806
+taxon: Pneumocystis_carinii, ncbi: 4754, acc: AB812895.1, len: 1714
+taxon: Pneumocystis_jirovecii_RU7, ncbi: 1408657, acc: XR_001936352.1, len: 1804
+taxon: Pneumocystis_carinii_B80, ncbi: 1408658, acc: XR_001936350.1, len: 1805
+taxon: Pneumocystis_carinii, ncbi: 4754, acc: X12708.1, len: 1782
+taxon: Pneumocystis_jirovecii, ncbi: 42068, acc: AB266392.1, len: 1732
+taxon: Phanerochaete_chrysosporiu, ncbi: 5306, acc: AF026593.1, len: 1806
+taxon: Phanerochaete_chrysosporiu, ncbi: 5306, acc: U59084.1, len: 1811
+taxon: Phanerochaete_chrysosporiu, ncbi: 5306, acc: MH047187.1, len: 4462
+taxon: Phanerochaete_sp._enrichment_culture_clone_NJ-F6, ncbi: 698297, acc: GU190187.1, len: 1776
+taxon: Phanerochaete_sp._enrichment_culture_clone_NJ-F8, ncbi: 698298, acc: GU190189.1, len: 1781
+taxon: Bjerkandera_adus, ncbi: 5331, acc: MT644869.1, len: 2382
+taxon: Rhizochaete_filamentos, ncbi: 114837, acc: AY219398.1, len: 1786
+taxon: Sistotrema_muscicol, ncbi: 154757, acc: AF334936.1, len: 1789
+taxon: Phanerochaete_chrysosporiu, ncbi: 5306, acc: KU141330.1, len: 1774
+taxon: Fomitopsis_pinicol, ncbi: 40483, acc: AY705967.1, len: 1731
+taxon: Fomitopsis_pinicol, ncbi: 40483, acc: AY336765.1, len: 1772
+taxon: uncultured_eukaryo, ncbi: 100272, acc: JQ693077.1, len: 1649
+taxon: Fomitopsis_palustris, ncbi: 186125, acc: JQ279696.1, len: 1770
+taxon: Brunneoporus_juniperinus, ncbi: 239201, acc: AY336793.1, len: 1700
+taxon: Antrodia_variiformis, ncbi: 239204, acc: AY336783.1, len: 1690
+taxon: Fomitopsis_ros, ncbi: 34475, acc: AY336764.1, len: 1758
+taxon: Brunneoporus_malicol, ncbi: 157705, acc: AY336790.1, len: 1699
+taxon: Fomitopsis_ros, ncbi: 34475, acc: MK483338.1, len: 3320
+taxon: Brunneoporus_juniperinus, ncbi: 239201, acc: AY336792.1, len: 1702
+taxon: Hygrocybe_aff._conica_PBM_918, ncbi: 532116, acc: AY752965.1, len: 1774
+taxon: Hygrocybe_nigrescens_var._brevispor, ncbi: 1398658, acc: KF291132.1, len: 1775
+taxon: Hygrocybe_noninquinans, ncbi: 1414717, acc: KF291126.1, len: 1755
+taxon: Hygrocybe_conic, ncbi: 104224, acc: DQ851574.1, len: 1717
+taxon: Hygrocybe_occidentalis_var._scarleti, ncbi: 1398659, acc: KF291187.1, len: 1775
+taxon: Hygrocybe_chloochlor, ncbi: 521074, acc: KF381535.1, len: 1777
+taxon: Hygrocybe_aff._hypohaemacta_CFMR_BZ-1903, ncbi: 1398928, acc: KF291164.1, len: 1784
+taxon: Hygrocybe_aff._neofirma_CFMR_BZ-1926, ncbi: 1398929, acc: KF291167.1, len: 1788
+taxon: Hygrocybe_reidii, ncbi: 566101, acc: KF291160.1, len: 1796
+taxon: Hygrocybe_glutinipes_var._rubr, ncbi: 521077, acc: KF291125.1, len: 1781
+taxon: Strobilomyces_floccopus, ncbi: 80670, acc: AY662661.1, len: 1779
+taxon: Xerocomellus_chrysentero, ncbi: 1354920, acc: M94340.1, len: 1759
+taxon: Neoboletus_luridiformis, ncbi: 2765353, acc: MT644889.1, len: 5871
+taxon: Paxillus_vernalis, ncbi: 101662, acc: AY662662.1, len: 1777
+taxon: Aureoboletus_projectellus, ncbi: 1661727, acc: AY662660.1, len: 1775
+taxon: Boletellus_shichianus, ncbi: 283656, acc: AY657011.1, len: 1786
+taxon: Rubroboletus_satanas, ncbi: 5370, acc: M94337.1, len: 1759
+taxon: Paragyrodon_sphaerosporus, ncbi: 5372, acc: GU187642.1, len: 1799
+taxon: Gyrodon_lividus, ncbi: 85971, acc: DQ534681.1, len: 1781
+taxon: Hydnomerulius_pinastri, ncbi: 388859, acc: GU187633.1, len: 1728
+taxon: Grifola_frondos, ncbi: 5627, acc: AY705960.1, len: 1754
+taxon: Sparassis_sp._TENN50289/ss31, ncbi: 223918, acc: AY218382.1, len: 1748
+taxon: Pycnoporellus_fulgens, ncbi: 202718, acc: AF518587.1, len: 1757
+taxon: Grifola_frondos, ncbi: 5627, acc: AY218383.1, len: 1719
+taxon: Grifola_sordul, ncbi: 172312, acc: AY665780.1, len: 1772
+taxon: Ganoderma_sp., ncbi: 1869158, acc: MN355501.1, len: 1804
+taxon: Ganoderma_tsug, ncbi: 34467, acc: AY705969.1, len: 1777
+taxon: Trametes_polyzo, ncbi: 239206, acc: AY336771.1, len: 1749
+taxon: Lentinus_crinitus, ncbi: 5358, acc: MH915574.1, len: 3089
+taxon: Cotylidia_sp._MB5, ncbi: 281474, acc: AY705958.1, len: 1747
+taxon: Hyphoderma_orphanellum, ncbi: 366620, acc: LT603005.1, len: 2285
+taxon: Rickenella_fibula, ncbi: 264144, acc: AY771599.1, len: 1769
+taxon: Globulicium_hiemale, ncbi: 406824, acc: DQ873594.1, len: 1771
+taxon: Alloclavaria_purpurea, ncbi: 225428, acc: DQ437679.1, len: 1786
+taxon: Basidioradulum_radula, ncbi: 1834404, acc: AY771611.1, len: 1757
+taxon: Cyphellostereum_laeve, ncbi: 293800, acc: AY752973.1, len: 1762
+taxon: Fibricium_rude, ncbi: 139114, acc: AY654888.1, len: 1777
+taxon: Skvortzovia_pinicola, ncbi: 467961, acc: DQ873636.1, len: 1771
+taxon: Resinicium_furfuraceum, ncbi: 396591, acc: DQ834913.1, len: 1776
+taxon: Sterigmatomyces_hyphaenes, ncbi: 44565, acc: NG_062671.1, len: 1783
+taxon: Sterigmatomyces_hyphaenes, ncbi: 44565, acc: AY665775.1, len: 1783
+taxon: Sterigmatomyces_halophilus, ncbi: 5617, acc: NG_062686.1, len: 1786
+taxon: Sterigmatomyces_halophilus, ncbi: 5617, acc: DQ092916.1, len: 1786
+taxon: uncultured_fungus, ncbi: 175245, acc: KC670692.1, len: 1806
+taxon: uncultured_fungus, ncbi: 175245, acc: KC670659.1, len: 1799
+taxon: uncultured_fungus, ncbi: 175245, acc: KC670575.1, len: 1766
+taxon: uncultured_fungus, ncbi: 175245, acc: KC670679.1, len: 1805
+taxon: uncultured_fungus, ncbi: 175245, acc: KC670621.1, len: 1765
+taxon: uncultured_fungus, ncbi: 175245, acc: KC670554.1, len: 1765
+taxon: Sterigmatomyces_halophilus, ncbi: 5617, acc: DQ985957.1, len: 1759
+taxon: uncultured_fungus, ncbi: 175245, acc: KC670542.1, len: 1799
+taxon: Ustilago_maydis, ncbi: 5270, acc: MH047195.1, len: 5034
+taxon: Ustilago_bromivora, ncbi: 307758, acc: LT558136.1, len: 656372
+acc: DQ883706.1, len: 3066
+acc: JX111001.1, len: 4
+acc: EF053592.1, len: 1170
+acc: MF766301.1, len: 4
+acc: AF282914.1, len: 1740
+acc: MN013805.1, len: 4
+acc: MN013796.1, len: 4
+acc: MN013795.1, len: 4
+acc: MN013792.1, len: 4
+acc: AY548809.1, len: 1655
+acc: AF279381.1, len: 1151
+acc: DQ883705.1, len: 1621
+acc: AY548803.1, len: 1621
+acc: KX090874.1, len: 4
+acc: AY571380.1, len: 1522
+acc: NG_061207.1, len: 4
+acc: KR139931.1, len: 4
+acc: KR139930.1, len: 4
+acc: KC315864.1, len: 4
+acc: NG_067663.1, len: 4
+acc: MG592741.1, len: 4
+acc: MG592742.1, len: 4
+acc: NG_070634.1, len: 4
+acc: GU250352.1, len: 1701
+acc: AM114816.1, len: 1797
+acc: LN901162.1, len: 4
+acc: KF866376.1, len: 4
+acc: NG_062376.1, len: 1653
+acc: DQ066714.1, len: 1653
+acc: KC315858.1, len: 1653
+acc: MH470217.1, len: 4
+acc: JX098993.1, len: 4
+acc: NG_013153.1, len: 4
+acc: D85142.1, len: 3250
+acc: AY548293.1, len: 1725
+acc: AJ496253.1, len: 1778
+acc: AJ495833.1, len: 1795
+acc: AJ495826.1, len: 1787
+acc: AJ495815.1, len: 1796
+acc: U00971.1, len: 1736
+acc: D12531.1, len: 1741
+acc: AJ495828.1, len: 1780
+acc: AJ496252.1, len: 1781
+acc: AJ495824.1, len: 1765
+acc: AJ495834.1, len: 1799
+acc: JQ698935.1, len: 4
+acc: NG_013154.1, len: 1715
+acc: AY548297.1, len: 1715
+acc: D12530.1, len: 1736
+acc: KC670795.1, len: 4
+acc: KT285754.1, len: 4
+acc: Z27393.1, len: 1722
+acc: KC671291.1, len: 4
+acc: AJ495835.1, len: 1775
+acc: DQ842040.1, len: 1045
+acc: AY789379.1, len: 1142
+acc: AY640996.1, len: 1129
+acc: Z47721.1, len: 1576
+acc: MT796216.1, len: 4
+acc: DQ471037.1, len: 926
+acc: NG_062694.1, len: 1141
+acc: DQ471024.1, len: 1141
+acc: AJ495827.1, len: 1725
+acc: AJ495831.1, len: 1795
+acc: AJ495832.1, len: 1795
+acc: X54866.1, len: 1842
+acc: NR_151429.1, len: 4
+acc: NR_151430.1, len: 4
+acc: NR_151432.1, len: 4
+acc: CU329672.1, len: 2452883
+acc: Z19578.1, len: 7865
+acc: AY251644.1, len: 1842
+acc: NG_070697.1, len: 4
+acc: X58056.1, len: 1839
+acc: EU057529.1, len: 1814
+acc: EF550486.1, len: 1796
+acc: EU011742.1, len: 1772
+acc: S83267.1, len: 1710
+acc: XR_486829.3, len: 4
+acc: AB812895.1, len: 4
+acc: XR_001936352.1, len: 4
+acc: XR_001936350.1, len: 4
+acc: X12708.1, len: 1782
+acc: AB266392.1, len: 1732
+acc: AF026593.1, len: 1806
+acc: U59084.1, len: 1811
+acc: MH047187.1, len: 4
+acc: GU190187.1, len: 1776
+acc: GU190189.1, len: 1781
+acc: MT644869.1, len: 4
+acc: AY219398.1, len: 1786
+acc: AF334936.1, len: 1789
+acc: KU141330.1, len: 4
+acc: AY705967.1, len: 1731
+acc: AY336765.1, len: 1772
+acc: JQ693077.1, len: 4
+acc: JQ279696.1, len: 4
+acc: AY336793.1, len: 1700
+acc: AY336783.1, len: 1690
+acc: AY336764.1, len: 1758
+acc: AY336790.1, len: 1699
+acc: MK483338.1, len: 4
+acc: AY336792.1, len: 1702
+acc: AY752965.1, len: 1774
+acc: KF291132.1, len: 4
+acc: KF291126.1, len: 4
+acc: DQ851574.1, len: 1717
+acc: KF291187.1, len: 4
+acc: KF381535.1, len: 4
+acc: KF291164.1, len: 4
+acc: KF291167.1, len: 4
+acc: KF291160.1, len: 4
+acc: KF291125.1, len: 4
+acc: AY662661.1, len: 1779
+acc: M94340.1, len: 1759
+acc: MT644889.1, len: 4
+acc: AY662662.1, len: 1777
+acc: AY662660.1, len: 1775
+acc: AY657011.1, len: 1786
+acc: M94337.1, len: 1759
+acc: GU187642.1, len: 1799
+acc: DQ534681.1, len: 1781
+acc: GU187633.1, len: 1728
+acc: AY705960.1, len: 1754
+acc: AY218382.1, len: 1748
+acc: AF518587.1, len: 1757
+acc: AY218383.1, len: 1719
+acc: AY665780.1, len: 1772
+acc: MN355501.1, len: 4
+acc: AY705969.1, len: 1777
+acc: AY336771.1, len: 1749
+acc: MH915574.1, len: 4
+acc: AY705958.1, len: 1747
+acc: LT603005.1, len: 4
+acc: AY771599.1, len: 1769
+acc: DQ873594.1, len: 1771
+acc: DQ437679.1, len: 1786
+acc: AY771611.1, len: 1757
+acc: AY752973.1, len: 1762
+acc: AY654888.1, len: 1777
+acc: DQ873636.1, len: 1771
+acc: DQ834913.1, len: 1776
+acc: NG_062671.1, len: 1783
+acc: AY665775.1, len: 1783
+acc: NG_062686.1, len: 1786
+acc: DQ092916.1, len: 1786
+acc: KC670692.1, len: 4
+acc: KC670659.1, len: 4
+acc: KC670575.1, len: 4
+acc: KC670679.1, len: 4
+acc: KC670621.1, len: 4
+acc: KC670554.1, len: 4
+acc: DQ985957.1, len: 1759
+acc: KC670542.1, len: 4
+acc: MH047195.1, len: 4
+acc: LT558136.1, len: 4
+acc: KP322979.1, len: 4
+acc: CP060299.1, len: 4
+acc: NG_063040.1, len: 4
+acc: KP322958.1, len: 4
+acc: LT795063.1, len: 4
+acc: XR_001630179.1, len: 4
+acc: NG_063041.1, len: 4
+acc: KP322959.1, len: 4
+acc: AY787217.1, len: 1793
+acc: MH468771.1, len: 4
+acc: HQ660197.1, len: 7403
+acc: DQ089015.1, len: 1782
+acc: DQ851572.1, len: 1726
+acc: AY665781.1, len: 1774
+acc: NG_013175.1, len: 1776
+acc: AY705968.1, len: 1776
+acc: FJ869174.1, len: 1779
+acc: FJ869175.1, len: 1750
+acc: U59064.1, len: 1757
+acc: AF026583.1, len: 1757
+acc: MT644872.1, len: 4
+acc: MK501618.1, len: 4
+acc: AY293134.1, len: 1757
+acc: AY665778.1, len: 1770
+acc: AY665773.1, len: 1776
+acc: DQ534694.1, len: 1785
+acc: MT644903.1, len: 3331
+acc: DQ534688.1, len: 1725
+acc: AF026621.1, len: 1785
+acc: DQ534680.1, len: 1794
+acc: AY771610.1, len: 1806
+acc: AY293121.1, len: 1778
+acc: L22256.1, len: 1744
+acc: AB712479.1, len: 4
+acc: MN593443.1, len: 4
+acc: MN593442.1, len: 4
+acc: DQ520102.1, len: 3160
+acc: AY771603.1, len: 1773
+acc: AB712503.1, len: 4
+acc: AB712481.1, len: 4
+acc: JN939440.1, len: 4
+acc: BR000310.1, len: 8082
+acc: AE017342.1, len: 1632307
+acc: D12804.1, len: 1750
+acc: L05428.1, len: 1871
+acc: M55625.1, len: 1795
+acc: JN939439.1, len: 4
+acc: CP000287.1, len: 2187695
+acc: AY083224.1, len: 1651
+acc: L05427.1, len: 1871
+acc: DQ883706.1, len: 3066
+acc: JX111001.1, len: 4
+acc: EF053592.1, len: 1170
+acc: MF766301.1, len: 4
+acc: AF282914.1, len: 1740
+acc: MN013805.1, len: 4
+acc: MN013796.1, len: 4
+acc: MN013795.1, len: 4
+acc: MN013792.1, len: 4
+acc: AY548809.1, len: 1655
+acc: AF279381.1, len: 1151
+acc: DQ883705.1, len: 1621
+acc: AY548803.1, len: 1621
+acc: KX090874.1, len: 4
+acc: AY571380.1, len: 1522
+acc: NG_061207.1, len: 4
+acc: KR139931.1, len: 4
+acc: KR139930.1, len: 4
+acc: KC315864.1, len: 4
+acc: NG_067663.1, len: 4
+acc: MG592741.1, len: 4
+acc: MG592742.1, len: 4
+acc: NG_070634.1, len: 4
+acc: GU250352.1, len: 1701
+acc: AM114816.1, len: 1797
+acc: LN901162.1, len: 4
+acc: KF866376.1, len: 4
+acc: NG_062376.1, len: 1653
+acc: DQ066714.1, len: 1653
+acc: KC315858.1, len: 1653
+acc: MH470217.1, len: 4
+acc: JX098993.1, len: 4
+acc: NG_013153.1, len: 4
+acc: D85142.1, len: 3250
+acc: AY548293.1, len: 1725
+acc: AJ496253.1, len: 1778
+acc: AJ495833.1, len: 1795
+acc: AJ495826.1, len: 1787
+acc: AJ495815.1, len: 1796
+acc: U00971.1, len: 1736
+acc: D12531.1, len: 1741
+acc: AJ495828.1, len: 1780
+acc: AJ496252.1, len: 1781
+acc: AJ495824.1, len: 1765
+acc: AJ495834.1, len: 1799
+acc: JQ698935.1, len: 4
+acc: NG_013154.1, len: 1715
+acc: AY548297.1, len: 1715
+acc: D12530.1, len: 1736
+acc: KC670795.1, len: 4
+acc: KT285754.1, len: 4
+acc: Z27393.1, len: 1722
+acc: KC671291.1, len: 4
+acc: AJ495835.1, len: 1775
+acc: DQ842040.1, len: 1045
+acc: AY789379.1, len: 1142
+acc: AY640996.1, len: 1129
+acc: Z47721.1, len: 1576
+acc: MT796216.1, len: 4
+acc: DQ471037.1, len: 926
+acc: NG_062694.1, len: 1141
+acc: DQ471024.1, len: 1141
+acc: AJ495827.1, len: 1725
+acc: AJ495831.1, len: 1795
+acc: AJ495832.1, len: 1795
+acc: X54866.1, len: 1842
+acc: NR_151429.1, len: 4
+acc: NR_151430.1, len: 4
+acc: NR_151432.1, len: 4
+acc: CU329672.1, len: 2452883
+acc: Z19578.1, len: 7865
+acc: AY251644.1, len: 1842
+acc: NG_070697.1, len: 4
+acc: X58056.1, len: 1839
+acc: EU057529.1, len: 1814
+acc: EF550486.1, len: 1796
+acc: EU011742.1, len: 1772
+acc: S83267.1, len: 1710
+acc: XR_486829.3, len: 4
+acc: AB812895.1, len: 4
+acc: XR_001936352.1, len: 4
+acc: XR_001936350.1, len: 4
+acc: X12708.1, len: 1782
+acc: AB266392.1, len: 1732
+acc: AF026593.1, len: 1806
+acc: U59084.1, len: 1811
+acc: MH047187.1, len: 4
+acc: GU190187.1, len: 1776
+acc: GU190189.1, len: 1781
+acc: MT644869.1, len: 4
+acc: AY219398.1, len: 1786
+acc: AF334936.1, len: 1789
+acc: KU141330.1, len: 4
+acc: AY705967.1, len: 1731
+acc: AY336765.1, len: 1772
+acc: JQ693077.1, len: 4
+acc: JQ279696.1, len: 4
+acc: AY336793.1, len: 1700
+acc: AY336783.1, len: 1690
+acc: AY336764.1, len: 1758
+acc: AY336790.1, len: 1699
+acc: MK483338.1, len: 4
+acc: AY336792.1, len: 1702
+acc: AY752965.1, len: 1774
+acc: KF291132.1, len: 4
+acc: KF291126.1, len: 4
+acc: DQ851574.1, len: 1717
+acc: KF291187.1, len: 4
+acc: KF381535.1, len: 4
+acc: KF291164.1, len: 4
+acc: KF291167.1, len: 4
+acc: KF291160.1, len: 4
+acc: KF291125.1, len: 4
+acc: AY662661.1, len: 1779
+acc: M94340.1, len: 1759
+acc: MT644889.1, len: 4
+acc: AY662662.1, len: 1777
+acc: AY662660.1, len: 1775
+acc: AY657011.1, len: 1786
+acc: M94337.1, len: 1759
+acc: GU187642.1, len: 1799
+acc: DQ534681.1, len: 1781
+acc: GU187633.1, len: 1728
+acc: AY705960.1, len: 1754
+acc: AY218382.1, len: 1748
+acc: AF518587.1, len: 1757
+acc: AY218383.1, len: 1719
+acc: AY665780.1, len: 1772
+acc: MN355501.1, len: 4
+acc: AY705969.1, len: 1777
+acc: AY336771.1, len: 1749
+acc: MH915574.1, len: 4
+acc: AY705958.1, len: 1747
+acc: LT603005.1, len: 4
+acc: AY771599.1, len: 1769
+acc: DQ873594.1, len: 1771
+acc: DQ437679.1, len: 1786
+acc: AY771611.1, len: 1757
+acc: AY752973.1, len: 1762
+acc: AY654888.1, len: 1777
+acc: DQ873636.1, len: 1771
+acc: DQ834913.1, len: 1776
+acc: NG_062671.1, len: 1783
+acc: AY665775.1, len: 1783
+acc: NG_062686.1, len: 1786
+acc: DQ092916.1, len: 1786
+acc: KC670692.1, len: 4
+acc: KC670659.1, len: 4
+acc: KC670575.1, len: 4
+acc: KC670679.1, len: 4
+acc: KC670621.1, len: 4
+acc: KC670554.1, len: 4
+acc: DQ985957.1, len: 1759
+acc: KC670542.1, len: 4
+acc: MH047195.1, len: 4
+acc: LT558136.1, len: 4
+acc: KP322979.1, len: 4
+acc: CP060299.1, len: 4
+acc: NG_063040.1, len: 4
+acc: KP322958.1, len: 4
+acc: LT795063.1, len: 4
+acc: XR_001630179.1, len: 4
+acc: NG_063041.1, len: 4
+acc: KP322959.1, len: 4
+acc: AY787217.1, len: 1793
+acc: MH468771.1, len: 4
+acc: HQ660197.1, len: 7403
+acc: DQ089015.1, len: 1782
+acc: DQ851572.1, len: 1726
+acc: AY665781.1, len: 1774
+acc: NG_013175.1, len: 1776
+acc: AY705968.1, len: 1776
+acc: FJ869174.1, len: 1779
+acc: FJ869175.1, len: 1750
+acc: U59064.1, len: 1757
+acc: AF026583.1, len: 1757
+acc: MT644872.1, len: 4
+acc: MK501618.1, len: 4
+acc: AY293134.1, len: 1757
+acc: AY665778.1, len: 1770
+acc: AY665773.1, len: 1776
+acc: DQ534694.1, len: 1785
+acc: MT644903.1, len: 3331
+acc: DQ534688.1, len: 1725
+acc: AF026621.1, len: 1785
+acc: DQ534680.1, len: 1794
+acc: AY771610.1, len: 1806
+acc: AY293121.1, len: 1778
+acc: L22256.1, len: 1744
+acc: AB712479.1, len: 4
+acc: MN593443.1, len: 4
+acc: MN593442.1, len: 4
+acc: DQ520102.1, len: 3160
+acc: AY771603.1, len: 1773
+acc: AB712503.1, len: 4
+acc: AB712481.1, len: 4
+acc: JN939440.1, len: 4
+acc: BR000310.1, len: 8082
+acc: AE017342.1, len: 1632307
+acc: D12804.1, len: 1750
+acc: L05428.1, len: 1871
+acc: M55625.1, len: 1795
+acc: JN939439.1, len: 4
+acc: CP000287.1, len: 2187695
+acc: AY083224.1, len: 1651
+acc: L05427.1, len: 1871
+acc: DQ883706.1, len: 3066
+acc: JX111001.1, len: 4
+acc: EF053592.1, len: 1170
+acc: MF766301.1, len: 4
+acc: MN013805.1, len: 4
+acc: MN013796.1, len: 4
+acc: MN013795.1, len: 4
+acc: MN013792.1, len: 4
+acc: AF279381.1, len: 1151
+acc: KX090874.1, len: 4
+acc: NG_061207.1, len: 4
+acc: KR139931.1, len: 4
+acc: KR139930.1, len: 4
+acc: KC315864.1, len: 4
+acc: NG_067663.1, len: 4
+acc: MG592741.1, len: 4
+acc: MG592742.1, len: 4
+acc: GQ154627.1, len: 2210
+acc: GQ154628.1, len: 2210
+acc: GQ154629.1, len: 2210
+acc: NG_070634.1, len: 4
+acc: LN901162.1, len: 4
+acc: KF866376.1, len: 4
+acc: MH470217.1, len: 4
+acc: JX098993.1, len: 4
+acc: NG_013153.1, len: 4
+acc: D11377.1, len: 2476
+acc: D85142.1, len: 3250
+acc: D85143.1, len: 2514
+acc: JQ698935.1, len: 4
+acc: KC670795.1, len: 4
+acc: KT285754.1, len: 4
+acc: KC671291.1, len: 4
+acc: DQ842040.1, len: 1045
+acc: AY789379.1, len: 1142
+acc: AY640996.1, len: 1129
+acc: MT796216.1, len: 4
+acc: DQ471037.1, len: 926
+acc: NG_062694.1, len: 1141
+acc: DQ471024.1, len: 1141
+acc: NR_151429.1, len: 4
+acc: NR_151430.1, len: 4
+acc: NR_151432.1, len: 4
+acc: CU329672.1, len: 2452883
+acc: Z19578.1, len: 7865
+acc: NG_070697.1, len: 4
+acc: AY532651.1, len: 2694
+acc: XR_486829.3, len: 4
+acc: AB812895.1, len: 4
+acc: L27658.1, len: 2366
+acc: XR_001936352.1, len: 4
+acc: XR_001936350.1, len: 4
+acc: MH047187.1, len: 4
+acc: MT644869.1, len: 4
+acc: FJ768676.1, len: 2381
+acc: KU141330.1, len: 4
+acc: JQ693077.1, len: 4
+acc: JQ279696.1, len: 4
+acc: MK483338.1, len: 4
+acc: KF291132.1, len: 4
+acc: KF291126.1, len: 4
+acc: KF291187.1, len: 4
+acc: KF381535.1, len: 4
+acc: KF291164.1, len: 4
+acc: KF291167.1, len: 4
+acc: KF291160.1, len: 4
+acc: KF291125.1, len: 4
+acc: MT644889.1, len: 4
+acc: MN355501.1, len: 4
+acc: MH915574.1, len: 4
+acc: LT603005.1, len: 4
+acc: KC670692.1, len: 4
+acc: KC670659.1, len: 4
+acc: KC670575.1, len: 4
+acc: KC670679.1, len: 4
+acc: KC670621.1, len: 4
+acc: KC670554.1, len: 4
+acc: KC670542.1, len: 4
+acc: X62396.1, len: 2209
+acc: MH047195.1, len: 4
+acc: LT558136.1, len: 4
+acc: KP322979.1, len: 4
+acc: CP060299.1, len: 4
+acc: NG_063040.1, len: 4
+acc: KP322958.1, len: 4
+acc: LT795063.1, len: 4
+acc: XR_001630179.1, len: 4
+acc: NG_063041.1, len: 4
+acc: KP322959.1, len: 4
+acc: MH468771.1, len: 4
+acc: HQ660197.1, len: 7403
+acc: MT644872.1, len: 4
+acc: MK501618.1, len: 4
+acc: MT644903.1, len: 3331
+acc: AB712479.1, len: 4
+acc: MN593443.1, len: 4
+acc: MN593442.1, len: 4
+acc: DQ520102.1, len: 3160
+acc: AB712503.1, len: 4
+acc: AB712481.1, len: 4
+acc: JN939440.1, len: 4
+acc: BR000310.1, len: 8082
+acc: AE017342.1, len: 1632307
+acc: JN939439.1, len: 4
+acc: CP000287.1, len: 2187695
+acc: KM096534.1, len: 4
+acc: MH762902.1, len: 4
+acc: DQ883706.1, len: 3066
+acc: JX111001.1, len: 4
+acc: EF053592.1, len: 1170
+acc: MF766301.1, len: 4
+acc: AF282914.1, len: 1740
+acc: MN013805.1, len: 4
+acc: MN013796.1, len: 4
+acc: MN013795.1, len: 4
+acc: MN013792.1, len: 4
+acc: AY548809.1, len: 1655
+acc: AF279381.1, len: 1151
+acc: DQ883705.1, len: 1621
+acc: AY548803.1, len: 1621
+acc: KX090874.1, len: 4
+acc: AY571380.1, len: 1522
+acc: NG_061207.1, len: 4
+acc: KR139931.1, len: 4
+acc: KR139930.1, len: 4
+acc: KC315864.1, len: 4
+acc: NG_067663.1, len: 4
+acc: MG592741.1, len: 4
+acc: MG592742.1, len: 4
+acc: NG_070634.1, len: 4
+acc: GU250352.1, len: 1701
+acc: AM114816.1, len: 1797
+acc: LN901162.1, len: 4
+acc: KF866376.1, len: 4
+acc: NG_062376.1, len: 1653
+acc: DQ066714.1, len: 1653
+acc: KC315858.1, len: 1653
+acc: MH470217.1, len: 4
+acc: JX098993.1, len: 4
+acc: NG_013153.1, len: 4
+acc: D85142.1, len: 3250
+acc: AY548293.1, len: 1725
+acc: AJ496253.1, len: 1778
+acc: AJ495833.1, len: 1795
+acc: AJ495826.1, len: 1787
+acc: AJ495815.1, len: 1796
+acc: U00971.1, len: 1736
+acc: D12531.1, len: 1741
+acc: AJ495828.1, len: 1780
+acc: AJ496252.1, len: 1781
+acc: AJ495824.1, len: 1765
+acc: AJ495834.1, len: 1799
+acc: JQ698935.1, len: 4
+acc: NG_013154.1, len: 1715
+acc: AY548297.1, len: 1715
+acc: D12530.1, len: 1736
+acc: KC670795.1, len: 4
+acc: KT285754.1, len: 4
+acc: Z27393.1, len: 1722
+acc: KC671291.1, len: 4
+acc: AJ495835.1, len: 1775
+acc: DQ842040.1, len: 1045
+acc: AY789379.1, len: 1142
+acc: AY640996.1, len: 1129
+acc: Z47721.1, len: 1576
+acc: MT796216.1, len: 4
+acc: DQ471037.1, len: 926
+acc: NG_062694.1, len: 1141
+acc: DQ471024.1, len: 1141
+acc: AJ495827.1, len: 1725
+acc: AJ495831.1, len: 1795
+acc: AJ495832.1, len: 1795
+acc: X54866.1, len: 1842
+acc: NR_151429.1, len: 4
+acc: NR_151430.1, len: 4
+acc: NR_151432.1, len: 4
+acc: CU329672.1, len: 2452883
+acc: Z19578.1, len: 7865
+acc: AY251644.1, len: 1842
+acc: NG_070697.1, len: 4
+acc: X58056.1, len: 1839
+acc: EU057529.1, len: 1814
+acc: EF550486.1, len: 1796
+acc: EU011742.1, len: 1772
+acc: S83267.1, len: 1710
+acc: XR_486829.3, len: 4
+acc: AB812895.1, len: 4
+acc: XR_001936352.1, len: 4
+acc: XR_001936350.1, len: 4
+acc: X12708.1, len: 1782
+acc: AB266392.1, len: 1732
+acc: AF026593.1, len: 1806
+acc: U59084.1, len: 1811
+acc: MH047187.1, len: 4
+acc: GU190187.1, len: 1776
+acc: GU190189.1, len: 1781
+acc: MT644869.1, len: 4
+acc: AY219398.1, len: 1786
+acc: AF334936.1, len: 1789
+acc: KU141330.1, len: 4
+acc: AY705967.1, len: 1731
+acc: AY336765.1, len: 1772
+acc: JQ693077.1, len: 4
+acc: JQ279696.1, len: 4
+acc: AY336793.1, len: 1700
+acc: AY336783.1, len: 1690
+acc: AY336764.1, len: 1758
+acc: AY336790.1, len: 1699
+acc: MK483338.1, len: 4
+acc: AY336792.1, len: 1702
+acc: AY752965.1, len: 1774
+acc: KF291132.1, len: 4
+acc: KF291126.1, len: 4
+acc: DQ851574.1, len: 1717
+acc: KF291187.1, len: 4
+acc: KF381535.1, len: 4
+acc: KF291164.1, len: 4
+acc: KF291167.1, len: 4
+acc: KF291160.1, len: 4
+acc: KF291125.1, len: 4
+acc: AY662661.1, len: 1779
+acc: M94340.1, len: 1759
+acc: MT644889.1, len: 4
+acc: AY662662.1, len: 1777
+acc: AY662660.1, len: 1775
+acc: AY657011.1, len: 1786
+acc: M94337.1, len: 1759
+acc: GU187642.1, len: 1799
+acc: DQ534681.1, len: 1781
+acc: GU187633.1, len: 1728
+acc: AY705960.1, len: 1754
+acc: AY218382.1, len: 1748
+acc: AF518587.1, len: 1757
+acc: AY218383.1, len: 1719
+acc: AY665780.1, len: 1772
+acc: MN355501.1, len: 4
+acc: AY705969.1, len: 1777
+acc: AY336771.1, len: 1749
+acc: MH915574.1, len: 4
+acc: AY705958.1, len: 1747
+acc: LT603005.1, len: 4
+acc: AY771599.1, len: 1769
+acc: DQ873594.1, len: 1771
+acc: DQ437679.1, len: 1786
+acc: AY771611.1, len: 1757
+acc: AY752973.1, len: 1762
+acc: AY654888.1, len: 1777
+acc: DQ873636.1, len: 1771
+acc: DQ834913.1, len: 1776
+acc: NG_062671.1, len: 1783
+acc: AY665775.1, len: 1783
+acc: NG_062686.1, len: 1786
+acc: DQ092916.1, len: 1786
+acc: KC670692.1, len: 4
+acc: KC670659.1, len: 4
+acc: KC670575.1, len: 4
+acc: KC670679.1, len: 4
+acc: KC670621.1, len: 4
+acc: KC670554.1, len: 4
+acc: DQ985957.1, len: 1759
+acc: KC670542.1, len: 4
+acc: MH047195.1, len: 4
+acc: LT558136.1, len: 4
+acc: KP322979.1, len: 4
+acc: CP060299.1, len: 4
+acc: NG_063040.1, len: 4
+acc: KP322958.1, len: 4
+acc: LT795063.1, len: 4
+acc: XR_001630179.1, len: 4
+acc: NG_063041.1, len: 4
+acc: KP322959.1, len: 4
+acc: AY787217.1, len: 1793
+acc: MH468771.1, len: 4
+acc: HQ660197.1, len: 7403
+acc: DQ089015.1, len: 1782
+acc: DQ851572.1, len: 1726
+acc: AY665781.1, len: 1774
+acc: NG_013175.1, len: 1776
+acc: AY705968.1, len: 1776
+acc: FJ869174.1, len: 1779
+acc: FJ869175.1, len: 1750
+acc: U59064.1, len: 1757
+acc: AF026583.1, len: 1757
+acc: MT644872.1, len: 4
+acc: MK501618.1, len: 4
+acc: AY293134.1, len: 1757
+acc: AY665778.1, len: 1770
+acc: AY665773.1, len: 1776
+acc: DQ534694.1, len: 1785
+acc: MT644903.1, len: 3331
+acc: DQ534688.1, len: 1725
+acc: AF026621.1, len: 1785
+acc: DQ534680.1, len: 1794
+acc: AY771610.1, len: 1806
+acc: AY293121.1, len: 1778
+acc: L22256.1, len: 1744
+acc: AB712479.1, len: 4
+acc: MN593443.1, len: 4
+acc: MN593442.1, len: 4
+acc: DQ520102.1, len: 3160
+acc: AY771603.1, len: 1773
+acc: AB712503.1, len: 4
+acc: AB712481.1, len: 4
+acc: JN939440.1, len: 4
+acc: BR000310.1, len: 8082
+acc: AE017342.1, len: 1632307
+acc: D12804.1, len: 1750
+acc: L05428.1, len: 1871
+acc: M55625.1, len: 1795
+acc: JN939439.1, len: 4
+acc: CP000287.1, len: 2187695
+acc: AY083224.1, len: 1651
+acc: L05427.1, len: 1871

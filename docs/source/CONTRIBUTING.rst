@@ -39,7 +39,7 @@ Write Documentation
 ~~~~~~~~~~~~~~~~~~~
 
 Physcraper could always use more documentation, whether as part of the
-official physcraper docs, in docstrings, or even on the web in blog posts,
+official Physcraper docs, in docstrings, or even on the web in blog posts,
 articles, and such.
 
 Submit Feedback
@@ -57,9 +57,9 @@ If you are proposing a feature:
 Get Started!
 ------------
 
-Ready to contribute? Here's how to set up `physcraper` for local development.
+Ready to contribute? Here's how to set up Physcraper for local development.
 
-1. Fork the `physcraper` repo on GitHub.
+1. Fork the Physcraper repo on GitHub https://github.com/McTavishLab/physcraper
 2. Clone your fork locally::
 
     $ git clone git@github.com:your_name_here/physcraper.git
@@ -80,15 +80,25 @@ Ready to contribute? Here's how to set up `physcraper` for local development.
    tests, including testing other Python versions with tox::
 
     $ pytest tests
-    
 
-6. Commit your changes and push your branch to GitHub::
+6. Use Pylint to check your code. Move to the "bin" or "physcraper" directory to use the ".pylintrc"
+   config file, then run::
+
+    $ pylint insert_name_of_module_here.py
+
+7. Commit your changes and push your branch to GitHub::
 
     $ git add .
     $ git commit -m "Your detailed description of your changes."
     $ git push origin name-of-your-bugfix-or-feature
 
-7. Submit a pull request through the GitHub website.
+8. Submit a pull request through the GitHub website.
+
+Extra: Count the number of functions in any given module
+
+    from inspect import getmembers, isfunction
+    foos = [o for o in getmembers(physcraper) if isfunction(o[1])]
+    len(foos)
 
 Pull Request Guidelines
 -----------------------
@@ -98,7 +108,7 @@ Before you submit a pull request, check that it meets these guidelines:
 1. The pull request should include tests.
 2. If the pull request adds functionality, the docs should be updated. Put
    your new functionality into a function with a docstring, and add the
-   feature to the list in README.rst.
+   feature to the list in "README.rst"
 3. The pull request should work for Python 3.6, 3.7 and 3.8, and for PyPy. Check
    https://travis-ci.org/McTavishLab/physcraper/pull_requests
    and make sure that the tests pass for all supported Python versions.
@@ -107,6 +117,4 @@ Before you submit a pull request, check that it meets these guidelines:
 
 Code of Conduct
 ---------------
-Please note that the `Physcraper` project is released with a [Contributor Code of Conduct](https://www.contributor-covenant.org/version/2/0/code_of_conduct/). By contributing to this project you agree to abide by its terms.
-
-
+Please note that the Physcraper project is released with a [Contributor Code of Conduct](https://www.contributor-covenant.org/version/2/0/code_of_conduct/). By contributing to this project you agree to abide by its terms.

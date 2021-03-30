@@ -1,0 +1,561 @@
+otu_id	^ot:ottTaxonName	^ot:ottId	^ncbi:taxon	^ncbi:accession	^physcraper:last_blasted	^physcraper:ingroup	^physcraper:status	^ot:originalLabel	^ncbi:title	^physcraper:in_current_aln
+otu63089	Agaricostilbum hyphaenes	88399	44565	-	2021/03/22	True	original	Agaricostilbum_hyphaenes	-	True
+otu63092	Calocera cornea	985692	29889	-	2021/03/22	True	original	Calocera_cornea	-	True
+otu63093	Coltricia perennis	569041	40426	-	2021/03/22	True	original	Coltricia_perennis	-	True
+otu63095	Phanerodontia chrysosporium	5299626	0	-	2021/03/22	True	original	Phanerochaete_chrysosporium	-	True
+otu63096	Fomitopsis pinicola	417422	40483	-	2021/03/22	True	original	Fomitopsis_pinicola	-	True
+otu63097	Grifola frondosa	868676	5627	-	2021/03/22	True	original	Grifola_frondosa	-	True
+otu63098	Armillaria mellea	65625	0	-	2021/03/22	True	original	Armillaria_mellea	-	True
+otu63099	Hygrocybe conica	1040966	0	-	2021/03/22	True	original	Hygrocybe_conica	-	True
+otu63100	Calostoma cinnabarinum	253478	83216	-	2021/03/22	True	original	Calostoma_cinnabarinum	-	True
+otu63101	Strobilomyces strobilaceus	551334	80670	-	2021/03/22	True	original	Strobilomyces_floccopus	-	True
+otu63094	Cotylidia	811601	181932	-	2021/03/22	True	original	Cotylidia_sp	-	True
+otu63091	Cryptococcus neoformans	634633	0	-	2021/03/22	True	original	Cryptococcus_neoformans	-	True
+otu63090	Ustilago maydis	285447	5270	-	2021/03/22	True	original	Ustilago_maydis	-	True
+otu63102	Lipomyces oligophaga	635029	45792	-	None	True	deleted from tree in reconciliation	Lipomyces_oligophaga	-	False
+otu63103	Yarrowia lipolytica	959622	0	-	None	True	deleted from tree in reconciliation	Yarrowia_lipolytica	-	False
+otu63104	Zygoascus steatolyticus	904300	0	-	None	True	deleted from tree in reconciliation	Zygoascus_steatolyticus	-	False
+otu63105	Metschnikowia bicuspidata	94057	27322	-	None	True	deleted from tree in reconciliation	Metschnikowia_bicuspidata	-	False
+otu63107	Clavispora lusitaniae	213939	36911	-	None	True	deleted from tree in reconciliation	Candida_lusitaniae	-	False
+otu63106	Clavispora lusitaniae	213939	36911	-	None	True	deleted from tree in reconciliation	Clavispora_lusitaniae	-	False
+otu63110	Candida tropicalis	408236	5482	-	None	True	deleted from tree in reconciliation	Candida_tropicalis	-	False
+otu63111	Candida albicans	1034966	0	-	None	True	deleted from tree in reconciliation	Candida_albicans	-	False
+otu63109	Meyerozyma guilliermondii	334025	4929	-	None	True	deleted from tree in reconciliation	Candida_guilliermondii	-	False
+otu63108	Debaryomyces hansenii	959617	0	-	None	True	deleted from tree in reconciliation	Debaryomyces_hansenii	-	False
+otu63112	Lachancea waltii	858843	4914	-	None	True	deleted from tree in reconciliation	Lachancea_waltti	-	False
+otu63113	Eremothecium gossypii	806602	33169	-	None	True	deleted from tree in reconciliation	Eremothecium_gossypii	-	False
+otu63114	Kluyveromyces lactis	538138	28985	-	None	True	deleted from tree in reconciliation	Kluyveromyces_lactis	-	False
+otu63115	Naumovozyma castellii	1059907	0	-	None	True	deleted from tree in reconciliation	Saccharomyces_castellii	-	False
+otu63116	Saccharomyces cerevisiae	908549	0	-	None	True	deleted from tree in reconciliation	Saccharomyces_cerevisiae	-	False
+otu63117	Candida glabrata	718605	5478	-	None	True	deleted from tree in reconciliation	Candida_glabrata	-	False
+otu63489	Rhizina undulata	953355	44645	-	None	True	deleted from tree in reconciliation	Rhizina_undulata	-	False
+otu63490	Caloscypha fulgens	16906	47187	-	None	True	deleted from tree in reconciliation	Caloscypha_fulgens	-	False
+otu63492	Barssia oregonensis	528348	44631	-	None	True	deleted from tree in reconciliation	Barssia_oregonensis	-	False
+otu63493	Helvella compressa	522196	265119	-	None	True	deleted from tree in reconciliation	Helvella_compressa_cf	-	False
+otu63491	Tuber gibbosum	528343	44634	-	None	True	deleted from tree in reconciliation	Tuber_gibbosum	-	False
+otu63496	Disciotis venosa	246480	44606	-	None	True	deleted from tree in reconciliation	Disciotis_venosa	-	False
+otu63497	Morchella esculenta	952133	0	-	None	True	deleted from tree in reconciliation	Morchella_esculenta_cf	-	False
+otu63498	Morchella elata	339440	39930	-	None	True	deleted from tree in reconciliation	Morchella_elata_cf	-	False
+otu63495	Verpa bohemica	1054386	44609	-	None	True	deleted from tree in reconciliation	Verpa_bohemica	-	False
+otu63494	Verpa conica	1054387	44608	-	None	True	deleted from tree in reconciliation	Verpa_conica	-	False
+otu63499	Gyromitra esculenta	806598	0	-	None	True	original	Gyromitra_esculenta	-	False
+otu63500	Pseudorhizina californica	522185	265115	-	None	True	deleted from tree in reconciliation	Gyromitra_californica	-	False
+otu63507	Cheilymenia stercorea	16902	47189	-	None	True	deleted from tree in reconciliation	Cheilymenia_stercorea	-	False
+otu63508	Aleuria aurantia	880971	5188	-	None	True	deleted from tree in reconciliation	Aleuria_aurantia	-	False
+otu63506	Anthracobia macrocystis	844360	0	-	None	True	deleted from tree in reconciliation	Anthracobia_macrocystis	-	False
+otu63505	Scutellinia scutellata	285202	47209	-	None	True	deleted from tree in reconciliation	Scutellinia_scutellata	-	False
+otu63504	Lasiobolidium spirale	269882	352998	-	None	True	deleted from tree in reconciliation	Lasiobolidium_spirale	-	False
+otu63503	Pyronema domesticum	833553	47205	-	None	True	deleted from tree in reconciliation	Pyronema_domesticum	-	False
+otu63502	Ascodesmis sphaerospora	16914	47183	-	None	True	deleted from tree in reconciliation	Ascodesmis_sphaerospora	-	False
+otu63501	Eleutherascus lectardii	1071527	336791	-	None	True	deleted from tree in reconciliation	Eleutherascus_lectardii	-	False
+otu63511	Pseudopithyella minuscula	454755	61499	-	None	True	deleted from tree in reconciliation	Pseudopithyella_minuscula	-	False
+otu63513	Sarcoscypha coccinea	538620	51139	-	None	True	deleted from tree in reconciliation	Sarcoscypha_coccinea_1	-	False
+otu63512	Sarcoscypha coccinea	538620	51139	-	None	True	deleted from tree in reconciliation	Sarcoscypha_coccinea_2	-	False
+otu63509	Pseudosarcosoma latahense	523442	1281308	-	None	True	deleted from tree in reconciliation	Sarcosoma_latahense	-	False
+otu63510	Galiella rufa	64977	61507	-	None	True	deleted from tree in reconciliation	Galiella_rufa	-	False
+otu63481	Marcelleina persoonii	608799	173108	-	None	True	deleted from tree in reconciliation	Marcelleina_persoonii	-	False
+otu63485	Plicaria endocarpoides	233405	43084	-	None	True	deleted from tree in reconciliation	Plicaria_leiocarpa	-	False
+otu63484	Adelphella babingtonii	5303104	0	-	None	True	deleted from tree in reconciliation	Pachyella_babingtonii	-	False
+otu63483	Sarcosphaera coronaria	1059771	265113	-	None	True	deleted from tree in reconciliation	Sarcosphaera_crassa	-	False
+otu63482	Peziza vesiculosa	602199	47203	-	None	True	deleted from tree in reconciliation	Peziza_vesiculosa	-	False
+otu63487	Ascobolus carbonarius	522182	265117	-	None	True	deleted from tree in reconciliation	Ascobolus_carbonarius	-	False
+otu63488	Ascobolus crenulatus	522198	265118	-	None	True	deleted from tree in reconciliation	Ascobolus_crenulatus	-	False
+otu63486	Saccobolus dilutellus	842358	406764	-	None	True	deleted from tree in reconciliation	Saccobolus_dilutellus	-	False
+otu63478	Orbilia vinosa	293783	47023	-	None	True	deleted from tree in reconciliation	Orbilia_vinosa	-	False
+otu63479	Arthrobotrys elegans	819779	561978	-	None	True	deleted from tree in reconciliation	Arthrobotrys_elegans	-	False
+otu63480	Orbilia auricolor	309921	53381	-	None	True	deleted from tree in reconciliation	Orbilia_auricolor	-	False
+otu63118	Sarcoleotia globosa	694133	315203	-	None	True	deleted from tree in reconciliation	Sarcoleotia_globosa	-	False
+otu63119	Trichoglossum hirsutum	428	265104	-	None	True	deleted from tree in reconciliation	Trichoglossum_hirsutum	-	False
+otu63120	Geoglossum nigritum	950343	107442	-	None	True	deleted from tree in reconciliation	Geoglossum_nigritum	-	False
+otu63475	Lichinella iodopulchra	221166	394999	-	None	True	original	Lichinella_iodopulchra	-	False
+otu63477	Peltula umbilicata	132432	169193	-	None	True	deleted from tree in reconciliation	Peltula_umbilicata	-	False
+otu63476	Peltula auriculata	581982	395000	-	None	True	deleted from tree in reconciliation	Peltula_auriculata	-	False
+otu63431	Acarospora laqueata	93330	286393	-	None	True	deleted from tree in reconciliation	Acarospora_laqueata	-	False
+otu63432	Acarospora schleicheri	292323	88748	-	None	True	deleted from tree in reconciliation	Acarospora_schleicheri	-	False
+otu63433	Pleopsidium chlorophanum	249986	247144	-	None	True	deleted from tree in reconciliation	Pleopsidium_chlorophanum	-	False
+otu63434	Pleopsidium gobiense	560213	371072	-	None	True	deleted from tree in reconciliation	Pleopsidium_gobiense	-	False
+otu63411	Hypocenomyce scalaris	918536	318760	-	None	True	deleted from tree in reconciliation	Hypocenomyce_scalaris	-	False
+otu63412	Boreoplaca ultrafrigida	442989	318756	-	None	True	original	Boreoplaca_ultrafrigida	-	False
+otu63408	Umbilicaria mammulata	304027	161685	-	None	True	deleted from tree in reconciliation	Umbilicaria_mammulata	-	False
+otu63410	Lasallia pustulata	1055954	136370	-	None	True	deleted from tree in reconciliation	Lasallia_pustulata	-	False
+otu63409	Lasallia papulosa	1055955	0	-	None	True	deleted from tree in reconciliation	Lasallia_papulosa	-	False
+otu63430	Phyllobaeis erythrella	455357	202893	-	None	True	deleted from tree in reconciliation	Phyllobaeis_erythrella	-	False
+otu63429	Phyllobaeis imbricata	503274	404719	-	None	True	deleted from tree in reconciliation	Phyllobaeis_imbricata	-	False
+otu63428	Ionaspis lacustris	431543	196135	-	None	True	deleted from tree in reconciliation	Hymenelia_lacustris	-	False
+otu63419	Trapelia	933402	91806	-	None	True	deleted from tree in reconciliation	Trapelia_glebosa	-	False
+otu63427	Stictis urceolatum	843700	292186	-	None	True	original	Stictis_urceolatum	-	False
+otu63426	Stictis radiata	655795	38076	-	None	True	deleted from tree in reconciliation	Stictis_radiata	-	False
+otu63425	Glomerobolus gelineus	266118	75749	-	None	True	deleted from tree in reconciliation	Glomerobolus_gelineus	-	False
+otu63424	Acarosporina microspora	767388	271836	-	None	True	deleted from tree in reconciliation	Acarosporina_microspora	-	False
+otu63422	Gyalecta jenensis	822357	146295	-	None	True	original	Gyalecta_jenensis	-	False
+otu63423	Phlyctis argena	503282	404715	-	None	True	original	Phlyctis_argena	-	False
+otu63421	Diploschistes cinereocaesius	800099	192898	-	None	True	deleted from tree in reconciliation	Diploschistes_cinereocaesius	-	False
+otu63420	Diploschistes ocellatus	736051	0	-	None	True	deleted from tree in reconciliation	Diploschistes_ocellatus	-	False
+otu63417	Pertusaria dactylina	711011	267808	-	None	True	deleted from tree in reconciliation	Pertusaria_dactylina	-	False
+otu63418	Pertusaria hemisphaerica	746787	160979	-	None	True	deleted from tree in reconciliation	Pertusaria_hemisphaerica	-	False
+otu63416	Icmadophila ericetorum	845874	90408	-	None	True	deleted from tree in reconciliation	Icmadophila_ericetorum	-	False
+otu63415	Dibaeis baeomyces	444942	83478	-	None	True	deleted from tree in reconciliation	Dibaeis_baeomyces	-	False
+otu63414	Loxospora ochrophaea	913994	400354	-	None	True	original	Loxospora_ochrophaea	-	False
+otu63413	Loxospora cismonica	1029104	404707	-	None	True	deleted from tree in reconciliation	Loxospora_cismonica	-	False
+otu63407	Rhizocarpon oederi	598383	200983	-	None	True	deleted from tree in reconciliation	Rhizocarpon_oederi	-	False
+otu63406	Rhizocarpon superficiale	1059707	413844	-	None	True	deleted from tree in reconciliation	Rhizocarpon_superficiale	-	False
+otu63398	Lecidea fuscoatra	744199	0	-	None	True	deleted from tree in reconciliation	Lecidea_fuscoatra	-	False
+otu63399	Coccocarpia erythroxyli	978101	191098	-	None	True	deleted from tree in reconciliation	Coccocarpia_erythroxyli	-	False
+otu63400	Collema cristatum	376241	586069	-	None	True	deleted from tree in reconciliation	Collema_cristatum	-	False
+otu63404	Pseudocyphellaria anomala	975461	0	-	None	True	deleted from tree in reconciliation	Pseudocyphellaria_anomala	-	False
+otu63405	Lobaria scrobiculata	678966	908477	-	None	True	deleted from tree in reconciliation	Lobaria_scrobiculata	-	False
+otu63403	Lobariella pallida	292890	401077	-	None	True	deleted from tree in reconciliation	Lobariella_pallida	-	False
+otu63402	Peltigera degenii	806075	161982	-	None	True	deleted from tree in reconciliation	Peltigera_degenii	-	False
+otu63401	Nephroma parile	43548	203387	-	None	True	deleted from tree in reconciliation	Nephroma_parile	-	False
+otu63385	Ramalina complanata	345839	399109	-	None	True	deleted from tree in reconciliation	Ramalina_complanata	-	False
+otu63386	Bacidia schweinitzii	552726	161808	-	None	True	deleted from tree in reconciliation	Bacidia_schweinitzii	-	False
+otu63387	Lopezaria versicolor	244187	271828	-	None	True	deleted from tree in reconciliation	Lopezaria_versicolor	-	False
+otu63388	Crocynia pyxinoides	250306	2497785	-	None	True	deleted from tree in reconciliation	Crocynia_pyxinoides	-	False
+otu63397	Mycoblastus sanguinarius	828193	312200	-	None	True	deleted from tree in reconciliation	Mycoblastus_sanguinarius	-	False
+otu63396	Lecanora hybocarpa	221165	394998	-	None	True	deleted from tree in reconciliation	Lecanora_hybocarpa	-	False
+otu63393	Flavocetraria nivalis	516187	95627	-	None	True	deleted from tree in reconciliation	Flavocetraria_nivalis	-	False
+otu63394	Usnea sphacelata	10548	221858	-	None	True	deleted from tree in reconciliation	Usnea_sphacelata	-	False
+otu63395	Usnea antarctica	510740	281300	-	None	True	deleted from tree in reconciliation	Usnea_antarctica	-	False
+otu63392	Hypogymnia physodes	583552	87259	-	None	True	deleted from tree in reconciliation	Hypogymnia_physodes	-	False
+otu63391	Flavoparmelia caperata	733706	172615	-	None	True	deleted from tree in reconciliation	Flavoparmelia_caperata	-	False
+otu63390	Canoparmelia caroliniana	244188	271829	-	None	True	deleted from tree in reconciliation	Canoparmelia_caroliniana	-	False
+otu63389	Cladonia caroliniana	677139	174049	-	None	True	deleted from tree in reconciliation	Cladonia_caroliniana	-	False
+otu63379	Anaptychia palmulata	867791	373581	-	None	True	deleted from tree in reconciliation	Anaptychia_palmulata	-	False
+otu63380	Heterodermia vulgaris	58492	399107	-	None	True	deleted from tree in reconciliation	Heterodermia_vulgaris	-	False
+otu63381	Physcia aipolia	216197	50936	-	None	True	deleted from tree in reconciliation	Physcia_aipolia	-	False
+otu63378	Pyxine subcinerea	111231	264714	-	None	True	deleted from tree in reconciliation	Pyxine_subcinerea	-	False
+otu63377	Buellia frigida	112135	138010	-	None	True	deleted from tree in reconciliation	Buellia_frigida	-	False
+otu63383	Megalospora tuberculosa	244189	271826	-	None	True	deleted from tree in reconciliation	Megalospora_tuberculosa	-	False
+otu63384	Teloschistes exilis	90671	271840	-	None	True	deleted from tree in reconciliation	Teloschistes_exilis	-	False
+otu63382	Letrouitia domingensis	447042	157776	-	None	True	deleted from tree in reconciliation	Letrouitia_domingensis	-	False
+otu63437	Dactylospora haliotrepha	819780	561979	-	None	True	deleted from tree in reconciliation	Dactylospora_haliotrepha_2	-	False
+otu63436	Dactylospora haliotrepha	819780	561979	-	None	True	deleted from tree in reconciliation	Dactylospora_haliotrepha_1	-	False
+otu63435	Dactylospora mangrovei	1086863	561982	-	None	True	deleted from tree in reconciliation	Dactylospora_mangrovei	-	False
+otu63460	Caliciopsis orientalis	812159	380014	-	None	True	deleted from tree in reconciliation	Caliciopsis_orientalis	-	False
+otu63459	Caliciopsis pinea	123355	152644	-	None	True	deleted from tree in reconciliation	Caliciopsis_pinea	-	False
+otu63468	Penicillium freii	998167	48697	-	None	True	deleted from tree in reconciliation	Penicillium_freii	-	False
+otu63469	Penicillium javanicum	589692	0	-	None	True	deleted from tree in reconciliation	Eupenicillium_javanicum	-	False
+otu63470	Penicillium limosum	3755665	0	-	None	True	deleted from tree in reconciliation	Eupenicillium_limosum	-	False
+otu63471	Hamigera avellanea	405612	0	-	None	True	deleted from tree in reconciliation	Hamigera_avellanea	-	False
+otu63472	Monascus purpureus	376359	5098	-	None	True	deleted from tree in reconciliation	Monascus_purpureus	-	False
+otu63465	Aspergillus fumigatus	278828	91481	-	None	True	deleted from tree in reconciliation	Aspergillus_fumigatus	-	False
+otu63466	Aspergillus nidulans	392368	0	-	None	True	deleted from tree in reconciliation	Emericella_nidulans	-	False
+otu63467	Aspergillus protuberus	478938	469277	-	None	True	deleted from tree in reconciliation	Aspergillus_protuberus	-	False
+otu63461	Ajellomyces capsulatus	124563	0	-	None	True	deleted from tree in reconciliation	Ajellomyces_capsulatum	-	False
+otu63462	Spiromastix warcupii	658627	37235	-	None	True	deleted from tree in reconciliation	Spiromastix_warcupii	-	False
+otu63463	Coccidioides immitis	838981	5501	-	None	True	deleted from tree in reconciliation	Coccidioides_immitis	-	False
+otu63464	Arthroderma ciferrii	754344	78590	-	None	True	deleted from tree in reconciliation	Chrysosporium_georgiae	-	False
+otu63446	Ceramothyrium carniolicum	597882	134355	-	None	True	deleted from tree in reconciliation	Ceramothyrium_carniolicum	-	False
+otu63448	Glyphium elatum	637304	156302	-	None	True	deleted from tree in reconciliation	Glyphium_elatum	-	False
+otu63447	Sarcinomyces petricola	158875	206542	-	None	True	deleted from tree in reconciliation	Sarcinomyces_petricola	-	False
+otu63450	Exophiala salmonis	1051945	43214	-	None	True	deleted from tree in reconciliation	Exophiala_salmonis	-	False
+otu63451	Exophiala pisciphila	274726	86051	-	None	True	deleted from tree in reconciliation	Exophiala_pisciphila	-	False
+otu63452	Capronia munkii	56765	85185	-	None	True	deleted from tree in reconciliation	Capronia_munkii	-	False
+otu63453	Exophiala dermatitidis	129117	5970	-	None	True	deleted from tree in reconciliation	Exophiala_dermatitidis	-	False
+otu63454	Ramichloridium anceps	888563	0	-	None	True	deleted from tree in reconciliation	Ramichloridium_anceps	-	False
+otu63458	Dactylospora imperfecta	1086861	561980	-	None	True	deleted from tree in reconciliation	Dactylospora_imperfecta	-	False
+otu63457	Phialophora verrucosa	376062	39412	-	None	True	deleted from tree in reconciliation	Phialophora_verrucosa	-	False
+otu63456	Dactylospora lobariella	1086860	561981	-	None	True	deleted from tree in reconciliation	Dactylospora_lobariella	-	False
+otu63455	Capronia pilosella	666121	45095	-	None	True	deleted from tree in reconciliation	Capronia_pilosella	-	False
+otu63449	Cyphellophora laciniata	1024674	241713	-	None	True	deleted from tree in reconciliation	Cyphellophora_laciniata	-	False
+otu63445	Staurothele frustulenta	940868	396381	-	None	True	deleted from tree in reconciliation	Staurothele_frustulenta	-	False
+otu63444	Agonimia	741451	232781	-	None	True	deleted from tree in reconciliation	Agonimia_sp	-	False
+otu63442	Dermatocarpon miniatum	440205	172328	-	None	True	deleted from tree in reconciliation	Dermatocarpon_miniatum	-	False
+otu63443	Endocarpon pallidulum	940869	396380	-	None	True	deleted from tree in reconciliation	Endocarpon_pallidulum	-	False
+otu63441	Pyrenula aspistea	704493	427130	-	None	True	deleted from tree in reconciliation	Pyrenula_aspistea	-	False
+otu63440	Pyrgillus javanicus	67600	279161	-	None	True	deleted from tree in reconciliation	Pyrgillus_javanicus	-	False
+otu63439	Granulopyrenis seawardii	905566	286429	-	None	True	deleted from tree in reconciliation	Granulopyrenis_seawardii	-	False
+otu63438	Pyrenula pseudobufonia	767394	271832	-	None	True	deleted from tree in reconciliation	Pyrenula_pseudobufonia	-	False
+otu63474	Phaeocalicium polyporaeum	5310912	315235	-	None	True	deleted from tree in reconciliation	Mycocalicium_polyporaeum	-	False
+otu63473	Sphinctrina turbinata	344366	57085	-	None	True	deleted from tree in reconciliation	Sphinctrina_turbinata	-	False
+otu63280	Myriangium duriaei	870746	147570	-	None	True	deleted from tree in reconciliation	Myriangium_duriaei	-	False
+otu63283	Elsinoe phaseoli	3717454	390893	-	None	True	deleted from tree in reconciliation	Elsinoe_phaseoli	-	False
+otu63282	Elsinoe centrolobi	1027807	1978791	-	None	True	deleted from tree in reconciliation	Elsinoe_centrolobi	-	False
+otu63281	Elsinoe veneta	3717469	45306	-	None	True	deleted from tree in reconciliation	Elsinoe_veneta	-	False
+otu63289	Dothidea insculpta	666122	45097	-	None	True	deleted from tree in reconciliation	Dothidea_insculpta	-	False
+otu63290	Dothidea sambuci	95390	162394	-	None	True	deleted from tree in reconciliation	Dothidea_sambuci	-	False
+otu63291	Stylodothis puccinioides	208368	134360	-	None	True	deleted from tree in reconciliation	Stylodothis_puccinioides	-	False
+otu63292	Dothidea hippophaes	3717635	0	-	None	True	deleted from tree in reconciliation	Dothidea_hippophaes	-	False
+otu63288	Dothiora cannabinae	162095	93490	-	None	True	deleted from tree in reconciliation	Dothiora_cannabinae	-	False
+otu63287	Sydowia polyspora	530860	64499	-	None	True	deleted from tree in reconciliation	Sydowia_polyspora	-	False
+otu63286	Delphinella strobiligena	295794	147560	-	None	True	deleted from tree in reconciliation	Delphinella_strobiligena	-	False
+otu63285	Columnosphaeria fagi	1027801	390890	-	None	True	deleted from tree in reconciliation	Columnosphaeria_fagi_2	-	False
+otu63284	Columnosphaeria fagi	1027801	390890	-	None	True	deleted from tree in reconciliation	Columnosphaeria_fagi_1	-	False
+otu63302	Capnodium citri	736945	93487	-	None	True	deleted from tree in reconciliation	Capnodium_salicinum	-	False
+otu63301	Scorias spongiosa	920436	62139	-	None	True	deleted from tree in reconciliation	Scorias_spongiosa	-	False
+otu63300	Capnodium coffeae	162102	93495	-	None	True	deleted from tree in reconciliation	Capnodium_coffeae	-	False
+otu63293	Catenulostroma abietis	1093432	1434218	-	None	True	deleted from tree in reconciliation	Trimmatostroma_abietis	-	False
+otu63294	Cladosporium herbarum	187461	29918	-	None	True	deleted from tree in reconciliation	Davidiella_tassiana	-	False
+otu63295	Cladosporium cladosporioides	187451	334418	-	None	True	deleted from tree in reconciliation	Cladosporium_cladosporioides	-	False
+otu63296	Mycosphaerella graminicola	5319573	0	-	None	True	deleted from tree in reconciliation	Mycosphaerella_graminicola	-	False
+otu63297	Mycosphaerella punctiformis	1051941	43215	-	None	True	deleted from tree in reconciliation	Mycosphaerella_punctiformis	-	False
+otu63299	Cercospora beticola	444411	122368	-	None	True	deleted from tree in reconciliation	Cercospora_beticola	-	False
+otu63298	Mycosphaerella fijiensis	857565	1873960	-	None	True	deleted from tree in reconciliation	Mycosphaerella_fijiensis	-	False
+otu63305	Rhytidhysteron rufulum	614432	37885	-	None	True	deleted from tree in reconciliation	Rhytidhysteron_rufulum	-	False
+otu63308	Ulospora bilgramii	267588	372062	-	None	True	deleted from tree in reconciliation	Ulospora_bilgramii	-	False
+otu63309	Lepidosphaeria nicotiae	267587	372061	-	None	True	deleted from tree in reconciliation	Lepidosphaeria_nicotiae	-	False
+otu63307	Verruculina enalia	81512	85948	-	None	True	deleted from tree in reconciliation	Verruculina_enalia	-	False
+otu63344	Pleomassaria siparia	61792	753675	-	None	True	deleted from tree in reconciliation	Pleomassaria_siparia	-	False
+otu63345	Herpotrichia diffusa	659816	45146	-	None	True	deleted from tree in reconciliation	Herpotrichia_diffusa	-	False
+otu63346	Trematosphaeria pertusa	1027800	390896	-	None	True	deleted from tree in reconciliation	Trematosphaeria_pertusa	-	False
+otu63347	Herpotrichia pinetorum	659817	45145	-	None	True	deleted from tree in reconciliation	Herpotrichia_juniperi	-	False
+otu63318	Phoma herbarum	437937	73001	-	None	True	deleted from tree in reconciliation	Phoma_herbarum	-	False
+otu63317	Didymella pisi	287827	0	-	None	True	deleted from tree in reconciliation	Ascochyta_pisi_var_pisi	-	False
+otu63319	Pyrenochaeta nobilis	1027791	0	-	None	True	deleted from tree in reconciliation	Pyrenochaeta_nobilis	-	False
+otu63330	Pyrenophora phaeocomes	78726	380602	-	None	True	deleted from tree in reconciliation	Pyrenophora_phaeocomes	-	False
+otu63329	Pyrenophora tritici-repentis	85506	45297	-	None	True	deleted from tree in reconciliation	Pyrenophora_tritici_repentis	-	False
+otu63332	Alternaria alternata	464784	5599	-	None	True	deleted from tree in reconciliation	Alternaria_alternata	-	False
+otu63331	Allewia eureka	13657	390885	-	None	True	deleted from tree in reconciliation	Allewia_eureka	-	False
+otu63336	Cochliobolus heterostrophus	1042273	5016	-	None	True	deleted from tree in reconciliation	Cochliobolus_heterostrophus	-	False
+otu63337	Cochliobolus sativus	204741	45130	-	None	True	deleted from tree in reconciliation	Cochliobolus_sativus	-	False
+otu63333	Pleospora herbarum	282723	0	-	None	True	deleted from tree in reconciliation	Pleospora_herbarum_var_herbarum_1	-	False
+otu63334	Paradendryphiella arenariae	3796670	156293	-	None	True	deleted from tree in reconciliation	Dendryphiella_arenaria	-	False
+otu63335	Pleospora herbarum	282723	0	-	None	True	deleted from tree in reconciliation	Pleospora_herbarum_var_herbarum_2	-	False
+otu63328	Pleospora halimiones	928506	1077355	-	None	True	deleted from tree in reconciliation	Coniothyrium_obiones	-	False
+otu63323	Pleosporales	466678	0	-	None	True	deleted from tree in reconciliation	Pleosporalean_sp	-	False
+otu63324	Ophiosphaerella herpotricha	282728	33175	-	None	True	deleted from tree in reconciliation	Ophiosphaerella_herpotricha	-	False
+otu63325	Phaeosphaeria nodorum	562295	13684	-	None	True	deleted from tree in reconciliation	Phaeosphaeria_nodorum	-	False
+otu63326	Phaeosphaeria eustoma	184420	85909	-	None	True	deleted from tree in reconciliation	Phaeosphaeria_eustoma	-	False
+otu63327	Leptosphaeria avenaria	736914	0	-	None	True	deleted from tree in reconciliation	Phaeosphaeria_avenaria	-	False
+otu63321	Leptosphaeria maculans	581438	5022	-	None	True	deleted from tree in reconciliation	Leptosphaeria_maculans	-	False
+otu63322	Cucurbitaria elongata	659810	45143	-	None	True	deleted from tree in reconciliation	Cucurbitaria_elongata	-	False
+otu63320	Coniothyrium palmarum	43686	300248	-	None	True	deleted from tree in reconciliation	Coniothyrium_palmarum	-	False
+otu63343	Wettsteinina lacustris	513294	163246	-	None	True	deleted from tree in reconciliation	Wettsteinina_lacustris	-	False
+otu63342	Splanchnonema platani	87437	100036	-	None	True	deleted from tree in reconciliation	Massaria_platani	-	False
+otu63340	Bimuria novae-zelandiae	84213	147497	-	None	True	deleted from tree in reconciliation	Bimuria_novae_zelandiae	-	False
+otu63341	Phaeodothis winteri	61788	100040	-	None	True	deleted from tree in reconciliation	Phaeodothis_winteri	-	False
+otu63339	Montagnula opulenta	87444	100038	-	None	True	deleted from tree in reconciliation	Montagnula_opulenta	-	False
+otu63338	Byssothecium circinans	921290	147558	-	None	True	deleted from tree in reconciliation	Byssothecium_circinans	-	False
+otu63316	Arthopyrenia salicis	642423	278010	-	None	True	deleted from tree in reconciliation	Arthopyrenia_salicis	-	False
+otu63310	Leptosphaeria heterospora	5319110	2075111	-	None	True	deleted from tree in reconciliation	Trematosphaeria_heterospora	-	False
+otu63311	Lophiostoma arundinis	513300	1762941	-	None	True	deleted from tree in reconciliation	Lophiostoma_arundinis	-	False
+otu63312	Lophiostoma crenatum	5485980	45149	-	None	True	deleted from tree in reconciliation	Lophiostoma_crenatum	-	False
+otu63313	Preussia terricola	227033	265085	-	None	True	deleted from tree in reconciliation	Preussia_terricola	-	False
+otu63314	Westerdykella cylindrica	834064	134358	-	None	True	deleted from tree in reconciliation	Westerdykella_cylindrica	-	False
+otu63315	Sporormiella minima	1071356	93984	-	None	True	deleted from tree in reconciliation	Sporormiella_minima	-	False
+otu63306	Delitschia winteri	518703	100052	-	None	True	deleted from tree in reconciliation	Delitschia_winteri	-	False
+otu63304	Lophium mytilinum	1027793	390894	-	None	True	deleted from tree in reconciliation	Lophium_mytilinum	-	False
+otu63303	Aliquandostipite khaoyaiensis	710515	112102	-	None	True	deleted from tree in reconciliation	Aliquandostipite_khaoyaiensis	-	False
+otu63348	Trypethelium eluteriae	344137	364715	-	None	True	original	Trypethelium_eluteriae	-	False
+otu63349	Trypethelium	244194	271823	-	None	True	original	Trypethelium_sp	-	False
+otu63352	Botryosphaeria dothidea	859795	55169	-	None	True	deleted from tree in reconciliation	Botryosphaeria_dothidea	-	False
+otu63353	Macrophomina phaseolina	606632	35725	-	None	True	deleted from tree in reconciliation	Macrophomina_phaseolina	-	False
+otu63356	Spencermartinsia viticola	1019773	0	-	None	True	deleted from tree in reconciliation	Botryosphaeria_viticola	-	False
+otu63357	Neofusicoccum ribis	33907	45134	-	None	True	deleted from tree in reconciliation	Botryosphaeria_ribis	-	False
+otu63355	Diplodia tsugae	5311464	0	-	None	True	deleted from tree in reconciliation	Botryosphaeria_tsugae	-	False
+otu63354	Botryosphaeria stevensii	305447	66736	-	None	True	deleted from tree in reconciliation	Botryosphaeria_stevensii	-	False
+otu63351	Guignardia gaultheriae	392263	213543	-	None	True	original	Guignardia_gaultheriae	-	False
+otu63350	Phoma uvicola	396956	0	-	None	True	deleted from tree in reconciliation	Guignardia_bidwellii	-	False
+otu63358	Mycosphaerella pneumatophorae	1086865	561984	-	None	True	deleted from tree in reconciliation	Mycosphaerella_pneumatophorae	-	False
+otu63361	Tyrannosorus pinicola	580431	43223	-	None	True	deleted from tree in reconciliation	Tyrannosorus_pinicola	-	False
+otu63360	Venturia inaequalis	581449	5025	-	None	True	deleted from tree in reconciliation	Venturia_inaequalis	-	False
+otu63359	Phaeotrichum benjaminii	597866	134357	-	None	True	deleted from tree in reconciliation	Phaeotrichum_benjaminii	-	False
+otu63364	Hysteropatella clavispora	608851	100029	-	None	True	deleted from tree in reconciliation	Hysteropatella_clavispora_cf	-	False
+otu63365	Hysteropatella elliptica	716145	394111	-	None	True	deleted from tree in reconciliation	Hysteropatella_elliptica_cf	-	False
+otu63366	Hysterium pulicare	366414	100027	-	None	True	deleted from tree in reconciliation	Hysterium_pulicare_cf	-	False
+otu63363	Kirschsteiniothelia aethiops	295798	147564	-	None	True	deleted from tree in reconciliation	Kirschsteiniothelia_aethiops_1	-	False
+otu63362	Kirschsteiniothelia aethiops	295798	147564	-	None	True	deleted from tree in reconciliation	Kirschsteiniothelia_aethiops_2	-	False
+otu63367	Tubeufia cerea	1019032	2082533	-	None	True	deleted from tree in reconciliation	Tubeufia_cerea	-	False
+otu63368	Helicomyces roseus	25859	301202	-	None	True	deleted from tree in reconciliation	Helicomyces_roseus	-	False
+otu63369	Tubeufia paludosa	817524	318725	-	None	True	deleted from tree in reconciliation	Tubeufia_paludosa	-	False
+otu63373	Alyxoria varia	1089782	91480	-	2021/03/22	unknown	in original alignment but not tree, taxon info unknown	Opegrapha_varia	-	True
+otu63372	Opegrapha dolomitica	58484	399108	-	2021/03/22	True	original	Opegrapha_dolomitica	-	True
+otu63371	Simonyella variegata	516983	92844	-	2021/03/22	True	original	Simonyella_variegata	-	True
+otu63375	Dendrographa decolorans	1069732	279122	-	2021/03/22	True	original	Schismatomma_decolorans	-	True
+otu63376	Roccella fuciformis	753808	269074	-	2021/03/22	True	original	Roccella_fuciformis	-	True
+otu63374	Roccellographa cretacea	516979	92842	-	None	True	deleted from tree in reconciliation	Rocellographa_cretacea	-	False
+otu63370	Arthonia caesia	747523	0	-	2021/03/22	unknown	in original alignment but not tree, taxon info unknown	Arthonia_caesia	-	True
+otu63279	Symbiotaphrina buchneri	896616	40220	-	None	True	deleted from tree in reconciliation	Symbiotaphrina_buchneri	-	False
+otu63278	Hyphozyma lignicola	699522	177195	-	None	True	deleted from tree in reconciliation	Hyphozyma_lignicola	-	False
+otu63277	Symbiotaphrina kochii	513429	40221	-	None	True	deleted from tree in reconciliation	Symbiotaphrina_kochii	-	False
+otu63276	Candelariella terrigena	1029102	404705	-	None	True	deleted from tree in reconciliation	Candelariella_terrigena	-	False
+otu63275	Candelariella reflexa	754743	411581	-	None	True	original	Candelariella_reflexa	-	False
+otu63237	Tryblidiopsis pinastri	739239	66520	-	None	True	deleted from tree in reconciliation	Tryblidiopsis_pinastri	-	False
+otu63238	Coccomyces strobi	812160	380015	-	None	True	deleted from tree in reconciliation	Coccomyces_strobi	-	False
+otu63268	Microglossum rufum	554275	211506	-	None	True	deleted from tree in reconciliation	Microglossum_rufum	-	False
+otu63267	Leotia lubrica	339442	39932	-	None	True	deleted from tree in reconciliation	Leotia_lubrica	-	False
+otu63271	Pseudeurotium hygrophilum	784460	0	-	None	True	deleted from tree in reconciliation	Pseudeurotium_zonatum	-	False
+otu63272	Leuconeurospora pulcherrima	279843	95334	-	None	True	deleted from tree in reconciliation	Leuconeurospora_pulcherrima	-	False
+otu63270	Thelebolus caninus	546841	320507	-	None	True	deleted from tree in reconciliation	Thelebolus_caninus	-	False
+otu63269	Thelebolus microsporus	218767	319061	-	None	True	deleted from tree in reconciliation	Thelebolus_microsporus	-	False
+otu63273	Naemacyclus fimbriatus	94193	132176	-	None	True	deleted from tree in reconciliation	Naemacyclus_fimbriatus	-	False
+otu63274	Cyclaneusma minus	866309	64355	-	None	True	deleted from tree in reconciliation	Cyclaneusma_minus	-	False
+otu63244	Pezicula carpinea	1018168	101854	-	None	True	deleted from tree in reconciliation	Pezicula_carpinea	-	False
+otu63243	Dermea acerina	1061678	108551	-	None	True	deleted from tree in reconciliation	Dermea_acerina	-	False
+otu63242	Neofabraea malicorticis	986461	108569	-	None	True	deleted from tree in reconciliation	Neofabreae_malicorticis	-	False
+otu63263	Chlorociboria aeruginosa	694200	54693	-	None	True	deleted from tree in reconciliation	Chlorociboria_aeruginosa	-	False
+otu63262	Cyttaria darwinii	68614	47165	-	None	True	deleted from tree in reconciliation	Cyttaria_darwinii	-	False
+otu63261	Blumeria graminis	555363	34373	-	None	True	deleted from tree in reconciliation	Blumeria_graminis	-	False
+otu63260	Erysiphe diffusa	129269	79295	-	None	True	deleted from tree in reconciliation	Erysiphe_glycines	-	False
+otu63265	Mollisia cinerea	542792	186291	-	None	True	deleted from tree in reconciliation	Mollisia_cinerea	-	False
+otu63266	Loramyces macrosporus	467814	380016	-	None	True	deleted from tree in reconciliation	Loramyces_macrosporus	-	False
+otu63264	Vibrissea truncorum	224153	315230	-	None	True	deleted from tree in reconciliation	Vibrissea_truncorum	-	False
+otu63256	Lachnum virgineum	178976	47828	-	None	True	deleted from tree in reconciliation	Lachnum_virgineum	-	False
+otu63257	Cudoniella clavus	745596	315222	-	None	True	deleted from tree in reconciliation	Cudoniella_clavus_cf	-	False
+otu63258	Leotiomycetes	346134	147548	-	None	True	deleted from tree in reconciliation	Leotiomycetous_sp	-	False
+otu63259	Connersia rilstonii	803415	95320	-	None	True	original	Connersia_rilstonii	-	False
+otu63255	Bisporella citrina	478566	155150	-	None	True	deleted from tree in reconciliation	Bisporella_citrina	-	False
+otu63254	Ascomycota	439373	4890	-	None	True	original	Dark_septate_endophyte	-	False
+otu63252	Chloroscypha enterochroma	295875	66491	-	None	True	deleted from tree in reconciliation	Chloroscypha_enterochroma	-	False
+otu63253	Ascocoryne sarcoides	714997	139061	-	None	True	deleted from tree in reconciliation	Ascocoryne_sarcoides	-	False
+otu63251	Neobulgaria pura	903002	0	-	None	True	original	Neobulgaria_pura	-	False
+otu63245	Meria laricis	164628	66513	-	None	True	deleted from tree in reconciliation	Meria_laricis	-	False
+otu63246	Lambertella subrenispora	743486	38464	-	None	True	deleted from tree in reconciliation	Lambertella_subrenispora	-	False
+otu63247	Rutstroemia firma	102844	1490168	-	None	True	deleted from tree in reconciliation	Rutstroemia_firma	-	False
+otu63248	Monilinia laxa	466066	61186	-	None	True	deleted from tree in reconciliation	Monilinia_laxa	-	False
+otu63249	Sclerotinia sclerotiorum	880963	5180	-	None	True	deleted from tree in reconciliation	Sclerotinia_sclerotiorum	-	False
+otu63250	Botryotinia fuckeliana	17713	40559	-	None	True	deleted from tree in reconciliation	Botryotinia_fuckeliana	-	False
+otu63239	Phacidium lacerum	812162	909059	-	None	True	deleted from tree in reconciliation	Phacidium_lacerum	-	False
+otu63241	Potebniamyces pyri	248529	279237	-	None	True	deleted from tree in reconciliation	Potebniamyces_pyri	-	False
+otu63240	Bulgaria inquinans	902757	2079455	-	None	True	deleted from tree in reconciliation	Bulgaria_inquinans	-	False
+otu63124	Stigmatomyces protrudens	416285	147225	-	None	True	deleted from tree in reconciliation	Stigmatomyces_protrudens	-	False
+otu63123	Hesperomyces virescens	416287	147227	-	None	True	deleted from tree in reconciliation	Hesperomyces_virescens	-	False
+otu63122	Pyxidiophora	58290	45040	-	None	True	deleted from tree in reconciliation	Pyxidiophora_sp	-	False
+otu63121	Pyxidiophora arvernensis	58295	45041	-	None	True	deleted from tree in reconciliation	Pyxidiophora_avernensis	-	False
+otu63125	Anthostomella torosa	105117	395915	-	None	True	deleted from tree in reconciliation	Anthostomella_torosa	-	False
+otu63126	Amphisphaeria umbrina	877956	63207	-	None	True	deleted from tree in reconciliation	Amphisphaeria_umbrina	-	False
+otu63127	Khuskia oryzae	171771	668251	-	None	True	deleted from tree in reconciliation	Khuskia_oryzae	-	False
+otu63128	Apiospora montagnei	798498	335852	-	None	True	original	Apiospora_montagnei	-	False
+otu63129	Eutypa lata	855116	97096	-	None	True	deleted from tree in reconciliation	Eutypa_lata	-	False
+otu63130	Diatrype disciformis	183727	42366	-	None	True	deleted from tree in reconciliation	Diatrype_disciformis	-	False
+otu63134	Xylaria acuta	1025261	114808	-	None	True	deleted from tree in reconciliation	Xylaria_acuta	-	False
+otu63133	Xylaria hypoxylon	44255	665660	-	None	True	deleted from tree in reconciliation	Xylaria_hypoxylon	-	False
+otu63132	Graphostroma platystoma	1047409	190934	-	None	True	deleted from tree in reconciliation	Graphostroma_platystoma	-	False
+otu63131	Astrosphaeriella erumpens	3738802	0	-	None	True	deleted from tree in reconciliation	Seynesia_erumpens	-	False
+otu63180	Lindra obtusa	295946	309134	-	None	True	deleted from tree in reconciliation	Lindra_obtusa	-	False
+otu63181	Lulworthia grandispora	618474	77629	-	None	True	deleted from tree in reconciliation	Lulworthia_grandispora	-	False
+otu63182	Lindra thalassiae	172400	77628	-	None	True	deleted from tree in reconciliation	Lindra_thalassiae	-	False
+otu63179	Lulwoana uniseptata	595349	929575	-	None	True	deleted from tree in reconciliation	Lulworthia_uniseptata	-	False
+otu63178	Lulwoidea lignoarenaria	5318228	201929	-	None	True	deleted from tree in reconciliation	Lulworthia_lignoarenaria	-	False
+otu63218	Glomerella rufomaculans-vaccinii	1085557	0	-	None	True	deleted from tree in reconciliation	Glomerella_cingulata	-	False
+otu63219	Verticillium dahliae	615475	27337	-	None	True	deleted from tree in reconciliation	Verticillium_dahliae	-	False
+otu63222	Ceratocystis fimbriata	1097914	5158	-	None	True	deleted from tree in reconciliation	Ceratocystis_fimbriata	-	False
+otu63221	Ambrosiella xylebori	789041	44383	-	None	True	deleted from tree in reconciliation	Ambrosiella_xylebori	-	False
+otu63220	Gondwanamyces capensis	746238	114771	-	None	True	deleted from tree in reconciliation	Gondwanamyces_capensis	-	False
+otu63233	Petriella setifera	809132	42314	-	None	True	deleted from tree in reconciliation	Petriella_setifera	-	False
+otu63232	Graphium	871245	1503932	-	None	True	deleted from tree in reconciliation	Graphium_sp	-	False
+otu63235	Microascus trigonosporus	737682	456819	-	None	True	deleted from tree in reconciliation	Microascus_trigonosporus_var_trigonosporus	-	False
+otu63236	Microascus longirostris	309025	186343	-	None	True	deleted from tree in reconciliation	Microascus_longirostris	-	False
+otu63234	Cephalotrichum stemonitis	573018	186354	-	None	True	deleted from tree in reconciliation	Doratomyces_stemonitis	-	False
+otu63224	Varicosporina ramulosa	483881	45268	-	None	True	deleted from tree in reconciliation	Varicosporina_ramulosa	-	False
+otu63226	Corollospora angusta	351376	201932	-	None	True	deleted from tree in reconciliation	Corollospora_angusta	-	False
+otu63227	Halosigmoidea marina	5316888	234932	-	None	True	deleted from tree in reconciliation	Sigmoidea_marina	-	False
+otu63225	Corollospora maritima	172402	45810	-	None	True	deleted from tree in reconciliation	Corollospora_maritima	-	False
+otu63228	Aniptodera chesapeakensis	695332	45808	-	None	True	deleted from tree in reconciliation	Aniptodera_chesapeakensis	-	False
+otu63229	Lignincola laevis	150299	45814	-	None	True	deleted from tree in reconciliation	Lignincola_laevis	-	False
+otu63231	Halosphaeria appendiculata	172404	45812	-	None	True	deleted from tree in reconciliation	Halosphaeria_appendiculata	-	False
+otu63230	Nimbospora effusa	642750	45820	-	None	True	deleted from tree in reconciliation	Nimbospora_effusa	-	False
+otu63223	Graphium penicillioides	41398	67620	-	None	True	deleted from tree in reconciliation	Graphium_penicillioides	-	False
+otu63209	Acremonium alternatum	871246	45275	-	None	True	deleted from tree in reconciliation	Acremonium_alternatum	-	False
+otu63208	Emericellopsis maritima	495640	234930	-	None	True	deleted from tree in reconciliation	Emericellopsis_maritima	-	False
+otu63213	Roumegueriella rufula	935178	29868	-	None	True	deleted from tree in reconciliation	Roumegueriella_rufula	-	False
+otu63215	Hydropisphaera erubescens	505291	110568	-	None	True	deleted from tree in reconciliation	Hydropisphaera_erubescens	-	False
+otu63214	Gliomastix murorum	1061330	1036750	-	None	True	deleted from tree in reconciliation	Acremonium_murorum	-	False
+otu63212	Acremonium persicinum	277139	5051	-	None	True	deleted from tree in reconciliation	Acremonium_persicinum	-	False
+otu63210	Clonostachys rosea	359511	0	-	None	True	deleted from tree in reconciliation	Bionectria_ochroleuca	-	False
+otu63211	Clonostachys rosea	359511	0	-	None	True	deleted from tree in reconciliation	Bionectria_aureofulva_cf	-	False
+otu63216	Sarocladium strictum	400308	5046	-	None	True	deleted from tree in reconciliation	Acremonium_strictum	-	False
+otu63217	Acremonium breve	560366	561992	-	None	True	deleted from tree in reconciliation	Acremonium_breve	-	False
+otu63189	Niesslia exilis	131585	267680	-	None	True	deleted from tree in reconciliation	Niesslia_exilis	-	False
+otu63190	Nectria cinnabarina	359518	29855	-	None	True	deleted from tree in reconciliation	Nectria_cinnabarina	-	False
+otu63193	Gibberella zeae	264388	5518	-	None	True	original	Gibberella_zeae	-	False
+otu63194	Haematonectria haematococca	743045	0	-	None	True	deleted from tree in reconciliation	Nectria_haematococca	-	False
+otu63192	Pseudonectria buxi	282351	40629	-	None	True	deleted from tree in reconciliation	Pseudonectria_rousseliana	-	False
+otu63191	Ophionectria trichospora	527654	215734	-	None	True	deleted from tree in reconciliation	Ophionectria_trichospora	-	False
+otu63196	Nectria spirostriata	131579	0	-	None	True	deleted from tree in reconciliation	Peethambara_spirostriata	-	False
+otu63195	Myrothecium roridum	129242	1859971	-	None	True	deleted from tree in reconciliation	Myrothecium_roridum	-	False
+otu63198	Stachybotrys chartarum	735919	74722	-	None	True	deleted from tree in reconciliation	Stachybotrys_chartarum	-	False
+otu63197	Memnoniella subsimplex	688528	80384	-	None	True	deleted from tree in reconciliation	Stachybotrys_subsimplex	-	False
+otu63199	Elaphocordyceps capitata	64406	45235	-	None	True	deleted from tree in reconciliation	Cordyceps_capitata	-	False
+otu63200	Elaphocordyceps ophioglossoides	161178	71617	-	None	True	deleted from tree in reconciliation	Cordyceps_ophioglossoides	-	False
+otu63204	Cordyceps cardinalis	441948	224370	-	None	True	deleted from tree in reconciliation	Cordyceps_cardinalis	-	False
+otu63205	Sphaerostilbella berkeleyana	409106	29871	-	None	True	deleted from tree in reconciliation	Sphaerostilbella_berkeleyana	-	False
+otu63207	Hypocrea lutea	935193	0	-	None	True	deleted from tree in reconciliation	Hypocrea_lutea	-	False
+otu63206	Hypocrea americana	1072669	173944	-	None	True	deleted from tree in reconciliation	Hypocrea_americana	-	False
+otu63201	Balansia henningsiana	64411	45230	-	None	True	deleted from tree in reconciliation	Balansia_henningsiana	-	False
+otu63202	Claviceps purpurea	103008	1294630	-	None	True	deleted from tree in reconciliation	Claviceps_purpurea	-	False
+otu63203	Epichloe typhina	103011	137478	-	None	True	deleted from tree in reconciliation	Epichloe_typhina	-	False
+otu63184	Etheirophora unijubata	825005	419779	-	None	True	deleted from tree in reconciliation	Etheirophora_unijubata	-	False
+otu63185	Chaetosphaerella phaeostroma	781652	252169	-	None	True	deleted from tree in reconciliation	Chaetosphaerella_phaeostroma	-	False
+otu63186	Bertia moriformis	819302	0	-	None	True	deleted from tree in reconciliation	Bertia_moriformis	-	False
+otu63187	Melanospora tiffanyae	3704540	0	-	None	True	deleted from tree in reconciliation	Melanospora_tiffanyae	-	False
+otu63188	Melanospora zamiae	90714	40617	-	None	True	deleted from tree in reconciliation	Melanospora_zamiae	-	False
+otu63183	Torpedospora radiata	54448	311114	-	None	True	deleted from tree in reconciliation	Torpedospora_radiata	-	False
+otu63135	Lasiosphaeria ovina	597716	92902	-	None	True	deleted from tree in reconciliation	Lasiosphaeria_ovina	-	False
+otu63139	Neurospora crassa	572462	5141	-	None	True	deleted from tree in reconciliation	Neurospora_crassa	-	False
+otu63140	Gelasinospora tetrasperma	424728	94610	-	None	True	deleted from tree in reconciliation	Gelasinospora_tetrasperma	-	False
+otu63138	Sordaria fimicola	615465	27338	-	None	True	deleted from tree in reconciliation	Sordaria_fimicola	-	False
+otu63137	Podospora pauciseta	155361	2587412	-	None	True	deleted from tree in reconciliation	Podospora_anserina	-	False
+otu63136	Bombardia bombarda	436637	252184	-	None	True	deleted from tree in reconciliation	Bombardia_bombarda	-	False
+otu63141	Camarops microspora	758070	42371	-	None	True	deleted from tree in reconciliation	Camarops_microspora	-	False
+otu63142	Camarops ustulinoides	538046	252146	-	None	True	deleted from tree in reconciliation	Camarops_ustulinoides	-	False
+otu63144	Chaetosphaeria tortuosa	4054538	0	-	None	True	deleted from tree in reconciliation	Chaetosphaeria_tortuosa	-	False
+otu63143	Chaetosphaeria ovoidea	301828	1296267	-	None	True	deleted from tree in reconciliation	Chaetosphaeria_ovoidea	-	False
+otu63145	Phialemonium atrogriseum	560368	1093897	-	None	True	deleted from tree in reconciliation	Acremonium_atrogriseum	-	False
+otu63146	Coniochaeta ostrea	103607	309460	-	None	True	deleted from tree in reconciliation	Coniochaeta_ostreum	-	False
+otu63147	Phaeoacremonium aleophilum	393534	223192	-	None	True	deleted from tree in reconciliation	Togninia_minima	-	False
+otu63152	Valsella salicis	868404	187245	-	None	True	deleted from tree in reconciliation	Valsella_salicis	-	False
+otu63151	Valsa nivea	305248	1230083	-	None	True	deleted from tree in reconciliation	Leucostoma_niveum	-	False
+otu63150	Valsa ambiens	822584	356891	-	None	True	deleted from tree in reconciliation	Valsa_ambiens	-	False
+otu63153	Mazzantia napelli	343682	187238	-	None	True	deleted from tree in reconciliation	Mazzantia_napelli	-	False
+otu63155	Phomopsis phaseoli	737678	0	-	None	True	deleted from tree in reconciliation	Diaporthe_phaseolorum	-	False
+otu63154	Phomopsis velata	855272	1807033	-	None	True	deleted from tree in reconciliation	Diaporthe_eres	-	False
+otu63161	Melanconis alni	1082189	0	-	None	True	deleted from tree in reconciliation	Melanconis_marginalis	-	False
+otu63162	Melanconis stilbostoma	1082188	172185	-	None	True	deleted from tree in reconciliation	Melanconis_stilbostoma	-	False
+otu63156	Winterella hypodermia	5319203	0	-	None	True	deleted from tree in reconciliation	Cryptosporella_hypodermia	-	False
+otu63157	Gnomonia gnomon	343688	187234	-	None	True	deleted from tree in reconciliation	Gnomonia_gnomon	-	False
+otu63160	Diaporthe aesculi	725104	0	-	None	True	deleted from tree in reconciliation	Cryptodiaporthe_aesculi	-	False
+otu63159	Apiognomonia errabunda	157305	124133	-	None	True	deleted from tree in reconciliation	Apiognomonia_errabunda	-	False
+otu63158	Plagiostoma euphorbiae	822571	148338	-	None	True	deleted from tree in reconciliation	Plagiostoma_euphorbiae	-	False
+otu63167	Cryphonectria parasitica	103005	5116	-	None	True	deleted from tree in reconciliation	Cryphonectria_parasitica	-	False
+otu63166	Cryphonectria nitschkei	918891	187221	-	None	True	deleted from tree in reconciliation	Cryphonectria_nitschkei	-	False
+otu63165	Chrysoporthe cubensis	1052899	305400	-	None	True	deleted from tree in reconciliation	Chrysoporthe_cubensis	-	False
+otu63164	Endothia radicalis	5316851	2072832	-	None	True	deleted from tree in reconciliation	Endothia_gyrosa	-	False
+otu63163	Amphilogia gyrosa	1095058	114682	-	None	True	deleted from tree in reconciliation	Amphilogia_gyrosa	-	False
+otu63149	Calosphaeria pulchella	324855	312312	-	None	True	deleted from tree in reconciliation	Calosphaeria_pulchella	-	False
+otu63148	Pleurostoma ootheca	743927	308474	-	None	True	deleted from tree in reconciliation	Pleurostoma_ootheca	-	False
+otu63169	Lanspora coronata	121217	45830	-	None	True	deleted from tree in reconciliation	Lanspora_coronata	-	False
+otu63170	Phomatospora bellaminuta	1086864	561985	-	None	True	deleted from tree in reconciliation	Phomatospora_bellaminuta	-	False
+otu63168	Papulosa amerospora	77437	101488	-	None	True	deleted from tree in reconciliation	Papulosa_amerospora	-	False
+otu63171	Ceratocystis pilifera	5316941	0	-	None	True	deleted from tree in reconciliation	Ophiostoma_piliferum	-	False
+otu63172	Ceratocystis stenoceras	5316943	0	-	None	True	deleted from tree in reconciliation	Ophiostoma_stenoceras_1	-	False
+otu63173	Ceratocystis stenoceras	5316943	0	-	None	True	deleted from tree in reconciliation	Ophiostoma_stenoceras_2	-	False
+otu63175	Annulusmagnus triseptatus	974230	293432	-	None	True	deleted from tree in reconciliation	Annulusmagnus_triseptatus	-	False
+otu63174	Mycothyridium vestitum	5298733	265083	-	None	True	deleted from tree in reconciliation	Thyridium_vestitum	-	False
+otu63177	Magnaporthe grisea	258235	148305	-	None	True	deleted from tree in reconciliation	Magnaporthe_grisea	-	False
+otu63176	Gaeumannomyces medullaris	1086862	561983	-	None	True	deleted from tree in reconciliation	Gaeumannomyces_medullaris	-	False
+otu63516	Pneumocystis carinii	352919	4754	-	2021/03/22	True	original	Pneumocystis_carinii	-	True
+otu63517	Schizosaccharomyces pombe	990004	4896	-	2021/03/22	True	original	Schizosaccharomyces_pombe	-	True
+otu63521	Taphrina deformans	406032	5011	-	2021/03/22	True	original	Taphrina_deformans	-	True
+otu63520	Taphrina wiesneri	958917	5012	-	2021/03/22	True	original	Taphrina_wiesneri	-	True
+otu63519	Protomyces inouyei	615479	27332	-	2021/03/22	True	original	Protomyces_inouyei	-	True
+otu63518	Saitoella complicata	818008	5606	-	2021/03/22	True	original	Saitoella_complicata	-	True
+otu63515	Neolecta vitellina	75911	29826	-	None	True	deleted from tree in reconciliation	Neolecta_vitellina	-	False
+otu63514	Neolecta irregularis	998160	48691	-	None	True	deleted from tree in reconciliation	Neolecta_irregularis	-	False
+otu63088	Rhizopus liquefaciens	530834	0	-	None	True	deleted from tree in reconciliation	Rhizopus_oryzae	-	False
+otuPS1	Epichloe elymi	745528	55200	KC113328.1	None	True	new	-	Epichloe elymi strain E56 RNA polymerase II largest subunit (rpbA) gene, complete cds	False
+otuPS2	Schizosaccharomyces pombe	990004	4896	NM_001021568.2	None	True	new	-	Schizosaccharomyces pombe RNA polymerase II large subunit Rpb1 (rpb1), mRNA	False
+otuPS3	Pneumocystis murina B123	1062552	1069680	XM_007874590.1	None	True	new	-	Pneumocystis murina B123 DNA-directed RNA polymerase II subunit rpb1 (PNEG_00871), partial mRNA	False
+otuPS4	Spathaspora passalidarum NRRL Y-27907	785087	619300	XM_007373186.1	None	True	new	-	Spathaspora passalidarum NRRL Y-27907 hypothetical protein (SPAPADRAFT_134208), partial mRNA	False
+otuPS5	Spathaspora gorwiae	5221686	1852163	MH290817.1	None	True	new	-	Spathaspora gorwiae voucher UFMG<BRA>:CM-Y312 RNA polymerase II large subunit mRNA, partial cds	False
+otuPS6	Fusarium euwallaceae	364009	1147111	KU171682.1	None	True	new	-	Fusarium euwallaceae strain NRRL 62626 RNA polymerase largest subunit (RPB1) mRNA, complete cds	False
+otuPS7	Fusarium graminearum PH-1	627871	229533	XM_011318349.1	None	True	new	-	Fusarium graminearum PH-1 DNA-directed RNA polymerase II largest subunit partial mRNA	False
+otuPS8	Neurospora intermedia	572459	5142	AY548158.1	None	True	new	-	Neurospora intermedia isolate M1991-60 tRNA-Met gene, partial sequence; UrfLM gene, complete cds; tRNA-Cys gene, complete sequence; disrupted small subunit ribosomal RNA gene, partial sequence; and integrated plasmid pMADDUR1 reverse transcriptase gene, partial cds; mitochondrial	False
+otuPS9	Neurospora tetrasperma FGSC 2508	436641	510951	XM_009856977.1	None	True	new	-	Neurospora tetrasperma FGSC 2508 DNA-directed RNA polymerase II largest subunit partial mRNA	False
+otuPS10	Sordaria macrospora k-hell	352379	771870	XM_003352842.1	None	True	new	-	Sordaria macrospora k-hell uncharacterized protein (SMAC_05005), partial mRNA	False
+otuPS11	Thermothelomyces thermophilus ATCC 42464	842620	573729	XM_003658543.1	None	True	new	-	Thermothelomyces thermophilus ATCC 42464 uncharacterized protein (MYCTH_2294525), mRNA	False
+otuPS12	Sporothrix schenckii 1099-18	5220150	1397361	XM_016731563.1	None	True	new	-	Sporothrix schenckii 1099-18 DNA-directed RNA polymerase II subunit RPB1 (SPSK_04798), partial mRNA	False
+otuPS13	Phaeoacremonium minimum UCRPA7	672666	1286976	XM_007918692.1	None	True	new	-	Phaeoacremonium minimum UCRPA7 putative dna-directed rna polymerase ii largest subunit protein partial mRNA	False
+otuPS14	None	None	563466	XM_016787829.1	None	True	new	-	Scedosporium apiospermum DNA-directed RNA polymerase II subunit rpb1 (SAPIO_CDS5515), partial mRNA	False
+otuPS15	Cladophialophora carrionii CBS 160.54	596161	1279043	XM_008725815.1	None	True	new	-	Cladophialophora carrionii CBS 160.54 hypothetical protein partial mRNA	False
+otuPS16	Cladophialophora yegresii CBS 114405	923146	1182544	XM_007756046.1	None	True	new	-	Cladophialophora yegresii CBS 114405 DNA-directed RNA polymerase II subunit RPB1 partial mRNA	False
+otuPS17	Fonsecaea pedrosoi CBS 271.37	5318320	1442368	XM_013433051.1	None	True	new	-	Fonsecaea pedrosoi CBS 271.37 hypothetical protein partial mRNA	False
+otuPS18	None	None	5111	KC113315.1	None	True	new	-	Claviceps purpurea strain 20.1 RNA polymerase II largest subunit (rpbA) gene, complete cds	False
+otuPS19	None	None	5113	KC113326.1	None	True	new	-	Epichloe typhina strain E8 RNA polymerase II largest subunit (rpbA) gene, complete cds	False
+otuPS20	Neotyphodium aotearoae	177218	170559	KC012997.1	None	True	new	-	Neotyphodium aotearoae strain E899 RNA polymerase II largest subunit (rpbA) gene, complete cds	False
+otuPS21	Epichloe glyceriae	89725	79591	KC113327.1	None	True	new	-	Epichloe glyceriae strain E277 RNA polymerase II largest subunit (rpbA) gene, complete cds	False
+otuPS22	None	None	5113	KC113329.1	None	True	new	-	Epichloe typhina strain E5819 RNA polymerase II largest subunit (rpbA) gene, complete cds	False
+otuPS23	Epichloe festucae	137209	35717	KC113324.1	None	True	new	-	Epichloe festucae strain E2368 RNA polymerase II largest subunit (rpbA) gene, complete cds	False
+otuPS24	Epichloe amarillans	369201	42805	KC113325.1	None	True	new	-	Epichloe amarillans strain E57 RNA polymerase II largest subunit (rpbA) gene, complete cds	False
+otuPS25	Fusarium pseudograminearum CS3096	762890	1028729	XM_009265173.1	None	True	new	-	Fusarium pseudograminearum CS3096 hypothetical protein partial mRNA	False
+otuPS26	[Nectria] haematococca mpVI 77-13-4	357622	660122	XM_003054420.1	None	True	new	-	Fusarium vanettenii 77-13-4 uncharacterized protein (NECHADRAFT_103209), partial mRNA	False
+otuPS27	Fusarium poae	1017216	36050	KU171686.1	None	True	new	-	Fusarium poae strain NRRL 26941 RNA polymerase largest subunit (RPB1) mRNA, complete cds	False
+otuPS28	Colletotrichum graminicola M1.001	571302	645133	XM_008091269.1	None	True	new	-	Colletotrichum graminicola M1.001 RNA polymerase Rpb1 partial mRNA	False
+otuPS29	Verticillium dahliae VdLs.17	821875	498257	XM_009659128.1	None	True	new	-	Verticillium dahliae VdLs.17 DNA-directed RNA polymerase II subunit RPB1 (VDAG_06114), partial mRNA	False
+otuPS30	Verticillium alfalfae VaMs.102	303855	526221	XM_003002789.1	None	True	new	-	Verticillium alfalfae VaMs.102 DNA-directed RNA polymerase II subunit RPB1 partial mRNA	False
+otuPS31	Spathaspora boniae	5674127	1701548	MH290815.1	None	True	new	-	Spathaspora boniae voucher UFMG<BRA>:CM-Y306 RNA polymerase II large subunit mRNA, complete cds	False
+otuPS32	Clavispora lusitaniae ATCC 42720	650782	306902	XM_002616181.1	None	True	new	-	Clavispora lusitaniae ATCC 42720 hypothetical protein, mRNA	False
+otuPS33	Debaryomyces hansenii CBS767	90016	284592	XM_002769992.1	None	True	new	-	Debaryomyces hansenii CBS767 DEHA2A13618p (DEHA2A13618g), partial mRNA	False
+otuPS34	Debaryomyces fabryi	5674068	58627	XM_015612434.1	None	True	new	-	Debaryomyces fabryi DNA-directed RNA polymerase II subunit RPB1 (AC631_03605), partial mRNA	False
+otuPS35	Spathaspora girioi	5221687	1774708	MH290816.1	None	True	new	-	Spathaspora girioi voucher UFMG<BRA>:CM-Y302 RNA polymerase II large subunit mRNA, complete cds	False
+otuPS36	Kazachstania unispora	893401	27294	LT158283.1	None	True	new	-	Kazachstania unispora partial RPB1 gene for RNA polymerase II large subunit 1, strain CLIB 234	False
+otuPS37	Kazachstania bulderi	680227	112263	LT158274.1	None	True	new	-	Kazachstania bulderi partial RPB1 gene for RNA polymerase II large subunit 1, strain CLIB 596	False
+otuPS38	Candida dubliniensis CD36	904757	573826	XM_002422478.1	None	True	new	-	Candida dubliniensis CD36 DNA-directed RNA polymerase II subunit, putative (CD36_35480), partial mRNA	False
+otuPS39	Tetrapisispora phaffii CBS 4417	351496	1071381	XM_003683771.1	None	True	new	-	Tetrapisispora phaffii CBS 4417 hypothetical protein (TPHA0A03070), partial mRNA	False
+otuPS40	Naumovozyma dairenensis CBS 421	134089	1071378	XM_003667566.1	None	True	new	-	Naumovozyma dairenensis CBS 421 hypothetical protein (NDAI0A02130), partial mRNA	False
+otuPS41	Eremothecium gossypii ATCC 10895	130355	284811	NM_209535.2	None	True	new	-	Eremothecium gossypii ATCC 10895 ADR086Cp (AGOS_ADR086C), partial mRNA	False
+otuPS42	Lachancea thermotolerans CBS 6340	755660	559295	XM_002555922.1	None	True	new	-	Lachancea thermotolerans CBS 6340 KLTH0H02046p partial mRNA	False
+otuPS43	Torulaspora delbrueckii	959627	4950	XM_003680284.1	None	True	new	-	Torulaspora delbrueckii hypothetical protein (TDEL0C02320), partial mRNA	False
+otuPS44	Naumovozyma castellii CBS 4309	574076	1064592	XM_003674280.1	None	True	new	-	Naumovozyma castellii CBS 4309 hypothetical protein (NCAS0A13900), partial mRNA	False
+otuPS45	Kazachstania africana CBS 2517	351499	1071382	XM_003955490.1	None	True	new	-	Kazachstania africana CBS 2517 hypothetical protein (KAFR0B01060), partial mRNA	False
+otuPS46	None	None	32630	MN048157.1	None	True	Not within requested MRCA                                                                            ncbi:4890	-	Synthetic construct clone CCSBy3025B11 Gateway entry clone sequence	False
+otuPS47	Sclerotinia sclerotiorum 1980 UF-70	842731	665079	XM_001592956.1	None	True	new	-	Sclerotinia sclerotiorum 1980 UF-70 hypothetical protein partial mRNA	False
+otuPS48	Botrytis cinerea B05.10	926730	332648	XM_001548987.2	None	True	new	-	Botrytis cinerea B05.10 Bcrpo21 (Bcrpo21), mRNA	False
+otuPS49	Peltigera membranacea	523520	161997	JN596954.1	None	True	new	-	Peltigera membranacea voucher LA-31632 (IINH) RNA polymerase II largest subunit gene, complete cds	False
+otuPS50	Peltigera malacea	1003030	52884	JN639885.1	None	True	new	-	Peltigera malacea DNA-directed RNA polymerase II subunit (rpb1) gene, complete cds	False
+otuPS51	Endocarpon pusillum Z07020	5221006	1263415	XM_007789158.1	None	True	new	-	Endocarpon pusillum Z07020 DNA-directed RNA polymerase II subunit rpb1 mRNA	False
+otuPS52	Eremascus albus	434027	4968	GQ867801.1	None	True	new	-	Eremascus albus strain UCB 50-026 RNA polymerase II large subunit (rpb1) gene, partial cds	False
+otuPS53	None	None	5551	X88896.1	None	True	new	-	T.rubrum ND4, ATP6, SSUrRNA, ND6, COXIII, ATP8, and 6 tRNA genes	False
+otuPS54	Histoplasma capsulatum NAm1	584321	339724	XM_001542143.1	None	True	new	-	Histoplasma capsulatum NAm1 DNA-directed RNA polymerase II largest subunit partial mRNA	False
+otuPS55	Uncinocarpus reesii 1704	866679	336963	XM_002582276.1	None	True	new	-	Uncinocarpus reesii 1704 DNA-directed RNA polymerase II largest subunit, mRNA	False
+otuPS56	Penicillium expansum	615470	27334	XM_016737840.1	None	True	new	-	Penicillium expansum RNA polymerase, alpha subunit (PEX2_005630), partial mRNA	False
+otuPS57	Paracoccidioides brasiliensis Pb18	982177	502780	XM_010763776.1	None	True	new	-	Paracoccidioides brasiliensis Pb18 hypothetical protein partial mRNA	False
+otuPS58	Paracoccidioides lutzii Pb01	356257	502779	XM_015845565.1	None	True	new	-	Paracoccidioides lutzii Pb01 DNA-directed RNA polymerase II subunit RPB1 (PAAG_05397), partial mRNA	False
+otuPS59	Penicillium digitatum Pd1	962129	1170230	XM_014675299.1	None	True	new	-	Penicillium digitatum Pd1 DNA-directed RNA polymerase mRNA	False
+otuPS60	Aspergillus fischeri NRRL 181	36947	331117	XM_001264288.1	None	True	new	-	Aspergillus fischeri NRRL 181 DNA-dependent RNA polymerase II largest subunit, putative (NFIA_010730), partial mRNA	False
+otuPS61	Aspergillus clavatus NRRL 1	272668	344612	XM_001268790.1	None	True	new	-	Aspergillus clavatus NRRL 1 DNA-dependent RNA polymerase II largest subunit, putative (ACLA_020720), partial mRNA	False
+otuPS62	Exophiala aquamarina CBS 119918	923147	1182545	XM_013403745.1	None	True	new	-	Exophiala aquamarina CBS 119918 DNA-directed RNA polymerase II subunit RPB1 partial mRNA	False
+otuPS63	Capronia epimyces CBS 606.96	923148	1182542	XM_007734436.1	None	True	new	-	Capronia epimyces CBS 606.96 DNA-directed RNA polymerase II subunit RPB1 partial mRNA	False
+otuPS64	Fonsecaea multimorphosa CBS 102226	5318321	1442371	XM_016781560.1	None	True	new	-	Fonsecaea multimorphosa CBS 102226 hypothetical protein partial mRNA	False
+otuPS65	Capronia coronata CBS 617.96	358851	1182541	XM_007727927.1	None	True	new	-	Capronia coronata CBS 617.96 DNA-directed RNA polymerase II subunit RPB1 partial mRNA	False
+otuPS66	Rhinocladiella mackenziei CBS 650.93	5318322	1442369	XM_013419726.1	None	True	new	-	Rhinocladiella mackenziei CBS 650.93 hypothetical protein partial mRNA	False
+otuPS67	Cladophialophora psammophila CBS 110553	923149	1182543	XM_007750801.1	None	True	new	-	Cladophialophora psammophila CBS 110553 DNA-directed RNA polymerase II subunit RPB1 partial mRNA	False
+otuPS68	Cladophialophora bantiana CBS 173.52	5318319	1442370	XM_016768604.1	None	True	new	-	Cladophialophora bantiana CBS 173.52 hypothetical protein partial mRNA	False
+otuPS69	Parastagonospora nodorum SN15	672204	321614	XM_001801744.1	None	True	new	-	Parastagonospora nodorum SN15 hypothetical protein (SNOG_11556), partial mRNA	False
+otuPS70	Bipolaris sorokiniana ND90Pr	185677	665912	XM_007706492.1	None	True	new	-	Bipolaris sorokiniana ND90Pr uncharacterized protein (COCSADRAFT_164565), partial mRNA	False
+otuPS71	Bipolaris maydis ATCC 48331	11867	665024	XM_014222476.1	None	True	new	-	Bipolaris maydis ATCC 48331 hypothetical protein partial mRNA	False
+otuPS72	Bipolaris oryzae ATCC 44560	56891	930090	XM_007694177.1	None	True	new	-	Bipolaris oryzae ATCC 44560 hypothetical protein partial mRNA	False
+otuPS73	Aureobasidium subglaciale EXF-2481	21542	1043005	XM_013486958.1	None	True	new	-	Aureobasidium subglaciale EXF-2481 hypothetical protein mRNA	False
+otuPS74	Leptosphaeria maculans JN3	533721	985895	XM_003841323.1	None	True	new	-	Leptosphaeria maculans JN3 similar to DNA-directed RNA polymerase ii largest subunit (LEMA_P093010.1), partial mRNA	False
+otuPS75	Aureobasidium namibiae CBS 147.97	130178	1043004	XM_013576614.1	None	True	new	-	Aureobasidium namibiae CBS 147.97 putative DNA-dependent RNA polymerase II largest subunit partial mRNA	False
+otuPS76	Cercospora sojina	22979	438356	KC888805.1	None	True	new	-	Cercospora sojina clone C.sojina01094 microsatellite sequence	False
+otuPS77	Dendrographa decolorans	1069732	279122	DQ883718.1	2021/03/22	True	new	-	Schismatomma decolorans isolate AFTOL-ID 307 RNA polymerase II largest subunit (RPB1) gene, partial sequence	True
+otuPS78	Spathaspora passalidarum	452874	340170	JQ713047.1	None	True	new	-	Spathaspora passalidarum strain NRRL Y-27907 RNA polymerase I gene, partial cds	False
+otuPS79	Gigaspora margarita	837853	4874	HG316011.1	None	True	Not within requested MRCA                                                                            ncbi:4890	-	Gigaspora margarita partial rpb1 gene, strain BEG34, clone Hsp107b-1, exons 1-5	False
+otuPS80	Ogataea glucozyma	555933	36023	JQ713011.1	None	True	new	-	Ogataea glucozyma strain NRRL YB-2185 RNA polymerase I gene, partial cds	False
+otuPS81	Rhizocarpon oederi	598383	200983	KJ766923.1	None	True	identical and/or subsequence                                                                                    of otu63407, not added	-	Rhizocarpon oederi isolate AFTOL-ID 1372 RNA polymerase II largest subunit (RPB1) gene, partial cds	False
+otuPS82	Mycoblastus affinis	279682	400700	KJ766916.1	None	True	new	-	Mycoblastus affinis isolate AFTOL-ID 1047 RNA polymerase II largest subunit (RPB1) gene, partial cds	False
+otuPS83	Neurospora crassa	572462	5141	L33367.1	None	True	new	-	N.crassa (74-OR23-1A (FGSC #2489)) mitochondrial gene for 19S ribosomal RNA and transfer RNA-Tyr<>Neurospora crassa (clone p19StyrB1) mitochondrial 19S ribosomal RNA gene and transfer RNA-Tyr gene, complete	False
+otuPS84	Hydropisphaera erubescens	505291	110568	DQ518182.1	None	True	new	-	Hydropisphaera erubescens isolate AFTOL-ID 186 RNA polymerase II subunit (RPB1) gene, partial sequence	False
+otuPS85	Candida heliconiae	120646	221911	KM065952.1	None	True	new	-	Candida heliconiae strain NRRL Y-27813 RNA polymerase I gene, partial cds	False
+otuPS86	Ambispora leptoticha	493742	144679	HG316019.1	None	True	Not within requested MRCA                                                                            ncbi:4890	-	Ambispora leptoticha partial rpb1 gene, strain CR312, clone Hsp111b-24, exons 1-5	False
+otuPS87	Zygoascus hellenicus	868683	5621	JQ713071.1	None	True	new	-	Zygoascus hellenicus strain NRRL Y-7136 RNA polymerase I gene, partial cds	False
+otuPS88	Metschnikowia bicuspidata	94057	27322	JQ713042.1	None	True	new	-	Metschnikowia bicuspidata strain NRRL YB-4993 RNA polymerase I gene, partial cds	False
+otuPS89	Candida sinolaborantium	46739	271313	KM065962.1	None	True	new	-	Candida sinolaborantium strain NRRL Y-27765 RNA polymerase I gene, partial cds	False
+otuPS90	Meyerozyma guilliermondii	334025	4929	JQ713058.1	None	True	seq otuPS90 is supersequence of original seq otu63109, both kept in alignment 	-	Meyerozyma guilliermondii strain NRRL Y-2075 RNA polymerase I gene, partial cds	False
+otuPS91	Yamadazyma triangularis	882692	45515	JQ713062.1	None	True	new	-	Yamadazyma triangularis strain NRRL Y-5714 RNA polymerase I gene, partial cds	False
+otuPS92	Clavispora lusitaniae	213939	36911	JQ713040.1	None	True	seq otuPS92 is supersequence of original seq otu63107, both kept in alignment 	-	Clavispora lusitaniae strain NRRL Y-11827 RNA polymerase I gene, partial cds	False
+otuPS93	Debaryomyces hansenii	325560	4959	JQ713052.1	None	True	new seq added; identical and/or subsequence of otuPS33,                                   but different taxon	-	Debaryomyces hansenii strain NRRL Y-7426 RNA polymerase I gene, partial cds	False
+otuPS94	Yarrowia lipolytica	832179	4952	JQ713082.1	None	True	new	-	Yarrowia lipolytica strain NRRL YB-423 RNA polymerase I gene, partial cds	False
+otuPS95	Schizosaccharomyces pombe	990004	4896	JQ713095.1	None	True	new	-	Schizosaccharomyces pombe strain NRRL Y-12796 RNA polymerase I gene, partial cds	False
+otuPS96	Lachancea thermotolerans	768642	381046	JQ713028.1	None	True	new	-	Lachancea thermotolerans strain NRRL Y-8284 RNA polymerase I gene, partial cds	False
+otuPS97	Torulaspora delbrueckii	959627	4950	JQ713024.1	None	True	identical and/or subsequence                                                                                    of otuPS43, not added	-	Torulaspora delbrueckii strain NRRL Y-866 RNA polymerase I gene, partial cds	False
+otuPS98	Wickerhamomyces canadensis	234300	1156965	JQ713007.1	None	True	new	-	Wickerhamomyces canadensis strain NRRL Y-1888 RNA polymerase I gene, partial cds	False
+otuPS99	Hanseniaspora valbyensis	663084	53685	JQ713032.1	None	True	new	-	Hanseniaspora valbyensis strain NRRL Y-1626 RNA polymerase I gene, partial cds	False
+otuPS100	None	None	238975	DQ990920.1	None	True	new seq added; identical and/or subsequence of otu63395,                                   but different taxon	-	Usnea antarctica isolate AFTOL-ID 813 12S ribosomal RNA gene, partial sequence; mitochondrial	False
+otuPS101	Sugiyamaella smithiae	638679	54095	JQ713078.1	None	True	new	-	Sugiyamaella smithiae strain NRRL Y-17850 RNA polymerase I gene, partial cds	False
+otuPS102	Neurospora crassa	572462	5141	J05254.1	None	True	new	-	N.crassa mitochondrial small (19S) rRNA and Cys-tRNA	False
+otuPS103	None	None	5062	AB017184.1	2021/03/22	True	new	-	Aspergillus oryzae gene for RNA polymerase II largest subunit, complete cds	True
+otuPS104	Cryptococcus neoformans var. neoformans B-3501A	182637	283643	XM_770004.1	None	True	Not within requested MRCA                                                                            ncbi:4890	-	Cryptococcus neoformans var. neoformans B-3501A hypothetical protein (CNBE3710) partial mRNA	False
+otuPS105	Cryptococcus gattii WM276	966912	367775	XM_003194498.1	None	True	Not within requested MRCA                                                                            ncbi:4890	-	Cryptococcus gattii WM276 DNA-directed RNA polymerase II largest subunit, putative partial mRNA	False
+otuPS106	Roccella fuciformis	753808	269074	EU704082.1	2021/03/22	True	new	-	Roccella fuciformis voucher Diederich 15572 12S small subunit ribosomal RNA gene, partial sequence; mitochondrial	True
+otuPS107	Phanerodontia chrysosporium	633308	5306	AY864880.1	None	True	Not within requested MRCA                                                                            ncbi:4890	-	Phanerochaete chrysosporium isolate AFTOL-ID 776 RNA polymerase II largest subunit (RPB1) gene, partial cds	False
+otuPS108	Tephrocybe rancida	284717	117070	EF421042.1	None	True	Not within requested MRCA                                                                            ncbi:4890	-	Tephrocybe rancida strain CBS204.47 RNA polymerase II largest subunit (RPB1) gene, partial cds	False
+otuPS109	Crinipellis sp. MCA1527	924450	325585	AY916702.1	None	True	Not within requested MRCA                                                                            ncbi:4890	-	Crinipellis sp. MCA1527 RNA polymerase II largest subunit (RPB1) gene, partial sequence	False
+otuPS110	Cortinarius coerulescentium	703059	333530	DQ083836.1	None	True	Not within requested MRCA                                                                            ncbi:4890	-	Cortinarius coerulescentium voucher TF2002-002 RNA polymerase II largest subunit (RPB1) gene, partial cds	False
+otuPS111	Cortinarius gracilior	987392	304713	DQ083841.1	None	True	Not within requested MRCA                                                                            ncbi:4890	-	Cortinarius gracilior voucher TSJ2003-012 RNA polymerase II largest subunit (RPB1) gene, partial cds	False
+otuPS112	None	None	333536	EU655648.1	None	True	Not within requested MRCA                                                                            ncbi:4890	-	Cortinarius natalis voucher TUB 011678 RNA polymerase II largest subunit (rpb1) gene, partial cds	False
+otuPS113	None	None	333536	DQ083852.1	None	True	Not within requested MRCA                                                                            ncbi:4890	-	Cortinarius natalis voucher TSJ2002-070 RNA polymerase II largest subunit (RPB1) gene, partial cds	False
+otuPS114	Cortinarius cf. natalis TF2002-039	230726	333549	DQ083832.1	None	True	Not within requested MRCA                                                                            ncbi:4890	-	Cortinarius cf. natalis TF2002-039 voucher TF2002-039 RNA polymerase II largest subunit (RPB1) gene, partial cds	False
+otuPS115	Strobilomyces strobilaceus	551334	80670	AY858963.1	None	True	Not within requested MRCA                                                                            ncbi:4890	-	Strobilomyces floccopus isolate AFTOL-ID 716 RNA polymerase II largest subunit (RPB1) gene, partial cds	False
+otuPS116	Grifola frondosa	868676	5627	AY864876.1	None	True	Not within requested MRCA                                                                            ncbi:4890	-	Grifola frondosa isolate AFTOL-ID 701 RNA polymerase II largest subunit (RPB1) gene, partial cds	False
+otuPS117	Cotylidia sp. MB5	290363	281474	AY864868.1	None	True	Not within requested MRCA                                                                            ncbi:4890	-	Cotylidia sp. MB5 isolate AFTOL-ID 700 RNA polymerase II largest subunit (RPB1) gene, partial cds	False
+otuPS118	None	None	47429	AY788849.1	None	True	Not within requested MRCA                                                                            ncbi:4890	-	Armillaria mellea isolate AFTOL-ID 449 RNA polymerase II largest subunit (RPB1) gene, partial cds	False
+otuPS119	None	None	181527	DQ067955.1	None	True	Not within requested MRCA                                                                            ncbi:4890	-	Pluteus cervinus voucher FO 46619 RNA polymerase II largest subunit (RPB1) gene, partial sequence	False
+otuPS120	Boletus sp. REH8790	587462	925636	HQ161877.1	None	True	Not within requested MRCA                                                                            ncbi:4890	-	Boletus sp. REH8790 RNA polymerase II largest subunit (rpb1) gene, partial cds	False
+otuPS121	Coltricia perennis	569041	40426	AY864867.1	None	True	Not within requested MRCA                                                                            ncbi:4890	-	Coltricia perennis isolate AFTOL-ID 447 RNA polymerase II largest subunit (RPB1) gene, partial cds	False
+otuPS122	Calostoma japonicum	437957	555520	FJ536591.1	None	True	Not within requested MRCA                                                                            ncbi:4890	-	Calostoma japonicum voucher TKG-SC-40701 RNA polymerase II subunit I (RPB1) gene, partial cds	False
+otuPS123	Calostoma sp. HKAS38139	437953	555524	FJ536594.1	None	True	Not within requested MRCA                                                                            ncbi:4890	-	Calostoma sp. HKAS38139 RNA polymerase II subunit I (RPB1) gene, partial cds	False
+otuPS124	Calostoma fuscum	1014597	555519	FJ536590.1	None	True	Not within requested MRCA                                                                            ncbi:4890	-	Calostoma fuscum voucher OKM 23918 RNA polymerase II subunit I (RPB1) gene, partial cds	False
+otuPS125	Calostoma sarasinii	811725	634911	FJ536593.1	None	True	Not within requested MRCA                                                                            ncbi:4890	-	Calostoma sarasinii voucher DED7660 RNA polymerase II subunit I (RPB1) gene, partial cds	False
+otuPS126	Cheimonophyllum candidissimum	387031	181981	DQ447888.1	None	True	Not within requested MRCA                                                                            ncbi:4890	-	Cheimonophyllum candidissimum isolate AFTOL-ID 1765 RNA polymerase II largest subunit (rpb1) gene, partial cds	False
