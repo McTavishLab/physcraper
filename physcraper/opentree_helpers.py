@@ -9,7 +9,7 @@ from urllib.error import HTTPError
 
 import requests
 
-from dendropy import DataSet
+from dendropy import DataSet, datamodel
 from opentree import OT, object_conversion
 from nexson.syntax import get_subtree_otus
 
