@@ -10,7 +10,9 @@ from urllib.error import HTTPError
 import requests
 
 from dendropy import DataSet, datamodel
-from opentree import OT, object_conversion, nexson_helpers
+from opentree import OT, object_conversion
+from nexson.syntax import get_subtree_otus
+
 
 import physcraper
 from physcraper.helpers import standardize_label, to_string
@@ -324,11 +326,11 @@ def generate_ATT_from_phylesystem(alnfile,
     otu_dict = {tn.taxon.otu:{} for tn in tree_obj.leaf_node_iter()}
     orig_lab_to_otu = {}
     treed_taxa = {}
-    ingroup_otus = nexson_helpers.get_subtree_otus(study_nexson,
-                                                   tree_id=tree_id,
-                                                   subtree_id="ingroup",
-                                                   return_format="otu_id")
-    if not ingroup_otus:
+    ingroup_otus = get_subtree_otus(study_nexson,
+                                    tree_id=tree_id,
+                                    subtree_id="ingroup",
+                                    return_format="otu_id")
+    if ingroup_otus is None:
         sys.stdout.write("No ingroup annotation found in tree; using all taxa.\n \
                           Please update tree annotation through OpenTree curation app.\n")
     for leaf in tree_obj.leaf_node_iter():
