@@ -4,7 +4,9 @@ The BLAST tool can be run using local databases, which can be downloaded and upd
 
 ### Installing BLAST command line tools
 
-To blast locally you will need to install blast command line tools first.
+To blast locally you will need to install blast command line tools first.  
+If you perfomed the dependency installation using conda, the command line tools will already be installed.
+
 Find general instructions at
 https://www.ncbi.nlm.nih.gov/books/NBK279671/
 https://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/

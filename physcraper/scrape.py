@@ -56,11 +56,13 @@ class PhyscraperScrape():
 
             * key: gi id
             * value: corresponding seq
+
           * **self.new_seqs_otu_id**: dictionary that contains
           the new sequences that passed the remove_identical_seq() step:
 
             * key: otu_id
             * value: see otu_dict, is a subset of the otu_dict, all sequences that will be newly added to aln and tre
+
           * **self.mrca_ncbi**:  int ncbi identifier of mrca
 
           * **self.blast_subdir**: path to folder that contains the files writen during blast
@@ -91,6 +93,7 @@ class PhyscraperScrape():
                 * self._query_seqs_placed: 0/1, if place_query_seqs() was called, it is set to 1 for the round.
                 * self._reconciled: 0
                 * self._full_tree_est: 0/1, if est_full_tree() was called, it is set to 1 for the round.
+
     """
     def __init__(self, data_obj, ids_obj=None, search_taxon=None):
         assert isinstance(data_obj, AlignTreeTax)
