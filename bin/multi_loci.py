@@ -242,6 +242,14 @@ if args.format == "concatenate":
                                               include_missing=args.include_missing,
                                               gapchar="?")
     d_all.write(path="{}/{}".format(args.output, 'concat.aln'), schema=args.schema)
+    seqs_in_aln = [seq.label for seq in d_all]
+    fi = open("{}/{}".format(args.output, 'concat_info.txt'), 'w')
+    loci_names = list(loci.keys())
+    fi.write("seqname, " + ", ".join(loci.keys())+"\n")
+    for seq in concat_dict:
+        if seq in seqs_in_aln:
+            fi.write(seq + ", " + ", ".join([concat_dict[seq][locus] for locus in loci_names])+"\n")
+    fi.close()
 
 
 if args.format == "svdq":
@@ -256,6 +264,15 @@ if args.format == "svdq":
     fi.write(nexstr[:-7]) #deletes "end;"
     fi.write(taxpart_str)
     fi.close()
+    seqs_in_aln = [seq.label for seq in d_all]
+    fi = open("{}/{}".format(args.output, 'concat_info.txt'), 'w')
+    loci_names = list(loci.keys())
+    fi.write("seqname, " + ", ".join(loci.keys())+"\n")
+    for seq in concat_dict:
+        if seq in seqs_in_aln:
+            fi.write(seq + ", " + ", ".join([concat_dict[seq][locus] for locus in loci_names])+"\n")
+    fi.close()
+
 
 if args.format == "astral":
     loci, taxa = setup_dicts(args.locus_runs_folder)

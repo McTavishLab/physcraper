@@ -14,6 +14,7 @@ usage:
 
 
 optional arguments:
+
   -h, --help            show this help message and exit
   -d LOCUS_RUNS_FOLDER, --locus_runs_folder LOCUS_RUNS_FOLDER
                         folder containing results directories from individual locus runs
@@ -30,36 +31,52 @@ optional arguments:
            
 ## Astral
 
-To generate input files for an ASTRAL species tree analysis, use -f astral
+To generate input files for an ASTRAL species tree analysis, (https://github.com/smirarab/ASTRAL) use -f astral.
+This will generate two files in the output directory. 
+`genetrees.new`, a concatenation of all of the genetrees produced in individual analyses,
+and `mapping.txt`, a text file linking the tip lables in each of the gene trees to taxon names.
 
 e.g.
+
     multi_loci.py -d tests/data/precooked/multi_loc/ -f astral -o mini_species_tree
-    java -jar ../ASTRAL/astral.5.7.5.jar -i mini_species_tree/genetrees.new -a mini_species_tree/mappings.txt 
 
+You can run Astral diretcly on these files
+e.g.
 
-
-
+    java -jar astral.5.7.5.jar -i mini_species_tree/genetrees.new -a mini_species_tree/mappings.txt 
 
 
 ## Concatenation
 
 To concatenate multiple loci into a single alignment use -f concatenate. 
-Default settings only generate concatented loci for taxa where there is a sequence at each locus (-m False)
+Default settings only generate concatenated loci for taxa where there is a sequence at each locus .
 
 e.g.
     multi_loci.py -d tests/data/precooked/multi_loc/ -f concatenate -s fasta -o mini_concat
 
 
-To generate concantented taxa with missing loci use -m (for missing data)
+To generate concatenated taxa with missing loci use -m (for include missing data).
 
     multi_loci.py -d tests/data/precooked/multi_loc/ -f concatenate -s nexus -m -o mini_concat_gaps
 
 
+This will generate a concatenated alignment in the output directory with the name 'concat.aln' in the schema selected using -s (either fasta or nexus).
+Each concatenated sequences is labeled with the taxon name and an integer.
 
+The sequences from each individual run comprising the concatenated sequence are described in "concat_info.txt" in the output directory.
 
 ## SVD quartets
 
+To write out a concatenated Nexus file with a taxon partitions block linking sequences for the same taxa, for use in SVD quartets analyses (tutorial at http://evomics.org/learning/phylogenetics/svdquartets/) use -f svdq
 
-    python bin/multi_loci.py -d tests/data/precooked/multi_loc/ -f svdq -m -o mini_concat2
+This will generate a Nexus file of concatenated sequences linked together by their taxon assignment in a taxon block.
+The sequences from each individual run comprising the concatenated sequence are described in "concat_info.txt" in the output directory, as above.
+e.g.
+
+    multi_loci.py -d tests/data/precooked/multi_loc/ -f svdq -m -o svdq_out
+
+This file can be used to run SVDQ in Paup
+e.g.
+
     paup4a168_ubuntu64 mini_concat2/svdq.nex
     svdq evalq=all taxpartition=species nthreads=ncpus;
