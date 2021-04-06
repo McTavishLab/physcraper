@@ -22,6 +22,7 @@ java -jar astral.5.7.5.jar -i ../physcraper/test_concat_res/genetrees.new -a ../
 
 import argparse
 import os
+import sys
 import copy
 import dendropy
 
@@ -48,7 +49,11 @@ parser.add_argument("-m", "--include_missing",
                     default=False)
 ## Include all seqs or just some???
 
+
 args = parser.parse_args()
+if len(sys.argv) == 1:
+    parser.print_help(sys.stderr)
+    sys.exit(1)
 
 
 assert args.output, "-o output folder is required"

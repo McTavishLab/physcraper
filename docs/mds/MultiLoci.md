@@ -28,7 +28,7 @@ optional arguments:
                         default = False
 
            
-# Astral
+## Astral
 
 To generate input files for an ASTRAL species tree analysis, use -f astral
 
@@ -41,7 +41,7 @@ e.g.
 
 
 
-# Concatenation
+## Concatenation
 
 To concatenate multiple loci into a single alignment use -f concatenate. 
 Default settings only generate concatented loci for taxa where there is a sequence at each locus (-m False)
@@ -57,7 +57,7 @@ To generate concantented taxa with missing loci use -m (for missing data)
 
 
 
-# SVD quartets
+## SVD quartets
 
 
     python bin/multi_loci.py -d tests/data/precooked/multi_loc/ -f svdq -m -o mini_concat2
