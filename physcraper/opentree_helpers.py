@@ -385,6 +385,67 @@ def generate_ATT_from_phylesystem(alnfile,
                                                 configfile=configfile)
     # newick should be bare, but alignment should be DNACharacterMatrix
 
+# ATT is a dumb acronym for Alignment Tree Taxa object
+def generate_treetaxon_from_phylesystem(study_id,
+                                        tree_id,
+                                        search_taxon=None,
+                                        tip_label='otu'):
+    # Disable all the too many locals, branches and statements for this function
+    # pylint: disable=too-many-locals, too-many-branches, too-many-statements
+    """
+    Gathers together tree, alignment, and study info; forces names to OTT ids.
+
+    Study and tree ID's can be obtained by using python ./scripts/find_trees.py LINEAGE_NAME
+
+    Spaces vs underscores kept being an issue, so all spaces are coerced to underscores when data are read in.
+
+    :param aln: dendropy :class:`DnaCharacterMatrix
+    <dendropy.datamodel.charmatrixmodel.DnaCharacterMatrix>` alignment object
+    :param workdir: path to working directory
+    :param config_obj: config class containing the settings
+    :param study_id: OpenTree study id of the phylogeny to update
+    :param tree_id: OpenTree tree id of the phylogeny to update, some studies have several phylogenies
+    :param phylesystem_loc: access the GitHub version of the OpenTree
+    data store, or a local clone
+    :param search_taxon: optional.  OTT id of the MRCA of the clade that shall be updated
+    :return: object of class ATT
+    """
+    assert(tip_label in ['^ot:originalLabel', 'otu', "^ot:ottTaxonName", "^ot:ottId"])
+    try:
+        study = OT.get_study(study_id)
+    except AttributeError:
+        sys.stderr.write("Failure getting study {} from OpenTree phylesystem.".format(study_id))
+        sys.exit()
+    try:
+        study_nexson = study.response_dict['data']
+        DC = object_conversion.DendropyConvert()
+        tree_obj = DC.tree_from_nexson(study_nexson, tree_id)
+    except KeyError:
+        sys.stderr.write("Failure getting tree {} from study {} from OpenTree phylesystem.".format(tree_id, study_id))
+        sys.exit()
+    # this gets the taxa that are in the subtree with all of their info - ott_id, original name,
+    otu_dict = {tn.taxon.otu:{} for tn in tree_obj.leaf_node_iter()}
+    orig_lab_to_otu = {}
+    treed_taxa = {}
+    ingroup_otus = get_subtree_otus(study_nexson,
+                                    tree_id=tree_id,
+                                    subtree_id="ingroup",
+                                    return_format="otu_id")
+    for leaf in tree_obj.leaf_node_iter():
+        tn = leaf.taxon
+        otu_id = tn.otu
+        otu_dict[otu_id]["^ot:ottId"] = tn.ott_id
+        otu_dict[otu_id]["^ot:ottTaxonName"] = tn.ott_taxon_name
+        otu_dict[otu_id]["^ot:originalLabel"] = tn.original_label.replace(" ", "_")
+        orig = otu_dict[otu_id].get(u"^ot:originalLabel").replace(" ", "_")
+        orig_lab_to_otu[orig] = otu_id
+        if tip_label == 'otu':
+            tn.label = otu_id
+        else:
+            tn.label = otu_dict[otu_id].get(tip_label)
+        treed_taxa[orig] = otu_dict[otu_id].get(u"^ot:ottId")
+    return physcraper.treetaxon.TreeTax(treeobj=tree_obj,
+                                        otu_json=otu_dict)
 
 
 def get_dataset_from_treebase(study_id):

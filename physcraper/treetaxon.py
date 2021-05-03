@@ -43,15 +43,18 @@ class TreeTax():
     """wrap up the key parts together, requires OTT_id, and names must already match.
 
     """
-    def __init__(self, otu_json, treefrom,
+    def __init__(self, otu_json, treeobj =None, treepath = None,
                  schema='newick'):
-        if treefrom == 'synth':
-            sys.stderr.write("Tree from synth not implemented\n")
-            sys.exit()
-        assert os.path.exists(treefrom)
-        self.tre = Tree.get(path=treefrom,
+        #if treefrom == 'synth':
+        #    sys.stderr.write("Tree from synth not implemented\n")
+        #    sys.exit()
+        if treepath:
+            assert os.path.exists(treefrom)
+            self.tre = Tree.get(path=treefrom,
                             schema=schema,
                             preserve_underscores=True)
+        if treeobj:
+            self.tre = treeobj
         if isinstance(otu_json, dict):
             self.otu_dict = otu_json
         elif isinstance(otu_json, str):
@@ -69,10 +72,14 @@ class TreeTax():
 
         :return: replaced tip names
         """
-        for tax in self.tre.taxon_namespace:
+        for tax in self.tre.leaf_node_iter():
             if tax.label in self.otu_dict.keys():
                 pass
+            if tax.taxon.label in self.otu_dict.keys():
+                tax.label = tax.taxon.label
             else:
+                print(tax.label)
+                print(tax.__dict__)
                 found_label = 0
                 match = re.match("'n[0-9]{1,3}", tax.label)
                 newname = ""
@@ -89,7 +96,7 @@ class TreeTax():
                     otulab = tax.label
                     self.otu_dict[otulab]["^ot:originalLabel"] = tax.label
                     tax.label = otulab
-        for tax in self.tre.taxon_namespace:
+        for tax in self.tre.leaf_node_iter():
             assert tax.label in self.otu_dict
     def write_labelled(self, label, path, norepeats=True, add_gb_id=False):
         """output tree and alignment with human readable labels

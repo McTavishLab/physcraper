@@ -13,7 +13,7 @@ import json
 import shutil
 import dendropy
 from dendropy import Tree, DnaCharacterMatrix, datamodel
-from physcraper import ncbi_data_parser, ConfigObj
+from physcraper import treetaxon, ncbi_data_parser, ConfigObj
 from physcraper.opentree_helpers import get_mrca_ott, bulk_tnrs_load
 from physcraper.helpers import to_string, debug
 
@@ -135,7 +135,7 @@ def generate_ATT_from_run(workdir, start_files='output', tag=None, configfile=No
                         tag=tag,
                         tree_schema='newick')
 
-def write_otu_file(treetax, filepath, schema="table"):
+def write_otu_file(treetax, filepath, schema="table", headers="physcraper"):
     """
     Writes out OTU dict as json or table.
     :param treetax: eitehr a treetaxon object or an alignment tree taxon object
@@ -146,26 +146,38 @@ def write_otu_file(treetax, filepath, schema="table"):
     if schema == "json":
         with open(filepath, "w") as outfile:
             json.dump(treetax.otu_dict, outfile)
-    leaves = [tax.label for tax, seq in treetax.aln.items()]
+    if isinstance(treetax, treetaxon.TreeTax):
+        leaves = [tax.label for tax in treetax.tre.leaf_node_iter()]
+    else:
+        leaves = [tax.label for tax, seq in treetax.aln.items()]
     if schema == "table":
-        keys = ['^ot:ottTaxonName',
-                '^ot:ottId',
-                '^ncbi:taxon',
-                '^ncbi:accession',
-                '^physcraper:last_blasted',
-                '^physcraper:ingroup',
-                '^physcraper:status',
-                '^ot:originalLabel',
-                '^ncbi:title']
-        header = ["otu_id"] + keys + ['^physcraper:in_current_aln']
+        if headers == "physcraper": 
+            keys = ['^ot:ottTaxonName',
+                    '^ot:ottId',
+                    '^ncbi:taxon',
+                    '^ncbi:accession',
+                    '^physcraper:last_blasted',
+                    '^physcraper:ingroup',
+                    '^physcraper:status',
+                    '^ot:originalLabel',
+                    '^ncbi:title']
+            header = ["otu_id"] + keys + ['^physcraper:in_current_aln']
+        elif headers == "other":
+            keys = set()
+            for otu in treetax.otu_dict:
+                for ke in treetax.otu_dict[otu].keys():
+                    keys.add(ke)
+            keys = list(keys)
+            header = ["otu_id"] + keys 
         with open(filepath, "w") as outfile:
             outfile.write("\t".join(header)+"\n")
             for otu in treetax.otu_dict:
                 vals = [str(treetax.otu_dict[otu].get(key, "-")) for key in keys]
-                if otu in leaves:
-                    vals.append('True')
-                else:
-                    vals.append('False')
+                if headers == "physcraper": 
+                    if otu in leaves:
+                        vals.append('True')
+                    else:
+                        vals.append('False')
                 outfile.write("\t".join([to_string(otu)]+vals)+"\n")
 
 
