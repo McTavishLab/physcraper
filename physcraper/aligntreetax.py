@@ -168,6 +168,7 @@ def write_otu_file(treetax, filepath, schema="table", headers="physcraper"):
                 for ke in treetax.otu_dict[otu].keys():
                     keys.add(ke)
             keys = list(keys)
+            keys.sort()
             header = ["otu_id"] + keys 
         with open(filepath, "w") as outfile:
             outfile.write("\t".join(header)+"\n")
