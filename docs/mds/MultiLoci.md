@@ -16,8 +16,8 @@ usage:
 optional arguments:
 
   -h, --help            show this help message and exit
-  -d LOCUS_RUNS_FOLDER, --locus_runs_folder LOCUS_RUNS_FOLDER
-                        folder containing results directories from individual locus runs
+  -d MULTIPLE_RUNS_FOLDER, --locus_runs_folder MULTIPLE_RUNS_FOLDER
+                        folder containing at least two output directories from individual Phsycraper runs
   -o OUTPUT, --output OUTPUT
                         folder to write to
   -f {concatenate,astral}, --format {concatenate,astral}
@@ -25,14 +25,14 @@ optional arguments:
   -s {fasta,nexus}, --schema {fasta,nexus}
                         putput alignment file format schema
   -m INCLUDE_MISSING, --include_missing INCLUDE_MISSING
-                        Where uneven numbers of sequences are available, concatenate with gaps. 
+                        Where uneven numbers of sequences are available, concatenate with gaps.
                         default = False
 
-           
+
 ## Astral
 
 To generate input files for an ASTRAL species tree analysis, (https://github.com/smirarab/ASTRAL) use -f astral.
-This will generate two files in the output directory. 
+This will generate two files in the output directory.
 `genetrees.new`, a concatenation of all of the genetrees produced in individual analyses,
 and `mapping.txt`, a text file linking the tip lables in each of the gene trees to taxon names.
 
@@ -43,12 +43,12 @@ e.g.
 You can run Astral diretcly on these files
 e.g.
 
-    java -jar astral.5.7.5.jar -i mini_species_tree/genetrees.new -a mini_species_tree/mappings.txt 
+    java -jar astral.5.7.5.jar -i mini_species_tree/genetrees.new -a mini_species_tree/mappings.txt
 
 
 ## Concatenation
 
-To concatenate multiple loci into a single alignment use -f concatenate. 
+To concatenate multiple loci into a single alignment use -f concatenate.
 Default settings only generate concatenated loci for taxa where there is a sequence at each locus .
 
 e.g.
