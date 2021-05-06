@@ -67,20 +67,41 @@ The `tree_comparison.py` script takes as an argument the output directory of a P
 and compares the relationships in the final tree to the relationships in the input tree.
 
 It uses the rooting functions described above to assure the two trees have the same root.
+By default it will root trees based on the OpenTree taxonomy.
 
-The simplest command line is:
+Usage:
+    tree_comparison.py  [-h] [-d PHYSCRAPER_OUTPUT_DIRECTORY] [-t1 ORIGINAL_TREE] [-t2 UPDATED_TREE]
+                        [-otu OTU_INFO_FILE] [-og OUTGROUP] [-o OUTPUT_DIRECTORY]
+
+Arguments:
+  -h, --help            show this help message and exit
+  -d PHYSCRAPER_OUTPUT_DIRECTORY, --dir PHYSCRAPER_OUTPUT_DIRECTORY
+                        A folder name containing all output directories from a Physcraper run
+  -o OUTPUT_DIRECTORY, --output OUTPUT_DIRECTORY
+                        A folder name to write the results of the comparison analysis to
+  -t1 ORIGINAL_TREE, --original_tree ORIGINAL_TREE
+                        Original tree from `inputs` folder
+  -t2 UPDATED_TREE, --updated_tree UPDATED_TREE
+                        Updated tree from `outputs` folder
+  -otu OTU_INFO_FILE, --include_missing INCLUDE_MISSING
+                        File with taxon information in JSON format from the `run` folder
+
+The simplest comparison run from the command line:
+
+    tree_comparison.py  [-h] [-d PHYSCRAPER_OUTPUT_FOLDER] [-o OUTPUT_DIRECTORY]
+
+This compares the original tree in the `inputs` folder and the updated tree in the `outputs` folder
+For example:
 
     tree_comparison.py -d docs/examples/pg_55_web/ -o pg_55_comparison
 
-Where `-d` is the directory with the output files from a Physcraper run, and `-o`
-is the path and file where the tree comparison results are stored. By default it will root trees based on the OpenTree taxonomy, as explained above.
 
-Alternatively, you can pass in OTT ids of two taxa from the input tree to use to root both trees,
-e.g.,
+Alternatively, you can pass in OTT ids of two or more taxa from the input tree to use as outgroups to root both trees.
+For example:
 
     tree_comparison.py -d docs/examples/pg_55_web/ -og otu376420 otu376439 otu376452 -o pg_55_comparison
 
-In either case the script will print to screen information comparing the two trees including:
+If the comparison between the two trees is possible, the script will print to screen information comparing the two trees, including:
 
 * The number of new tips
 * The number of new taxa
