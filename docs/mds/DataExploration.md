@@ -13,19 +13,19 @@ achieved final form yet.
 
 ### Relabeling the trees
 
-For downstream analyses and figure making, it can be handy to swap name on tips of
+For downstream analyses and figure making, it can be handy to swap labels on tips of
 the updated phylogeny from alternative taxonomies or taxon id numbers.
 
-Do that with the `write_labelled` function, e.g.,
+Do that with the `write_labelled` function. For example, to change  e.g.,
 
     from physcraper import treetaxon
     pg55 = treetaxon.generate_TreeTax_from_run('docs/examples/pg_55_web')
-    pg55.write_labelled(label='^ot:ottTaxonName', norepeats=False, path='test_podarcis/repeats.tre')
+    pg55.write_labelled(label='^ot:ottTaxonName', norepeats=False, path='tests/tmp/pg_55_repeats.tre')
 
 ### Rerooting the trees
 
-A correctly rooted phylogeny is needed to compare relationships between two or more phylogenies.
-Rooting phylogenies can be tricky. Physcraper places a suggested root based on the taxonomic relationships in OpenTree, using the `root_tree_from_synth` function.
+A correctly rooted phylogeny is needed to compare relationships between two or more phylogenetic hypotheses.
+Automatic rooting of phylogenies is not straightforward. Physcraper's `root_tree_from_synth` function places a suggested root based on relationships in OpenTree's synthetic tree or in its taxonomic tree.
 
 To root a Physcraper tree using either the OpenTree taxonomy, or the OpenTree synthetic tree.
 First load the tree object:
@@ -37,16 +37,16 @@ Then, to root based on the OpenTree taxonomy, set `base = "ott"`:
 
     from physcraper import opentree_helpers
     ott_rooted_tree = opentree_helpers.root_tree_from_synth(pg55.tre, pg55.otu_dict, base='ott')
-    pg55.tre = ott_rooted_tree
-    pg55.write_labelled(label="^ot:ottTaxonName", path="ott_root.tre")
+    pg55.tre = ott_rooted_tree  # set tree rooted based on taxonomy as the tree object
+    pg55.write_labelled(label="^ot:ottTaxonName", path="tests/tmp/pg_55_ott_root.tre")
 
 
 And, to root based on phylogenetic relationships in the OpenTree synthetic tree, set `base = "synth"`:
 
     from physcraper import opentree_helpers
     synth_rooted_tree = opentree_helpers.root_tree_from_synth(pg55.tre, pg55.otu_dict, base='synth')
-    pg55.tre = synth_rooted_tree
-    pg55.write_labelled(label="^ot:ottTaxonName", path="synth_root.tre")
+    pg55.tre = synth_rooted_tree  # set tree rooted based on synth as the tree object
+    pg55.write_labelled(label="^ot:ottTaxonName", path="tests/tmp/pg_55_synth_root.tre")
 
 
 In this example both trees are the same even though they use the MRCA of different pairs of taxa, because those MRCA's map to the same node on the output tree.
@@ -58,7 +58,7 @@ So whenever possible, the root should be specified by the user, for example by c
     outgroup = ['otu376436','otu376444']
     mrca = pg55.tre.mrca(taxon_labels=outgroup)
     pg55.tre.reroot_at_node(mrca, update_bipartitions=True)
-    pg55.write_labelled(label="^ot:ottTaxonName", path="manual_root.tre")
+    pg55.write_labelled(label="^ot:ottTaxonName", path="tests/tmp/pg_55_manual_root.tre")
 
 
 ### Tree comparison with Robinson-Foulds (RF) distance
