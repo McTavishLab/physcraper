@@ -52,7 +52,7 @@ And, to root based on phylogenetic relationships in the OpenTree synthetic tree,
 In this example both trees are the same even though they use the MRCA of different pairs of taxa, because those MRCA's map to the same node on the output tree.
 
 However rooting based on OTT can be unreliable, especially if taxonomy is a poor fit to true evolutionary relationships.
-So whenever possible, the root should be specified by the user, for example by choosing from tips in the "otu_dictionary" file, e.g.,
+So whenever possible, the root should be specified by the user, for example by choosing from tips in the "otu_info.csv" file in the `outputs` folder of a Physcraper run, e.g.,
 
     pg55 = treetaxon.generate_TreeTax_from_run('docs/examples/pg_55_web')
     outgroup = ['otu376436','otu376444']
