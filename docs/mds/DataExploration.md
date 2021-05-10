@@ -75,26 +75,29 @@ Usage:
 
 Arguments:
 
-<pre>
--h, --help
-  Show the help message and exit.
+<blockquote>
+<div><dl class="option-list">
+<dt><kbd><span class="option">-h </span>, <span class="option">--help </span></kbd></dt>
+<dd><p>Show the help message and exit.</p>
+</dd>
+<dt><kbd><span class="option">-d </span>, <span class="option">--dir <var>DIRECTORY_NAME</var></span></kbd></dt>
+<dd><p>A name (and path) to a Physcraper output directory.</p>
+</dd>
+<dt><kbd><span class="option">-o </span>, <span class="option">--output <var>DIRECTORY_NAME</var></span></kbd></dt>
+<dd><p>Name (and path) for a directory to write the results of the comparison analysis to. If it exists, it will be overwritten.</p>
+</dd>
+<dt><kbd><span class="option">-otu </span>, <span class="option">--otu_info <var>FILE_NAME</var></span></kbd></dt>
+<dd><p>Name (and path) of JSON file containing taxon information. Stored in the Physcraper output directory <code class="docutils literal notranslate"><span class="pre">run</span></code> folder.</p>
+</dd>
+<dt><kbd><span class="option">-t1 </span>, <span class="option">--tree1 <var>FILE_NAME</var></span></kbd></dt>
+<dd><p>File name (and path) of original tree from a Physcraper output directory <code class="docutils literal notranslate"><span class="pre">inputs</span></code> folder. Alternatively, any file containing a tree to compare to -t2.</p>
+</dd>
+<dt><kbd><span class="option">-t2 </span>, <span class="option">--tree2 <var>FILE_NAME</var></span></kbd></dt>
+<dd><p>File name (and path) of an updated tree from a Physcraper output directory <code class="docutils literal notranslate"><span class="pre">outputs</span></code> folder. Alternatively, any file containing a tree to compare to -t1.</p>
+</dd>
+</dl>
+</div></blockquote>
 
--d, --dir <i>DIRECTORY_NAME</i>
-  A directory name (and path) containing all output folders from a Physcraper run.
-
--o, --output <i>DIRECTORY_NAME</i>
-  A directory name (and path) to write the results of the comparison analysis to. If it exists it will be overwritten.
-
--otu, --otu_info <i>FILE_NAME</i>
-  Name (and path) of JSON file containing taxon information. Usually in the `run` folder.
-
--t1, --original_tree <i>FILE_NAME</i>
-  File name (and path) of original tree from `inputs` folder. Alterntively, any tree file to compare to -t2.
-
--t2, --updated_tree <i>FILE_NAME</i>
-  File name (and path) of updated tree from `outputs` folder. Alternatively, any tree file to compare to -t1.
-
-</pre>
 
 
 This is the simplest command line tree comparison run:
