@@ -71,7 +71,7 @@ By default it will root trees based on the OpenTree taxonomy.
 
 Usage:
 
-    tree_comparison.py  [-h] [-d PHYSCRAPER_OUTPUT_DIRECTORY] [-t1 ORIGINAL_TREE] [-t2 UPDATED_TREE] [-otu OTU_INFO_FILE] [-og OUTGROUP] [-o OUTPUT_DIRECTORY]
+    tree_comparison.py  [-h] [-d DIRECTORY_NAME] [-t1 FILE_NAME] [-t2 FILE_NAME] [-otu FILE_NAME] [-og OUTGROUP] [-o DIRECTORY_NAME]
 
 Arguments:
 
@@ -102,7 +102,7 @@ Arguments:
 
 This is the simplest command line tree comparison run:
 
-    tree_comparison.py  [-h] [-d PHYSCRAPER_OUTPUT_FOLDER] [-o OUTPUT_DIRECTORY]
+    tree_comparison.py  [-h] [-d DIRECTORY_NAME] [-o DIRECTORY_NAME]
 
 It compares the original tree in the `inputs` folder and the updated tree in the `outputs` folder.
 
