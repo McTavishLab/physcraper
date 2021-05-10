@@ -70,38 +70,51 @@ It uses the rooting functions described above to assure the two trees have the s
 By default it will root trees based on the OpenTree taxonomy.
 
 Usage:
-    tree_comparison.py  [-h] [-d PHYSCRAPER_OUTPUT_DIRECTORY] [-t1 ORIGINAL_TREE] [-t2 UPDATED_TREE]
-                        [-otu OTU_INFO_FILE] [-og OUTGROUP] [-o OUTPUT_DIRECTORY]
+
+    tree_comparison.py  [-h] [-d PHYSCRAPER_OUTPUT_DIRECTORY] [-t1 ORIGINAL_TREE] [-t2 UPDATED_TREE] [-otu OTU_INFO_FILE] [-og OUTGROUP] [-o OUTPUT_DIRECTORY]
 
 Arguments:
-  -h, --help            show this help message and exit
-  -d PHYSCRAPER_OUTPUT_DIRECTORY, --dir PHYSCRAPER_OUTPUT_DIRECTORY
-                        A folder name containing all output directories from a Physcraper run
-  -o OUTPUT_DIRECTORY, --output OUTPUT_DIRECTORY
-                        A folder name to write the results of the comparison analysis to
-  -t1 ORIGINAL_TREE, --original_tree ORIGINAL_TREE
-                        Original tree from `inputs` folder
-  -t2 UPDATED_TREE, --updated_tree UPDATED_TREE
-                        Updated tree from `outputs` folder
-  -otu OTU_INFO_FILE, --include_missing INCLUDE_MISSING
-                        File with taxon information in JSON format from the `run` folder
 
-The simplest comparison run from the command line:
+<pre>
+-h, --help
+  Show the help message and exit.
+
+-d, --dir <i>DIRECTORY_NAME</i>
+  A directory name (and path) containing all output folders from a Physcraper run.
+
+-o, --output <i>DIRECTORY_NAME</i>
+  A directory name (and path) to write the results of the comparison analysis to. If it exists it will be overwritten.
+
+-otu, --otu_info <i>FILE_NAME</i>
+  Name (and path) of JSON file containing taxon information. Usually in the `run` folder.
+
+-t1, --original_tree <i>FILE_NAME</i>
+  File name (and path) of original tree from `inputs` folder. Alterntively, any tree file to compare to -t2.
+
+-t2, --updated_tree <i>FILE_NAME</i>
+  File name (and path) of updated tree from `outputs` folder. Alternatively, any tree file to compare to -t1.
+
+</pre>
+
+
+This is the simplest command line tree comparison run:
 
     tree_comparison.py  [-h] [-d PHYSCRAPER_OUTPUT_FOLDER] [-o OUTPUT_DIRECTORY]
 
-This compares the original tree in the `inputs` folder and the updated tree in the `outputs` folder
+It compares the original tree in the `inputs` folder and the updated tree in the `outputs` folder.
+
 For example:
 
     tree_comparison.py -d docs/examples/pg_55_web/ -o pg_55_comparison
 
 
-Alternatively, you can pass in OTT ids of two or more taxa from the input tree to use as outgroups to root both trees.
+Alternatively, you can pass in OpenTree taxonomic ids (OTT ids) of two or more taxa from the input tree to use as outgroups to root both trees.
+
 For example:
 
     tree_comparison.py -d docs/examples/pg_55_web/ -og otu376420 otu376439 otu376452 -o pg_55_comparison
 
-If the comparison between the two trees is possible, the script will print to screen information comparing the two trees, including:
+If the comparison between the two trees is possible (outgroup-wise), the script will print to screen information comparing the two trees, including:
 
 * The number of new tips
 * The number of new taxa
