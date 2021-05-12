@@ -1,33 +1,43 @@
 Single locus analyses only provide a narrow view of the evolutionary history of a group.
 
 After assembling individual gene data sets and phylogenies using Physcraper,
-it is straigtforward to combine the data from those analyses to generate species tree estimates.
+it is straigtforward to combine results (alignments and data) from those analyses to obtain species tree estimates.
 
 
-The multi_loci.py script can be used to combine results from multiple single locus runs.
+The multi_loci.py script combines results from multiple single locus Physcraper runs and generates concatenated and astral input files.
 
 
-usage:
+Usage:
+
     multi_loci.py [-h] [-d MULTIPLE_RUNS_FOLDER] [-o OUTPUT] [-f {concatenate,astral}]
-                     [-s {fasta,nexus}] [-m INCLUDE_MISSING]
+                     [-s {fasta,nexus}] [-m {False,True}]
 
+Arguments:
 
-
-optional arguments:
-
-  -h, --help            show this help message and exit
-  -d MULTIPLE_RUNS_FOLDER, --locus_runs_folder MULTIPLE_RUNS_FOLDER
-                        folder containing at least two output directories from individual Phsycraper runs
-  -o OUTPUT, --output OUTPUT
-                        folder to write to
-  -f {concatenate,astral}, --format {concatenate,astral}
-                        output format
-  -s {fasta,nexus}, --schema {fasta,nexus}
-                        putput alignment file format schema
-  -m INCLUDE_MISSING, --include_missing INCLUDE_MISSING
-                        Where uneven numbers of sequences are available, concatenate with gaps.
-                        default = False
-
+<blockquote>
+<div><dl class="option-list">
+<dt><kbd><span class="option">-h </span>, <span class="option">--help </span></kbd></dt>
+<dd><p>Show the help message and exit.</p>
+</dd>
+<dt><kbd><span class="option">-d <var>DIRECTORY_NAME</var></span>, <span class="option">--locus_runs_folder <var>DIRECTORY_NAME</var></span></kbd></dt>
+<dd><p>A name (and path) of a directory containing at least two output directories from different individual Phsycraper runs.</p>
+</dd>
+<dt><kbd><span class="option">-o <var>DIRECTORY_NAME</var></span>, <span class="option">--output <var>DIRECTORY_NAME</var></span></kbd></dt>
+<dd><p>A name (and path) for a directory to write the combined results of multiple Physcraper runs. If it exists, it will be overwritten.</p>
+</dd>
+<dt><kbd><span class="option">-f <var>{concatenate,astral}</var></span>, <span class="option">--format <var>{concatenate,astral}</var></span></kbd></dt>
+<dd><p>Format of combined output file.</p>
+</dd>
+<dt><kbd><span class="option">-s <var>{fasta,nexus}</var></span>, <span class="option">--schema <var>{fasta,nexus}</var></span></kbd></dt>
+<dd><p>Combined output file alignment schema.</p>
+</dd>
+<dt><kbd><span class="option">-m <var>{False, True}</var></span>, <span class="option">--include_missing <var>{False, True}</var></span></kbd></dt>
+<dd><p>Where uneven numbers of sequences are available, concatenate with gaps.
+default to <code class="docutils literal notranslate"><span class="pre">False</span></code>
+.</p>
+</dd>
+</dl>
+</div></blockquote>
 
 ## Astral
 
