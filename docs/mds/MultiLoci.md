@@ -4,7 +4,7 @@ After assembling individual gene data sets and phylogenies using Physcraper,
 it is straigtforward to combine results (alignments and data) from those analyses to obtain species tree estimates.
 
 
-The multi_loci.py script combines results from multiple single locus Physcraper runs and generates concatenated and astral input files.
+The `multi_loci.py` script combines results from multiple single locus Physcraper runs and generates concatenated and astral input files.
 
 
 Usage:

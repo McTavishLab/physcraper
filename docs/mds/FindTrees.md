@@ -6,38 +6,49 @@ with Physcraper, please go to the [Run section - Starting with your own tree](ht
 
 ## Find a tree to update from OpenTree
 
-To search for trees on OpenTree with your taxon of interest, you can use the command
-`find_trees.py`,
+The `find_trees.py` script searches for trees stored in OpenTree containing your taxon of interest.
 
+Usage:
 
     find_trees.py [-h] [-t TAXON_NAME] [-ott OTT_ID] [-tb] [-o OUTPUT]
 
-where,
+Arguments:
 
-  -h, --help                                Shows this list of arguments as help message and exit
+<blockquote>
+<div><dl class="option-list">
+<dt><kbd><span class="option">-h </span>, <span class="option">--help </span></kbd></dt>
+<dd><p>Show the help message and exit.</p>
+</dd>
+<dt><kbd><span class="option">-t <var>TAXON_NAME</var></span>, <span class="option">--taxon_name <var>TAXON_NAME</var></span></kbd></dt>
+<dd><p>A taxon name to search.</p>
+</dd>
+<dt><kbd><span class="option">-ott <var>OTT_ID</var></span>, <span class="option">--ott_id <var>OTT_ID</var></span></kbd></dt>
+<dd><p>The OpenTree Taxonomy id number (OTT id) of the taxon to search.</p>
+</dd>
+<dt><kbd><span class="option">-tb </span>, <span class="option">--treebase </span></kbd></dt>
+<dd><p>Return studies with TreeBASE data only.</p>
+</dd>
+<dt><kbd><span class="option">-o <var>OUTPUT</var></span>, <span class="option">--output <var>OUTPUT</var></span></kbd></dt>
+<dd><p>File name (and path) of output file.</p>
+</dd>
+</dl>
+</div></blockquote>
 
-  -t TAXON_NAME, --taxon_name TAXON_NAME    Specifies the name of the search taxon
-
-  -ott OTT_ID, --ott_id OTT_ID              Specifies the OTT id number of the search taxon
-
-  -tb, --treebase                           Returns studies with TreeBASE data only
-
-  -o OUTPUT, --output OUTPUT                Gives the output file name and optionally the path
 
 <br/>
 
-For example, to find all trees in OpenTree that contain the family of flowering plants Malvaceae, do:
+For example, to find all trees in OpenTree that contain one or more members of the Malvaceae, the family of flowring plants encompassing cotton, cacao, and durian, among others, you can do:
 
     find_trees.py -t Malvaceae -o malvacea.txt
 
-If you happen to know the taxon OTT id, or you have already obtained it from the
+If you happen to know the taxon OTT id of the Malvaceae, or you have already obtained it from the
 OpenTree website [taxon homepage](https://tree.opentreeoflife.org/opentree/argus/ottol@279960/Malvaceae), you can do:
 
     find_trees.py -ott 279960 -o malvacea.txt
 
 
-## Find the corresponding alignment on TreeBASE
+## Find a corresponding alignment on TreeBASE
 
-To find trees with a corresponding alignment on TreeBASE use the flag `-tb` or `--treebase`:
+To find trees with a corresponding alignment on TreeBASE, use the flag `-tb` or `--treebase`:
 
     find_trees.py -t Malvaceae -tb -o malvacea.txt
