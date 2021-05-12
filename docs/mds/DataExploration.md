@@ -66,10 +66,11 @@ So whenever possible, the root should be specified by the user, for example by c
 The `tree_comparison.py` script takes as an argument the output directory of a Physcraper run,
 and compares the relationships in the final tree to the relationships in the input tree.
 
-It uses the rooting functions described above to assure the two trees have the same root.
-By default it will root trees based on the OpenTree taxonomy.
+It uses the rooting functions described above to ensure the two trees have the same root.
+By default it will root trees based on the [OpenTree Taxonomy](https://tree.opentreeoflife.org/about/taxonomy-version/ott3.2).
 
 Usage:
+
 
     tree_comparison.py  [-h] [-d DIRECTORY_NAME] [-t1 FILE_NAME] [-t2 FILE_NAME] [-otu FILE_NAME] [-og OUTGROUP] [-o DIRECTORY_NAME]
 
@@ -80,19 +81,19 @@ Arguments:
 <dt><kbd><span class="option">-h </span>, <span class="option">--help </span></kbd></dt>
 <dd><p>Show the help message and exit.</p>
 </dd>
-<dt><kbd><span class="option">-d </span>, <span class="option">--dir <var>DIRECTORY_NAME</var></span></kbd></dt>
+<dt><kbd><span class="option">-d <var>DIRECTORY_NAME</var></span>, <span class="option">--dir <var>DIRECTORY_NAME</var></span></kbd></dt>
 <dd><p>A name (and path) to a Physcraper output directory.</p>
 </dd>
-<dt><kbd><span class="option">-o </span>, <span class="option">--output <var>DIRECTORY_NAME</var></span></kbd></dt>
+<dt><kbd><span class="option">-o <var>DIRECTORY_NAME</var></span>, <span class="option">--output <var>DIRECTORY_NAME</var></span></kbd></dt>
 <dd><p>Name (and path) for a directory to write the results of the comparison analysis to. If it exists, it will be overwritten.</p>
 </dd>
-<dt><kbd><span class="option">-otu </span>, <span class="option">--otu_info <var>FILE_NAME</var></span></kbd></dt>
+<dt><kbd><span class="option">-otu <var>FILE_NAME</var></span>, <span class="option">--otu_info <var>FILE_NAME</var></span></kbd></dt>
 <dd><p>Name (and path) of JSON file containing taxon information. Stored in the Physcraper output directory <code class="docutils literal notranslate"><span class="pre">run</span></code> folder.</p>
 </dd>
-<dt><kbd><span class="option">-t1 </span>, <span class="option">--tree1 <var>FILE_NAME</var></span></kbd></dt>
+<dt><kbd><span class="option">-t1 <var>FILE_NAME</var></span>, <span class="option">--tree1 <var>FILE_NAME</var></span></kbd></dt>
 <dd><p>File name (and path) of original tree from a Physcraper output directory <code class="docutils literal notranslate"><span class="pre">inputs</span></code> folder. Alternatively, any file containing a tree to compare to -t2.</p>
 </dd>
-<dt><kbd><span class="option">-t2 </span>, <span class="option">--tree2 <var>FILE_NAME</var></span></kbd></dt>
+<dt><kbd><span class="option">-t2 <var>FILE_NAME</var></span>, <span class="option">--tree2 <var>FILE_NAME</var></span></kbd></dt>
 <dd><p>File name (and path) of an updated tree from a Physcraper output directory <code class="docutils literal notranslate"><span class="pre">outputs</span></code> folder. Alternatively, any file containing a tree to compare to -t1.</p>
 </dd>
 </dl>
