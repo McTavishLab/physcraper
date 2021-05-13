@@ -111,7 +111,7 @@ output directory as "run.config", e.g.,
 ### Input Data
 
 
-Tree information (required)
+Tree information (required):
 
   -s STUDY_ID, --study_id STUDY_ID
                         OpenTree study id
@@ -120,16 +120,22 @@ Tree information (required)
 
 OR
 
-  -tf TREE_FILE, --tree_file TREE_FILE
-                        A path to a tree file
-  -tfs TREE_SCHEMA, --tree_schema TREE_SCHEMA
-                        Tree file format schema
-  -ti TAXON_INFO, --taxon_info TAXON_INFO
-                        Taxon info file from OpenTree TNRS
+<blockquote>
+<div><dl class="option-list">
+<dt><kbd><span class="option">-tf <var>TREE_FILE</var></span>, <span class="option">--tree_file <var>TREE_FILE</var></span></kbd></dt>
+<dd><p>A name (and path) to a tree file.</p>
+</dd>
+<dt><kbd><span class="option">-tfs <var>{newick,nexus}</var></span>, <span class="option">--tree_schema <var>{newick,nexus}</var></span></kbd></dt>
+<dd><p>Tree file format schema.</p>
+</dd>
+<dt><kbd><span class="option">-ti <var>FILE_NAME</var></span>, <span class="option">--taxon_info <var>FILE_NAME</var></span></kbd></dt>
+<dd><p>Name (and path) of a taxon info file from an OpenTree TNRS run.</p>
+</dd>
+</dl></div>
+</blockquote>
 
 
-
-Alignment information (required)
+Alignment information (required):
 
   -a ALIGNMENT, --alignment ALIGNMENT
                         Gives the path to alignment file
@@ -138,13 +144,26 @@ Alignment information (required)
 
 OR
 
-  -tb, --treebase       Downloads alignment from TreeBASE
+<blockquote>
+<div><dl class="option-list">
+<dt><kbd><span class="option">-tb </span>, <span class="option">--treebase </span></kbd></dt>
+<dd><p>Downloads alignment from TreeBASE.</p>
+</dd>
+</dl>
+</div></blockquote>
+
+<br/>
 
 Tree and alignment information are required.
 After an analysis has been run, they can be reloaded from a directory from a previous run.
 
-  -re RELOAD_FILES, --reload_files RELOAD_FILES
-                        Reloads files and configuration from the output directory specified in -o
+<blockquote>
+<div><dl class="option-list">
+<dt><kbd><span class="option">-re <var>RELOAD_FILES</var></span>, <span class="option">--reload_files <var>RELOAD_FILES</var></span></kbd></dt>
+<dd><p>Reloads files and configuration from the output directory specified in <code class="docutils literal notranslate"><span class="pre">-o, --output</span></code>.
+</p></dd>
+</dl></div>
+</blockquote>
 
 
 REQUIRED:
@@ -154,72 +173,106 @@ REQUIRED:
 
 Optional:
 
-  -st SEARCH_TAXON, --search_taxon SEARCH_TAXON
-                        Specifies the taxonomic id to constrain the BLAST search. Format ott:123
-                        or ncbi:123. By default it will use the ingroup of the tree from
-                        OpenTree, or the MRCA of all tips if the former is not specified.
-
-
+<blockquote>
+<div><dl class="option-list">
+<dt><kbd><span class="option">-st <var>SEARCH_TAXON</var></span>, <span class="option">--search_taxon <var>SEARCH_TAXON</var></span></kbd></dt>
+<dd><p>Specifies the taxonomic id to constrain the BLAST search. Format  <code class="docutils literal notranslate"><span class="pre">ott:123</span></code> or
+<code class="docutils literal notranslate"><span class="pre">ncbi:123</span></code>.
+By default, it will use the ingroup of the tree from OpenTree, or the MRCA of all tips, if the former is not specified.
+</p></dd>
+</dl></div>
+</blockquote>
 
 
 ### Blast search parameters
 
-  -e EMAIL, --email EMAIL
-                        Specifies the email address for BLAST searches
+<blockquote>
+<div><dl class="option-list">
+<dt><kbd><span class="option">-e <var>EMAIL</var></span>, <span class="option">--email <var>EMAIL</var></span></kbd></dt>
+<dd><p>An email address for BLAST searches.</p>
+</dd>
+<dt><kbd><span class="option">-r </span>, <span class="option">--repeat </span></kbd></dt>
+<dd><p>Repeats a BLAST search until no more sequences are found.</p>
+<dt><kbd><span class="option">-ev <var>E-VALUE</var></span>, <span class="option">--eval <var>E-VALUE</var></span></kbd></dt>
+<dd><p>Specifies a blast e-value cutoff.</p>
+</dd>
+<dt><kbd><span class="option">-hl <var>HITLIST_LENGTH</var></span>, <span class="option">--hitlist_len <var>HITLIST_LENGTH</var></span></kbd></dt>
+<dd><p>Specifies the number of BLAST searches to save per taxon.</p>
+</dd>
+</dl></div>
+</blockquote>
 
-  -r, --repeat          To repeat a BLAST search until no more sequences are found
-
-
-  -ev EVAL, --eval EVAL
-                        Specifies the blast e-value cutoff
-  -hl HITLIST_LEN, --hitlist_len HITLIST_LEN
-                        Specifies the number of BLAST searches to save per taxon
-
+<br/>
 
 You can use a local BLAST database.
 To setup see [Local Databases section](https://physcraper.readthedocs.io/en/cleanup/install.html#local-databases) of this documentation.
 
-  -db BLAST_DB, --blast_db BLAST_DB
-                        Specifies the local download of BLAST database
+<blockquote>
+<div><dl class="option-list">
+<dt><kbd><span class="option">-db <var>BLAST_DB</var></span>, <span class="option">--blast_db <var>BLAST_DB</var></span></kbd></dt>
+<dd><p>Specifies the local download of a BLAST database.</p>
+</dd>
+<dt><kbd><span class="option">-nt <var>NUM_THREADS</var></span>, <span class="option">--num_threads <var>NUM_THREADS</var></span></kbd></dt>
+<dd><p>Specifies the number of threads to use in processing.</p>
+</dd>
+</dl></div>
+</blockquote>
 
-
-
-
-  -nt NUM_THREADS, --num_threads NUM_THREADS
-                        Specifies the number of threads to use in processing
-
+<br/>
 
 You can use your own BLAST database, for example set up on an AWS server.
 
 
 ### Sequence filtering parameters
 
-  -tp TRIM_PERC, --trim_perc TRIM_PERC
-                        minimum percentage of seqs end of alignemnts
-  -rlmax RELATIVE_LENGTH_MAX, --relative_length_max RELATIVE_LENGTH_MAX
-                        max relative length of added seqs, compared to input
-                        aln len (blast matches not within lenegth cutoffs stored in outputs/seqlen_mismatch.txt)
-  -rlmin RELATIVE_LENGTH_MIN, --relative_length_min RELATIVE_LENGTH_MIN
-                        min relative length of added seqs, compared to input
-                        aln len
-                        (blast matches not within lenegth cutoffs stored in outputs/seqlen_mismatch.txt)
-  -spn SPECIES_NUMBER, --species_number SPECIES_NUMBER
-                        max number of seqs to include per species
 
-  -de DELAY, --delay DELAY
-                        how long to wait before blasting the same sequence
-                        again
+<blockquote>
+<div><dl class="option-list">
+<dt><kbd><span class="option">-tp <var>TRIM_PERC</var></span>, <span class="option">--trim_perc <var>TRIM_PERC</var></span></kbd></dt>
+<dd><p>Minimum percentage of sequences end of alignments.</p>
+</dd>
+<dt><kbd><span class="option">-rlmax <var>RELATIVE_LENGTH_MAX</var></span>, <span class="option">--relative_length_max <var>RELATIVE_LENGTH_MAX</var></span></kbd></dt>
+<dd><p>Maximum relative length of added sequences, compared to input
+alignment length (BLAST matches not within length cutoffs are stored in "outputs/seqlen_mismatch.txt").</p>
+</dd>
+<dt><kbd><span class="option">-rlmin <var>RELATIVE_LENGTH_MIN</var></span>, <span class="option">--relative_length_min <var>RELATIVE_LENGTH_MIN</var></span></kbd></dt>
+<dd><p>Minimum relative length of added sequences, compared to input
+alignment length (BLAST matches not within length cutoffs are stored in "outputs/seqlen_mismatch.txt").</p>
+</dd>
+<dt><kbd><span class="option">-spn <var>SPECIES_NUMBER</var></span>, <span class="option">--species_number <var>SPECIES_NUMBER</var></span></kbd></dt>
+<dd><p>Maximum number of sequences to include per species.</p>
+</dd>
+<dt><kbd><span class="option">-de <var>DELAY</var></span>, <span class="option">--delay <var>DELAY</var></span></kbd></dt>
+<dd><p>How much time to wait before blasting the same sequence again.</p>
+</dd>
+</dl></div>
+</blockquote>
+
+<br/>
 
 ### Tree search parameters
-  -no_est, --no_estimate_tree
-                        don't estimate tree (default is False)
 
-  -bs BOOTSTRAP_REPS, --bootstrap_reps BOOTSTRAP_REPS
-                        number of bootstrap reps
+<blockquote>
+<div><dl class="option-list">
+<dt><kbd><span class="option">-no_est </span>, <span class="option">--no_estimate_tree </span></kbd></dt>
+<dd><p>Does not estimate the tree, just gathers the sequences and aligns them.</p>
+</dd>
+<dt><kbd><span class="option">-bs <var>BOOTSTRAP_REPS</var></span>, <span class="option">--bootstrap_reps <var>BOOTSTRAP_REPS</var></span></kbd></dt>
+<dd><p>Number of bootstrap repetitions.</p>
+</dd>
+</dl></div>
+</blockquote>
+
+<br/>
 
 
 ### Internal arguments
 
 
-  -tx TAXONOMY, --taxonomy TAXONOMY
-                        path to taxonomy
+<blockquote>
+<div><dl class="option-list">
+<dt><kbd><span class="option">-tx <var>TAXONOMY</var></span>, <span class="option">--taxonomy <var>TAXONOMY</var></span></kbd></dt>
+<dd><p>A path to the OpenTree Taxonomy (OTT) database.</p>
+</dd>
+</dl></div>
+</blockquote>
