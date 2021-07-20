@@ -50,7 +50,7 @@ synthref = "Redelings BD, Holder MT. A supertree pipeline for summarizing phylog
 def root_tree_from_synth(tree, otu_dict, base='ott'):
     # Disable all the too many locals and branches for this function
     # pylint: disable=too-many-locals, too-many-branches
-    """Uses information from OpenTree of Life to suggest root.
+    """Uses information from OpenTree of Life to suggest a root.
     :param tree: dendropy :class:`Tree
     :param otu_dict: a dictionary of tip label metadata, inculding an '^ot:ottId'attribute
     'param base: either `synth` or `ott.` If `synth` will use OpenTree synthetic tree relationships to root input tree,
@@ -117,8 +117,8 @@ def root_tree_from_synth(tree, otu_dict, base='ott'):
     return tree
 
 def ottids_in_synth(synthfile=None):
-    """Checks if ottids are present in current synth tree,
-    using a file listing all current otts in synth (v12.3)
+    """Checks if OTT ids are present in current synthetic tree,
+    using a file listing all current OTT ids in synth (v12.3)
     :param synthfile: defaults to taxonomy/ottids_in_synth.txt
     """
     if synthfile is None:
@@ -132,7 +132,7 @@ def ottids_in_synth(synthfile=None):
 
 
 def check_if_ottid_in_synth(ottid):
-    """Web call to check if ott id in synth tree. NOT USED.
+    """Web call to check if OTT id in synthetic tree. NOT USED.
     """
     url = 'https://api.opentreeoflife.org/v3/tree_of_life/node_info'
     payload = json.dumps({"ott_id":int(ottid)})
@@ -152,8 +152,8 @@ def check_if_ottid_in_synth(ottid):
         sys.stderr.write("Connection Error - coud not get taxon information from OpenTree\n")
 
 def get_ottid_from_gbifid(gbif_id):
-    """Returns a dictionary mapping gbif_ids to ott_ids.
-    ott_id is set to 'None' if the gbif id is not found in the Open Tree Txanomy
+    """Returns a dictionary mapping GBIF ids to OTT ids.
+    ott_id is set to 'None' if the GBIF id is not found in the Open Tree Taxanomy
     """
     url = 'https://api.opentreeoflife.org/v3/taxonomy/taxon_info'
     headers = {'content-type':'application/json'}
@@ -163,14 +163,14 @@ def get_ottid_from_gbifid(gbif_id):
     if res.status_code == 200:
         ott_id = int(res.json()['ott_id'])
         return ott_id
-    sys.stderr.write("error getting ott_id for gbif id {}, {}, {}".format(tax, res.status_code, res.reason))
+    sys.stderr.write("error getting OTT id for GBIF id {}, {}, {}".format(tax, res.status_code, res.reason))
     return None
 
 
 
 def bulk_tnrs_load(filename):
     """Read in outputs from OpenTree Bulk TNRS,
-    translates to a Physcraper otu_dictionary.
+    translates to a Physcraper OTU dictionary.
     :param filename: input json file
     """
     otu_dict = {}
@@ -216,9 +216,9 @@ def bulk_tnrs_load(filename):
 # res = requests.post(url, data=payload, headers=headers)
 
 def get_citations_from_json(synth_response, citations_file):
-    """Get ciattions for studies in an induced synth tree repsonse.
-    :param synth_response: Webservice call record
-    :param citations_file: output file
+    """Get ciattions for studies in an induced synthetic tree repsonse.
+    :param synth_response: Web service call record
+    :param citations_file: Output file
     """
     assert isinstance(citations_file, str)
     f = open(citations_file, "w+")
@@ -244,7 +244,7 @@ def get_citations_from_json(synth_response, citations_file):
 # use append
 
 def conflict_tree(inputtree, otu_dict):
-    """Write out a tree with labels that work for the OPenTree Conflict API
+    """Write out a tree with labels that work for the OpenTree Conflict API
     """
     tmp_tree = copy.deepcopy(inputtree)
     i = 1
@@ -299,15 +299,15 @@ def generate_ATT_from_phylesystem(alnfile,
     Spaces vs underscores kept being an issue, so all spaces are coerced to underscores when data are read in.
 
     :param aln: dendropy :class:`DnaCharacterMatrix
-    <dendropy.datamodel.charmatrixmodel.DnaCharacterMatrix>` alignment object
-    :param workdir: path to working directory
-    :param config_obj: config class containing the settings
-    :param study_id: OpenTree study id of the phylogeny to update
-    :param tree_id: OpenTree tree id of the phylogeny to update, some studies have several phylogenies
-    :param phylesystem_loc: access the GitHub version of the OpenTree
-    data store, or a local clone
-    :param search_taxon: optional.  OTT id of the MRCA of the clade that shall be updated
-    :return: object of class ATT
+    <dendropy.datamodel.charmatrixmodel.DnaCharacterMatrix>` alignment object.
+    :param workdir: Path to working directory.
+    :param config_obj: Config class containing the settings.
+    :param study_id: OpenTree study id of the phylogeny to update.
+    :param tree_id: OpenTree tree id of the phylogeny to update, some studies have several phylogenies.
+    :param phylesystem_loc: Access the GitHub version of the OpenTree
+    data store, or a local clone.
+    :param search_taxon: optional.  OTT id of the MRCA of the clade that shall be updated.
+    :return: Object of class ATT.
     """
     assert(tip_label in ['^ot:originalLabel', 'otu', "^ot:ottTaxonName", "^ot:ottId"])
     try:
@@ -425,7 +425,7 @@ def get_dataset_from_treebase(study_id):
         return dna
 
 def count_match_tree_to_aln(tree, dataset):
-    """Assess how many taxa mantch between multiple genes in an alignment data set and input tree"""
+    """Assess how many taxa match between multiple genes in an alignment data set and input tree."""
     aln_match = {}
     i = 0
     leaves = [leaf.taxon.label for leaf in tree.leaf_node_iter()]
@@ -454,7 +454,7 @@ def get_max_match_aln(tree, dataset, min_match=3):
     return None
 
 def deconcatenate_aln(aln_obj, filename, direc):
-    """Split out seperate concatended alignments. NOT TESTED
+    """Split out separate concatended alignments. NOT TESTED
     """
     #dna1 = dendropy.DnaCharacterMatrix.get(file=open("treebase_alns/M4358.nex"), schema="nexus")
     for label in aln_obj.character_subsets.keys():
@@ -464,7 +464,7 @@ def deconcatenate_aln(aln_obj, filename, direc):
 
 
 def scraper_from_opentree(study_id, tree_id, alnfile, workdir, aln_schema, configfile=None):
-    """Pull tree from OpenTree to create a physcraper object
+    """Pull tree from OpenTree to create a physcraper object.
     """
     # Read in the configuration information
     data_obj = generate_ATT_from_phylesystem(alnfile=alnfile,
@@ -482,17 +482,17 @@ def scraper_from_opentree(study_id, tree_id, alnfile, workdir, aln_schema, confi
 def OtuJsonDict(id_to_spn, id_dict):
     # Disable all the too many locals for this function
     # pylint: disable=too-many-locals
-    """Makes otu json dict, which is also produced within the openTreeLife-query.
+    """Makes an OTU json dictionary, which is also produced within the openTreeLife-query.
 
-     This function is used, if files that shall be updated are not part of the OpenTreeofLife project.
+    This function is used, if files that shall be updated are not part of the OpenTreeofLife project.
     It reads in the file that contains the tip names and the corresponding species names.
-    It then tries to get the different identifier from the OToL project or if not from ncbi.
+    It then tries to get the unique identifier from the OpenTree project or from NCBI.
 
     Reads input file into the var sp_info_dict, translates using an IdDict object
-    using web to call Open tree, then ncbi if not found.
+    using web to call OpenTree, then NCBI if not found.
 
-    :param id_to_spn: user file, that contains tip name and corresponding sp name for input files.
-    :param id_dict: uses the id_dict generated earlier
+    :param id_to_spn: User file, that contains tip name and corresponding sp name for input files.
+    :param id_dict: Uses the id_dict generated earlier
     :return: dictionary with key: "otu_tiplabel" and value is another dict with the keys '^ncbi:taxon',
                                                     '^ot:ottTaxonName', '^ot:ottId', '^ot:originalLabel',
                                                     '^user:TaxonName', '^physcraper:status', '^physcraper:last_blasted'
@@ -505,7 +505,7 @@ def OtuJsonDict(id_to_spn, id_dict):
             ottid, ottname, ncbiid = None, None, None
             tipname, species = lin.strip().split(",")
             clean_lab = standardize_label(tipname)
-            assert clean_lab not in sp_info_dict, ("standardized label ('{}') of \
+            assert clean_lab not in sp_info_dict, ("Standardized label ('{}') of \
                                                     `{}` already exists".format(clean_lab, tipname))
             otu_id = clean_lab
             spn = species.replace("_", " ")
@@ -513,8 +513,8 @@ def OtuJsonDict(id_to_spn, id_dict):
             if info:
                 ottid, ottname, ncbiid = info
             if not info:
-                sys.stderr.write("match to taxon {} not found in open tree taxonomy or NCBI. "
-                                 "Proceeding without taxon info\n".format(spn))
+                sys.stderr.write("Match to taxon {} not found in the OpenTree taxonomy or NCBI."
+                                 " Proceeding without taxon info\n".format(spn))
                 nosp.append(spn)
             ncbi_spn = None
             if ncbiid is not None:
@@ -543,21 +543,21 @@ def OtuJsonDict(id_to_spn, id_dict):
 
 #####################################
 def get_nexson(study_id):
-    """Grabs nexson from phylesystem"""
+    """Grabs nexson from phylesystem."""
     study = OT.get_study(study_id)
     nexson = study.response_dict['data']
     return nexson
 
 
 def get_mrca_ott(ott_ids):
-    """finds the mrca of the taxa in the ingroup of the original
-    tree. The blast search later is limited to descendants of this
-    mrca according to the ncbi taxonomy
+    """Finds the MRCA of taxa in the ingroup of the original
+    tree. The BLAST search later is limited to descendants of this
+    MRCA according to the NCBI taxonomy.
 
     Only used in the functions that generate the ATT object.
 
-    :param ott_ids: list of all OToL identifiers for tip labels in phylogeny
-    :return: OToL identifier of most recent common ancestor or ott_ids
+    :param ott_ids: List of all OTT ids for tip labels in phylogeny
+    :return: OTT id of most recent common ancestor
     """
     debug("get_mrca_ott")
     mrca_node = OT.synth_mrca(ott_ids=ott_ids).response_dict
@@ -571,15 +571,15 @@ def get_mrca_ott(ott_ids):
             sys.stdout.write('(v3) MRCA of sampled taxa is {}\n'.format(mrca_node['mrca'][u'taxon'][u'name']))
     else:
         sys.stderr.write('(v3) MRCA of sampled taxa not found. Please find and input an '
-                         'appropriate OTT id as ingroup mrca in generate_ATT_from_files')
+                         'appropriate OTT id as ingroup MRCA in generate_ATT_from_files')
         sys.exit(-4)
     return tax_id
 
 def get_ott_taxon_info(spp_name):
-    """get ottid, taxon name, and ncbid (if present) from Open Tree Taxonomy.
-    ONLY works with version 3 of Open tree APIs
+    """Get OTT id, taxon name, and NCBI id (if present) from the OpenTree Taxonomy.
+    Only works with version 3 of OpenTree APIs
 
-    :param spp_name: species name
+    :param spp_name: Species name
     :return:
     """
     #This is only used to write out the opentree info file. Could use NCBI id's instead of name, and likely be quicker.
@@ -588,10 +588,10 @@ def get_ott_taxon_info(spp_name):
         call = OT.tnrs_match([spp_name], do_approximate_matching=True)
         res = call.response_dict['results'][0]
     except IndexError:
-        sys.stderr.write("match to taxon {} not found in open tree taxonomy\n".format(spp_name))
+        sys.stderr.write("Match to taxon {} not found in open tree taxonomy\n".format(spp_name))
         return None, None, None
     if res['matches'][0]['is_approximate_match'] == 1:
-        sys.stderr.write("""exact match to taxon {} not found in open tree taxonomy.
+        sys.stderr.write("""Exact match to taxon {} not found in OpenTree Taxonomy.
                           Check spelling. Maybe {}?\n""".format(spp_name, res['matches'][0][u'ot:ottTaxonName']))
         return None, None, None
     if res["matches"][0]["is_approximate_match"] == 0:
@@ -602,5 +602,5 @@ def get_ott_taxon_info(spp_name):
             if source.startswith("ncbi"):
                 ncbi_id = source.split(":")[1]
         return ottid, ottname, ncbi_id
-    sys.stderr.write("match to taxon {} not found in open tree taxonomy".format(spp_name))
+    sys.stderr.write("Match to taxon {} not found in OpenTree Taxonomy.".format(spp_name))
     return None, None, None
