@@ -6,9 +6,8 @@ import sys
 import os
 import xml
 from urllib.error import HTTPError
-
 import requests
-
+import dendropy
 from dendropy import DataSet, datamodel
 from opentree import OT, object_conversion
 from nexson.syntax import get_subtree_otus
@@ -389,8 +388,12 @@ def generate_ATT_from_phylesystem(alnfile,
 
 def get_dataset_from_treebase(study_id):
     """
-        Given a tree in OpenTree with mapped tips, this function gets the corresponding
-        alignment from treeBASE if available.
+        Given a phylogeny in OpenTree with mapped tip labels, this function gets
+        an alignment from the corresponding study on TreeBASE, if available.
+        By default, it first tries getting the alignment from the supertreebase
+        repository at https://github.com/TreeBASE/supertreebase. If that fials,
+        it tries getting the alignment directly form TreeBASE at https://treebase.org
+        If both fail, it exits with a message.
     """
     try:
         study = OT.get_study(study_id)
@@ -404,21 +407,20 @@ def get_dataset_from_treebase(study_id):
         sys.exit(-2)
     else:
         tb_id = treebase_url.split(':S')[1]
+        url = "https://raw.githubusercontent.com/TreeBASE/supertreebase/master/data/treebase/S{}.xml".format(tb_id)
         try:
-            url = "https://raw.githubusercontent.com/TreeBASE/supertreebase/master/data/treebase/S{}.xml".format(tb_id)
+            dna = DataSet.get(url=url, schema="nexml")
+        except (xml.etree.ElementTree.ParseError, dendropy.utility.error.DataParseError, requests.HTTPError) as error1:
+            # dendropy.utility.error.DataParseError occurs when a dataset has alternative states defined with symbol '{'
+            sys.stdout.write("\nRetrieving dataset from supertreebase ({}) failed.\n".format(url) +
+                             "Trying TreeBASE...\n")
+            url = "https://treebase.org/treebase-web/search/downloadAStudy.html?id={}&format=nexml".format(tb_id)
             try:
                 dna = DataSet.get(url=url, schema="nexml")
-            except xml.etree.ElementTree.ParseError:
-                sys.stdout.write("Error reading nexml, from supertreebase, will check TreeBASE\n")
-                url = "https://treebase.org/treebase-web/search/downloadAStudy.html?id={}&format=nexml".format(tb_id)
-                dna = DataSet.get(url=url, schema="nexml")
-                return dna
-        except HTTPError as err:
-            try:
-                url = "https://treebase.org/treebase-web/search/downloadAStudy.html?id={}&format=nexml".format(tb_id)
-                dna = DataSet.get(url=url, schema="nexml")
-            except HTTPError:
-                sys.stderr.write("Alignment not found on treeBASE or supertreebase.\n")
+            except (requests.HTTPError, dendropy.utility.error.DataParseError) as error2:
+                url = "https://treebase.org/treebase-web/search/matrices.html?id={}".format(tb_id)
+                sys.stderr.write("\nAutomatically retrieving a dataset from TreeBASE and supertreebase failed.\n" +
+                                 "You can manually download a dataset for this study from TreeBASE {}.\n".format(url))
                 sys.exit()
         if _DEBUG:
             sys.stderr.write(url + "\n")
