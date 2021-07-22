@@ -1,22 +1,22 @@
 
 ## The Physcraper framework
 
-While genome scale data is increasing rapidly - there are still large quantities of gene-sequence data being uploaded to the US National Center on Biotechnology Information (NCBI) database [GenBank](https://www.ncbi.nlm.nih.gov/genbank/statistics/).
+While genome scale data is increasing rapidly, there are still large quantities of gene-sequence data being uploaded to the US National Center on Biotechnology Information (NCBI) database [GenBank](https://www.ncbi.nlm.nih.gov/genbank/statistics/).
 These data are often appropriate for looking at phylogenetic relationships, and have the advantage of being homologous to the sequences in existing trees.
 
 If you have access to a single gene alignment, and a tree, Physcraper automates adding homologous data into your tree by using [Blast](https://blast.ncbi.nlm.nih.gov/Blast.cgi) to search for loci in GenBank that are likely to be homologous to sequences in an existing alignment.
 
 <br/>
 
-<img src="https://raw.githubusercontent.com/McTavishLab/physcraper/main/docs/img/schematic-final.svg" title="schematic" alt="The Phsycraper Framework" width="100%" />
+![](../img/schematic-final.svg)
 
-Figure 1 from the [Physcraper publication](https://doi.org/10.1186/s12859-021-04274-6). The Physcraper framework consists of 4 general steps. The methodology is extensively described in the
+Figure 1 from [Sanchez-Reyes et al. 2021](https://doi.org/10.1186/s12859-021-04274-6): The Physcraper framework consists of 4 general steps. The methodology is extensively described in the
 [Implementation](https://physcraper.readthedocs.io/en/latest/methods_extended.html) section of the documentation.
 
 <br/>
 
-By using a starting tree and an alignment, Physcraper takes advantage of loci that previous researchers have assessed and deemed appropriate for the phylogenetic scope.
-The sequences added in the search are limited to a user specified taxon or monophyletic group, or within the taxonomic scope of the in-group of the starting tree.
+By using a starting alignment and tree, Physcraper takes advantage of loci that previous researchers have assessed and deemed appropriate for the phylogenetic scope.
+The sequences added in the search are limited either to a user specified taxon or monophyletic group, or within the taxonomic scope of the ingroup of the starting tree.
 
 These automated trees can provide a quick inference or potential relationships, of problems in the taxonomic assignments of sequences, and flag areas of potential systematic interest.
 
@@ -33,18 +33,21 @@ Open Tree aims to construct a comprehensive, dynamic and digitally-available tre
 Currently the tree comprises 2.3 million tips.
 However, only around 90,000 of those taxa are represented by phylogenetic estimates - the rest are placed in the tree based on their taxonomic names.
 
-To achieve this, the OpenTree Taxonomy (OTT) constructs a reference taxonomy through an algorithmic combination of several source taxonomies, such as Hibbet et al. 2007 (https://doi.org/10.1016/j.mycres.2007.03.004),
-SILVA (http://www.arb-silva.de/),
-the Index Fungorum (http://www.indexfungorum.org/),
-Schäferhoff et al. 2010 (https://doi.org/10.1186/1471-2148-10-352),
-the World Register of Marine Species (WoRMS; http://www.marinespecies.org/aphia.php)
-the NCBI Taxonomy (https://www.ncbi.nlm.nih.gov/books/NBK21100/),
-the Global Biodiversity Information facility (GBIF) backbone Taxonomy (https://www.gbif.org/),
-and the Interim Register of Marine and Nonmarine Genera (IRMNG; https://irmng.org/).
+To achieve this, the OpenTree Taxonomy (OTT) constructs a reference taxonomy through an algorithmic combination of several source taxonomies, such as:
+- Hibbet et al. 2007 (https://doi.org/10.1016/j.mycres.2007.03.004),
+- SILVA (http://www.arb-silva.de/),
+- the Index Fungorum (http://www.indexfungorum.org/),
+- Schäferhoff et al. 2010 (https://doi.org/10.1186/1471-2148-10-352),
+- the World Register of Marine Species (WoRMS; http://www.marinespecies.org/aphia.php)
+- the NCBI Taxonomy (https://www.ncbi.nlm.nih.gov/books/NBK21100/),
+- the Global Biodiversity Information facility (GBIF) backbone Taxonomy (https://www.gbif.org/), and
+- the Interim Register of Marine and Nonmarine Genera (IRMNG; https://irmng.org/).
+
+<br/>
 
 ![](../img/synthtreeleg.svg)
 
-Figure from [Hinchliff et al. 2015](https://www.pnas.org/content/112/41/12764.short).
+Figure 1 from [Hinchliff et al. 2015](https://www.pnas.org/content/112/41/12764.short).
 For more information on the OpenTree project see https://opentreeoflife.github.io
 
 <br/>
