@@ -22,13 +22,14 @@ Welcome to Physcraper's documentation!
 
    Introduction <how_to_start>
    Installation <install>
-   Documentation <apidocs>
    Start <find_trees>
    Run <physcraper_run>
    Results <data_exploration>
    Combining multiple loci <multi_locus>
    Examples <examples>
    Implementation <methods_extended>
+   Documentation <apidocs>
    CONTRIBUTING
    CONTRIBUTORS
    changelog
+   faq
