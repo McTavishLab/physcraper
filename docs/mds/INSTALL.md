@@ -29,7 +29,8 @@ or Virtualenv.
 
 ## Anaconda virtual environment
 
-For this option you will of course need [Anaconda](https://www.anaconda.com/products/individual) installed.
+For this option you will of course need [Anaconda](https://www.anaconda.com/products/individual) installed. You can follow installation instructions on [Anaconda's documentation
+website](https://docs.anaconda.com/anaconda/install/).
 
 Now you can create a "conda virtual environment" with:
 
