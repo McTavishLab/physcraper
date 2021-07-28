@@ -9,11 +9,13 @@ Welcome to Physcraper's documentation!
 
 .. mdinclude:: ../mds/intro.md
 
-.. mdinclude:: ../mds/intro-dendropy.md
-
 .. mdinclude:: ../mds/citation.md
 
 .. mdinclude:: ../mds/license.md
+
+.. mdinclude:: ../mds/contact.md
+
+.. mdinclude:: ../mds/intro-requirements.md
 
 .. toctree::
    :maxdepth: 3
