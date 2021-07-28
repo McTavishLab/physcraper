@@ -22,7 +22,8 @@ Welcome to Physcraper's documentation!
    :caption: Documentation topics:
    :hidden:
 
-   Introduction <how_to_start>
+   Description <description>
+   Quick start <quick-start>
    Installation <install>
    Start <find_trees>
    Run <physcraper_run>

@@ -3,7 +3,7 @@ Frequently asked questions
 ## How does Physcraper handle polytomies of starting trees?
 
 The Physcraper starting tree is a phylogeny whose tip labels must have been standardized to the OpenTree Taxonomy (as described in the Introduction section:
-[Mapping names to taxa](https://physcraper.readthedocs.io/en/latest/how_to_start.html#updating-your-own-tree-and-alignment)).
+[Mapping names to taxa](https://physcraper.readthedocs.io/en/latest/quick-start.html#updating-your-own-tree-and-alignment)).
 Original tip labels of the starting tree must be identical to taxon labels on the starting alignment.
 However, not all taxon labels in the alignment have to be present in the tree and
 visceversa.
