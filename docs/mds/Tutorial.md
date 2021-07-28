@@ -11,7 +11,7 @@ If you have access to a single gene alignment, and a tree, Physcraper automates 
 ![](../img/schematic-final.svg)
 
 Figure 1 from [Sanchez-Reyes et al. 2021](https://doi.org/10.1186/s12859-021-04274-6): The Physcraper framework consists of 4 general steps. The methodology is extensively described in the
-[Implementation](https://physcraper.readthedocs.io/en/latest/methods_extended.html) section of the documentation.
+[Implementation](https://physcraper.readthedocs.io/en/latest/implementation.html) section of the documentation.
 
 <br/>
 

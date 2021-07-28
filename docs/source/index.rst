@@ -29,7 +29,7 @@ Welcome to Physcraper's documentation!
    Results <data_exploration>
    Combining multiple loci <multi_locus>
    Examples <examples>
-   Implementation <methods_extended>
+   Implementation <implementation>
    Documentation <apidocs>
    CONTRIBUTING
    CONTRIBUTORS
