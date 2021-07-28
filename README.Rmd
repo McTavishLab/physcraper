@@ -14,7 +14,7 @@ knitr::opts_chunk$set(
 IS_README <- TRUE
 ```
 
-<img align="left" width="250" src="https://raw.githubusercontent.com/McTavishLab/physcraper/cleanup/docs/physcraper-long.png">
+<img align="left" width="250" src="https://raw.githubusercontent.com/McTavishLab/physcraper/main/docs/physcraper-long.png">
 
 # Physcraper
 
