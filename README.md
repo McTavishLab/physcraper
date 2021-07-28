@@ -29,18 +29,19 @@ A. Cranston, Jim Allman, Mark T. Holder, & Emily Jane McTavish. (2019).
 Open Tree of Life Synthetic Tree (Version 12.3). Zenodo* doi:
 [10.5281/zenodo.3937741](https://doi.org/10.5281/zenodo.3937741)
 
-This is the code repository. Please refer to Physcraper’s [documentation
-website](https://physcraper.readthedocs.io/en/latest/) for more details
-on:
+You are now on the code repository. Please refer to Physcraper’s
+[documentation website](https://physcraper.readthedocs.io/en/latest/)
+for more details
+    on:
 
   - [installation](https://physcraper.readthedocs.io/en/latest/install.html)
     instructions using an Anaconda or a Virtualenv Python virtual
     environment,
   - [function](https://physcraper.readthedocs.io/en/latest/apidocs.html)
     usage,
-  - tutorials on finding and choosing a [starting
+  - finding and choosing a [starting
     dataset](https://physcraper.readthedocs.io/en/latest/find_trees.html),
-    [running](https://physcraper.readthedocs.io/en/latest/physcraper_run.html)
+  - [running](https://physcraper.readthedocs.io/en/latest/physcraper_run.html)
     a full analysis,
   - [visualizing and
     analysing](https://physcraper.readthedocs.io/en/latest/data_exploration.html)
@@ -54,6 +55,8 @@ on:
 :hamster: :palm\_tree: :frog: :ear\_of\_rice: :panda\_face: :tulip:
 :octopus: :blossom: :whale: :mushroom: :ant: :cactus: :fish:
 :maple\_leaf: :water\_buffalo: 🦠 :shell: :bug: :octocat:
+
+<br>
 
 ## Citation
 
