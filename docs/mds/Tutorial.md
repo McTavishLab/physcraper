@@ -25,30 +25,31 @@ These automated trees can provide a quick inference or potential relationships, 
 
 ## The Open Tree of Life
 
-The Open Tree of Life (OpenTree; https://opentreeoflife.github.io/) is a project that unites phylogenetic inferences and taxonomy to provide a synthetic estimate of species relationships across the entire tree of life.
-
-![](../img/opentree_logo.jpg)
-
-Open Tree aims to construct a comprehensive, dynamic and digitally-available tree of life by synthesizing published phylogenetic trees along with taxonomic data.
-Currently the tree comprises 2.3 million tips.
-However, only around 90,000 of those taxa are represented by phylogenetic estimates - the rest are placed in the tree based on their taxonomic names.
-
-To achieve this, the OpenTree Taxonomy (OTT) constructs a reference taxonomy through an algorithmic combination of several source taxonomies, such as:
-- Hibbet et al. 2007 (https://doi.org/10.1016/j.mycres.2007.03.004),
-- SILVA (http://www.arb-silva.de/),
-- the Index Fungorum (http://www.indexfungorum.org/),
-- Schäferhoff et al. 2010 (https://doi.org/10.1186/1471-2148-10-352),
-- the World Register of Marine Species (WoRMS; http://www.marinespecies.org/aphia.php)
-- the NCBI Taxonomy (https://www.ncbi.nlm.nih.gov/books/NBK21100/),
-- the Global Biodiversity Information facility (GBIF) backbone Taxonomy (https://www.gbif.org/), and
-- the Interim Register of Marine and Nonmarine Genera (IRMNG; https://irmng.org/).
+The Open Tree of Life ([OpenTree](https://tree.opentreeoflife.org/opentree/argus/opentree13.4@ott93302)) is a project that unites phylogenetic inferences and taxonomy to provide a synthetic estimate of species relationships across the entire tree of life.
 
 <br/>
 
 ![](../img/synthtreeleg.svg)
 
-Figure 1 from [Hinchliff et al. 2015](https://www.pnas.org/content/112/41/12764.short).
+OpenTree synthetic tree. Figure 1 from [Hinchliff et al. 2015](https://www.pnas.org/content/112/41/12764.short).
 For more information on the OpenTree project see https://opentreeoflife.github.io
+
+<br/>
+
+OpenTree aims to construct a comprehensive, dynamic and digitally-available tree of life by synthesizing published phylogenetic trees along with taxonomic data.
+Currently the tree comprises 2.3 million tips.
+However, only around 90,000 of those taxa are represented by phylogenetic estimates - the rest are placed in the tree based on their taxonomic names.
+
+To achieve this, the OpenTree Taxonomy (OTT) constructs a reference taxonomy through an algorithmic combination of several source taxonomies, such as:
+- [Hibbet et al. 2007](https://doi.org/10.1016/j.mycres.2007.03.004),
+- [SILVA](http://www.arb-silva.de/),
+- the [Index Fungorum](http://www.indexfungorum.org/),
+- [Schäferhoff et al. 2010](https://doi.org/10.1186/1471-2148-10-352),
+- the [World Register of Marine Species](WoRMS; http://www.marinespecies.org/aphia.php)
+- the [NCBI Taxonomy](https://www.ncbi.nlm.nih.gov/books/NBK21100/),
+- the Global Biodiversity Information facility [(GBIF) backbone Taxonomy](https://www.gbif.org/), and
+- the [Interim Register of Marine and Nonmarine Genera (IRMNG)](https://irmng.org/).
+
 
 <br/>
 
