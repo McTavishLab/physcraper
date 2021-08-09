@@ -27,7 +27,7 @@ Welcome to Physcraper's documentation!
    Installation <install>
    Start <find-trees>
    Run <run>
-   Results <data_exploration>
+   Results <results>
    Combining multiple loci <multiloci>
    Examples <examples>
    Implementation <implementation>
