@@ -26,7 +26,7 @@ Welcome to Physcraper's documentation!
    Quick start <quick-start>
    Installation <install>
    Start <find-trees>
-   Run <physcraper_run>
+   Run <run>
    Results <data_exploration>
    Combining multiple loci <multiloci>
    Examples <examples>
