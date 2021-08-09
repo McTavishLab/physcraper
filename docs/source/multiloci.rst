@@ -1,4 +1,4 @@
 How to combine analyses across multiple loci
 ============================================
 
-.. mdinclude:: ../mds/MultiLoci.md
+.. mdinclude:: ../mds/multiloci.md

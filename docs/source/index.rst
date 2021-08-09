@@ -28,7 +28,7 @@ Welcome to Physcraper's documentation!
    Start <find_trees>
    Run <physcraper_run>
    Results <data_exploration>
-   Combining multiple loci <multi_locus>
+   Combining multiple loci <multiloci>
    Examples <examples>
    Implementation <implementation>
    Documentation <apidocs>
