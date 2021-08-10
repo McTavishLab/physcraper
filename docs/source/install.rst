@@ -1,6 +1,6 @@
 Installing Physcraper
 =====================
 
-.. mdinclude:: ../mds/INSTALL.md
+.. mdinclude:: ../mds/install.md
 
-.. mdinclude:: ../mds/LocalDB.md
+.. mdinclude:: ../mds/localDB.md
