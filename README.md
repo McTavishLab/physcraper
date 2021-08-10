@@ -3,7 +3,7 @@
 
 <img align="left" width="250" src="https://raw.githubusercontent.com/McTavishLab/physcraper/main/docs/physcraper-long.png">
 
-# Physcraper
+# Welcome to Physcraper’s repository\!
 
 [![Build
 Status](https://travis-ci.org/McTavishLab/physcraper.svg?branch=main)](https://travis-ci.org/McTavishLab/physcraper)[![Documentation](https://readthedocs.org/projects/physcraper/badge/?version=latest&style=flat)](https://physcraper.readthedocs.io/en/latest/)[![codecov](https://codecov.io/gh/McTavishLab/physcraper/branch/main/graph/badge.svg)](https://codecov.io/gh/McTavishLab/physcraper)
@@ -16,7 +16,7 @@ Status](https://travis-ci.org/McTavishLab/physcraper.svg?branch=main)](https://t
 
 </p>
 
-## Automated gene tree updating with the Open Tree of Life\!
+## Automated gene tree updating <br> with the Open Tree of Life\!
 
 Use a phylogenetic tree and a DNA alignment to automatically find and
 add nucleotide sequences from a genetic database, to reproducibly
@@ -91,8 +91,8 @@ Physcraper requires the user to install:
 
   - [Anaconda](https://docs.anaconda.com/anaconda/install/) <br>
     *Anaconda Software Distribution. Computer software. Vers. 4.8.0.
-    Anaconda, July. 2021. Web. <https://anaconda.com>*,
-  - [Virtualenv](https://pypi.org/project/virtualenv/),
+    Anaconda, July. 2021. Web. <https://anaconda.com>*
+  - [Virtualenv](https://pypi.org/project/virtualenv/)
   - [MUSCLE](https://www.ebi.ac.uk/Tools/msa/muscle/) <br> *Edgar RC.
     MUSCLE: multiple sequence alignment with high accuracy and high
     throughput. Nucleic Acids Res. 2004 Mar 19;32(5):1792-7.* doi:
@@ -104,13 +104,14 @@ Physcraper requires the user to install:
     [10.1093/bioinformatics/btu033](https://doi.org/10.1093/bioinformatics/btu033)
   - [BLAST
     +](https://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Web&PAGE_TYPE=BlastDocs&DOC_TYPE=Download)
-    if using a local genetic database. Note that BLAST + is
-    automatically installed with a [Physcraper installation using
+    <br> This software is only needed if using a local genetic database.
+    Note that BLAST + is automatically installed when [installing
+    Physcraper using
     Anaconda](https://physcraper.readthedocs.io/en/stable/install.html#anaconda-virtual-environment).
     <br> *Camacho, C., Coulouris, G., Avagyan, V. et al. BLAST+:
     architecture and applications. BMC Bioinformatics 10, 421 (2009).*
     doi:
-    [10.1186/1471-2105-10-421](https://doi.org/10.1186/1471-2105-10-421).
+    [10.1186/1471-2105-10-421](https://doi.org/10.1186/1471-2105-10-421)
 
 Physcraper relies on the following Python packages that are
 automatically installed:
