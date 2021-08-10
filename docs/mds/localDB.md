@@ -5,11 +5,11 @@ The BLAST tool can be run using local databases, which can be downloaded and upd
 ### Installing BLAST command line tools
 
 To BLAST locally you will need to install BLAST command line tools first.
-If you perfomed the Physcraper installation using conda, the BLAST command line tools will already be installed.
+If you perfomed [Physcraper installation using Anaconda](https://physcraper.readthedocs.io/en/stable/install.html#anaconda-virtual-environment), the BLAST command line tools will already be installed.
 
 Find general instructions at
-https://www.ncbi.nlm.nih.gov/books/NBK279671/
-https://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/
+[BLAST's command line applications user manual](https://www.ncbi.nlm.nih.gov/books/NBK279671/) and 
+ at the [index of blast executables](https://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/)
 
 
 e.g. installing BLAST command line tools on **linux**:
