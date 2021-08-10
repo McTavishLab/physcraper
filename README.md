@@ -29,11 +29,7 @@ resources and [programmatic
 tools](https://github.com/OpenTreeOfLife/germinator/wiki/Open-Tree-of-Life-Web-APIs)
 from the [Open Tree of
 Life](https://tree.opentreeoflife.org/opentree/argus/opentree12.3@ott93302)
-project: <br/> *Open Tree of Life, Benjamin Redelings, Luna Luisa
-Sanchez Reyes, Karen A. Cranston, Jim Allman, Mark T. Holder, & Emily
-Jane McTavish. (2019). Open Tree of Life Synthetic Tree (Version 12.3).
-Zenodo* doi:
-[10.5281/zenodo.3937741](https://doi.org/10.5281/zenodo.3937741)
+project.
 
 You are now on the code repository. Please refer to Physcraper’s
 [documentation website](https://physcraper.readthedocs.io/en/latest/)
@@ -68,10 +64,15 @@ for more details
 
 If you use Physcraper, please cite:
 
-Sánchez-Reyes, L.L., Kandziora, M. & McTavish, E.J. *Physcraper: a
-Python package for continually updated phylogenetic trees using the Open
-Tree of Life.* BMC Bioinformatics 22, 355 (2021) doi:
-[doi.org/10.1186/s12859-021-04274-6](https://doi.org/10.1186/s12859-021-04274-6)
+  - Sánchez-Reyes, L.L., M. Kandziora, & E.J McTavish. (2021).
+    *Physcraper: a Python package for continually updated phylogenetic
+    trees using the Open Tree of Life*. BMC Bioinformatics 22, 355. doi:
+    [doi.org/10.1186/s12859-021-04274-6](https://doi.org/10.1186/s12859-021-04274-6).
+    <br><br>
+  - Open Tree of Life, B. Redelings, L.L. Sanchez Reyes, K.A. Cranston,
+    J. Allman, M.T. Holder, & E.J. McTavish. (2019). *Open Tree of Life
+    Synthetic Tree (Version 12.3)*. Zenodo. doi:
+    [10.5281/zenodo.3937741](https://doi.org/10.5281/zenodo.3937741)
 
 ## License
 
