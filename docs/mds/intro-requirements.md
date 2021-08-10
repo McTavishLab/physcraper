@@ -9,6 +9,9 @@ Physcraper requires the user to install:
 *Edgar RC. MUSCLE: multiple sequence alignment with high accuracy and high throughput. Nucleic Acids Res. 2004 Mar 19;32(5):1792-7.* doi: [10.1093/nar/gkh340](https://doi.org/10.1093/nar/gkh340)
 - [RAxML](https://cme.h-its.org/exelixis/web/software/raxml/) <br>
 *Stamatakis, Alexandros. "RAxML version 8: a tool for phylogenetic analysis and post-analysis of large phylogenies." Bioinformatics 30.9 (2014): 1312-1313.* doi: [10.1093/bioinformatics/btu033](https://doi.org/10.1093/bioinformatics/btu033)
+- [BLAST +](https://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Web&PAGE_TYPE=BlastDocs&DOC_TYPE=Download) if using a local genetic database.
+Note that BLAST + is automatically installed with a [Physcraper installation using Anaconda](https://physcraper.readthedocs.io/en/stable/install.html#anaconda-virtual-environment). <br>
+*Camacho, C., Coulouris, G., Avagyan, V. et al. BLAST+: architecture and applications. BMC Bioinformatics 10, 421 (2009).* doi: [10.1186/1471-2105-10-421](https://doi.org/10.1186/1471-2105-10-421).
 
 
 Physcraper relies on the following Python packages that are automatically installed:
