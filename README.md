@@ -31,6 +31,13 @@ from the [Open Tree of
 Life](https://tree.opentreeoflife.org/opentree/argus/opentree12.3@ott93302)
 project.
 
+Physcraper also leverages on programmatic tools from the
+[TreeBASE](https://treebase.org/treebase-web/urlAPI.html) project and
+[NCBI](https://www.ncbi.nlm.nih.gov/home/develop/api/), as well as
+multiple software projects listed as [requirements](#Requirements)
+below, to create an automatic and reproducible workflow for
+phylogenetics.
+
 You are now on the code repository. Please refer to Physcraper’s
 [documentation website](https://physcraper.readthedocs.io/en/latest/)
 for more details
