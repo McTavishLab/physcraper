@@ -101,7 +101,7 @@ which raxmlHPC
 
 ## Checking installation success on remote searches
 
-To test a full run with pre-downloaded Blast results, copy the example results using:
+To test a full run with pre-downloaded BLAST results, copy the example results using:
 
     cp -r docs/examples/pg_55_web pg_55_test
 
@@ -112,7 +112,7 @@ and then run:
 There is more info on all the parameter settings in the documentation section [Run](https://physcraper.readthedocs.io/en/latest/physcraper_run.html), but briefly, this gets a tree (tree5864) from study pg_55 on OpenTree, pulls the alignment from TreeBASE, blasts the sequences, and does 10 bootstrap reps on the final phylogeny.
 
 
-This example tests all the components except for the actual remote blast searches (because they can be very slow).
+This example tests all the components except for the actual remote BLAST searches (because they can be very slow).
 To check if your installation was successful for remote searches, try running a full analysis:
 
     physcraper_run.py --study_id pg_55 --tree_id tree5864 --treebase --bootstrap_reps 10 --output pg_55_new
