@@ -61,6 +61,3 @@ an algorithmic combination of several source taxonomies, such as:
 - the [NCBI Taxonomy](https://www.ncbi.nlm.nih.gov/books/NBK21100/),
 - the Global Biodiversity Information facility [(GBIF) backbone Taxonomy](https://www.gbif.org/), and
 - the [Interim Register of Marine and Nonmarine Genera (IRMNG)](https://irmng.org/).
-
-
-<br/>

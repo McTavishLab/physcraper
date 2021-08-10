@@ -20,7 +20,7 @@ Status](https://travis-ci.org/McTavishLab/physcraper.svg?branch=main)](https://t
 
 Use a phylogenetic tree and a DNA alignment to automatically find and
 add nucleotide sequences from a genetic database, to reproducibly
-improve and advance phylogenetic knowledge in a group.
+improve and advance phylogenetic knowledge within a biological group.
 
 Physcraper relies on
 [taxonomic](https://tree.opentreeoflife.org/about/taxonomy-version/ott3.3)
@@ -115,7 +115,7 @@ Physcraper requires the user to install:
     [10.1186/1471-2105-10-421](https://doi.org/10.1186/1471-2105-10-421)
 
 Physcraper relies on the following Python packages that are
-automatically installed:
+<b>automatically</b> installed:
 
   - [argparse](https://docs.python.org/3/library/argparse.html)
   - [biopython](https://biopython.org/) <br> *Cock, P. J., Antao, T.,

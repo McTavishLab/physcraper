@@ -15,7 +15,8 @@ Note that BLAST + is automatically installed when [installing Physcraper using A
 *Camacho, C., Coulouris, G., Avagyan, V. et al. BLAST+: architecture and applications. BMC Bioinformatics 10, 421 (2009).* doi: [10.1186/1471-2105-10-421](https://doi.org/10.1186/1471-2105-10-421)
 
 
-Physcraper relies on the following Python packages that are automatically installed:
+Physcraper relies on the following Python packages that are <b>automatically</b>
+ installed:
 
 - [argparse](https://docs.python.org/3/library/argparse.html)
 - [biopython](https://biopython.org/) <br>
