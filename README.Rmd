@@ -26,7 +26,7 @@ IS_README <- TRUE
 <p></p>
 
 
-## Automated gene tree updating!
+## Automated gene tree updating with the Open Tree of Life!
 
 
 ```{r child="docs/mds/intro.md"}

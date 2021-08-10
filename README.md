@@ -16,17 +16,23 @@ Status](https://travis-ci.org/McTavishLab/physcraper.svg?branch=main)](https://t
 
 </p>
 
-## Automated gene tree updating\!
+## Automated gene tree updating with the Open Tree of Life\!
 
-Use a phylogenetic tree, Open Tree of Life tools, and a single locus
-alignment to automatically find and add homologous sequences to improve
-and advance phylogenetic inference in a group.
+Use a phylogenetic tree and a DNA alignment to automatically find and
+add nucleotide sequences from a genetic database, to reproducibly
+improve and advance phylogenetic knowledge in a group.
 
-Physcraper relies on [The Open Tree of Life
-Project](https://tree.opentreeoflife.org/opentree/argus/opentree12.3@ott93302):
-*Open Tree of Life, Benjamin Redelings, Luna Luisa Sanchez Reyes, Karen
-A. Cranston, Jim Allman, Mark T. Holder, & Emily Jane McTavish. (2019).
-Open Tree of Life Synthetic Tree (Version 12.3). Zenodo* doi:
+Physcraper relies on
+[taxonomic](https://tree.opentreeoflife.org/about/taxonomy-version/ott3.3)
+and [phylogenetic](https://github.com/OpenTreeOfLife/phylesystem-1)
+resources and [programmatic
+tools](https://github.com/OpenTreeOfLife/germinator/wiki/Open-Tree-of-Life-Web-APIs)
+from the [Open Tree of
+Life](https://tree.opentreeoflife.org/opentree/argus/opentree12.3@ott93302)
+project: <br/> *Open Tree of Life, Benjamin Redelings, Luna Luisa
+Sanchez Reyes, Karen A. Cranston, Jim Allman, Mark T. Holder, & Emily
+Jane McTavish. (2019). Open Tree of Life Synthetic Tree (Version 12.3).
+Zenodo* doi:
 [10.5281/zenodo.3937741](https://doi.org/10.5281/zenodo.3937741)
 
 You are now on the code repository. Please refer to Physcraper’s
@@ -96,6 +102,15 @@ Physcraper requires the user to install:
     analysis and post-analysis of large phylogenies.” Bioinformatics
     30.9 (2014): 1312-1313.* doi:
     [10.1093/bioinformatics/btu033](https://doi.org/10.1093/bioinformatics/btu033)
+  - [BLAST
+    +](https://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Web&PAGE_TYPE=BlastDocs&DOC_TYPE=Download)
+    if using a local genetic database. Note that BLAST + is
+    automatically installed with a [Physcraper installation using
+    Anaconda](https://physcraper.readthedocs.io/en/stable/install.html#anaconda-virtual-environment).
+    <br> *Camacho, C., Coulouris, G., Avagyan, V. et al. BLAST+:
+    architecture and applications. BMC Bioinformatics 10, 421 (2009).*
+    doi:
+    [10.1186/1471-2105-10-421](https://doi.org/10.1186/1471-2105-10-421).
 
 Physcraper relies on the following Python packages that are
 automatically installed:

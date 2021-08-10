@@ -13,6 +13,8 @@ tests/data/precooked/*
 docs/example_scripts/output/*
 tests/data/tmp/*
 tests/debugging/*
+tests/tmp
+tests/fromfile
 .Rproj.user
 *Rproj
 *Rhistory
