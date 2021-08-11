@@ -1,4 +1,4 @@
-## Automated gene tree updating <br> with the Open Tree of Life\!
+## Automated gene tree updating <br> with the Open Tree of Life
 
 Use a phylogenetic tree and a DNA alignment to automatically find and add nucleotide sequences from a genetic database, to reproducibly improve and advance phylogenetic knowledge within a biological group.
 

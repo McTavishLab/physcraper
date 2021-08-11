@@ -16,7 +16,7 @@ Status](https://travis-ci.org/McTavishLab/physcraper.svg?branch=main)](https://t
 
 </p>
 
-## Automated gene tree updating <br> with the Open Tree of Life\!
+## Automated gene tree updating <br> with the Open Tree of Life
 
 Use a phylogenetic tree and a DNA alignment to automatically find and
 add nucleotide sequences from a genetic database, to reproducibly
@@ -49,11 +49,11 @@ for more details
   - [function](https://physcraper.readthedocs.io/en/latest/apidocs.html)
     usage,
   - finding and choosing a [starting
-    dataset](https://physcraper.readthedocs.io/en/latest/find_trees.html),
-  - [running](https://physcraper.readthedocs.io/en/latest/physcraper_run.html)
-    a full analysis,
+    dataset](https://physcraper.readthedocs.io/en/latest/find-trees.html),
+  - [running](https://physcraper.readthedocs.io/en/latest/run.html) a
+    full analysis,
   - [visualizing and
-    analysing](https://physcraper.readthedocs.io/en/latest/data_exploration.html)
+    analysing](https://physcraper.readthedocs.io/en/latest/results.html)
     results,
   - real life
     [examples](https://physcraper.readthedocs.io/en/latest/examples.html),
@@ -64,8 +64,6 @@ for more details
 :hamster: :palm\_tree: :frog: :ear\_of\_rice: :panda\_face: :tulip:
 :octopus: :blossom: :whale: :mushroom: :ant: :cactus: :fish:
 :maple\_leaf: :water\_buffalo: 🦠 :shell: :bug: :octocat:
-
-<br>
 
 ## Citation
 

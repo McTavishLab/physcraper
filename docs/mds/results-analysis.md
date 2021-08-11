@@ -3,13 +3,12 @@
 *Under construction*
 
 The functionalities described in the following sections are still under development.
-Even in this raw form, we think they have the potential to be pretty useful, so
-we released them.
+Even in this beta form, we think they have the potential to be useful, so we decided to document them here.
 
 The first two functionalities are not accessible through the command line yet.
 This means that you can access them only through Python for the moment.
 The last functionality can be accessed through the command line, but it has not
-achieved final form yet.
+been fully tested yet. Use with caution.
 
 ### Relabeling the trees
 

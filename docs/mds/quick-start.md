@@ -8,7 +8,7 @@ There is a lot of sequence data available that has never been incorporated into 
 
 #### *Find a starting tree with your taxon of interest*
 
-For this example we will use a tree that is already in the Open Tree of Life database. You can find more details about finding a tree to update at the [Start section](https://physcraper.readthedocs.io/en/latest/find_trees.html) of this documentation.
+For this example we will use a tree that is already in the Open Tree of Life database. You can find more details about finding a tree to update at the [start section](https://physcraper.readthedocs.io/en/latest/find-trees.html) of this documentation.
 
 To find trees containing your taxon of interest (e.g. 'Malvaceae') on OpenTree use:
 
@@ -31,7 +31,7 @@ Let's take a look at how recent molecular data affect our inferences of relation
 #### *Run the auto-update*
 
 The script `physcraper_run.py` wraps together linking the tree and alignment, blasting, aligning sequences, and inferring an updated tree.
-Detailed explanation of the inputs needed can be found in the [Run section](https://physcraper.readthedocs.io/en/latest/physcraper_run.html) of this documentation.
+Detailed explanation of the inputs needed can be found in the [Run section](https://physcraper.readthedocs.io/en/latest/run.html) of this documentation.
 
 The BLAST search part of updating trees takes a long time. For example, this analysis took around 12 hours!
 We recommend running it on a cluster or other remote computing option.
@@ -52,15 +52,15 @@ You need an alignment (single locus) and a tree. Note that the taxon labels in t
 
 You also need a file linking the labels in your tree and alignment to broader taxonomy. This can be easily generated via OpenTree's Bulk Taxonomic Name Resolution Service ([bulk TNRS](https://tree.opentreeoflife.org/curator/tnrs/)).
 
-#### *Mapping names to taxa*
+#### *Automatically mapping names to taxa*
 
-Map your tip names to unique identifiers using the Open Tree bulk TNRS upload tool at https://tree.opentreeoflife.org/curator/tnrs/
+You can automatically map your tip names to unique taxonomic identifiers using OpenTree's bulk Taxonomic Name Resolution Service (TNRS) tool. This can be done using R or Python programming languages, and the graphical user interface (GUI) version is available at https://tree.opentreeoflife.org/curator/tnrs/.
 
 <span>&#9888;</span> This is a brand new beta-version of this functionality, so some parts might be a bit finicky.
 
-Save your tip labels in a ".txt" file. There is an example file in `docs/examples/example_tiplabels.txt`
+The first step is to save your tip taxon labels in a ".txt" file. There is an example file in the Physcraper folder at `docs/examples/example_tiplabels.txt`
 
-Then, click on `add names`, and upload the names file.
+Then, got to https://tree.opentreeoflife.org/curator/tnrs/ and click on `add names`, and upload the names file.
 
 ![](../img/TNRS1.png)
 

@@ -39,16 +39,15 @@ instructions using an Anaconda or a Virtualenv Python virtual
 environment,
 - [function](https://physcraper.readthedocs.io/en/latest/apidocs.html)
 usage,
-- finding and choosing a [starting dataset](https://physcraper.readthedocs.io/en/latest/find_trees.html),
-- [running](https://physcraper.readthedocs.io/en/latest/physcraper_run.html) a full analysis,
-- [visualizing and analysing](https://physcraper.readthedocs.io/en/latest/data_exploration.html) results,
+- finding and choosing a [starting dataset](https://physcraper.readthedocs.io/en/latest/find-trees.html),
+- [running](https://physcraper.readthedocs.io/en/latest/run.html) a full analysis,
+- [visualizing and analysing](https://physcraper.readthedocs.io/en/latest/results.html) results,
 - real life [examples](https://physcraper.readthedocs.io/en/latest/examples.html), and
 - tools for [developers](https://physcraper.readthedocs.io/en/latest/CONTRIBUTING.html).
 
 
 :hamster: :palm_tree: :frog: :ear_of_rice: :panda_face: :tulip: :octopus: :blossom: :whale: :mushroom: :ant: :cactus: :fish: :maple_leaf: :water_buffalo: 🦠 :shell: :bug: :octocat:
 
-<br>
 
 ```{r child="docs/mds/citation.md"}
 
