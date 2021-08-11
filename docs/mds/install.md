@@ -109,7 +109,7 @@ and then run:
 
     physcraper_run.py --study_id pg_55 --tree_id tree5864 --treebase --bootstrap_reps 10 --output pg_55_test
 
-There is more info on all the parameter settings in the documentation section [Run](https://physcraper.readthedocs.io/en/latest/run.html), but briefly, this gets a tree (tree5864) from study pg_55 on OpenTree, pulls the alignment from TreeBASE, blasts the sequences, and does 10 bootstrap reps on the final phylogeny.
+There is more info on all the parameter settings in the documentation section [Run](https://physcraper.readthedocs.io/en/main/run.html), but briefly, this gets a tree (tree5864) from study pg_55 on OpenTree, pulls the alignment from TreeBASE, blasts the sequences, and does 10 bootstrap reps on the final phylogeny.
 
 
 This example tests all the components except for the actual remote BLAST searches (because they can be very slow).

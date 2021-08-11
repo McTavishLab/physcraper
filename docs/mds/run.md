@@ -205,7 +205,7 @@ By default, it will use the ingroup of the tree from OpenTree, or the MRCA of al
 <br/>
 
 You can use a local BLAST database.
-To setup see [Local Databases section](https://physcraper.readthedocs.io/en/latest/install.html#local-databases) of this documentation.
+To setup see [Local Databases section](https://physcraper.readthedocs.io/en/main/install.html#local-databases) of this documentation.
 
 <blockquote>
 <div><dl class="option-list">

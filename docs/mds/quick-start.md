@@ -8,7 +8,7 @@ There is a lot of sequence data available that has never been incorporated into 
 
 #### *Find a starting tree with your taxon of interest*
 
-For this example we will use a tree that is already in the Open Tree of Life database. You can find more details about finding a tree to update at the [start section](https://physcraper.readthedocs.io/en/latest/find-trees.html) of this documentation.
+For this example we will use a tree that is already in the Open Tree of Life database. You can find more details about finding a tree to update at the [start section](https://physcraper.readthedocs.io/en/main/find-trees.html) of this documentation.
 
 To find trees containing your taxon of interest (e.g. 'Malvaceae') on OpenTree use:
 
@@ -31,7 +31,7 @@ Let's take a look at how recent molecular data affect our inferences of relation
 #### *Run the auto-update*
 
 The script `physcraper_run.py` wraps together linking the tree and alignment, blasting, aligning sequences, and inferring an updated tree.
-Detailed explanation of the inputs needed can be found in the [Run section](https://physcraper.readthedocs.io/en/latest/run.html) of this documentation.
+Detailed explanation of the inputs needed can be found in the [Run section](https://physcraper.readthedocs.io/en/main/run.html) of this documentation.
 
 The BLAST search part of updating trees takes a long time. For example, this analysis took around 12 hours!
 We recommend running it on a cluster or other remote computing option.

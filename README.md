@@ -6,7 +6,7 @@
 # Welcome to Physcraper’s repository\!
 
 [![Build
-Status](https://travis-ci.org/McTavishLab/physcraper.svg?branch=main)](https://travis-ci.org/McTavishLab/physcraper)[![Documentation](https://readthedocs.org/projects/physcraper/badge/?version=latest&style=flat)](https://physcraper.readthedocs.io/en/latest/)[![codecov](https://codecov.io/gh/McTavishLab/physcraper/branch/main/graph/badge.svg)](https://codecov.io/gh/McTavishLab/physcraper)
+Status](https://travis-ci.org/McTavishLab/physcraper.svg?branch=main)](https://travis-ci.org/McTavishLab/physcraper)[![Documentation](https://readthedocs.org/projects/physcraper/badge/?version=latest&style=flat)](https://physcraper.readthedocs.io/en/main/)[![codecov](https://codecov.io/gh/McTavishLab/physcraper/branch/main/graph/badge.svg)](https://codecov.io/gh/McTavishLab/physcraper)
 
 <p>
 
@@ -39,27 +39,27 @@ below, to create an automatic and reproducible workflow for
 phylogenetics.
 
 You are now on the code repository. Please refer to Physcraper’s
-[documentation website](https://physcraper.readthedocs.io/en/latest/)
+[documentation website](https://physcraper.readthedocs.io/en/main/)
 for more details
     on:
 
-  - [installation](https://physcraper.readthedocs.io/en/latest/install.html)
+  - [installation](https://physcraper.readthedocs.io/en/main/install.html)
     instructions using an Anaconda or a Virtualenv Python virtual
     environment,
-  - [function](https://physcraper.readthedocs.io/en/latest/apidocs.html)
+  - [function](https://physcraper.readthedocs.io/en/main/apidocs.html)
     usage,
   - finding and choosing a [starting
-    dataset](https://physcraper.readthedocs.io/en/latest/find-trees.html),
-  - [running](https://physcraper.readthedocs.io/en/latest/run.html) a
+    dataset](https://physcraper.readthedocs.io/en/main/find-trees.html),
+  - [running](https://physcraper.readthedocs.io/en/main/run.html) a
     full analysis,
   - [visualizing and
-    analysing](https://physcraper.readthedocs.io/en/latest/results.html)
+    analysing](https://physcraper.readthedocs.io/en/main/results.html)
     results,
   - real life
-    [examples](https://physcraper.readthedocs.io/en/latest/examples.html),
+    [examples](https://physcraper.readthedocs.io/en/main/examples.html),
     and
   - tools for
-    [developers](https://physcraper.readthedocs.io/en/latest/CONTRIBUTING.html).
+    [developers](https://physcraper.readthedocs.io/en/main/CONTRIBUTING.html).
 
 :hamster: :palm\_tree: :frog: :ear\_of\_rice: :panda\_face: :tulip:
 :octopus: :blossom: :whale: :mushroom: :ant: :cactus: :fish:

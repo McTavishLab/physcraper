@@ -10,7 +10,7 @@ If you have access to a single gene or multilocus nucleotide alignment, and a ph
 adding nucleotide sequences of new lineage samples into your tree by using [Open Tree of Life](#the-open-tree-of-life) tools to reconcile Taxonomy, and the [BLAST](https://blast.ncbi.nlm.nih.gov/Blast.cgi) algorithm to search for loci in the [GenBank](https://www.ncbi.nlm.nih.gov/genbank/statistics/) genetic database that are likely to be
 locally similar to sequences in the initial DNA alignment.
 
-By using a starting alignment and tree, Physcraper takes advantage of DNA loci alignments as  homology hypotheses (ideally orthology, see [FAQs](https://physcraper.readthedocs.io/en/latest/faq.html)) that
+By using a starting alignment and tree, Physcraper takes advantage of DNA loci alignments as  homology hypotheses (ideally orthology, see [FAQs](https://physcraper.readthedocs.io/en/main/faq.html)) that
 previous researchers have assessed, curated, and deemed appropriate for the phylogenetic scope.
 The sequences added during a BLAST search are limited either to a user specified taxon or
 monophyletic group, or within the taxonomic scope of the ingroup of the starting tree.
@@ -23,7 +23,7 @@ as well as flag problems in the taxonomic assignments of sequences, paralogy and
 ![](../img/schematic-final.svg)
 
 Figure 1 from [Sanchez-Reyes et al. 2021](https://doi.org/10.1186/s12859-021-04274-6):
-The Physcraper framework consists of 4 general steps. The methodology is further described in the [Implementation](https://physcraper.readthedocs.io/en/latest/implementation.html) section of this documentation.
+The Physcraper framework consists of 4 general steps. The methodology is further described in the [Implementation](https://physcraper.readthedocs.io/en/main/implementation.html) section of this documentation.
 
 <br/>
 <br/>

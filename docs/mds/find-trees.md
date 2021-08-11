@@ -2,7 +2,7 @@ Physcraper takes as input a phylogenetic tree and the corresponding DNA alignmen
 This section shows how to get one for any given taxon from the OpenTree database
 using the Physcraper command line.
 If you already have a tree and an alignment of your own (or downloaded from somewhere else) that you want to update
-with Physcraper, please go to the [Run section - Starting with your own tree](https://physcraper.readthedocs.io/en/latest/physcraper_run.html#starting-with-your-own-tree).
+with Physcraper, please go to the [Run section - Starting with your own tree](https://physcraper.readthedocs.io/en/main/physcraper_run.html#starting-with-your-own-tree).
 
 ## Find a tree to update from OpenTree
 

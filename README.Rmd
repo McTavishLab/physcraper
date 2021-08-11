@@ -18,7 +18,7 @@ IS_README <- TRUE
 
 # Welcome to Physcraper’s repository!
 
-[![Build Status](https://travis-ci.org/McTavishLab/physcraper.svg?branch=main)](https://travis-ci.org/McTavishLab/physcraper)[![Documentation](https://readthedocs.org/projects/physcraper/badge/?version=latest&style=flat)](https://physcraper.readthedocs.io/en/latest/)[![codecov](https://codecov.io/gh/McTavishLab/physcraper/branch/main/graph/badge.svg)](https://codecov.io/gh/McTavishLab/physcraper)
+[![Build Status](https://travis-ci.org/McTavishLab/physcraper.svg?branch=main)](https://travis-ci.org/McTavishLab/physcraper)[![Documentation](https://readthedocs.org/projects/physcraper/badge/?version=latest&style=flat)](https://physcraper.readthedocs.io/en/main/)[![codecov](https://codecov.io/gh/McTavishLab/physcraper/branch/main/graph/badge.svg)](https://codecov.io/gh/McTavishLab/physcraper)
 
 
 <p></p>
@@ -33,19 +33,19 @@ IS_README <- TRUE
 Physcraper also leverages on programmatic tools from the [TreeBASE](https://treebase.org/treebase-web/urlAPI.html) project and [NCBI](https://www.ncbi.nlm.nih.gov/home/develop/api/), as well as multiple software projects listed as [requirements](#requirements) below, to create an automatic and reproducible workflow for phylogenetics.
 
 You are now on the code repository. Please refer to Physcraper’s
-[documentation website](https://physcraper.readthedocs.io/en/latest/)
+[documentation website](https://physcraper.readthedocs.io/en/main/)
 for more details on:
 
-- [installation](https://physcraper.readthedocs.io/en/latest/install.html)
+- [installation](https://physcraper.readthedocs.io/en/main/install.html)
 instructions using an Anaconda or a Virtualenv Python virtual
 environment,
-- [function](https://physcraper.readthedocs.io/en/latest/apidocs.html)
+- [function](https://physcraper.readthedocs.io/en/main/apidocs.html)
 usage,
-- finding and choosing a [starting dataset](https://physcraper.readthedocs.io/en/latest/find-trees.html),
-- [running](https://physcraper.readthedocs.io/en/latest/run.html) a full analysis,
-- [visualizing and analysing](https://physcraper.readthedocs.io/en/latest/results.html) results,
-- real life [examples](https://physcraper.readthedocs.io/en/latest/examples.html), and
-- tools for [developers](https://physcraper.readthedocs.io/en/latest/CONTRIBUTING.html).
+- finding and choosing a [starting dataset](https://physcraper.readthedocs.io/en/main/find-trees.html),
+- [running](https://physcraper.readthedocs.io/en/main/run.html) a full analysis,
+- [visualizing and analysing](https://physcraper.readthedocs.io/en/main/results.html) results,
+- real life [examples](https://physcraper.readthedocs.io/en/main/examples.html), and
+- tools for [developers](https://physcraper.readthedocs.io/en/main/CONTRIBUTING.html).
 
 
 :hamster: :palm_tree: :frog: :ear_of_rice: :panda_face: :tulip: :octopus: :blossom: :whale: :mushroom: :ant: :cactus: :fish: :maple_leaf: :water_buffalo: 🦠 :shell: :bug: :octocat:
