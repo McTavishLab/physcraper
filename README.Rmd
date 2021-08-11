@@ -26,7 +26,7 @@ IS_README <- TRUE
 <p></p>
 
 
-```{r child="docs/mds/intro.md"}
+```{r child="docs/mds/intro-part1.md"}
 
 ```
 

@@ -7,7 +7,9 @@ Welcome to Physcraper's documentation!
 ======================================
 .. mdinclude:: ../mds/intro-header.md
 
-.. mdinclude:: ../mds/intro.md
+.. mdinclude:: ../mds/intro-part1.md
+
+.. mdinclude:: ../mds/intro-part2.md
 
 .. mdinclude:: ../mds/citation.md
 
