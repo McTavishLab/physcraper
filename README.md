@@ -119,7 +119,7 @@ Physcraper requires the user to install:
     doi:
     [10.1186/1471-2105-10-421](https://doi.org/10.1186/1471-2105-10-421)
 
-Physcraper relies on the following Python packages that are
+<br> Physcraper relies on the following Python packages that are
 <b>automatically</b> installed:
 
   - [argparse](https://docs.python.org/3/library/argparse.html)
