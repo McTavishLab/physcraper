@@ -1,8 +1,8 @@
 The Physcraper results
 ======================
 
-.. mdinclude:: ../mds/results.md
+.. mdinclude:: ../mds/outputs.md
 
 .. mdinclude:: ../mds/malvaceae.md
 
-.. mdinclude:: ../mds/DataExploration.md
+.. mdinclude:: ../mds/results-analysis.md

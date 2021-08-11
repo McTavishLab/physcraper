@@ -41,10 +41,10 @@ from opentree import OT
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument("-d", "--results_dir", help="results directory from run")
+parser.add_argument("-d", "--dir", help="Physcraper output directory from a single run")
 parser.add_argument("-t1", "--original_tree", help="Original tree")
 parser.add_argument("-t2", "--updated_tree", help="Updated Tree")
-parser.add_argument("-otu", "--otu_info", help="File with taxon information JSON")
+parser.add_argument("-otu", "--otu_info", help="File with taxon information in JSON format")
 parser.add_argument("-og", "--outgroup", nargs='+', help="otu ids of outgroup taxa for rooting")
 parser.add_argument("-o", "--outputdir", help="Name for output directory")
 

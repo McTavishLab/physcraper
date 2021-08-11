@@ -1,4 +1,4 @@
 How to run Physcraper
 ==================
 
-.. mdinclude:: ../mds/PhyscraperRun.md
+.. mdinclude:: ../mds/run.md

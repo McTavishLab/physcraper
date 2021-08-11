@@ -14,9 +14,9 @@ knitr::opts_chunk$set(
 IS_README <- TRUE
 ```
 
-<img align="left" width="250" src="https://raw.githubusercontent.com/McTavishLab/physcraper/cleanup/docs/physcraper-long.png">
+<img align="left" width="250" src="https://raw.githubusercontent.com/McTavishLab/physcraper/main/docs/physcraper-long.png">
 
-# Physcraper
+# Welcome to Physcraper’s repository!
 
 [![Build Status](https://travis-ci.org/McTavishLab/physcraper.svg?branch=main)](https://travis-ci.org/McTavishLab/physcraper)[![Documentation](https://readthedocs.org/projects/physcraper/badge/?version=latest&style=flat)](https://physcraper.readthedocs.io/en/latest/)[![codecov](https://codecov.io/gh/McTavishLab/physcraper/branch/main/graph/badge.svg)](https://codecov.io/gh/McTavishLab/physcraper)
 
@@ -26,38 +26,44 @@ IS_README <- TRUE
 <p></p>
 
 
-## Automated gene tree updating!
-
-
 ```{r child="docs/mds/intro.md"}
 
 ```
 
+You are now on the code repository. Please refer to Physcraper’s
+[documentation website](https://physcraper.readthedocs.io/en/latest/)
+for more details on:
 
-This is the code repository.
-Please refer to Physcraper's [documentation website](https://physcraper.readthedocs.io/en/latest/) for more details
-on [installation](https://physcraper.readthedocs.io/en/latest/install.html) instructions
-using an Anaconda or a Virtualenv Python virtual environment,
-[function](https://physcraper.readthedocs.io/en/latest/apidocs.html) usage,
-tutorials on finding and choosing a [starting dataset](https://physcraper.readthedocs.io/en/latest/find_trees.html),
-[running](https://physcraper.readthedocs.io/en/latest/physcraper_run.html) a full analysis,
-and [visualizing and analysing](https://physcraper.readthedocs.io/en/latest/data_exploration.html) results,
-as well as real life [examples](https://physcraper.readthedocs.io/en/latest/examples.html)
-and tools for [developers](https://physcraper.readthedocs.io/en/latest/CONTRIBUTING.html).
-
+- [installation](https://physcraper.readthedocs.io/en/latest/install.html)
+instructions using an Anaconda or a Virtualenv Python virtual
+environment,
+- [function](https://physcraper.readthedocs.io/en/latest/apidocs.html)
+usage,
+- finding and choosing a [starting dataset](https://physcraper.readthedocs.io/en/latest/find-trees.html),
+- [running](https://physcraper.readthedocs.io/en/latest/run.html) a full analysis,
+- [visualizing and analysing](https://physcraper.readthedocs.io/en/latest/results.html) results,
+- real life [examples](https://physcraper.readthedocs.io/en/latest/examples.html), and
+- tools for [developers](https://physcraper.readthedocs.io/en/latest/CONTRIBUTING.html).
 
 
 :hamster: :palm_tree: :frog: :ear_of_rice: :panda_face: :tulip: :octopus: :blossom: :whale: :mushroom: :ant: :cactus: :fish: :maple_leaf: :water_buffalo: 🦠 :shell: :bug: :octocat:
 
 
-```{r child="docs/mds/intro-dendropy.md"}
-
-```
-
 ```{r child="docs/mds/citation.md"}
 
 ```
 
+
 ```{r child="docs/mds/license.md"}
+
+```
+
+
+```{r child="docs/mds/contact.md"}
+
+```
+
+
+```{r child="docs/mds/intro-requirements.md"}
 
 ```

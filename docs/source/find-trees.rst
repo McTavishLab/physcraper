@@ -1,4 +1,4 @@
 How to find Physcraper inputs
 =================================
 
-.. mdinclude:: ../mds/FindTrees.md
+.. mdinclude:: ../mds/find-trees.md

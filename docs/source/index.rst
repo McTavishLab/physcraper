@@ -9,25 +9,30 @@ Welcome to Physcraper's documentation!
 
 .. mdinclude:: ../mds/intro.md
 
-.. mdinclude:: ../mds/intro-dendropy.md
-
 .. mdinclude:: ../mds/citation.md
 
 .. mdinclude:: ../mds/license.md
+
+.. mdinclude:: ../mds/contact.md
+
+.. mdinclude:: ../mds/intro-requirements.md
 
 .. toctree::
    :maxdepth: 3
    :caption: Documentation topics:
    :hidden:
 
-   Introduction <how_to_start>
+   Description <description>
+   Quick start <quick-start>
    Installation <install>
-   Documentation <apidocs>
-   Start <find_trees>
-   Run <physcraper_run>
-   Results <data_exploration>
-   Combining multiple loci <multi_locus>   
+   Start <find-trees>
+   Run <run>
+   Results <results>
+   Multiple loci <multiloci>
    Examples <examples>
-   Implementation <methods_extended>
+   Implementation <implementation>
+   Documentation <apidocs>
    CONTRIBUTING
    CONTRIBUTORS
+   changelog
+   faq
