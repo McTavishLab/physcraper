@@ -173,7 +173,7 @@ REQUIRED:
 
 Optional:
 
-<blockquote>
+<blockquote> 
 <div><dl class="option-list">
 <dt><kbd><span class="option">-st <var>SEARCH_TAXON</var></span>, <span class="option">--search_taxon <var>SEARCH_TAXON</var></span></kbd></dt>
 <dd><p>Specifies the taxonomic id to constrain the BLAST search. Format  <code class="docutils literal notranslate"><span class="pre">ott:123</span></code> or
