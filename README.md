@@ -40,8 +40,7 @@ phylogenetics.
 
 You are now on the code repository. Please refer to Physcraper’s
 [documentation website](https://physcraper.readthedocs.io/en/main/)
-for more details
-    on:
+for more details on:
 
   - [installation](https://physcraper.readthedocs.io/en/main/install.html)
     instructions using an Anaconda or a Virtualenv Python virtual

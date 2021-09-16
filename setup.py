@@ -2,9 +2,6 @@
 
 from setuptools import setup
 
-with open("README.md", "r") as fh:
-    long_description = fh.read()
-
 setup(name='Physcraper',
       version='1.0.0',
       description='Physcraper',
@@ -15,6 +12,8 @@ setup(name='Physcraper',
                'bin/tree_comparison.py',
                'bin/find_trees.py',
                'bin/multi_loci.py'],
+      long_description=(open('README.md').read()),
+      url=("https://github.com/McTavishLab/physcraper"),
       include_package_data=True,
       install_requires=['argparse',
                         'biopython==1.76',
@@ -26,6 +25,7 @@ setup(name='Physcraper',
                         'requests',
                         'sh',
                         'urllib3>=1.23',
+                        'nexson',
                         'numpy',
                         'wget']
      )
