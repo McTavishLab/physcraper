@@ -1,15 +1,18 @@
 
 <!-- README.md is generated from README.Rmd; please edit the .Rmd file and then from R do rmarkdown::render("README.Rmd")-->
 
-<img align="left" width="250" src="https://raw.githubusercontent.com/McTavishLab/physcraper/main/docs/physcraper-long.png">
+<img align="right" width="250" src="https://raw.githubusercontent.com/McTavishLab/physcraper/main/docs/physcraper-long.png">
 
 # Welcome to Physcraper’s repository\!
 
 [![Build
-Status](https://travis-ci.org/McTavishLab/physcraper.svg?branch=main)](https://travis-ci.org/McTavishLab/physcraper)[![Documentation](https://readthedocs.org/projects/physcraper/badge/?version=main&style=flat)](https://physcraper.readthedocs.io/en/main/)[![codecov](https://codecov.io/gh/McTavishLab/physcraper/branch/main/graph/badge.svg)](https://codecov.io/gh/McTavishLab/physcraper)
+Status](https://travis-ci.org/McTavishLab/physcraper.svg?branch=main)](https://travis-ci.org/McTavishLab/physcraper)
+[![Documentation](https://readthedocs.org/projects/physcraper/badge/?version=main&style=flat)](https://physcraper.readthedocs.io/en/main/)
+[![codecov](https://codecov.io/gh/McTavishLab/physcraper/branch/main/graph/badge.svg)](https://codecov.io/gh/McTavishLab/physcraper)
 [![pyOpenSci](https://tinyurl.com/y22nb8up)](https://github.com/pyOpenSci/software-review/issues/26)
 [![DOI](https://zenodo.org/badge/41294748.svg)](https://zenodo.org/badge/latestdoi/41294748)
-
+[![NSF-1759846](https://img.shields.io/badge/NSF-1759846-blue.svg)](https://nsf.gov/awardsearch/showAward?AWD_ID=1759846)
+[![NSF-1759838](https://img.shields.io/badge/NSF-1759838-blue.svg)](https://nsf.gov/awardsearch/showAward?AWD_ID=1759838)
 
 <p>
 
@@ -42,8 +45,9 @@ below, to create an automatic and reproducible workflow for
 phylogenetics.
 
 You are now on the code repository. Please refer to Physcraper’s
-[documentation website](https://physcraper.readthedocs.io/en/main/)
-for more details on:
+[documentation website](https://physcraper.readthedocs.io/en/main/) for
+more details
+    on:
 
   - [installation](https://physcraper.readthedocs.io/en/main/install.html)
     instructions using an Anaconda or a Virtualenv Python virtual
@@ -52,16 +56,18 @@ for more details on:
     usage,
   - finding and choosing a [starting
     dataset](https://physcraper.readthedocs.io/en/main/find-trees.html),
-  - [running](https://physcraper.readthedocs.io/en/main/run.html) a
-    full analysis,
+  - [running](https://physcraper.readthedocs.io/en/main/run.html) a full
+    analysis,
   - [visualizing and
     analysing](https://physcraper.readthedocs.io/en/main/results.html)
     results,
   - real life
     [examples](https://physcraper.readthedocs.io/en/main/examples.html),
     and
-  - tools for
-    [developers](https://physcraper.readthedocs.io/en/main/CONTRIBUTING.html).
+  - instructions for
+    [developers](https://physcraper.readthedocs.io/en/main/CONTRIBUTING.html),
+    and specifically on how to [update this
+    readme](https://physcraper.readthedocs.io/en/main/CONTRIBUTING.html#updating-the-readme).
 
 :hamster: :palm\_tree: :frog: :ear\_of\_rice: :panda\_face: :tulip:
 :octopus: :blossom: :whale: :mushroom: :ant: :cactus: :fish:
@@ -93,73 +99,39 @@ Lab](https://mctavishlab.github.io/). Please post a GitHub issue
 [here](https://github.com/McTavishLab/physcraper/issues) or contact
 <ejmctavish@ucmerced.edu> if you need any help or have feedback.
 
-## Requirements
+## Updating the README
 
-Physcraper requires the user to install:
+The `README.Rmd` file generates the `README.md` file, which in turn
+generates what is shown on Physcraper’s home page at [its GitHub
+repository](https://github.com/McTavishLab/physcraper#readme), and
+[PyPI’s description](https://pypi.org/project/Physcraper/).
 
-  - [Anaconda](https://docs.anaconda.com/anaconda/install/) <br>
-    *Anaconda Software Distribution. Computer software. Vers. 4.8.0.
-    Anaconda, July. 2021. Web. <https://anaconda.com>*
-  - [Virtualenv](https://pypi.org/project/virtualenv/)
-  - [MUSCLE](https://www.ebi.ac.uk/Tools/msa/muscle/) <br> *Edgar RC.
-    MUSCLE: multiple sequence alignment with high accuracy and high
-    throughput. Nucleic Acids Res. 2004 Mar 19;32(5):1792-7.* doi:
-    [10.1093/nar/gkh340](https://doi.org/10.1093/nar/gkh340)
-  - [RAxML](https://cme.h-its.org/exelixis/web/software/raxml/) <br>
-    *Stamatakis, Alexandros. “RAxML version 8: a tool for phylogenetic
-    analysis and post-analysis of large phylogenies.” Bioinformatics
-    30.9 (2014): 1312-1313.* doi:
-    [10.1093/bioinformatics/btu033](https://doi.org/10.1093/bioinformatics/btu033)
-  - [BLAST
-    +](https://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Web&PAGE_TYPE=BlastDocs&DOC_TYPE=Download)
-    <br> This software is only needed if using a local genetic database.
-    Note that BLAST + is automatically installed when [installing
-    Physcraper using
-    Anaconda](https://physcraper.readthedocs.io/en/stable/install.html#anaconda-virtual-environment).
-    <br> *Camacho, C., Coulouris, G., Avagyan, V. et al. BLAST+:
-    architecture and applications. BMC Bioinformatics 10, 421 (2009).*
-    doi:
-    [10.1186/1471-2105-10-421](https://doi.org/10.1186/1471-2105-10-421)
+To update `README.md` from `README.Rmd` file, you need R and the
+`rmarkdown` package installed to run:
 
-<br> Physcraper relies on the following Python packages that are
-<b>automatically</b> installed:
+``` bash
+R -e 'rmarkdown::render("README.Rmd")'
+```
 
-  - [argparse](https://docs.python.org/3/library/argparse.html)
-  - [biopython](https://biopython.org/) <br> *Cock, P. J., Antao, T.,
-    Chang, J. T., Chapman, B. A., Cox, C. J., Dalke, A., et al. (2009).
-    Biopython: freely available Python tools for computational molecular
-    biology and bioinformatics. Bioinformatics, 25(11), 1422–1423.*
-  - [configparser](https://docs.python.org/3/library/configparser.html)
-  - [coverage](https://coverage.readthedocs.io/)
-  - [DateTime](https://docs.python.org/3/library/datetime.html)
-  - [DendroPy](https://dendropy.org/primer/index.html) <br> *Sukumaran,
-    J and MT Holder. 2010. DendroPy: a Python library for phylogenetic
-    computing. Bioinformatics 26: 1569-1571* doi:
-    [10.1093/bioinformatics/btq228](https://doi.org/10.1093/bioinformatics/btq228)
-  - [future](https://python-future.org/)
-  - [m2r2](https://pypi.org/project/m2r2/)
-  - [nexson](https://github.com/OpenTreeOfLife/nexson)
-  - [numpy](https://numpy.org/) <br> *Harris, C. R., Millman, K. J., van
-    der Walt, S. J., Gommers, R., Virtanen, P., Cournapeau, D., …
-    Oliphant, T. E. (2020). Array programming with NumPy. Nature, 585,
-    357–362.* doi:
-    [10.1038/s41586-020-2649-2](https://doi.org/10.1038/s41586-020-2649-2)
-  - [OpenTree](https://github.com/OpenTreeOfLife/python-opentree) <br>
-    *Emily Jane McTavish, Luna Luisa Sanchez-Reyes, Mark T. Holder.
-    (2020). OpenTree: A Python package for Accessing and Analyzing data
-    from the Open Tree of Life. BioRxiv 2020.12.14.422759* doi:
-    [10.1101/2020.12.14.422759](https://doi.org/10.1101/2020.12.14.422759)
-  - [pandas](https://pandas.pydata.org/) <br> *McKinney, W., & others.
-    (2010). Data structures for statistical computing in python. In
-    Proceedings of the 9th Python in Science Conference (Vol. 445,
-    pp. 51–56).*
-  - [pytest](https://pytest.org/)
-  - [pytest-cov](https://pytest-cov.readthedocs.io/)
-  - [pytest-xdist](https://pypi.org/project/pytest-xdist/)
-  - [recommonmark](https://recommonmark.readthedocs.io/)
-  - [requests](https://docs.python-requests.org/) <br> *Chandra, R. V.,
-    & Varanasi, B. S. (2015). Python requests essentials. Packt
-    Publishing Ltd.*
-  - [sh](https://amoffat.github.io/sh/)
-  - [sphinx](https://www.sphinx-doc.org/)
-  - [urllib3](https://urllib3.readthedocs.io/)
+The `index.rst` file that lives in the `docs/source/` folder controls
+the home page at
+[readthedocs](https://physcraper.readthedocs.io/en/main/index.html),
+which is updated automatically as you push to GitHub.
+
+To update any of these, you have to modify, as needed, `README.Rmd` and
+`docs/source/index.rst`, as well as the following `.md` files living in
+the
+[docs/mds/](https://github.com/McTavishLab/physcraper/tree/main/docs/mds)
+folder:
+
+  - intro-badges.md
+  - intro-logo.md
+  - intro-part1.md
+  - citation.md
+  - license.md
+  - contact.md
+  - updating-the-readme.md, *aka, this file* <span>✨</span>
+
+To create new sections, you just need to create new `.md` files in
+`docs/mds/` and make sure to add them to `README.Rmd` and
+`docs/source/index.rst`

@@ -14,12 +14,15 @@ knitr::opts_chunk$set(
 IS_README <- TRUE
 ```
 
-<img align="left" width="250" src="https://raw.githubusercontent.com/McTavishLab/physcraper/main/docs/physcraper-long.png">
+```{r child="docs/mds/intro-logo.md"}
+
+```
 
 # Welcome to Physcraper’s repository!
 
-[![Build Status](https://travis-ci.org/McTavishLab/physcraper.svg?branch=main)](https://travis-ci.org/McTavishLab/physcraper)[![Documentation](https://readthedocs.org/projects/physcraper/badge/?version=latest&style=flat)](https://physcraper.readthedocs.io/en/main/)[![codecov](https://codecov.io/gh/McTavishLab/physcraper/branch/main/graph/badge.svg)](https://codecov.io/gh/McTavishLab/physcraper)
+```{r child="docs/mds/intro-badges.md"}
 
+```
 
 <p></p>
 
@@ -45,7 +48,7 @@ usage,
 - [running](https://physcraper.readthedocs.io/en/main/run.html) a full analysis,
 - [visualizing and analysing](https://physcraper.readthedocs.io/en/main/results.html) results,
 - real life [examples](https://physcraper.readthedocs.io/en/main/examples.html), and
-- tools for [developers](https://physcraper.readthedocs.io/en/main/CONTRIBUTING.html).
+- instructions for [developers](https://physcraper.readthedocs.io/en/main/CONTRIBUTING.html), and specifically on how to [update this readme](https://physcraper.readthedocs.io/en/main/CONTRIBUTING.html#updating-the-readme).
 
 
 :hamster: :palm_tree: :frog: :ear_of_rice: :panda_face: :tulip: :octopus: :blossom: :whale: :mushroom: :ant: :cactus: :fish: :maple_leaf: :water_buffalo: 🦠 :shell: :bug: :octocat:
@@ -66,6 +69,6 @@ usage,
 ```
 
 
-```{r child="docs/mds/intro-requirements.md"}
+```{r child="docs/mds/updating-the-readme.md"}
 
 ```
