@@ -84,7 +84,7 @@ Some taxa may show several suggested names. Click through to the taxonomy, and s
 
 Once you have accepted names for each of the taxa, click `save nameset`.
 
-<span>&#9888;</span> **Make sure your mappings were saved! If you don't "accept" matches, they don't download.**
+<span>&#9888;</span> **Make sure your mappings were saved! If you don't click on `accept matches`, they don't download.**
 
 Download your results to your laptop.
 Extract the files.

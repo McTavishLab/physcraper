@@ -1,6 +1,6 @@
 ## Requirements
 
-Physcraper requires the user to install:
+Physcraper requires <b>the user</b> to install:
 
 - [Anaconda](https://docs.anaconda.com/anaconda/install/) <br>
 *Anaconda Software Distribution. Computer software. Vers. 4.8.0. Anaconda, July. 2021. Web. <https://anaconda.com>*
