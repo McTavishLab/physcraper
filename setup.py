@@ -2,7 +2,7 @@
 
 from setuptools import setup
 
-setup(name='Physcraper'
+setup(name='Physcraper',
       version='1.0.1',
       description='Physcraper',
       author='Emily Jane McTavish',
