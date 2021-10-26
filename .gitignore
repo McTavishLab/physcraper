@@ -19,7 +19,6 @@ tests/fromfile
 *Rproj
 *Rhistory
 cit*xt
-*.ipynb
 src/
 dist/
 .DS_Store
