@@ -2,6 +2,7 @@ argparse
 biopython==1.76
 configparser
 coverage
+docutils<0.18
 DendroPy
 DateTime
 nexson
