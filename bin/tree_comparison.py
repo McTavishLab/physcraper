@@ -66,8 +66,8 @@ if not os.path.exists(comparisondir):
     os.mkdir(comparisondir)
 
 
-if args.results_dir:
-    assert(os.path.exists(args.results_dir)), "Results directory {} not found\n".format(args.results_dir)
+if args.dir:
+    assert(os.path.exists(args.dir)), "Results directory {} not found\n".format(args.dir)
 else:
     assert(os.path.exists(args.original_tree)), "Original tree {} not found\n".format(args.original_tree)
     assert(os.path.exists(args.updated_tree)), "Updated tree {} not found\n".format(args.updated_tree)
@@ -77,8 +77,8 @@ else:
 tns = dendropy.TaxonNamespace()
 
 
-if args.results_dir:
-    workdir = args.results_dir
+if args.dir:
+    workdir = args.dir
     files = [f for f in os.listdir(workdir)]
     for file in files:
         if file.startswith('inputs_'):
