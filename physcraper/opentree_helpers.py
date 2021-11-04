@@ -410,7 +410,15 @@ def get_dataset_from_treebase(study_id):
         url = "https://raw.githubusercontent.com/TreeBASE/supertreebase/master/data/treebase/S{}.xml".format(tb_id)
         try:
             dna = DataSet.get(url=url, schema="nexml")
-        except (xml.etree.ElementTree.ParseError, dendropy.utility.error.DataParseError, requests.HTTPError) as error1:
+        except (xml.etree.ElementTree.ParseError, dendropy.utility.error.DataParseError) as error1a: 
+            sys.stderr.write("\nERROR: Problems reading the input data from supertreebase:\n")
+            message = str(error1a)
+            sys.stderr.write("DENDROPY ERROR:'"+ message + "'" +'\n')
+            if "protein" or "amino" in message:
+                sys.stderr.write("\nIt appears this may not be a DNA alignment - physcraper can only use DNA currently.\n")
+            sys.stderr.write("Investigate, and potentialy download alignment directly at \n{}\n".format(url))
+            sys.exit()
+        except (requests.HTTPError) as error1b:
             # dendropy.utility.error.DataParseError occurs when a dataset has alternative states defined with symbol '{'
             sys.stdout.write("\nRetrieving dataset from supertreebase ({}) failed.\n".format(url) +
                              "Trying TreeBASE...\n")
@@ -422,6 +430,14 @@ def get_dataset_from_treebase(study_id):
                 sys.stderr.write("\nAutomatically retrieving a dataset from TreeBASE and supertreebase failed.\n" +
                                  "You can manually download a dataset for this study from TreeBASE {}.\n".format(url))
                 sys.exit()
+        except Exception as ex:
+            sys.stderr.write("\nERROR: Problems reading the input data from treebase:\n")
+            message = str(ex)
+            sys.stderr.write("DENDROPY ERROR:'"+ message + "'" +'\n')
+            if "protein" or "amino" in message:
+                sys.stderr.write("\nIt appears this may not be a DNA alignment - physcraper can only use DNA currently.\n")
+            sys.stderr.write("Investigate, and potentialy download alignment directly at \n{}\n".format(url))
+            sys.exit()
         if _DEBUG:
             sys.stderr.write(url + "\n")
         return dna
