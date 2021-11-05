@@ -43,7 +43,6 @@ for item in otu_dict:
             for rec in read_handle['GBSeq_feature-table'][0]['GBFeature_quals']:
                 if rec[u'GBQualifier_name'] == 'db_xref':
                     tax_id = rec[u'GBQualifier_value']
-                    print tax_id
                     if tax_id.startswith('taxon'):
                         ncbi_id = tax_id.split(":")[1]
                 if rec[u'GBQualifier_name'] == 'organism':
@@ -54,7 +53,7 @@ for item in otu_dict:
             except KeyError: 
                 otu_dict[item]["^ot:ottId"] = None
                 otu_dict[item]["ncbi:taxon"] = tax_name
-        except urllib2.HTTPError, err:
+        except:
             sys.stderr.write(err)
     else:
         sys.stderr.write("no taxon and no accession number\n")
