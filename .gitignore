@@ -34,3 +34,6 @@ taxonomy/*.tar*
 taxonomy/downloaded_ncbi_sequences/
 README.html
 tmp.py
+.ipynb_checkpoints/
+docs/examples/.ipynb_checkpoints/
+pg_55_test
