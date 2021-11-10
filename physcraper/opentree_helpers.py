@@ -357,7 +357,7 @@ def generate_ATT_from_phylesystem(alnfile,
     # need to prune tree to seqs and seqs to tree...
     ott_mrca = None
     if search_taxon:
-        if search_taxon.isinstance(list):
+        if isinstance(search_taxon, list):
             ott_ids = set(search_taxon)
             ott_mrca = get_mrca_ott(ott_ids)
         else:
