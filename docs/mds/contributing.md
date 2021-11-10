@@ -31,6 +31,21 @@ Physcraper could always use more documentation, whether as part of the
 official Physcraper docs, in docstrings, or even on the web in blog posts,
 articles, and such.
 
+To edit the readthedocs documentation, modify the files in the `docs/md` folder.
+You can check the documentation build locally. To do so, make sure that you are in
+a `Physcraper` virtual environment and change directories to the `docs` folder with:
+
+  cd docs
+
+Then build the html files with:
+
+  make html
+
+Now you can open the html version of your documentation:
+
+  open build/html/index.html
+
+
 ### Submit Feedback
 
 The best way to send feedback is to file an issue at https://github.com/McTavishLab/physcraper/issues.

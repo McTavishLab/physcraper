@@ -82,8 +82,14 @@ To see all the configuration parameters, use `physcraper_run.py -h`.
 
 The configuration parameters may be set in a configuration file, and then passed into the analysis run. See file "example.config" for an example.
 
-  -c CONFIGFILE, --configfile CONFIGFILE
-                        Gives the path to the configuration file
+<blockquote>
+<div><dl class="option-list">
+<dt><kbd><span class="option">-c <var>FILE_NAME</var></span>, <span class="option">--configfile <var>FILE_NAME</var></span></kbd></dt>
+<dd><p>Specifies the name (and path) to the configuration file.</p>
+</dd>
+</dl>
+</div></blockquote>
+
 
 If a config file input is combined with command line configuration parameters, the command line values will override those in the configuration file.
 
@@ -113,23 +119,29 @@ output directory as "run.config", e.g.,
 
 Tree information (required):
 
-  -s STUDY_ID, --study_id STUDY_ID
-                        OpenTree study id
-  -t TREE_ID, --tree_id TREE_ID
-                        OpenTree tree id
+<blockquote>
+<div><dl class="option-list">
+<dt><kbd><span class="option">-s <var>OPENTREE_STUDY_ID</var></span>, <span class="option">--study_id <var>OPENTREE_STUDY_ID</var></span></kbd></dt>
+<dd><p>Indicates the OpenTree study id.</p>
+</dd>
+<dt><kbd><span class="option">-t <var>OPENTREE_TREE_ID</var></span>, <span class="option">--tree_id <var>OPENTREE_TREE_ID</var></span></kbd></dt>
+<dd><p>Indicates the OpenTree tree id.</p>
+</dd>
+</dl>
+</div></blockquote>
 
 OR
 
 <blockquote>
 <div><dl class="option-list">
 <dt><kbd><span class="option">-tf <var>TREE_FILE</var></span>, <span class="option">--tree_file <var>TREE_FILE</var></span></kbd></dt>
-<dd><p>A name (and path) to a tree file.</p>
+<dd><p>Indicates the name (and path) to a tree file.</p>
 </dd>
 <dt><kbd><span class="option">-tfs <var>{newick,nexus}</var></span>, <span class="option">--tree_schema <var>{newick,nexus}</var></span></kbd></dt>
-<dd><p>Tree file format schema.</p>
+<dd><p>Specifies the tree file format schema, one of newick or newus.</p>
 </dd>
 <dt><kbd><span class="option">-ti <var>FILE_NAME</var></span>, <span class="option">--taxon_info <var>FILE_NAME</var></span></kbd></dt>
-<dd><p>Name (and path) of a taxon info file from an OpenTree TNRS run.</p>
+<dd><p>Indicates the name (and path) of a taxon info file from an OpenTree TNRS run.</p>
 </dd>
 </dl></div>
 </blockquote>
@@ -137,10 +149,17 @@ OR
 
 Alignment information (required):
 
-  -a ALIGNMENT, --alignment ALIGNMENT
-                        Gives the path to alignment file
-  -as ALN_SCHEMA, --aln_schema ALN_SCHEMA
-                        Specifies the alignment schema, one of nexus or fasta
+<blockquote>
+<div><dl class="option-list">
+<dt><kbd><span class="option">-a <var>ALIGNMENT_FILE</var></span>, <span class="option">--alignment <var>ALIGNMENT_FILE</var></span></kbd></dt>
+<dd><p>Indicates the name and path to alignment file.</p>
+</dd>
+<dt><kbd><span class="option">-as <var>{fasta,nexus}</var></span>, <span class="option">--aln_schema <var>{fasta,nexus}</var></span></kbd></dt>
+<dd><p>Specifies the alignment schema, one of fasta or nexus.</p>
+</dd>
+</dl>
+</div></blockquote>
+
 
 OR
 
@@ -168,12 +187,18 @@ After an analysis has been run, they can be reloaded from a directory from a pre
 
 REQUIRED:
 
-  -o OUTPUT, --output OUTPUT
-                        Specifies the path to output directory
+<blockquote>
+<div><dl class="option-list">
+<dt><kbd><span class="option">-o <var>OUTPUT_DIR</var></span>, <span class="option">--output <var>OUTPUT_DIR</var></span></kbd></dt>
+<dd><p>Specifies the directory (and path) to output directory.</p>
+</dd>
+</dl>
+</div></blockquote>
+
 
 Optional:
 
-<blockquote> 
+<blockquote>
 <div><dl class="option-list">
 <dt><kbd><span class="option">-st <var>SEARCH_TAXON</var></span>, <span class="option">--search_taxon <var>SEARCH_TAXON</var></span></kbd></dt>
 <dd><p>Specifies the taxonomic id to constrain the BLAST search. Format  <code class="docutils literal notranslate"><span class="pre">ott:123</span></code> or
