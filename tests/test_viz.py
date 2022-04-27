@@ -12,14 +12,3 @@ physcraper.viz.plot_tree(tree_file = t_file,
                          font_size = 8)
 
 
-otu_t_file = "pg_55_test/outputs_pg_55tree5864/physcraper_pg_55tree5864.tre"
-
-tt = TreeTax(otu_json="pg_55_test/run_pg_55tree5864/otu_info_pg_55tree5864.json", 
-             treefrom=otu_t_file )
-
-
-
-#tt.write_labelled(path="", , norepeats=True)
-
-tt.write_labelled(path="ids_only.tre", label = "^ot:ottId", norepeats=True)
-

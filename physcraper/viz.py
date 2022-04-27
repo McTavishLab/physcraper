@@ -16,7 +16,7 @@ def plot_tree(tree_file,
               font_size = 12,
               node_label_color = "blue",
               axis = "off",
-              otu_info_file = "None"):
+              list_of_new_taxa = None):
     # read the tree_file
     input_tree = Phylo.read(tree_file, tree_file_format)
     # plot the tree
@@ -40,7 +40,12 @@ def plot_tree(tree_file,
     # input_tree = Phylo.read(t_file, "newick")
     # for tip in input_tree.get_terminals():
     #     print(tip.name)
-    tip_label_colors = {"Brachychiton_acerifolius_otu376453": "r"}
+    tip_label_colors = {}
+    if list_of_new_taxa is not None:
+        for tip in list_of_new_taxa:
+            tip_label_colors[tip] = 'r'
+    else:
+        tip_label_colors["Brachychiton_acerifolius_otu376453"] = 'b'
     # draw the tree
     Phylo.draw(input_tree,
                axes=axes,
