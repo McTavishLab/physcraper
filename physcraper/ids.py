@@ -138,6 +138,8 @@ class IdDicts():
             assert header.split()[1].startswith('taxname:')
             tax_name = header.split()[1].strip('taxname:')
             ncbi_id = header.split()[2].strip('ncbi:')
+            self.ncbiid_to_spn[ncbi_id] = tax_name
+            self.acc_ncbi_dict[gb_id] = ncbi_id
             seq = "".join(fi.readlines())
         if seq is None:
             read_handle = self.entrez_efetch(gb_id)
